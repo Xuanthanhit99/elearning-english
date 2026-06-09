@@ -1,0 +1,163 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BANNED
+}
+
+enum CourseStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id       String     @id @default(uuid())
+  fullname String
+  email    String     @unique
+  password String
+  role     UserRole   @default(STUDENT)
+  avatar   String?
+  status   UserStatus @default(ACTIVE)
+
+  courses Course[]
+
+  enrollments Enrollment[]
+
+  lessonProgress LessonProgress[]
+
+  createAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Course {
+  id          String       @id @default(uuid())
+  teacherId   String
+  title       String
+  slug        String       @unique
+  description String?
+  thumbnail   String?
+  level       String
+  price       Int          @default(0)
+  status      CourseStatus @default(DRAFT)
+
+  teacher  User      @relation(fields: [teacherId], references: [id])
+  sections Section[]
+
+  enrollments Enrollment[]
+
+  lessonProgress LessonProgress[]
+
+  landing CourseLanding?
+
+  page CoursePage?
+
+  createAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Section {
+  id       String @id @default(uuid())
+  courseId String
+  title    String
+  order    Int    @default(0)
+
+  course  Course   @relation(fields: [courseId], references: [id])
+  lessons Lesson[]
+
+  createAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Lesson {
+  id        String  @id @default(uuid())
+  sectionId String
+  title     String
+  content   String?
+  videoUrl  String?
+  duration  Int?
+  order     Int     @default(0)
+  isPreview Boolean @default(false)
+
+  section Section @relation(fields: [sectionId], references: [id])
+
+  lessonProgress LessonProgress[]
+
+  createAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Enrollment {
+  id        String   @id @default(uuid())
+  userId    String
+  courseId  String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  course    Course   @relation(fields: [courseId], references: [id])
+
+  @@unique([userId, courseId])
+}
+
+model LessonProgress {
+  id        String   @id @default(uuid())
+  userId    String
+  lessonId  String
+  courseId  String
+  completed Boolean  @default(false)
+  completedAt DateTime?
+
+  user      User     @relation(fields: [userId], references: [id])
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+  course    Course   @relation(fields: [courseId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, lessonId])
+}
+
+model CourseLanding {
+  id String @id @default(uuid())
+  courseId String @unique
+  headline String?
+  subTitle String?
+  introVideo String?
+  benefits Json?
+  faq Json?
+
+  course    Course   @relation(fields: [courseId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CoursePage {
+  id String @id @default(uuid())
+  courseId String @unique
+  blocks Json
+
+  course    Course   @relation(fields: [courseId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

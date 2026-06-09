@@ -1,0 +1,27 @@
+# Node
+node_modules/
+
+# Build
+dist/
+build/
+
+# Logs
+logs
+*.log
+
+# Env
+.env
+.env.*
+
+# VSCode
+.vscode/
+
+# Prisma
+generated/
+
+# Uploads
+uploads/
+
+# OS
+.DS_Store
+Thumbs.db
