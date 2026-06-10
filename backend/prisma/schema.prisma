@@ -45,6 +45,8 @@ model User {
 
   lessonProgress LessonProgress[]
 
+  quizResults QuizResult[]
+
   createAt  DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -101,6 +103,10 @@ model Lesson {
   section Section @relation(fields: [sectionId], references: [id])
 
   lessonProgress LessonProgress[]
+  
+  quizzes Quiz[]
+
+  quizResults QuizResult[]
 
   createAt  DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -160,4 +166,32 @@ model CoursePage {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Quiz {
+  id String @id @default(uuid())
+  lessonId String
+  question String
+  options Json
+  answer String
+
+  lesson Lesson @relation(fields: [lessonId], references: [id])
+
+  createAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model QuizResult {
+  id        String   @id @default(uuid())
+  userId    String
+  lessonId  String
+  score     Int
+  total     Int
+  correct   Int
+  answers   Json
+
+  user      User     @relation(fields: [userId], references: [id])
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+
+  createdAt DateTime @default(now())
 }

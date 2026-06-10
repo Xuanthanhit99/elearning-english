@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { courseApi } from "./api/courseApi";
 import { uploadApi } from "./api/uploadApi";
+import { quizApi } from "./api/quizApi";
 
 const CourseDetail = () => {
   const { id } = useParams();
@@ -10,6 +11,13 @@ const CourseDetail = () => {
   const [course, setCourse] = useState<any>(null);
   const [error, setError] = useState("");
   const [sectionTitle, setSectionTitle] = useState("");
+
+  const [quizForm, setQuizForm] = useState({
+    lessonId: "",
+    question: "",
+    optionsText: "",
+    answer: "",
+  });
 
   const [lessonForm, setLessonForm] = useState({
     sectionId: "",
@@ -27,7 +35,7 @@ const CourseDetail = () => {
     } catch (error: any) {
       console.error("Get course detail error:", error.response?.data);
       setError(
-        error.response?.data?.message || "Không lấy được chi tiết khóa học"
+        error.response?.data?.message || "Không lấy được chi tiết khóa học",
       );
     }
   };
@@ -68,10 +76,16 @@ const CourseDetail = () => {
       return;
     }
 
+    const selectedSection = course.sections.find(
+      (section: any) => section.id === lessonForm.sectionId,
+    );
+
+    const nextOrder = (selectedSection?.lessons?.length || 0) + 1;
+
     await courseApi.createLesson(lessonForm.sectionId, {
       title: lessonForm.title,
       content: lessonForm.content,
-      order: 1,
+      order: nextOrder,
       isPreview: false,
     });
 
@@ -122,6 +136,52 @@ const CourseDetail = () => {
       </div>
     );
   }
+
+  const handleAddQuiz = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!quizForm.lessonId) {
+      alert("Vui lòng chọn bài học");
+      return;
+    }
+
+    if (!quizForm.question.trim()) {
+      alert("Vui lòng nhập câu hỏi");
+      return;
+    }
+
+    const options = quizForm.optionsText
+      .split("\n")
+      .map((x) => x.trim())
+      .filter(Boolean);
+
+    if (options.length < 2) {
+      alert("Cần ít nhất 2 đáp án");
+      return;
+    }
+
+    if (!quizForm.answer.trim()) {
+      alert("Vui lòng nhập đáp án đúng");
+      return;
+    }
+
+    await quizApi.createQuiz(quizForm.lessonId, {
+      question: quizForm.question,
+      options,
+      answer: quizForm.answer,
+    });
+
+    alert("Tạo quiz thành công");
+
+    setQuizForm({
+      lessonId: "",
+      question: "",
+      optionsText: "",
+      answer: "",
+    });
+
+    await fetchCourse();
+  };
 
   if (!course) return <div>Đang tải...</div>;
 
@@ -225,6 +285,67 @@ const CourseDetail = () => {
 
       <hr />
 
+      <h3>Thêm Quiz cho bài học</h3>
+
+      <form onSubmit={handleAddQuiz}>
+        <select
+          value={quizForm.lessonId}
+          onChange={(e) =>
+            setQuizForm({
+              ...quizForm,
+              lessonId: e.target.value,
+            })
+          }
+        >
+          <option value="">Chọn bài học</option>
+
+          {course.sections?.map((section: any) =>
+            section.lessons?.map((lesson: any) => (
+              <option key={lesson.id} value={lesson.id}>
+                {section.title} - {lesson.title}
+              </option>
+            )),
+          )}
+        </select>
+
+        <input
+          placeholder="Câu hỏi"
+          value={quizForm.question}
+          onChange={(e) =>
+            setQuizForm({
+              ...quizForm,
+              question: e.target.value,
+            })
+          }
+        />
+
+        <textarea
+          placeholder="Mỗi dòng là một đáp án"
+          value={quizForm.optionsText}
+          onChange={(e) =>
+            setQuizForm({
+              ...quizForm,
+              optionsText: e.target.value,
+            })
+          }
+        />
+
+        <input
+          placeholder="Đáp án đúng"
+          value={quizForm.answer}
+          onChange={(e) =>
+            setQuizForm({
+              ...quizForm,
+              answer: e.target.value,
+            })
+          }
+        />
+
+        <button type="submit">Thêm Quiz</button>
+      </form>
+
+      <hr />
+
       <h3>Danh sách chương / bài học</h3>
 
       {course.sections?.map((section: any) => (
@@ -249,6 +370,16 @@ const CourseDetail = () => {
                   if (file) handleUploadLessonVideo(lesson.id, file);
                 }}
               />
+
+              {lesson.quizzes?.length > 0 && (
+                <div style={{ marginLeft: 20 }}>
+                  <b>Quiz:</b>
+
+                  {lesson.quizzes.map((quiz: any) => (
+                    <div key={quiz.id}>- {quiz.question}</div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>

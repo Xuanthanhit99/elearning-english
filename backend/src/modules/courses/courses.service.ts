@@ -58,6 +58,9 @@ export class CoursesService {
           include: {
             lessons: {
               orderBy: { order: 'asc' },
+              include: {
+                quizzes: true,
+              },
             },
           },
         },

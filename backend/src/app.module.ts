@@ -14,6 +14,7 @@ import { LearningModule } from './modules/learning/learning.module';
 import { ProgressModule } from './modules/progress/progress.module';
 import { CourseLandingModule } from './modules/course-landing/course-landing.module';
 import { CoursePagesModule } from './modules/course-pages/course-pages.module';
+import { QuizzesModule } from './modules/quizzes/quizzes.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -31,6 +32,7 @@ import { CoursePagesModule } from './modules/course-pages/course-pages.module';
     ProgressModule,
     CourseLandingModule,
     CoursePagesModule,
+    QuizzesModule,
   ],
   // controllers: [AppController],
   // providers: [AppService],

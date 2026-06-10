@@ -28,12 +28,60 @@ export class LearningService {
     const courseId = lesson.section.course.id;
 
     const enrollment = await this.prismaService.enrollment.findUnique({
-      where: { userId_courseId: { userId, courseId } },
+      where: {
+        userId_courseId: {
+          userId,
+          courseId,
+        },
+      },
     });
 
     if (!enrollment && !lesson.isPreview) {
       throw new ForbiddenException('Bạn cần mua khóa học để xem bài này');
     }
+
+    const sections = await this.prismaService.section.findMany({
+      where: {
+        courseId,
+      },
+      orderBy: {
+        order: 'asc',
+      },
+      include: {
+        lessons: {
+          orderBy: {
+            order: 'asc',
+          },
+          select: {
+            id: true,
+            title: true,
+            order: true,
+            isPreview: true,
+          },
+        },
+      },
+    });
+
+    const completedProgress = await this.prismaService.lessonProgress.findMany({
+      where: {
+        userId,
+        courseId,
+        completed: true,
+      },
+      select: {
+        lessonId: true,
+      },
+    });
+
+    const completedLessonIds = completedProgress.map((x) => x.lessonId);
+
+    const sectionsWithProgress = sections.map((section) => ({
+      ...section,
+      lessons: section.lessons.map((item) => ({
+        ...item,
+        completed: completedLessonIds.includes(item.id),
+      })),
+    }));
 
     return {
       id: lesson.id,
@@ -45,27 +93,7 @@ export class LearningService {
       course: {
         id: lesson.section.course.id,
         title: lesson.section.course.title,
-        sections: await this.prismaService.section.findMany({
-          where: {
-            courseId: lesson.section.course.id,
-          },
-          orderBy: {
-            order: 'asc',
-          },
-          include: {
-            lessons: {
-              orderBy: {
-                order: 'asc',
-              },
-              select: {
-                id: true,
-                title: true,
-                order: true,
-                isPreview: true,
-              },
-            },
-          },
-        }),
+        sections: sectionsWithProgress,
       },
     };
   }
