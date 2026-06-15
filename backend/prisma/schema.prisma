@@ -30,6 +30,13 @@ enum CourseStatus {
   REJECTED
 }
 
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
 model User {
   id       String     @id @default(uuid())
   fullname String
@@ -46,6 +53,12 @@ model User {
   lessonProgress LessonProgress[]
 
   quizResults QuizResult[]
+
+  certificates Certificate[]
+
+  orders Order[]
+
+  review Review[]
 
   createAt  DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -68,6 +81,12 @@ model Course {
   enrollments Enrollment[]
 
   lessonProgress LessonProgress[]
+
+  certificates Certificate[]
+
+  orders Order[]
+
+  review Review[]
 
   landing CourseLanding?
 
@@ -194,4 +213,49 @@ model QuizResult {
   lesson    Lesson   @relation(fields: [lessonId], references: [id])
 
   createdAt DateTime @default(now())
+}
+
+model Certificate {
+  id        String   @id @default(uuid())
+  userId    String
+  courseId  String
+  code      String   @unique
+
+  user      User     @relation(fields: [userId], references: [id])
+  course    Course   @relation(fields: [courseId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, courseId])
+}
+
+model Order {
+  id          String   @id @default(uuid())
+  userId      String
+  courseId    String
+
+  amount      Int
+
+  status      OrderStatus @default(PENDING)
+
+  createdAt   DateTime @default(now())
+
+  user         User   @relation(fields: [userId], references: [id])
+  course       Course @relation(fields: [courseId], references: [id])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  courseId  String
+  rating    Int
+  comment   String?
+
+  user      User     @relation(fields: [userId], references: [id])
+  course    Course   @relation(fields: [courseId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, courseId])
 }

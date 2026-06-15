@@ -133,4 +133,16 @@ export class QuizzesService {
       score,
     };
   }
+
+  async getLatestQuizResult(lessonId: string, userId: string) {
+    return this.prismaService.quizResult.findFirst({
+      where: {
+        userId,
+        lessonId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
 }

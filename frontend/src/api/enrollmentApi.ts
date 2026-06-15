@@ -5,4 +5,7 @@ export const enrollmentApi = {
     axiosClient.post(`/enrollments/free/${courseId}`),
 
   getMyCourses: () => axiosClient.get("/enrollments/my-courses"),
+
+  checkEnrollment: (courseId: string) =>
+    axiosClient.get(`/enrollments/check/${courseId}`),
 };

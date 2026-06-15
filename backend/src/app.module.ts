@@ -15,6 +15,10 @@ import { ProgressModule } from './modules/progress/progress.module';
 import { CourseLandingModule } from './modules/course-landing/course-landing.module';
 import { CoursePagesModule } from './modules/course-pages/course-pages.module';
 import { QuizzesModule } from './modules/quizzes/quizzes.module';
+import { CertificatesModule } from './modules/certificates/certificates.module';
+import { OrdersModule } from './modules/orders/orders.module';
+import { PaymentsModule } from './modules/payments/payments.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -33,6 +37,10 @@ import { QuizzesModule } from './modules/quizzes/quizzes.module';
     CourseLandingModule,
     CoursePagesModule,
     QuizzesModule,
+    CertificatesModule,
+    OrdersModule,
+    PaymentsModule,
+    ReviewsModule,
   ],
   // controllers: [AppController],
   // providers: [AppService],

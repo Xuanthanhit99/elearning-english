@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { learningApi } from "../api/learningApi";
 import { progressApi } from "../api/progressApi";
 import { quizApi } from "../api/quizApi";
+import { certificateApi } from "../api/certificateApi";
 
 export default function LessonLearning() {
   const { lessonId } = useParams();
@@ -14,6 +15,8 @@ export default function LessonLearning() {
   const [quizzes, setQuizzes] = useState<any[]>([]);
   const [answers, setAnswers] = useState<any>({});
   const [quizResult, setQuizResult] = useState<any>(null);
+  const [latestQuizResult, setLatestQuizResult] = useState<any>(null);
+  const [certificate, setCertificate] = useState<any>(null);
 
   const fetchLesson = async () => {
     if (!lessonId) return;
@@ -30,7 +33,11 @@ export default function LessonLearning() {
       const progressRes = await progressApi.getCourseProgress(
         res.data.course.id,
       );
+
       setProgress(progressRes.data);
+
+      const latestResultRes = await quizApi.getLatestQuizResult(lessonId);
+      setLatestQuizResult(latestResultRes.data);
     } catch (err: any) {
       console.error(err.response?.data || err);
       alert(err.response?.data?.message || "Không tải được bài học");
@@ -73,6 +80,7 @@ export default function LessonLearning() {
         navigate(`/learning/lessons/${nextLesson.id}`);
       } else {
         alert("Bạn đã hoàn thành bài cuối cùng");
+        await fetchLesson();
       }
     } catch (err: any) {
       alert(err.response?.data?.message || "Không thể hoàn thành bài học");
@@ -90,9 +98,28 @@ export default function LessonLearning() {
     const res = await quizApi.submitQuiz(payload);
 
     setQuizResult(res.data);
+
+    if (lessonId) {
+      const latestResultRes = await quizApi.getLatestQuizResult(lessonId);
+      setLatestQuizResult(latestResultRes.data);
+    }
   };
 
+  const handleGenerateCertificate = async () => {
+    try {
+      const res = await certificateApi.generate(lesson.course.id);
+
+      setCertificate(res.data);
+
+      alert("Tạo chứng chỉ thành công");
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Không thể tạo chứng chỉ");
+    }
+  };
   if (!lesson) return <div>Đang tải bài học...</div>;
+  const hasQuiz = quizzes.length > 0;
+  const quizPassed = !hasQuiz || latestQuizResult?.score >= 80;
+  const courseCompleted = progress?.percent === 100;
 
   return (
     <div>
@@ -122,7 +149,40 @@ export default function LessonLearning() {
           </div>
         </div>
       )}
+      {courseCompleted && (
+        <div
+          style={{
+            padding: 12,
+            background: "#e6ffed",
+            border: "1px solid #9ae6b4",
+            marginTop: 12,
+          }}
+        >
+          🎉 Bạn đã hoàn thành khóa học này!
+        </div>
+      )}
+      {courseCompleted && (
+        <div
+          style={{
+            padding: 16,
+            border: "1px solid green",
+            marginTop: 12,
+          }}
+        >
+          <h3>🎉 Chúc mừng bạn đã hoàn thành khóa học</h3>
 
+          <button onClick={handleGenerateCertificate}>Nhận chứng chỉ</button>
+
+          {certificate && (
+            <div>
+              <p>
+                Mã chứng chỉ:
+                {certificate.code}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
       <div
         style={{
           display: "grid",
@@ -156,47 +216,6 @@ export default function LessonLearning() {
           ))}
         </aside>
 
-        {quizzes.length > 0 && (
-          <div style={{ marginTop: 24 }}>
-            <h3>Quiz bài học</h3>
-
-            {quizzes.map((quiz) => (
-              <div key={quiz.id}>
-                <h4>{quiz.question}</h4>
-
-                {quiz.options.map((option: string) => (
-                  <label key={option} style={{ display: "block" }}>
-                    <input
-                      type="radio"
-                      name={quiz.id}
-                      value={option}
-                      checked={answers[quiz.id] === option}
-                      onChange={(e) =>
-                        setAnswers({
-                          ...answers,
-                          [quiz.id]: e.target.value,
-                        })
-                      }
-                    />
-                    {option}
-                  </label>
-                ))}
-              </div>
-            ))}
-
-            <button onClick={handleSubmitQuiz}>Nộp bài Quiz</button>
-
-            {quizResult && (
-              <div>
-                <p>
-                  Đúng: {quizResult.correct}/{quizResult.total}
-                </p>
-                <p>Điểm: {quizResult.score}</p>
-              </div>
-            )}
-          </div>
-        )}
-
         <main>
           <h2>{lesson.title}</h2>
 
@@ -207,6 +226,59 @@ export default function LessonLearning() {
           <div>
             <p>{lesson.content}</p>
           </div>
+
+          {quizzes.length > 0 && (
+            <div style={{ marginTop: 24 }}>
+              <h3>Trạng thái Quiz</h3>
+
+              {!latestQuizResult && <p>Chưa làm quiz</p>}
+
+              {latestQuizResult && latestQuizResult.score < 80 && (
+                <p>Chưa đạt: {latestQuizResult.score}/100</p>
+              )}
+
+              {latestQuizResult && latestQuizResult.score >= 80 && (
+                <p>Đã đạt: {latestQuizResult.score}/100</p>
+              )}
+
+              <h3>Quiz bài học</h3>
+
+              {quizzes.map((quiz) => (
+                <div key={quiz.id}>
+                  <h4>{quiz.question}</h4>
+
+                  {quiz.options.map((option: string) => (
+                    <label key={option} style={{ display: "block" }}>
+                      <input
+                        type="radio"
+                        name={quiz.id}
+                        value={option}
+                        checked={answers[quiz.id] === option}
+                        onChange={(e) =>
+                          setAnswers({
+                            ...answers,
+                            [quiz.id]: e.target.value,
+                          })
+                        }
+                      />
+                      {option}
+                    </label>
+                  ))}
+                </div>
+              ))}
+
+              <button onClick={handleSubmitQuiz}>Nộp bài Quiz</button>
+
+              {quizResult && (
+                <div>
+                  <p>
+                    Đúng: {quizResult.correct}/{quizResult.total}
+                  </p>
+                  <p>Điểm: {quizResult.score}</p>
+                </div>
+              )}
+            </div>
+          )}
 
           <div style={{ marginTop: 24 }}>
             {prevLesson && (
@@ -228,7 +300,15 @@ export default function LessonLearning() {
           </div>
 
           <div style={{ marginTop: 16 }}>
-            <button onClick={handleComplete}>Hoàn thành bài học</button>
+            <button onClick={handleComplete} disabled={!quizPassed}>
+              Hoàn thành bài học
+            </button>
+
+            {hasQuiz && !quizPassed && (
+              <p style={{ color: "red" }}>
+                Bạn cần đạt ít nhất 80 điểm quiz để hoàn thành bài học.
+              </p>
+            )}
           </div>
         </main>
       </div>

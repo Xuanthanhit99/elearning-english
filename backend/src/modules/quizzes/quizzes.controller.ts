@@ -39,4 +39,9 @@ export class QuizzesController {
   submitQuiz(@Req() req: any, @Body() dto: SubmitQuizDto) {
     return this.quizzesService.submitQuiz(req.user.id, dto);
   }
+
+  @Get('lessons/:lessonId/quiz-result')
+  getLatestQuizResult(@Param('lessonId') lessonId: string, @Req() req: any) {
+    return this.quizzesService.getLatestQuizResult(lessonId, req.user.id);
+  }
 }

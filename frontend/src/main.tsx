@@ -19,6 +19,9 @@ import CourseLandingEdit from "./pages/CourseLandingEdit.tsx";
 import CoursePageBuilder from "./pages/teachers/CoursePageBuilder.tsx";
 import MyLearning from "./pages/MyLearning.tsx";
 import LessonLearning from "./pages/LessonLearning.tsx";
+import PaymentSuccess from "./pages/payment/PaymentSuccess.tsx";
+import PaymentFailed from "./pages/payment/PaymentFailed.tsx";
+import MyCertificates from "./pages/student/MyCertificates.tsx";
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <AuthLoader>
@@ -26,11 +29,19 @@ createRoot(document.getElementById("root")!).render(
         {/* Public */}
         <Route path="/" element={<CourseList />} />
         <Route path="/courses/:slug" element={<CoursePublicDetail />} />
-
+        <Route path="/payment-success" element={<PaymentSuccess />} />
+        <Route path="/payment-failed" element={<PaymentFailed />} />
         {/* Auth */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
+        <Route
+          path="/my-certificates"
+          element={
+            <ProtectedRoute>
+              <MyCertificates />
+            </ProtectedRoute>
+          }
+        />
         {/* Teacher */}
         <Route
           path="/teacher"
@@ -46,9 +57,11 @@ createRoot(document.getElementById("root")!).render(
           <Route path="courses/create" element={<CreateCourse />} />
           <Route path="courses/:id" element={<CourseDetail />} />
           <Route path="courses/:id/landing" element={<CourseLandingEdit />} />
-          <Route path="courses/:id/page-builder" element={<CoursePageBuilder />} />
+          <Route
+            path="courses/:id/page-builder"
+            element={<CoursePageBuilder />}
+          />
         </Route>
-
         {/* Admin */}
         <Route
           path="/admin"
@@ -63,24 +76,24 @@ createRoot(document.getElementById("root")!).render(
           <Route path="pending-courses" element={<PendingCourses />} />
         </Route>
         <Route
-  path="/my-learning"
-  element={
-    <ProtectedRoute>
-      <MyLearning />
-    </ProtectedRoute>
-  }
-/>
-<Route
-  path="/learning/lessons/:lessonId"
-  element={
-    <ProtectedRoute>
-      <LessonLearning />
-    </ProtectedRoute>
-  }
-/>
+          path="/my-learning"
+          element={
+            <ProtectedRoute>
+              <MyLearning />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/learning/lessons/:lessonId"
+          element={
+            <ProtectedRoute>
+              <LessonLearning />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </AuthLoader>
-  </BrowserRouter>
+  </BrowserRouter>,
 );
 
 // Public:

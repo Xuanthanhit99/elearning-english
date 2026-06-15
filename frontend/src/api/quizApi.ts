@@ -8,4 +8,7 @@ export const quizApi = {
     axiosClient.get(`/lessons/${lessonId}/quizzes`),
 
   submitQuiz: (data: any) => axiosClient.post("/quizzes/submit", data),
+
+  getLatestQuizResult: (lessonId: string) =>
+  axiosClient.get(`/lessons/${lessonId}/quiz-result`),
 };
