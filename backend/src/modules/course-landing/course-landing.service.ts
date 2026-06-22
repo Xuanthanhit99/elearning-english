@@ -4,8 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateCourseLandingDto } from './dto/create-course-landing.dto';
-import { UserRole } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UserRole } from '@prisma/client';
 
 @Injectable()
 export class CourseLandingService {

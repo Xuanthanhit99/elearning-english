@@ -1,6 +1,7 @@
-import { Link, Outlet, useNavigate } from 'react-router-dom';
-import { authApi } from './api/authApi';
-import { clearAccessToken } from './api/tokenStore';
+import { Link, Outlet, useNavigate } from "react-router-dom";
+import { authApi } from "./api/authApi";
+import { clearAccessToken } from "./api/tokenStore";
+import NotificationBell from "./components/NotificationBell";
 
 export default function TeacherLayout() {
   const navigate = useNavigate();
@@ -10,12 +11,12 @@ export default function TeacherLayout() {
 
     clearAccessToken();
 
-    navigate('/login');
+    navigate("/login");
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <aside style={{ width: 240, padding: 20, borderRight: '1px solid #ddd' }}>
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      <aside style={{ width: 240, padding: 20, borderRight: "1px solid #ddd" }}>
         <h2>Teacher</h2>
 
         <nav>
@@ -26,13 +27,14 @@ export default function TeacherLayout() {
           <p>
             <Link to="/teacher/courses/create">Tạo khóa học</Link>
           </p>
-
-          <button onClick={handleLogout}>
-            Đăng xuất
-          </button>
+          <p>
+            <Link to="/teacher/revenue">Doanh thu</Link>
+          </p>
+          <Link to="/teacher/wallet">Ví giáo viên</Link>
+          <button onClick={handleLogout}>Đăng xuất</button>
         </nav>
       </aside>
-
+    <NotificationBell />
       <main style={{ flex: 1, padding: 24 }}>
         <Outlet />
       </main>

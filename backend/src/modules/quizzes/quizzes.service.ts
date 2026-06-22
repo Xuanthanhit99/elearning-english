@@ -5,8 +5,8 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateQuizDto } from './dto/create-quiz.dto';
-import { UserRole } from '@prisma/client';
 import { SubmitQuizDto } from './dto/submit-quiz.dto';
+import { UserRole } from '@prisma/client';
 
 @Injectable()
 export class QuizzesService {

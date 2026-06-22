@@ -13,18 +13,18 @@ export class CreateCourseDto {
 
   @IsOptional()
   @IsString()
-  description?: string;
+  description: string;
 
   @IsOptional()
   @IsString()
-  thumbnail?: string;
+  thumbnail: string;
 
   @IsOptional()
   @IsString()
-  level?: string;
+  level: string;
 
   @IsOptional()
   @IsNumber()
   @Min(0)
-  price?: number;
+  price: number;
 }

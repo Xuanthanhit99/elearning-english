@@ -7,7 +7,7 @@ import { OrderStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as crypto from 'crypto';
 import * as qs from 'qs';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class PaymentsService {
@@ -139,10 +139,37 @@ export class PaymentsService {
         },
       });
 
+      const course = await this.prismaService.course.findUnique({
+        where: { id: order.courseId },
+      });
+
+      if (course) {
+        await this.prismaService.notification.create({
+          data: {
+            userId: course.teacherId,
+            title: 'Có học viên mới',
+            message: `Một học viên vừa mua khóa học "${course.title}".`,
+          },
+        });
+      }
+
       return {
         success: true,
         order: updatedOrder,
       };
+    }
+
+    if (order.couponCode) {
+      await this.prismaService.coupon.update({
+        where: {
+          code: order.couponCode,
+        },
+        data: {
+          usedCount: {
+            increment: 1,
+          },
+        },
+      });
     }
 
     const failedOrder = await this.prismaService.order.update({

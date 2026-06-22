@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateSectionDto } from './dto/create-section.dto';
-import { UserRole } from '@prisma/client';
 import { UpdateSectionDto } from './dto/update-section.dto';
+import { UserRole } from '@prisma/client';
 
 @Injectable()
 export class SectionsService {

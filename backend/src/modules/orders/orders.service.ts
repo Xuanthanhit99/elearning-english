@@ -5,12 +5,16 @@ import {
 } from '@nestjs/common';
 import { CourseStatus, OrderStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CouponsService } from '../coupons/coupons.service';
 
 @Injectable()
 export class OrdersService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private couponsService: CouponsService,
+  ) {}
 
-  async createOrder(userId: string, courseId: string) {
+  async createOrder(userId: string, courseId: string, couponCode?: string) {
     const course = await this.prismaService.course.findUnique({
       where: { id: courseId },
     });
@@ -46,11 +50,29 @@ export class OrdersService {
       };
     }
 
+    let amount = course.price;
+    let discountAmount = 0;
+    let appliedCouponCode: string | null = null;
+
+    if (couponCode) {
+      const result = await this.couponsService.validateCoupon(
+        couponCode,
+        course.price,
+      );
+
+      amount = result.finalAmount;
+      discountAmount = result.discountAmount;
+      appliedCouponCode = result.coupon.code;
+    }
+
     const order = await this.prismaService.order.create({
       data: {
         userId,
         courseId,
-        amount: course.price,
+        originalAmount: course.price,
+        discountAmount,
+        couponCode: appliedCouponCode,
+        amount,
         status: OrderStatus.PENDING,
       },
     });

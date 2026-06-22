@@ -12,6 +12,7 @@ export default function CoursePublicDetail() {
 
   const [course, setCourse] = useState<any>(null);
   const [reviewData, setReviewData] = useState<any>(null);
+  const [couponCode, setCouponCode] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,7 +37,9 @@ export default function CoursePublicDetail() {
     if (!course) return;
 
     try {
-      const orderRes = await orderApi.createOrder(course.id);
+      const orderRes = await orderApi.createOrder(course.id, {
+        couponCode,
+      });
 
       if (orderRes.data.type === "FREE") {
         alert("Đăng ký khóa học miễn phí thành công");
@@ -45,7 +48,7 @@ export default function CoursePublicDetail() {
       }
 
       const paymentRes = await paymentApi.createVnpayUrl(
-        orderRes.data.order.id
+        orderRes.data.order.id,
       );
 
       window.location.href = paymentRes.data.paymentUrl;
@@ -78,6 +81,11 @@ export default function CoursePublicDetail() {
           <p>Giá: {course.price}</p>
           <p>Giáo viên: {course.teacher?.fullName}</p>
 
+          <input
+            placeholder="Nhập mã giảm giá"
+            value={couponCode}
+            onChange={(e) => setCouponCode(e.target.value)}
+          />
           <button onClick={handleBuyCourse}>Mua khóa học</button>
 
           {landing?.introVideo && (

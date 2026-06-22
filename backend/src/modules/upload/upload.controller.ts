@@ -10,9 +10,9 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { UploadService } from './upload.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
-import { UserRole } from '@prisma/client';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
+import { UserRole } from '@prisma/client';
 
 @Controller('upload')
 @UseGuards(JwtAuthGuard, RolesGuard)

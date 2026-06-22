@@ -14,8 +14,8 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { CoursesService } from './courses.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
-import { UserRole } from '@prisma/client';
 import { CreateCourseDto } from './dto/create-course.dto';
+import { UserRole } from '@prisma/client';
 
 @Controller('courses')
 export class CoursesController {

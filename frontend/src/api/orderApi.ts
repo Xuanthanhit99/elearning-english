@@ -1,8 +1,8 @@
-import axiosClient from './axiosClient';
+import axiosClient from "./axiosClient";
 
 export const orderApi = {
-  createOrder: (courseId: string) =>
-    axiosClient.post(`/orders/courses/${courseId}`),
+  createOrder: (courseId: string, data?: any) =>
+    axiosClient.post(`/orders/courses/${courseId}`, data),
 
-  getMyOrders: () => axiosClient.get('/orders/my'),
+  getMyOrders: () => axiosClient.get("/orders/my"),
 };

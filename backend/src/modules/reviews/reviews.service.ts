@@ -27,7 +27,7 @@ export class ReviewsService {
       create: {
         userId,
         courseId,
-        rating: dto.rating,
+        rating: dto.rating ?? 1,
         comment: dto.comment,
       },
     });

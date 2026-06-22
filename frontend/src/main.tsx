@@ -22,6 +22,11 @@ import LessonLearning from "./pages/LessonLearning.tsx";
 import PaymentSuccess from "./pages/payment/PaymentSuccess.tsx";
 import PaymentFailed from "./pages/payment/PaymentFailed.tsx";
 import MyCertificates from "./pages/student/MyCertificates.tsx";
+import TeacherRevenue from "./pages/teachers/TeacherRevenue.tsx";
+import AdminRevenue from "./pages/admin/AdminRevenue.tsx";
+import TeacherWallet from "./pages/teachers/TeacherWallet.tsx";
+import AdminWithdrawRequests from "./pages/admin/AdminWithdrawRequests.tsx";
+import AdminCoupons from "./pages/admin/AdminCoupons.tsx";
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <AuthLoader>
@@ -57,6 +62,8 @@ createRoot(document.getElementById("root")!).render(
           <Route path="courses/create" element={<CreateCourse />} />
           <Route path="courses/:id" element={<CourseDetail />} />
           <Route path="courses/:id/landing" element={<CourseLandingEdit />} />
+          <Route path="revenue" element={<TeacherRevenue />} />
+          <Route path="wallet" element={<TeacherWallet />} />
           <Route
             path="courses/:id/page-builder"
             element={<CoursePageBuilder />}
@@ -73,7 +80,10 @@ createRoot(document.getElementById("root")!).render(
             </ProtectedRoute>
           }
         >
+          <Route path="coupons" element={<AdminCoupons />} />
           <Route path="pending-courses" element={<PendingCourses />} />
+          <Route path="revenue" element={<AdminRevenue />} />
+          <Route path="withdraws" element={<AdminWithdrawRequests />} />
         </Route>
         <Route
           path="/my-learning"

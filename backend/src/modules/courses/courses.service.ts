@@ -240,6 +240,14 @@ export class CoursesService {
       throw new NotFoundException('Không tìm thấy khóa học');
     }
 
+    await this.prisma.notification.create({
+      data: {
+        userId: course.teacherId,
+        title: 'Khóa học đã được duyệt',
+        message: `Khóa học "${course.title}" đã được public.`,
+      },
+    });
+
     return this.prisma.course.update({
       where: { id },
       data: {

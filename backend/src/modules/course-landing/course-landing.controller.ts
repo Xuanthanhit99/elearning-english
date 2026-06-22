@@ -11,8 +11,8 @@ import { CourseLandingService } from './course-landing.service';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
-import { UserRole } from '@prisma/client';
 import { CreateCourseLandingDto } from './dto/create-course-landing.dto';
+import { UserRole } from '@prisma/client';
 
 @Controller('courses/:courseId/landing')
 export class CourseLandingController {

@@ -37,6 +37,11 @@ enum OrderStatus {
   REFUNDED
 }
 
+enum DiscountType {
+  PERCENT
+  FIXED
+}
+
 model User {
   id       String     @id @default(uuid())
   fullname String
@@ -56,9 +61,13 @@ model User {
 
   certificates Certificate[]
 
+  notifications Notification[]
+
   orders Order[]
 
   review Review[]
+
+  withdrawRequests WithdrawRequest[]
 
   createAt  DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -234,7 +243,10 @@ model Order {
   userId      String
   courseId    String
 
-  amount      Int
+  amount         Int
+  originalAmount Int?
+  discountAmount Int       @default(0)
+  couponCode     String?
 
   status      OrderStatus @default(PENDING)
 
@@ -242,6 +254,8 @@ model Order {
 
   user         User   @relation(fields: [userId], references: [id])
   course       Course @relation(fields: [courseId], references: [id])
+
+  updatedAt      DateTime    @updatedAt
 }
 
 model Review {
@@ -258,4 +272,85 @@ model Review {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, courseId])
+}
+
+enum WithdrawStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
+}
+
+model WithdrawRequest {
+  id        String         @id @default(uuid())
+  teacherId String
+  amount    Int
+  status    WithdrawStatus @default(PENDING)
+  note      String?
+
+  teacher   User           @relation(fields: [teacherId], references: [id])
+
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model Coupon {
+  id             String   @id @default(uuid())
+  code           String   @unique
+  discountType   DiscountType   // PERCENT | FIXED
+  discountValue  Int
+  maxUses        Int?
+  usedCount      Int      @default(0)
+  expiredAt      DateTime?
+  isActive       Boolean  @default(true)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model SpeakingExercise {
+  id          String @id @default(uuid())
+
+  lessonId    String
+
+  title       String
+  prompt      String
+
+  lesson      Lesson @relation(fields: [lessonId], references: [id])
+
+  createdAt   DateTime @default(now())
+}
+
+
+model SpeakingResult {
+  id              String @id @default(uuid())
+
+  userId          String
+  exerciseId      String
+
+  audioUrl        String?
+
+  transcript      String?
+
+  score           Int?
+
+  feedback        Json?
+
+  createdAt       DateTime @default(now())
+
+  user            User @relation(fields: [userId], references: [id])
+
+  exercise        SpeakingExercise @relation(fields: [exerciseId], references: [id])
 }

@@ -11,9 +11,9 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { QuizzesService } from './quizzes.service';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
-import { UserRole } from '@prisma/client';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { SubmitQuizDto } from './dto/submit-quiz.dto';
+import { UserRole } from '@prisma/client';
 @Controller()
 @UseGuards(JwtAuthGuard)
 export class QuizzesController {

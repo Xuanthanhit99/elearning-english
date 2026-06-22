@@ -13,8 +13,8 @@ import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
-import { UserRole } from '@prisma/client';
 import type { Request, Response } from 'express';
+import { UserRole } from '@prisma/client';
 
 @Controller('auth')
 export class AuthController {

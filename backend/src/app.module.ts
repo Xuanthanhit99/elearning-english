@@ -19,6 +19,12 @@ import { CertificatesModule } from './modules/certificates/certificates.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
+import { TeacherDashboardModule } from './modules/teacher-dashboard/teacher-dashboard.module';
+import { AdminDashboardModule } from './modules/admin-dashboard/admin-dashboard.module';
+import { WalletModule } from './modules/wallet/wallet.module';
+import { CouponsModule } from './modules/coupons/coupons.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { SpeakingModule } from './modules/speaking/speaking.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -41,6 +47,12 @@ import { ReviewsModule } from './modules/reviews/reviews.module';
     OrdersModule,
     PaymentsModule,
     ReviewsModule,
+    TeacherDashboardModule,
+    AdminDashboardModule,
+    WalletModule,
+    CouponsModule,
+    NotificationsModule,
+    SpeakingModule,
   ],
   // controllers: [AppController],
   // providers: [AppService],

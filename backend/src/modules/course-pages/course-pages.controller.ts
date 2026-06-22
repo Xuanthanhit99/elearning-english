@@ -10,9 +10,9 @@ import {
 import { CoursePagesService } from './course-pages.service';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
-import { UserRole } from '@prisma/client';
 import { UpdateCoursePageDto } from './dto/update-course-page.dto';
 import { Roles } from 'src/common/decorators/roles.decorator';
+import { UserRole } from '@prisma/client';
 
 @Controller('courses/:courseId/page')
 export class CoursePagesController {

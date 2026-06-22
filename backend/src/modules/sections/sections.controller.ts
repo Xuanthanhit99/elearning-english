@@ -12,9 +12,9 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { SectionsService } from './sections.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
-import { UserRole } from '@prisma/client';
 import { CreateSectionDto } from './dto/create-section.dto';
 import { UpdateSectionDto } from './dto/update-section.dto';
+import { UserRole } from '@prisma/client';
 
 @Controller()
 @UseGuards(JwtAuthGuard, RolesGuard)
