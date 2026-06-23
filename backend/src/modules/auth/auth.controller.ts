@@ -15,6 +15,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import type { Request, Response } from 'express';
 import { UserRole } from '@prisma/client';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -27,7 +28,7 @@ export class AuthController {
 
   @Post('login')
   login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
-    console.log("form");
+    console.log('form');
     return this.authService.login(dto, res);
   }
 
@@ -44,7 +45,7 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   me(@Req() req: any) {
-    return req.user;
+    return this.authService.getMe(req.user.email);
   }
 
   @Get('teacher-test')
@@ -55,4 +56,37 @@ export class AuthController {
       message: 'Chỉ TEACHER hoặc ADMIN mới vào được',
     };
   }
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  googleLogin() {}
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleCallback(@Req() req: any, @Res() res: Response) {
+    try {
+      const result = await this.authService.socialLogin(req.user);
+      res.cookie('refresh_token', result.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      res.cookie('access_token', result.accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 15 * 60 * 1000,
+      });
+      return res.redirect(
+        `${process.env.FRONTEND_URL}/auth/callback?status=success`,
+      );
+    } catch (error) {
+      return res.redirect(
+        `${process.env.FRONTEND_URL}/auth/callback?status=error`,
+      );
+    }
+  }
+
 }

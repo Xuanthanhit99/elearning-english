@@ -9,6 +9,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum UserRole {
@@ -43,15 +44,16 @@ enum DiscountType {
 }
 
 model User {
-  id       String     @id @default(uuid())
-  fullname String
-  email    String     @unique
-  password String
-  role     UserRole   @default(STUDENT)
-  avatar   String?
-  status   UserStatus @default(ACTIVE)
-
-  courses Course[]
+  id         String     @id @default(uuid())
+  fullname   String
+  email      String     @unique
+  password   String
+  role       UserRole   @default(STUDENT)
+  avatar     String?
+  status     UserStatus @default(ACTIVE)
+  provider   String?
+  providerId String?
+  courses    Course[]
 
   enrollments Enrollment[]
 
@@ -68,6 +70,8 @@ model User {
   review Review[]
 
   withdrawRequests WithdrawRequest[]
+
+  speakingResults SpeakingResult[]
 
   createAt  DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -131,10 +135,13 @@ model Lesson {
   section Section @relation(fields: [sectionId], references: [id])
 
   lessonProgress LessonProgress[]
-  
+
   quizzes Quiz[]
 
   quizResults QuizResult[]
+
+  speakingResults   SpeakingResult[]
+  speakingExercises SpeakingExercise[]
 
   createAt  DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -146,23 +153,23 @@ model Enrollment {
   courseId  String
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id])
-  course    Course   @relation(fields: [courseId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
 
   @@unique([userId, courseId])
 }
 
 model LessonProgress {
-  id        String   @id @default(uuid())
-  userId    String
-  lessonId  String
-  courseId  String
-  completed Boolean  @default(false)
+  id          String    @id @default(uuid())
+  userId      String
+  lessonId    String
+  courseId    String
+  completed   Boolean   @default(false)
   completedAt DateTime?
 
-  user      User     @relation(fields: [userId], references: [id])
-  lesson    Lesson   @relation(fields: [lessonId], references: [id])
-  course    Course   @relation(fields: [courseId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+  lesson Lesson @relation(fields: [lessonId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -171,67 +178,67 @@ model LessonProgress {
 }
 
 model CourseLanding {
-  id String @id @default(uuid())
-  courseId String @unique
-  headline String?
-  subTitle String?
+  id         String  @id @default(uuid())
+  courseId   String  @unique
+  headline   String?
+  subTitle   String?
   introVideo String?
-  benefits Json?
-  faq Json?
+  benefits   Json?
+  faq        Json?
 
-  course    Course   @relation(fields: [courseId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model CoursePage {
-  id String @id @default(uuid())
+  id       String @id @default(uuid())
   courseId String @unique
-  blocks Json
+  blocks   Json
 
-  course    Course   @relation(fields: [courseId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Quiz {
-  id String @id @default(uuid())
+  id       String @id @default(uuid())
   lessonId String
   question String
-  options Json
-  answer String
+  options  Json
+  answer   String
 
   lesson Lesson @relation(fields: [lessonId], references: [id])
 
-  createAt DateTime @default(now())
+  createAt  DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model QuizResult {
-  id        String   @id @default(uuid())
-  userId    String
-  lessonId  String
-  score     Int
-  total     Int
-  correct   Int
-  answers   Json
+  id       String @id @default(uuid())
+  userId   String
+  lessonId String
+  score    Int
+  total    Int
+  correct  Int
+  answers  Json
 
-  user      User     @relation(fields: [userId], references: [id])
-  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+  lesson Lesson @relation(fields: [lessonId], references: [id])
 
   createdAt DateTime @default(now())
 }
 
 model Certificate {
-  id        String   @id @default(uuid())
-  userId    String
-  courseId  String
-  code      String   @unique
+  id       String @id @default(uuid())
+  userId   String
+  courseId String
+  code     String @unique
 
-  user      User     @relation(fields: [userId], references: [id])
-  course    Course   @relation(fields: [courseId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
 
   createdAt DateTime @default(now())
 
@@ -239,34 +246,34 @@ model Certificate {
 }
 
 model Order {
-  id          String   @id @default(uuid())
-  userId      String
-  courseId    String
+  id       String @id @default(uuid())
+  userId   String
+  courseId String
 
   amount         Int
   originalAmount Int?
-  discountAmount Int       @default(0)
+  discountAmount Int     @default(0)
   couponCode     String?
 
-  status      OrderStatus @default(PENDING)
+  status OrderStatus @default(PENDING)
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
-  user         User   @relation(fields: [userId], references: [id])
-  course       Course @relation(fields: [courseId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
 
-  updatedAt      DateTime    @updatedAt
+  updatedAt DateTime @updatedAt
 }
 
 model Review {
-  id        String   @id @default(uuid())
-  userId    String
-  courseId  String
-  rating    Int
-  comment   String?
+  id       String  @id @default(uuid())
+  userId   String
+  courseId String
+  rating   Int
+  comment  String?
 
-  user      User     @relation(fields: [userId], references: [id])
-  course    Course   @relation(fields: [courseId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -288,69 +295,65 @@ model WithdrawRequest {
   status    WithdrawStatus @default(PENDING)
   note      String?
 
-  teacher   User           @relation(fields: [teacherId], references: [id])
+  teacher User @relation(fields: [teacherId], references: [id])
 
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Coupon {
-  id             String   @id @default(uuid())
-  code           String   @unique
-  discountType   DiscountType   // PERCENT | FIXED
-  discountValue  Int
-  maxUses        Int?
-  usedCount      Int      @default(0)
-  expiredAt      DateTime?
-  isActive       Boolean  @default(true)
+  id            String       @id @default(uuid())
+  code          String       @unique
+  discountType  DiscountType // PERCENT | FIXED
+  discountValue Int
+  maxUses       Int?
+  usedCount     Int          @default(0)
+  expiredAt     DateTime?
+  isActive      Boolean      @default(true)
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Notification {
-  id        String   @id @default(uuid())
-  userId    String
-  title     String
-  message   String
-  isRead    Boolean  @default(false)
+  id      String  @id @default(uuid())
+  userId  String
+  title   String
+  message String
+  isRead  Boolean @default(false)
 
-  user      User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
 }
 
 model SpeakingExercise {
-  id          String @id @default(uuid())
+  id       String @id @default(uuid())
+  lessonId String
 
-  lessonId    String
+  title  String
+  prompt String
 
-  title       String
-  prompt      String
+  lesson  Lesson           @relation(fields: [lessonId], references: [id])
+  results SpeakingResult[]
 
-  lesson      Lesson @relation(fields: [lessonId], references: [id])
-
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 }
 
-
 model SpeakingResult {
-  id              String @id @default(uuid())
+  id String @id @default(uuid())
 
-  userId          String
-  exerciseId      String
+  userId     String
+  exerciseId String
+  lessonId   String
 
-  audioUrl        String?
+  audioUrl   String?
+  transcript String?
+  score      Int?
+  feedback   Json?
 
-  transcript      String?
-
-  score           Int?
-
-  feedback        Json?
-
-  createdAt       DateTime @default(now())
-
-  user            User @relation(fields: [userId], references: [id])
-
-  exercise        SpeakingExercise @relation(fields: [exerciseId], references: [id])
+  createdAt DateTime         @default(now())
+  lesson    Lesson           @relation(fields: [lessonId], references: [id])
+  user      User             @relation(fields: [userId], references: [id])
+  exercise  SpeakingExercise @relation(fields: [exerciseId], references: [id])
 }

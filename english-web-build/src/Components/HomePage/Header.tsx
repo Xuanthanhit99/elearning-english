@@ -73,7 +73,7 @@ export default function Header() {
             </Link>
 
             <Link
-              href={ROUTES.REGISTER}
+              href={ROUTES.LOGIN}
               className="rounded-full bg-orange-500 px-9 py-3 text-sm font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-orange-600 sm:px-12 sm:text-base"
             >
               Bắt đầu học ngay

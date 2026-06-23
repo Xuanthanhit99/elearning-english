@@ -153,4 +153,98 @@ export class AuthService {
       message: 'Đăng xuất thành công',
     };
   }
+
+  async socialLogin(profile: {
+    provider: string;
+    providerId: string;
+    email?: string;
+    fullname?: string;
+    avatar?: string;
+  }) {
+    if (!profile.email) {
+      throw new BadRequestException('Không lấy được email từ tài khoản');
+    }
+
+    console.log('dấdasa', 'ds');
+
+    let dbUser = await this.prisma.user.findUnique({
+      where: {
+        email: profile.email,
+      },
+    });
+
+    if (!dbUser) {
+      dbUser = await this.prisma.user.create({
+        data: {
+          email: profile.email,
+          fullname: profile.fullname || profile.email,
+          avatar: profile.avatar,
+          password: '',
+          role: 'STUDENT',
+        },
+      });
+    }
+
+    if (dbUser && !dbUser.provider) {
+      dbUser = await this.prisma.user.update({
+        where: {
+          id: dbUser.id,
+        },
+        data: {
+          provider: profile.provider,
+          providerId: profile.providerId,
+          avatar: dbUser.avatar || profile.avatar,
+        },
+      });
+    }
+
+    const accessToken = await this.jwtService.signAsync(
+      {
+        sub: dbUser.id,
+        email: dbUser.email,
+        role: dbUser.role,
+      },
+      {
+        secret: process.env.JWT_ACCESS_SECRET,
+        expiresIn: (process.env.JWT_ACCESS_EXPIRES_IN || '15m') as StringValue,
+      },
+    );
+    const refreshToken = await this.jwtService.signAsync(
+      {
+        sub: dbUser.id,
+        email: dbUser.email,
+        role: dbUser.role,
+      },
+      {
+        secret: process.env.JWT_REFRESH_SECRET,
+        expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as StringValue,
+      },
+    );
+
+    return { accessToken, dbUser, refreshToken };
+  }
+
+  async getMe(email: string) {
+    const getUser = await this.prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        fullname: true,
+        avatar: true,
+        role: true,
+        status: true,
+      },
+    });
+
+    if (!getUser) {
+      throw new BadRequestException(
+        'Không tìm thấy tài khoản email đã đăng ký',
+      );
+    }
+
+    return {
+      success: true,
+      data: { getUser },
+    };
+  }
 }
