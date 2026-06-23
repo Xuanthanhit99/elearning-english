@@ -6,6 +6,7 @@ import type { StringValue } from 'ms';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { FacebookStrategy } from './strategies/facebook.strategy';
 
 @Module({
   imports: [
@@ -17,8 +18,15 @@ import { GoogleStrategy } from './strategies/google.strategy';
     }),
     PassportModule,
     GoogleStrategy,
+    FacebookStrategy,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, PassportModule],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    PassportModule,
+    GoogleStrategy,
+    FacebookStrategy,
+  ],
 })
 export class AuthModule {}

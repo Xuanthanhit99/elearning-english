@@ -1,84 +1,190 @@
-// src/components/Header.tsx
-import { ROUTES } from "@/src/constants/routes";
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-
-const navs = [
-  { label: "Trang chủ", href: "/" },
-  { label: "Khóa học", href: "/courses" },
-  { label: "Tính năng", href: "/roadmap" },
-  { label: "Về chúng tôi", href: "/about" },
-];
+import { useAuthStore } from "@/src/store/authStore";
+import { api } from "@/src/lib/axios";
 
 export default function Header() {
+  const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
+
+  const handleLogout = async () => {
+    try {
+      await api.post("/auth/logout");
+      
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setUser(null);
+      window.location.href = "/";
+    }
+  };
+
   return (
-    <header className="sticky top-0 z-50 border-b border-[#f2dfc8] bg-[#fff4e8] py-2">
-      {" "}
-      <div className="mx-auto flex max-w-6xl flex-col items-center gap-8 lg:flex-row lg:justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex flex-col items-center lg:items-start">
-          <div className="flex items-center gap-4">
-            <Image
-              src="/cat-home.jpg"
-              alt="MiuLingo mascot"
-              width={72}
-              height={72}
-              className="rounded-full object-cover"
-              priority
-            />
-
-            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-              <span className="text-slate-500">Miu</span>
-              <span className="text-orange-500">Lingo</span>
-            </h1>
-          </div>
-
-          <p className="mt-2 text-center text-lg font-bold text-slate-500 sm:text-xl lg:pl-10">
-            Học ngôn ngữ cùng Miu
-          </p>
+    <header className="sticky top-0 z-50 bg-[#fff4e8] px-4 py-3">
+      <div className="mx-auto flex max-w-7xl items-center justify-between rounded-[28px] bg-white px-7 py-4 shadow-sm">
+        <Link href="/" className="text-3xl font-black tracking-tight">
+          <span className="text-black">Miu</span>
+          <span className="text-[#ff6b00]">Lingo</span>
         </Link>
 
-        {/* Menu box */}
-        <div className="rounded-[30px] border border-[#ead8c2] bg-[#fffaf5] px-4 py-3 shadow-md sm:px-6">
-          <nav
-            className=" flex
-    flex-wrap
-    items-center
-    justify-center
-    gap-3
-    lg:flex-nowrap
-    lg:gap-6"
+        <nav className="hidden items-center gap-9 lg:flex">
+          <Link
+            href="/"
+            className="border-b-4 border-[#ff6b00] pb-2 font-extrabold text-[#1f2a44]"
           >
-            {navs.map((item, index) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={
-                  index === 0
-                    ? "rounded-full border-2 border-black bg-slate-50 px-7 py-3 text-sm font-bold text-slate-700 sm:text-base whitespace-nowrap"
-                    : "rounded-full px-4 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 sm:text-base whitespace-nowrap"
-                }
+            Trang chủ
+          </Link>
+
+          <Link href="/courses" className="font-extrabold text-[#5b6b85]">
+            Khóa học
+          </Link>
+
+          <details className="group relative">
+            <summary className="flex cursor-pointer list-none items-center gap-1 font-extrabold text-[#5b6b85] hover:text-[#1f2a44]">
+              Công cụ
+              <span className="text-xs transition group-open:rotate-180">
+                ▼
+              </span>
+            </summary>
+
+            <div className="absolute left-1/2 top-10 z-50 w-64 -translate-x-1/2 rounded-[24px] border border-[#ead8c2] bg-white p-3 shadow-[0_24px_70px_rgba(31,42,68,0.14)]">
+              {[
+                { icon: "🔤", label: "Check từ", href: "/check-word" },
+                { icon: "📝", label: "Check bài", href: "/check-writing" },
+                { icon: "📚", label: "Từ điển AI", href: "/dictionary" },
+                {
+                  icon: "🎙️",
+                  label: "Luyện phát âm",
+                  href: "/pronunciation",
+                },
+                {
+                  icon: "📊",
+                  label: "Kiểm tra trình độ",
+                  href: "/placement-test",
+                },
+              ].map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center gap-3 rounded-2xl px-4 py-3 font-extrabold text-[#1f2a44] transition hover:bg-[#fff4e8] hover:text-[#ff6b00]"
+                >
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#fff4e8] text-lg">
+                    {item.icon}
+                  </span>
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </details>
+
+          <Link href="/roadmap" className="font-extrabold text-[#5b6b85]">
+            Lộ trình
+          </Link>
+        </nav>
+
+        <div className="flex items-center gap-3">
+          {user ? (
+            <>
+              <button
+                type="button"
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-[#fff4e8] text-xl"
               >
-                {item.label}
+                🔔
+              </button>
+
+              <div className="hidden items-center gap-2 rounded-full bg-[#fff0dc] px-4 py-3 font-extrabold text-[#ff6b00] sm:flex">
+                🔥 <span>12</span>
+              </div>
+
+              <details className="group relative">
+                <summary className="flex cursor-pointer list-none items-center gap-2 rounded-full bg-[#1f2a44] px-3 py-2 text-white">
+                  <Image
+                    src={user.avatar || "/avatar-default.png"}
+                    alt={user.fullname || "User"}
+                    width={38}
+                    height={38}
+                    className="h-[38px] w-[38px] rounded-full bg-white object-cover"
+                  />
+
+                  <span className="hidden max-w-[90px] truncate font-extrabold sm:block">
+                    {user.fullname || "User"}
+                  </span>
+
+                  <span className="text-xs transition group-open:rotate-180">
+                    ▼
+                  </span>
+                </summary>
+
+                <div className="absolute right-0 top-14 z-50 w-72 rounded-[24px] border border-[#ead8c2] bg-white p-3 shadow-[0_24px_70px_rgba(31,42,68,0.14)]">
+                  <div className="mb-2 flex items-center gap-3 rounded-2xl bg-[#fff4e8] p-3">
+                    <Image
+                      src={user.avatar || "/avatar-default.png"}
+                      alt={user.fullname || "User"}
+                      width={44}
+                      height={44}
+                      className="h-11 w-11 rounded-full bg-white object-cover"
+                    />
+
+                    <div className="min-w-0">
+                      <p className="truncate font-extrabold text-[#1f2a44]">
+                        {user.fullname || "User"}
+                      </p>
+                      <p className="truncate text-sm font-bold text-[#5b6b85]">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  {[
+                    { icon: "👤", label: "Hồ sơ cá nhân", href: "/profile" },
+                    { icon: "📈", label: "Tiến độ học", href: "/progress" },
+                    { icon: "🏆", label: "Chứng chỉ", href: "/certificates" },
+                    { icon: "⚙️", label: "Cài đặt", href: "/settings" },
+                  ].map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="flex items-center gap-3 rounded-2xl px-4 py-3 font-extrabold text-[#1f2a44] transition hover:bg-[#fff4e8] hover:text-[#ff6b00]"
+                    >
+                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#fff4e8] text-lg">
+                        {item.icon}
+                      </span>
+                      {item.label}
+                    </Link>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="mt-1 flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left font-extrabold text-red-500 transition hover:bg-red-50"
+                  >
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-50 text-lg">
+                      🚪
+                    </span>
+                    Đăng xuất
+                  </button>
+                </div>
+              </details>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/auth"
+                className="hidden rounded-full px-5 py-3 font-extrabold text-[#5b6b85] hover:bg-[#fff4e8] sm:block"
+              >
+                Đăng nhập
               </Link>
-            ))}
-          </nav>
 
-          <div className="mt-4 flex items-center justify-center gap-4 sm:gap-6">
-            <Link
-              href={ROUTES.LOGIN}
-              className="rounded-full px-5 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 sm:text-base"
-            >
-              Đăng nhập
-            </Link>
-
-            <Link
-              href={ROUTES.LOGIN}
-              className="rounded-full bg-orange-500 px-9 py-3 text-sm font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-orange-600 sm:px-12 sm:text-base"
-            >
-              Bắt đầu học ngay
-            </Link>
-          </div>
+              <Link
+                href="/auth"
+                className="rounded-full bg-[#ff6b00] px-7 py-3 font-bold text-white"
+              >
+                Bắt đầu học ngay
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

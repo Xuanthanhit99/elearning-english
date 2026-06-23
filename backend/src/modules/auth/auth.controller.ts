@@ -89,4 +89,35 @@ export class AuthController {
     }
   }
 
+  @Get('facebook')
+  @UseGuards(AuthGuard('facebook'))
+  facebookLogin() {}
+
+  @Get('facebook/callback')
+  @UseGuards(AuthGuard('facebook'))
+  async facebookCallback(@Req() req: any, @Res() res: Response) {
+    try {
+      const result = await this.authService.socialLogin(req.user);
+      res.cookie('refresh_token', result.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      res.cookie('access_token', result.accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 15 * 60 * 1000,
+      });
+      return res.redirect(
+        `${process.env.FRONTEND_URL}/auth/callback?status=success`,
+      );
+    } catch (error) {
+      return res.redirect(
+        `${process.env.FRONTEND_URL}/auth/callback?status=error`,
+      );
+    }
+  }
 }

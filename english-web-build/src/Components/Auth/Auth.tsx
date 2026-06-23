@@ -294,6 +294,9 @@ function SocialButtons({ label }: { label: string }) {
 
         <button
           type="button"
+          onClick={() => {
+            window.location.href = "http://localhost:3002/auth/facebook";
+          }}
           className="rounded-2xl border border-[#ead8c2] py-3 font-extrabold text-[#1f2a44] transition hover:bg-[#fff4e8]"
         >
           Facebook

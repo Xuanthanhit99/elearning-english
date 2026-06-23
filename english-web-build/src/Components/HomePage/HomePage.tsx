@@ -1,7 +1,10 @@
 // src/app/page.tsx
+'use client'
+import { useAuthStore } from "@/src/store/authStore";
 import Image from "next/image";
 
 export default function HomePage() {
+  const user = useAuthStore((state) => state.user)
   return (
     <main className="overflow-hidden bg-gradient-to-b from-[#fff4e8] via-[#fffaf5] to-white">
       {" "}
@@ -45,7 +48,7 @@ export default function HomePage() {
 
           <div className="flex justify-center pt-12">
             <Image
-              src="/cat-home.jpg"
+              src={user && user.avatar ? user.avatar : "/cat-home.jpg"}
               alt="Miu mascot"
               width={320}
               height={320}
