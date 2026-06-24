@@ -2,13 +2,17 @@
 
 import { api } from "@/src/lib/axios";
 import { useState } from "react";
+
 type WordCheckResult = {
   word?: string;
   ipa?: string;
+  phonetic?: string;
   partOfSpeech?: string;
   level?: string;
   tags?: string[];
   mainMeaning?: string;
+  meaning?: string;
+  definition?: string;
   synonyms?: {
     word: string;
     meaning: string;
@@ -17,7 +21,13 @@ type WordCheckResult = {
     phrase: string;
     meaning: string;
   }[];
+  examples?: {
+    en: string;
+    vi: string;
+  }[];
+  suggestion?: string;
 };
+
 const quickWords = ["confident", "schedule", "meeting", "responsibility"];
 
 const languages = [
@@ -36,20 +46,35 @@ export default function CheckWordPage() {
   const [toLang, setToLang] = useState("vi");
   const [level, setLevel] = useState("Beginner");
   const [searchData, setSearchData] = useState<WordCheckResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const onClickCheckWork = async () => {
+    if (!word.trim()) return;
+
     try {
-      const getData = await api.post("/words/check", {
-        word: "improve",
-        sourceLanguage: "en",
-        targetLanguage: "vi",
-        level: "Beginner",
+      setLoading(true);
+      setError("");
+
+      const res = await api.post("/words/check", {
+        word: word.trim(),
+        sourceLanguage: fromLang,
+        targetLanguage: toLang,
+        level,
       });
 
-      if(getData.status === 201) {
-        setSearchData(getData.data)
+      const result = res.data?.data ?? res.data;
+      if (!result || !result.word) {
+        setSearchData(null);
+        setError("NOT_FOUND");
+        return;
       }
-      console.log("getData", getData);
-    } catch (error) {}
+      setSearchData(result);
+    } catch (error) {
+      setError("SERVER_ERROR");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -171,9 +196,27 @@ export default function CheckWordPage() {
               </label>
             </div>
 
-            <button onClick={onClickCheckWork} className="mt-4 w-full rounded-2xl bg-[#ff6b00] py-4 font-extrabold text-white shadow-lg shadow-orange-200 transition hover:bg-[#e85f00]">
-              Check từ
+            <button
+              type="button"
+              onClick={onClickCheckWork}
+              disabled={loading}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ff6b00] py-4 font-extrabold text-white shadow-lg shadow-orange-200 transition hover:bg-[#e85f00] disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {loading ? (
+                <>
+                  <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                  Đang check...
+                </>
+              ) : (
+                "Check từ"
+              )}
             </button>
+
+            {error && (
+              <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-500">
+                {error}
+              </p>
+            )}
 
             <div className="mt-5 rounded-2xl bg-[#fffaf5] p-4">
               <p className="text-sm font-bold text-[#5b6b85]">Đang chọn:</p>
@@ -201,9 +244,28 @@ export default function CheckWordPage() {
           </aside>
 
           <section className="space-y-6">
-            <WordResultCard word={searchData} />
-            <ExampleCard />
-            <StudySuggestion />
+            {loading ? (
+              <WordLoading />
+            ) : error === "NOT_FOUND" ? (
+              <WordNotFound />
+            ) : error === "SERVER_ERROR" ? (
+              <ServerError />
+            ) : (
+              <>
+                <WordResultCard
+                  word={searchData}
+                  loading={false}
+                  fallbackWord={word}
+                />
+
+                <ExampleCard examples={searchData?.examples} />
+
+                <StudySuggestion
+                  suggestion={searchData?.suggestion}
+                  word={searchData?.word || word}
+                />
+              </>
+            )}
           </section>
         </div>
       </section>
@@ -215,8 +277,32 @@ function getLangLabel(value: string) {
   return languages.find((item) => item.value === value)?.label || value;
 }
 
+function WordResultCard({
+  word,
+  loading,
+  fallbackWord,
+}: {
+  word: WordCheckResult | null;
+  loading: boolean;
+  fallbackWord: string;
+}) {
+  const handleSpeak = () => {
+    const text = displayWord;
 
-function WordResultCard({ word }: { word: WordCheckResult | null }) {
+    if (!text || typeof window === "undefined") return;
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = displayWord.match(/[àáảãạăâ]/i) ? "vi-VN" : "en-US";
+    utterance.rate = 0.85;
+    utterance.pitch = 1;
+
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+  };
+  if (loading) {
+    return <WordLoading />;
+  }
+
   if (!word) {
     return (
       <div className="rounded-[26px] border border-[#ead8c2] bg-white p-6 text-[#5b6b85]">
@@ -225,28 +311,38 @@ function WordResultCard({ word }: { word: WordCheckResult | null }) {
     );
   }
 
+  const displayWord = word.word || fallbackWord;
+  const ipa = word.ipa || word.phonetic || "";
+  const meaning =
+    word.mainMeaning ||
+    word.meaning ||
+    word.definition ||
+    "Chưa có nghĩa chính.";
+
   const tags = word.tags?.length
     ? word.tags
     : [word.level || "Beginner", word.partOfSpeech || "Từ vựng"];
 
   const synonyms =
-    word.synonyms?.map((item) => [item.word, item.meaning] as [string, string]) ||
-    [];
+    word.synonyms?.map(
+      (item) => [item.word, item.meaning] as [string, string],
+    ) ?? [];
 
   const phrases =
-    word.phrases?.map((item) => [item.phrase, item.meaning] as [string, string]) ||
-    [];
+    word.phrases?.map(
+      (item) => [item.phrase, item.meaning] as [string, string],
+    ) ?? [];
 
   return (
     <div className="rounded-[26px] border border-[#ead8c2] bg-white p-6 shadow-[0_24px_70px_rgba(31,42,68,0.06)]">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-4xl font-extrabold text-[#1f2a44]">
-            {word.word || "Không có dữ liệu"}
+            {displayWord}
           </h2>
 
           <p className="mt-2 font-extrabold text-[#5b6b85]">
-            {word.ipa || ""} {word.partOfSpeech ? `· ${word.partOfSpeech}` : ""}
+            {ipa} {word.partOfSpeech ? `· ${word.partOfSpeech}` : ""}
           </p>
 
           <div className="mt-4 flex flex-wrap gap-2">
@@ -263,6 +359,7 @@ function WordResultCard({ word }: { word: WordCheckResult | null }) {
 
         <button
           type="button"
+          onClick={handleSpeak}
           className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1f2a44] text-xl text-white"
         >
           🔊
@@ -272,14 +369,22 @@ function WordResultCard({ word }: { word: WordCheckResult | null }) {
       <div className="mt-6 rounded-2xl border border-[#ead8c2] bg-[#fffaf5] p-5">
         <h3 className="font-extrabold text-[#1f2a44]">Nghĩa chính</h3>
         <p className="mt-2 leading-7 text-[#5b6b85]">
-          <b>{word.word}</b> {word.mainMeaning || "Chưa có nghĩa chính."}
+          <b>{displayWord}</b> {meaning}
         </p>
       </div>
 
       <div className="mt-5 grid gap-5 md:grid-cols-2">
-        <InfoBox title="Từ đồng nghĩa" items={synonyms} />
+        <InfoBox
+          title="Từ đồng nghĩa"
+          items={synonyms}
+          emptyText="Chưa có từ đồng nghĩa."
+        />
 
-        <InfoBox title="Cụm từ hay dùng" items={phrases} />
+        <InfoBox
+          title="Cụm từ hay dùng"
+          items={phrases}
+          emptyText="Chưa có cụm từ."
+        />
       </div>
     </div>
   );
@@ -288,69 +393,80 @@ function WordResultCard({ word }: { word: WordCheckResult | null }) {
 function InfoBox({
   title,
   items,
+  emptyText,
 }: {
   title: string;
   items: [string, string][];
+  emptyText?: string;
 }) {
   return (
     <div className="rounded-2xl border border-[#ead8c2] bg-white p-5">
       <h3 className="font-extrabold text-[#1f2a44]">{title}</h3>
 
       <div className="mt-4 space-y-3">
-        {items.map(([en, vi]) => (
-          <div
-            key={en}
-            className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 font-bold"
-          >
-            <span className="text-[#1f2a44]">{en}</span>
-            <span className="text-[#ff6b00]">{vi}</span>
+        {items.length ? (
+          items.map(([en, vi]) => (
+            <div
+              key={`${en}-${vi}`}
+              className="flex items-center justify-between gap-4 rounded-xl bg-slate-50 px-4 py-3 font-bold"
+            >
+              <span className="text-[#1f2a44]">{en}</span>
+              <span className="text-right text-[#ff6b00]">{vi}</span>
+            </div>
+          ))
+        ) : (
+          <div className="rounded-xl bg-slate-50 px-4 py-3 font-bold text-[#5b6b85]">
+            {emptyText || "Chưa có dữ liệu."}
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
 }
 
-function ExampleCard() {
-  const examples = [
-    [
-      "I want to improve my English speaking skills.",
-      "Tôi muốn cải thiện kỹ năng nói tiếng Anh của mình.",
-    ],
-    [
-      "Your pronunciation has improved a lot.",
-      "Phát âm của bạn đã cải thiện rất nhiều.",
-    ],
-    [
-      "Reading every day can improve your vocabulary.",
-      "Đọc mỗi ngày có thể cải thiện vốn từ vựng của bạn.",
-    ],
-  ];
-
+function ExampleCard({
+  examples,
+}: {
+  examples?: { source: string; target: string }[];
+}) {
+  console.log("examples", examples);
+  const list = examples?.length ? examples : [];
+  console.log("list", list);
   return (
     <div className="rounded-[26px] border border-[#ead8c2] bg-white p-6 shadow-[0_24px_70px_rgba(31,42,68,0.06)]">
       <h2 className="text-xl font-extrabold text-[#1f2a44]">Ví dụ dễ hiểu</h2>
 
       <div className="mt-4 space-y-3">
-        {examples.map(([en, vi]) => (
-          <div key={en} className="rounded-2xl bg-slate-50 p-4">
-            <p className="font-extrabold text-[#1f2a44]">{en}</p>
-            <p className="mt-1 text-[#5b6b85]">{vi}</p>
+        {list.length ? (
+          list.map((item) => (
+            <div key={item.source} className="rounded-2xl bg-slate-50 p-4">
+              <p className="font-extrabold text-[#1f2a44]">{item.source}</p>
+              <p className="mt-1 text-[#5b6b85]">{item.target}</p>
+            </div>
+          ))
+        ) : (
+          <div className="rounded-2xl bg-slate-50 p-4 font-bold text-[#5b6b85]">
+            Sau khi check từ, ví dụ sẽ hiển thị ở đây.
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
 }
 
-function StudySuggestion() {
+function StudySuggestion({
+  suggestion,
+  word,
+}: {
+  suggestion?: string;
+  word: string;
+}) {
   return (
     <div className="rounded-[24px] bg-gradient-to-r from-[#1f2a44] to-[#6b5796] p-6 text-white shadow-[0_24px_70px_rgba(31,42,68,0.12)]">
       <h2 className="text-2xl font-extrabold">Gợi ý học từ này</h2>
       <p className="mt-3 leading-7 text-white/90">
-        Hãy tự đặt 3 câu với từ “improve”: một câu về học tập, một câu về công
-        việc và một câu về bản thân. Sau đó dùng tính năng Check bài để Miu sửa
-        giúp bạn.
+        {suggestion ||
+          `Hãy tự đặt 3 câu với từ “${word}”, sau đó dùng tính năng Check bài để Miu sửa giúp bạn.`}
       </p>
     </div>
   );
@@ -360,6 +476,142 @@ function Tip({ text }: { text: string }) {
   return (
     <div className="rounded-2xl bg-[#fff4e8] px-4 py-3 font-extrabold text-[#1f2a44]">
       ✓ {text}
+    </div>
+  );
+}
+
+function WordLoading() {
+  return (
+    <div className="relative overflow-hidden rounded-[26px] border border-[#ead8c2] bg-white p-8 shadow-[0_24px_70px_rgba(31,42,68,0.06)]">
+      {/* Glow */}
+      <div className="absolute left-1/2 top-1/2 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ff6b00]/10 blur-3xl" />
+
+      {/* Floating words */}
+      <span className="absolute left-10 top-12 animate-float-slow text-xl font-bold text-[#ff6b00]/20">
+        improve
+      </span>
+
+      <span className="absolute right-12 top-20 animate-float-medium text-lg font-bold text-[#6b5796]/20">
+        pronunciation
+      </span>
+
+      <span className="absolute left-20 bottom-20 animate-float-fast text-lg font-bold text-[#ff6b00]/20">
+        vocabulary
+      </span>
+
+      <span className="absolute right-20 bottom-16 animate-float-medium text-lg font-bold text-[#6b5796]/20">
+        grammar
+      </span>
+
+      {/* Sparkles */}
+      <div className="absolute left-1/4 top-1/4 animate-pulse text-2xl">✨</div>
+
+      <div className="absolute right-1/4 top-1/3 animate-bounce text-xl">
+        ⭐
+      </div>
+
+      <div className="absolute bottom-1/4 left-1/3 animate-pulse text-xl">
+        📚
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col items-center">
+        <video
+          src="/miu-search-book.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="h-64 w-64 rounded-[32px] shadow-xl"
+        />
+
+        <h3 className="mt-5 text-3xl font-extrabold text-[#1f2a44]">
+          Miu đang tìm từ...
+        </h3>
+
+        <p className="mt-3 max-w-lg text-center text-lg leading-8 text-[#5b6b85]">
+          Đang tra nghĩa, IPA, ví dụ và cách dùng phù hợp với trình độ của bạn.
+        </p>
+
+        <div className="mt-6 flex gap-2">
+          <span className="h-3 w-3 animate-bounce rounded-full bg-[#ff6b00]" />
+          <span className="h-3 w-3 animate-bounce rounded-full bg-[#ff6b00] [animation-delay:0.2s]" />
+          <span className="h-3 w-3 animate-bounce rounded-full bg-[#ff6b00] [animation-delay:0.4s]" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WordNotFound() {
+  return (
+    <div className="relative overflow-hidden rounded-[26px] border border-[#ead8c2] bg-white p-8 text-center">
+      <div className="absolute left-10 top-16 animate-bounce text-4xl">❓</div>
+
+      <div className="absolute right-12 top-20 animate-pulse text-4xl">❔</div>
+
+      <div className="absolute bottom-20 left-20 animate-bounce text-4xl">
+        ❓
+      </div>
+
+      <div className="absolute left-16 top-10 text-xl font-extrabold text-slate-200">
+        improov
+      </div>
+
+      <div className="absolute right-16 bottom-24 text-xl font-extrabold text-slate-200">
+        grammarr
+      </div>
+
+      <div className="absolute left-20 bottom-10 text-xl font-extrabold text-slate-200">
+        vocabulary
+      </div>
+
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="h-[320px] w-[320px] animate-spin rounded-full border-2 border-dashed border-[#ffb347]/30" />
+      </div>
+
+      <div className="relative z-10">
+        <video
+          src="/miu-sad.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="mx-auto h-72 w-72 rounded-[32px]"
+        />
+
+        <h2 className="mt-4 text-4xl font-extrabold text-[#1f2a44]">
+          Miu chưa tìm thấy từ này 😿
+        </h2>
+
+        <p className="mx-auto mt-3 max-w-md text-lg leading-8 text-[#5b6b85]">
+          Có thể từ chưa tồn tại hoặc bạn nhập sai chính tả.
+        </p>
+
+        <button className="mt-6 rounded-2xl bg-[#ff6b00] px-8 py-4 font-extrabold text-white">
+          Thử từ khác
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ServerError() {
+  return (
+    <div className="rounded-[26px] border border-red-200 bg-white p-8 text-center">
+      <div className="text-7xl">😵</div>
+
+      <h2 className="mt-4 text-4xl font-extrabold text-[#1f2a44]">
+        Miu gặp sự cố
+      </h2>
+
+      <p className="mt-3 text-lg text-[#5b6b85]">
+        Máy chủ đang bận hoặc kết nối mạng có vấn đề.
+      </p>
+
+      <button className="mt-6 rounded-2xl bg-[#ff6b00] px-8 py-4 font-extrabold text-white">
+        Thử lại
+      </button>
     </div>
   );
 }

@@ -73,6 +73,10 @@ model User {
 
   speakingResults SpeakingResult[]
 
+  wordHistories UserWordHistory[]
+
+  writingSubmissions WritingSubmission[]
+
   createAt  DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -356,4 +360,65 @@ model SpeakingResult {
   lesson    Lesson           @relation(fields: [lessonId], references: [id])
   user      User             @relation(fields: [userId], references: [id])
   exercise  SpeakingExercise @relation(fields: [exerciseId], references: [id])
+}
+
+model Word {
+  id               String   @id @default(uuid())
+  word             String
+  sourceLanguage   String
+  targetLanguage   String
+  level            String?
+  ipa              String?
+  audio            String?
+  partOfSpeech     String?
+  definition       String?
+  mainMeaning      String?
+  shortExplanation String?
+  synonyms         Json?
+  phrases          Json?
+  examples         Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  histories        UserWordHistory[]
+
+  @@unique([word, sourceLanguage, targetLanguage, level])
+}
+
+model UserWordHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  wordId    String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  word      Word     @relation(fields: [wordId], references: [id])
+
+  @@unique([userId, wordId])
+}
+
+model WritingSubmission {
+  id               String   @id @default(uuid())
+  userId           String?
+  originalText     String
+  detectedLanguage String?
+  style            String?
+  level            String   @default("Beginner")
+
+  score            Int?
+  grammarScore     Int?
+  vocabularyScore  Int?
+  clarityScore     Int?
+  meaningScore     Int?
+  summary String?
+  corrections      Json?
+  suggestedVersion String?
+  phrases          Json?
+  learningTips     Json?
+  miuNote          String?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user             User?    @relation(fields: [userId], references: [id])
 }

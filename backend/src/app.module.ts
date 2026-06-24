@@ -26,6 +26,7 @@ import { CouponsModule } from './modules/coupons/coupons.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { SpeakingModule } from './modules/speaking/speaking.module';
 import { WordsModule } from './modules/words/words.module';
+import { WritingModule } from './modules/writing/writing.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -55,6 +56,7 @@ import { WordsModule } from './modules/words/words.module';
     NotificationsModule,
     SpeakingModule,
     WordsModule,
+    WritingModule,
   ],
   // controllers: [AppController],
   // providers: [AppService],
