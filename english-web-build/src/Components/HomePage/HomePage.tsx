@@ -2,6 +2,7 @@
 'use client'
 import { useAuthStore } from "@/src/store/authStore";
 import Image from "next/image";
+import HeroProfileCard from "./HeroProfileCard";
 
 export default function HomePage() {
   const user = useAuthStore((state) => state.user)
@@ -37,9 +38,9 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="relative rounded-[36px] border border-orange-100 bg-white/80 p-6 shadow-2xl">
+        {/* <div className="relative rounded-[36px] border border-orange-100 bg-white/80 p-6 shadow-2xl">
           <div className="absolute left-6 top-8 rounded-2xl bg-white px-4 py-3 font-extrabold text-orange-500 shadow-lg">
-            🇬🇧 Hello
+            {user ? user.fullname : "🇬🇧 Hello"}
           </div>
 
           <div className="absolute right-6 top-16 rounded-2xl bg-white px-4 py-3 font-extrabold text-emerald-500 shadow-lg">
@@ -83,7 +84,8 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
+        <HeroProfileCard />
       </section>
     </main>
   );

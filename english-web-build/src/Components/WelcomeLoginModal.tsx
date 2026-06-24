@@ -19,34 +19,21 @@ export default function WelcomeLoginModal({
   onClose,
 }: Props) {
   const [countdown, setCountdown] = useState(10);
-
+  console.log("WelcomeLoginModal", open);
   useEffect(() => {
     if (!open) return;
 
     setCountdown(10);
 
-    const end = Date.now() + 2500;
-
-    const confettiTimer = setInterval(() => {
-      confetti({
-        particleCount: 35,
-        spread: 80,
-        origin: {
-          x: Math.random(),
-          y: 0.15,
-        },
-      });
-
-      if (Date.now() > end) {
-        clearInterval(confettiTimer);
-      }
-    }, 300);
-
-    const countdownTimer = setInterval(() => {
+    const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          clearInterval(countdownTimer);
-          onClose();
+          clearInterval(timer);
+
+          setTimeout(() => {
+            onClose();
+          }, 0);
+
           return 0;
         }
 
@@ -54,13 +41,11 @@ export default function WelcomeLoginModal({
       });
     }, 1000);
 
-    return () => {
-      clearInterval(confettiTimer);
-      clearInterval(countdownTimer);
-    };
+    return () => clearInterval(timer);
   }, [open, onClose]);
 
   if (!open) return null;
+
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/45 px-4 backdrop-blur-sm">

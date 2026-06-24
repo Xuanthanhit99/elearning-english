@@ -2,17 +2,56 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/src/store/authStore";
-import { api } from "@/src/lib/axios";
+import { useEffect, useRef, useState } from "react";
 
 export default function Header() {
+  const pathname = usePathname();
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
 
+  const [openTools, setOpenTools] = useState(false);
+  const toolsRef = useRef<HTMLDivElement | null>(null);
+
+  const isActive = (href: string) => {
+    if (href === "/") return pathname === "/";
+    return pathname.startsWith(href);
+  };
+
+  const isToolsActive =
+    pathname.startsWith("/check") ||
+    pathname.startsWith("/dictionary") ||
+    pathname.startsWith("/pronunciation") ||
+    pathname.startsWith("/placement-test");
+
+  useEffect(() => {
+    setOpenTools(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        toolsRef.current &&
+        !toolsRef.current.contains(event.target as Node)
+      ) {
+        setOpenTools(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const handleLogout = async () => {
     try {
-      await api.post("/auth/logout");
-      
+      await fetch("http://localhost:3002/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
     } catch (error) {
       console.error(error);
     } finally {
@@ -23,68 +62,101 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-[#fff4e8] px-4 py-3">
-      <div className="mx-auto flex max-w-7xl items-center justify-between rounded-[28px] bg-white px-7 py-4 shadow-sm">
+      <div className="mx-auto grid max-w-7xl grid-cols-[220px_1fr_320px] items-center rounded-[28px] bg-white px-7 py-4 shadow-sm">
         <Link href="/" className="text-3xl font-black tracking-tight">
           <span className="text-black">Miu</span>
           <span className="text-[#ff6b00]">Lingo</span>
         </Link>
 
-        <nav className="hidden items-center gap-9 lg:flex">
+        <nav className="flex items-center justify-center gap-10">
           <Link
             href="/"
-            className="border-b-4 border-[#ff6b00] pb-2 font-extrabold text-[#1f2a44]"
+            className={`whitespace-nowrap pb-2 font-extrabold ${
+              isActive("/")
+                ? "border-b-4 border-[#ff6b00] text-[#1f2a44]"
+                : "text-[#5b6b85]"
+            }`}
           >
             Trang chủ
           </Link>
 
-          <Link href="/courses" className="font-extrabold text-[#5b6b85]">
+          <Link
+            href="/courses"
+            className={`whitespace-nowrap pb-2 font-extrabold ${
+              isActive("/courses")
+                ? "border-b-4 border-[#ff6b00] text-[#1f2a44]"
+                : "text-[#5b6b85]"
+            }`}
+          >
             Khóa học
           </Link>
 
-          <details className="group relative">
-            <summary className="flex cursor-pointer list-none items-center gap-1 font-extrabold text-[#5b6b85] hover:text-[#1f2a44]">
+          <div ref={toolsRef} className="relative pb-2">
+            <button
+              type="button"
+              onClick={() => setOpenTools((prev) => !prev)}
+              className={`flex items-center gap-1 whitespace-nowrap font-extrabold ${
+                isToolsActive
+                  ? "border-b-4 border-[#ff6b00] text-[#1f2a44]"
+                  : "text-[#5b6b85]"
+              }`}
+            >
               Công cụ
-              <span className="text-xs transition group-open:rotate-180">
+              <span
+                className={`text-xs transition ${
+                  openTools ? "rotate-180" : ""
+                }`}
+              >
                 ▼
               </span>
-            </summary>
+            </button>
 
-            <div className="absolute left-1/2 top-10 z-50 w-64 -translate-x-1/2 rounded-[24px] border border-[#ead8c2] bg-white p-3 shadow-[0_24px_70px_rgba(31,42,68,0.14)]">
-              {[
-                { icon: "🔤", label: "Check từ", href: "/check-word" },
-                { icon: "📝", label: "Check bài", href: "/check-writing" },
-                { icon: "📚", label: "Từ điển AI", href: "/dictionary" },
-                {
-                  icon: "🎙️",
-                  label: "Luyện phát âm",
-                  href: "/pronunciation",
-                },
-                {
-                  icon: "📊",
-                  label: "Kiểm tra trình độ",
-                  href: "/placement-test",
-                },
-              ].map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="flex items-center gap-3 rounded-2xl px-4 py-3 font-extrabold text-[#1f2a44] transition hover:bg-[#fff4e8] hover:text-[#ff6b00]"
-                >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#fff4e8] text-lg">
-                    {item.icon}
-                  </span>
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </details>
+            {openTools && (
+              <div className="absolute left-1/2 top-10 z-50 w-64 -translate-x-1/2 rounded-[24px] border border-[#ead8c2] bg-white p-3 shadow-[0_24px_70px_rgba(31,42,68,0.14)]">
+                {[
+                  { icon: "🔤", label: "Check từ", href: "/check-word" },
+                  { icon: "📝", label: "Check bài", href: "/check-writing" },
+                  { icon: "📚", label: "Từ điển AI", href: "/dictionary" },
+                  {
+                    icon: "🎙️",
+                    label: "Luyện phát âm",
+                    href: "/pronunciation",
+                  },
+                  {
+                    icon: "📊",
+                    label: "Kiểm tra trình độ",
+                    href: "/placement-test",
+                  },
+                ].map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setOpenTools(false)}
+                    className="flex items-center gap-3 rounded-2xl px-4 py-3 font-extrabold text-[#1f2a44] transition hover:bg-[#fff4e8] hover:text-[#ff6b00]"
+                  >
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#fff4e8] text-lg">
+                      {item.icon}
+                    </span>
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
 
-          <Link href="/roadmap" className="font-extrabold text-[#5b6b85]">
+          <Link
+            href="/roadmap"
+            className={`whitespace-nowrap pb-2 font-extrabold ${
+              isActive("/roadmap")
+                ? "border-b-4 border-[#ff6b00] text-[#1f2a44]"
+                : "text-[#5b6b85]"
+            }`}
+          >
             Lộ trình
           </Link>
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-end gap-4 whitespace-nowrap">
           {user ? (
             <>
               <button
@@ -172,14 +244,14 @@ export default function Header() {
             <>
               <Link
                 href="/auth"
-                className="hidden rounded-full px-5 py-3 font-extrabold text-[#5b6b85] hover:bg-[#fff4e8] sm:block"
+                className="inline-flex items-center justify-center rounded-full px-5 py-3 font-extrabold text-[#5b6b85] hover:bg-[#fff4e8] hover:text-[#1f2a44]"
               >
                 Đăng nhập
               </Link>
 
               <Link
                 href="/auth"
-                className="rounded-full bg-[#ff6b00] px-7 py-3 font-bold text-white"
+                className="inline-flex items-center justify-center rounded-full bg-[#ff6b00] px-7 py-3 font-extrabold text-white shadow-lg shadow-orange-200"
               >
                 Bắt đầu học ngay
               </Link>

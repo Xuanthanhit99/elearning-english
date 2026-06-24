@@ -1,6 +1,7 @@
 // src/Components/AuthInitializer.tsx
 "use client";
 
+import { api } from "@/src/lib/axios";
 import { useAuthStore } from "@/src/store/authStore";
 import { useEffect } from "react";
 
@@ -21,18 +22,10 @@ export default function AuthInitializer() {
 
     const getMe = async () => {
       try {
-        const res = await fetch("http://localhost:3002/auth/me", {
-          method: "GET",
-          credentials: "include",
-        });
+        const res = await api.get("/auth/me");
 
-        if (!res.ok) {
-          setUser(null);
-          return;
-        }
-
-        const user = await res.json();
-        setUser(user);
+        setUser(res.data.data.getUser);
+        sessionStorage.setItem("welcome_shown", "true");
       } catch {
         setUser(null);
       }

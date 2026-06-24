@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { api } from "@/src/lib/axios";
+import { AuthErrorModal } from "../AuthErrorModal";
 
 type Mode = "login" | "register";
 
@@ -177,6 +179,36 @@ function LeftContent() {
 }
 
 function LoginForm({ onSwitch }: { onSwitch: () => void }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorModal, setErrorModal] = useState({
+    open: false,
+    message: "",
+  });
+  const [rememberMe, setRememberMe] = useState(false);
+  const handleLogin = async (e: React.FormEvent) => {
+    try {
+      e.preventDefault();
+
+      const res = await api.post("/auth/login", { email, password, rememberMe });
+
+      if (res.data.user.status !== "ACTIVE") {
+        setErrorModal({
+          open: true,
+          message:
+            res.data.data?.message || "Email hoặc mật khẩu không chính xác.",
+        });
+        return;
+      }
+
+      window.location.href = "/";
+    } catch {
+      setErrorModal({
+        open: true,
+        message: "Không thể kết nối tới máy chủ. Vui lòng thử lại.",
+      });
+    }
+  };
   return (
     <div>
       <h2 className="text-3xl font-extrabold text-[#1f2a44]">
@@ -189,13 +221,25 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
 
       <SocialButtons label="hoặc đăng nhập bằng email" />
 
-      <form className="mt-6 space-y-5">
-        <Input label="Email" placeholder="you@example.com" type="email" />
-        <Input label="Mật khẩu" placeholder="Nhập mật khẩu" type="password" />
+      <form className="mt-6 space-y-5" onSubmit={handleLogin}>
+        <Input
+          label="Email"
+          placeholder="you@example.com"
+          type="email"
+          value={email}
+          onChange={setEmail}
+        />
+        <Input
+          label="Mật khẩu"
+          placeholder="Nhập mật khẩu"
+          type="password"
+          value={password}
+          onChange={setPassword}
+        />
 
         <div className="flex items-center justify-between gap-3 text-sm">
           <label className="flex items-center gap-2 font-bold text-[#5b6b85]">
-            <input type="checkbox" />
+            <input type="checkbox" onChange={(e) => setRememberMe(e.target.checked)} checked={rememberMe}/>
             Ghi nhớ đăng nhập
           </label>
 
@@ -225,11 +269,65 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
           Đăng ký miễn phí
         </button>
       </p>
+
+      <AuthErrorModal
+        open={errorModal.open}
+        message={errorModal.message}
+        onClose={() => setErrorModal({ open: false, message: "" })}
+      />
     </div>
   );
 }
 
 function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
+  const [fullName, setFullname] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [errorModal, setErrorModal] = useState({
+    open: false,
+    message: "",
+  });
+
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const res = await api.post("/auth/register", {
+        fullName,
+        email,
+        password,
+      });
+
+      if (!res.data?.success && res.status !== 201) {
+        setErrorModal({
+          open: true,
+          message: res.data?.message || "Đăng ký không thành công.",
+        });
+        return;
+      }
+
+      setShowSuccessModal(true);
+    } catch (error: any) {
+      setErrorModal({
+        open: true,
+        message:
+          error?.response?.data?.message ||
+          "Không thể đăng ký. Vui lòng thử lại.",
+      });
+    }
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
+    setFullname("");
+    setEmail("");
+    setPassword("");
+    onSwitch();
+  };
+
   return (
     <div>
       <h2 className="text-3xl font-extrabold text-[#1f2a44]">
@@ -242,13 +340,28 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
 
       <SocialButtons label="hoặc đăng ký bằng email" />
 
-      <form className="mt-6 space-y-5">
-        <Input label="Họ tên" placeholder="Nguyễn Văn A" />
-        <Input label="Email" placeholder="you@example.com" type="email" />
+      <form className="mt-6 space-y-5" onSubmit={handleRegister}>
+        <Input
+          label="Họ tên"
+          placeholder="Nguyễn Văn A"
+          value={fullName}
+          onChange={setFullname}
+        />
+
+        <Input
+          label="Email"
+          placeholder="you@example.com"
+          type="email"
+          value={email}
+          onChange={setEmail}
+        />
+
         <Input
           label="Mật khẩu"
           placeholder="Tối thiểu 8 ký tự"
           type="password"
+          value={password}
+          onChange={setPassword}
         />
 
         <label className="flex items-center gap-2 text-sm font-bold text-[#5b6b85]">
@@ -274,6 +387,17 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
           Đăng nhập
         </button>
       </p>
+
+      <RegisterSuccessModal
+        open={showSuccessModal}
+        onClose={handleSuccessClose}
+      />
+
+      <AuthErrorModal
+        open={errorModal.open}
+        message={errorModal.message}
+        onClose={() => setErrorModal({ open: false, message: "" })}
+      />
     </div>
   );
 }
@@ -316,19 +440,80 @@ function Input({
   label,
   placeholder,
   type = "text",
+  value,
+  onChange,
 }: {
   label: string;
   placeholder: string;
   type?: string;
+  value: string;
+  onChange: (value: string) => void;
 }) {
   return (
     <label className="block">
       <span className="font-extrabold text-[#334155]">{label}</span>
       <input
         type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 font-bold outline-none transition focus:border-[#ff6b00] focus:bg-white"
+        className="
+          mt-2 w-full rounded-2xl border border-slate-200
+          bg-slate-50 px-5 py-4
+          font-bold text-[#1f2a44]
+          outline-none transition
+          placeholder:text-slate-300
+          focus:border-[#ff6b00] focus:bg-white
+        "
       />
     </label>
+  );
+}
+
+function RegisterSuccessModal({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <div className="w-full max-w-md overflow-hidden rounded-[32px] bg-white shadow-2xl">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-[#ff961c] to-[#ff6b00] p-8 text-center text-white">
+          <div className="animate-bounce text-6xl">🎉</div>
+
+          <h2 className="mt-4 text-3xl font-extrabold">
+            Đăng ký thành công!
+          </h2>
+
+          <p className="mt-2 text-white/90">
+            Chào mừng bạn đến với MiuLingo
+          </p>
+        </div>
+
+        {/* Body */}
+        <div className="p-7 text-center">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-green-50 text-4xl">
+            ✅
+          </div>
+
+          <p className="mt-5 leading-7 text-[#5b6b85]">
+            Tài khoản của bạn đã được tạo thành công.
+            Hãy đăng nhập để bắt đầu hành trình học tiếng Anh.
+          </p>
+
+          <button
+            onClick={onClose}
+            className="mt-6 w-full rounded-2xl bg-[#ff6b00] py-4 font-extrabold text-white"
+          >
+            Đăng nhập ngay
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

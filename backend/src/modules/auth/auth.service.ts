@@ -60,13 +60,13 @@ export class AuthService {
     console.log('form', dto);
 
     if (!user) {
-      throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
+      throw new BadRequestException('Email hoặc mật khẩu không đúng');
     }
 
     const isValidPassword = await bcrypt.compare(dto.password, user.password);
 
     if (!isValidPassword) {
-      throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
+      throw new BadRequestException('Email hoặc mật khẩu không đúng');
     }
 
     const payload = {
@@ -74,6 +74,10 @@ export class AuthService {
       email: user.email,
       role: user.role,
     };
+
+    const maxAge = dto.rememberMe
+      ? 30 * 24 * 60 * 60 * 1000
+      : 24 * 60 * 60 * 1000;
 
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: process.env.JWT_ACCESS_SECRET,
@@ -84,11 +88,18 @@ export class AuthService {
       expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as StringValue,
     });
 
-    res.cookie('refreshToken', refreshToken, {
+    res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.cookie('access_token', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge,
     });
 
     return {
@@ -104,7 +115,7 @@ export class AuthService {
     };
   }
 
-  async refreshToken(refreshToken: string) {
+  async refreshToken(refreshToken: string, res: Response) {
     if (!refreshToken) {
       throw new UnauthorizedException('Không có refresh token');
     }
@@ -114,11 +125,27 @@ export class AuthService {
         secret: process.env.JWT_REFRESH_SECRET,
       });
 
+      const dbUser = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+        select: {
+          id: true,
+          fullname: true,
+          email: true,
+          role: true,
+          status: true,
+          avatar: true,
+        },
+      });
+
+      if (!dbUser) {
+        throw new UnauthorizedException('Người dùng không tồn tại');
+      }
+
       const accessToken = await this.jwtService.signAsync(
         {
-          sub: payload.sub,
-          email: payload.email,
-          role: payload.role,
+          sub: dbUser.id,
+          email: dbUser.email,
+          role: dbUser.role,
         },
         {
           secret: process.env.JWT_ACCESS_SECRET,
@@ -127,18 +154,26 @@ export class AuthService {
         },
       );
 
-      const dbUser = await this.prisma.user.findUnique({
-        where: { email: payload.email },
+      res.cookie('access_token', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 15 * 60 * 1000,
       });
 
       return {
-        accessToken,
-        user: {
-          id: dbUser?.id,
-          fullName: dbUser?.fullname,
-          email: dbUser?.email,
-          role: dbUser?.role,
-          status: dbUser?.status,
+        success: true,
+        message: 'Refresh token thành công',
+        data: {
+          user: {
+            id: dbUser.id,
+            fullName: dbUser.fullname,
+            email: dbUser.email,
+            role: dbUser.role,
+            status: dbUser.status,
+            avatar: dbUser.avatar,
+          },
         },
       };
     } catch {
@@ -147,8 +182,8 @@ export class AuthService {
   }
 
   async logout(res: Response) {
-    res.clearCookie('refreshToken');
-
+    res.clearCookie('refresh_token');
+    res.clearCookie('access_token');
     return {
       message: 'Đăng xuất thành công',
     };

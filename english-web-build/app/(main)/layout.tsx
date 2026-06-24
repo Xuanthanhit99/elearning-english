@@ -21,10 +21,11 @@ export default function MainLayout({
     const getMe = async () => {
       try {
         const res = await api.get("/auth/me");
-
+        console.log(res);
         setUser(res.data.data.getUser);
 
         const hasShown = sessionStorage.getItem("welcome_shown");
+          setShowWelcome(true);
 
         if (!hasShown) {
           setShowWelcome(true);
@@ -41,10 +42,10 @@ export default function MainLayout({
 
   return (
     <>
-      <AuthInitializer />
-      
+      {/* <AuthInitializer /> */}
+
       <Header />
-       <WelcomeLoginModal
+      <WelcomeLoginModal
         open={showWelcome}
         fullname={user?.fullname}
         avatar="/cat-home.jpg"

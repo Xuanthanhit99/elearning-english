@@ -28,13 +28,17 @@ export class AuthController {
 
   @Post('login')
   login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
-    console.log('form');
     return this.authService.login(dto, res);
   }
 
   @Post('refresh')
-  refresh(@Req() req: Request) {
-    return this.authService.refreshToken(req.cookies?.refreshToken);
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = req.cookies?.refresh_token;
+
+    return this.authService.refreshToken(refreshToken, res);
   }
 
   @Post('logout')
