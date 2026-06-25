@@ -10,12 +10,16 @@ import bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { Response } from 'express';
 import { StringValue } from 'ms';
-
+import * as ExcelJS from 'exceljs';
+import * as nodemailer from 'nodemailer';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UploadService } from '../upload/upload.service';
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private uploadService: UploadService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -56,8 +60,6 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
-
-    console.log('form', dto);
 
     if (!user) {
       throw new BadRequestException('Email hoặc mật khẩu không đúng');
@@ -268,6 +270,8 @@ export class AuthService {
         avatar: true,
         role: true,
         status: true,
+        email: true,
+        phone: true,
       },
     });
 
@@ -281,5 +285,156 @@ export class AuthService {
       success: true,
       data: { getUser },
     };
+  }
+
+  async sendReportToEmail(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user?.email) {
+      throw new Error('User email not found');
+    }
+
+    const wordHistory = await this.prisma.userWordHistory.findMany({
+      where: { userId },
+      include: {
+        word: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const writingHistory = await this.prisma.writingSubmission.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const workbook = new ExcelJS.Workbook();
+
+    const wordSheet = workbook.addWorksheet('Lịch sử check từ');
+
+    wordSheet.columns = [
+      { header: 'Từ', key: 'word', width: 25 },
+      { header: 'Nghĩa', key: 'meaning', width: 35 },
+      { header: 'Level', key: 'level', width: 15 },
+      { header: 'Loại từ', key: 'partOfSpeech', width: 15 },
+      { header: 'Ngày check', key: 'createdAt', width: 25 },
+    ];
+
+    wordHistory.forEach((item) => {
+      wordSheet.addRow({
+        word: item.word.word,
+        meaning: item.word.mainMeaning,
+        level: item.word.level,
+        partOfSpeech: item.word.partOfSpeech,
+        createdAt: item.createdAt.toLocaleString(),
+      });
+    });
+
+    const writingSheet = workbook.addWorksheet('Lịch sử check bài');
+    writingSheet.columns = [
+      { header: 'Bài gốc', key: 'originalText', width: 50 },
+      { header: 'Điểm', key: 'score', width: 10 },
+      { header: 'Grammar', key: 'grammarScore', width: 10 },
+      { header: 'Vocabulary', key: 'vocabularyScore', width: 12 },
+      { header: 'Clarity', key: 'clarityScore', width: 10 },
+      { header: 'Meaning', key: 'meaningScore', width: 10 },
+      { header: 'Phiên bản gợi ý', key: 'suggestedVersion', width: 50 },
+      { header: 'Ngày check', key: 'createdAt', width: 25 },
+    ];
+
+    writingHistory.forEach((item) => {
+      writingSheet.addRow({
+        originalText: item.originalText,
+        score: item.score,
+        grammarScore: item.grammarScore,
+        vocabularyScore: item.vocabularyScore,
+        clarityScore: item.clarityScore,
+        meaningScore: item.meaningScore,
+        suggestedVersion: item.suggestedVersion,
+        createdAt: item.createdAt.toLocaleString(),
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
+      },
+    });
+
+    await transporter.sendMail({
+      from: `"MiuLingo" <${process.env.MAIL_USER}>`,
+      to: user.email,
+      subject: 'Báo cáo học tập MiuLingo',
+      html: `
+        <h2>Xin chào ${user.fullname || 'bạn'},</h2>
+        <p>Miu gửi bạn file Excel báo cáo lịch sử học tập.</p>
+        <p>File bao gồm lịch sử check từ và check bài.</p>
+      `,
+      attachments: [
+        {
+          filename: 'miulingo-report.xlsx',
+          content: Buffer.from(buffer),
+          contentType:
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        },
+      ],
+    });
+    return {
+      message: 'Report sent successfully',
+    };
+  }
+
+  // users.service.ts
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        fullname: dto.fullname,
+        phone: dto.phone,
+        englishLevel: dto.englishLevel,
+        learningGoal: dto.learningGoal,
+      },
+      select: {
+        id: true,
+        fullname: true,
+        email: true,
+        avatar: true,
+        phone: true,
+        englishLevel: true,
+        learningGoal: true,
+        role: true,
+      },
+    });
+  }
+
+  // users.service.ts
+  async updateAvatar(userId: string, file: Express.Multer.File) {
+    const uploaded: any = await this.uploadService.uploadFile(
+      file,
+      'english-platform/images/avatar',
+      'image',
+    );
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        avatar: uploaded.secure_url,
+      },
+      select: {
+        id: true,
+        fullname: true,
+        email: true,
+        avatar: true,
+        phone: true,
+        englishLevel: true,
+        learningGoal: true,
+        role: true,
+      },
+    });
   }
 }

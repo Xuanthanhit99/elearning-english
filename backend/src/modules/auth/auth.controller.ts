@@ -2,10 +2,13 @@ import {
   Body,
   Controller,
   Get,
+  Patch,
   Post,
   Req,
   Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -16,6 +19,8 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import type { Request, Response } from 'express';
 import { UserRole } from '@prisma/client';
 import { AuthGuard } from '@nestjs/passport';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('auth')
 export class AuthController {
@@ -37,7 +42,6 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const refreshToken = req.cookies?.refresh_token;
-
     return this.authService.refreshToken(refreshToken, res);
   }
 
@@ -123,5 +127,24 @@ export class AuthController {
         `${process.env.FRONTEND_URL}/auth/callback?status=error`,
       );
     }
+  }
+
+  @Post('export-report-email')
+  @UseGuards(JwtAuthGuard)
+  async exportReport(@Req() req: any) {
+    return this.authService.sendReportToEmail(req.user.id);
+  }
+
+  @Patch('me/profile')
+  @UseGuards(JwtAuthGuard)
+  updateProfile(@Req() req, @Body() dto: UpdateProfileDto) {
+    return this.authService.updateProfile(req.user.id, dto);
+  }
+
+  @Patch('me/avatar')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('avatar'))
+  updateAvatar(@Req() req: any, @UploadedFile() file: Express.Multer.File) {
+    return this.authService.updateAvatar(req.user.id, file);
   }
 }

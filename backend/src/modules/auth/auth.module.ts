@@ -7,6 +7,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { FacebookStrategy } from './strategies/facebook.strategy';
+import { UploadService } from '../upload/upload.service';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { FacebookStrategy } from './strategies/facebook.strategy';
     PassportModule,
     GoogleStrategy,
     FacebookStrategy,
+    UploadService,
   ],
 })
 export class AuthModule {}

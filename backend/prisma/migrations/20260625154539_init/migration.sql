@@ -27,6 +27,9 @@ CREATE TABLE "User" (
     "status" "UserStatus" NOT NULL DEFAULT 'ACTIVE',
     "provider" TEXT,
     "providerId" TEXT,
+    "phone" TEXT,
+    "englishLevel" TEXT DEFAULT 'Beginner',
+    "learningGoal" TEXT DEFAULT 'General English',
     "createAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

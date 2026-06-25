@@ -44,16 +44,19 @@ enum DiscountType {
 }
 
 model User {
-  id         String     @id @default(uuid())
-  fullname   String
-  email      String     @unique
-  password   String
-  role       UserRole   @default(STUDENT)
-  avatar     String?
-  status     UserStatus @default(ACTIVE)
-  provider   String?
-  providerId String?
-  courses    Course[]
+  id           String     @id @default(uuid())
+  fullname     String
+  email        String     @unique
+  password     String
+  role         UserRole   @default(STUDENT)
+  avatar       String?
+  status       UserStatus @default(ACTIVE)
+  provider     String?
+  providerId   String?
+  courses      Course[]
+  phone        String?
+  englishLevel String?    @default("Beginner")
+  learningGoal String?    @default("General English")
 
   enrollments Enrollment[]
 
@@ -380,7 +383,7 @@ model Word {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  histories        UserWordHistory[]
+  histories UserWordHistory[]
 
   @@unique([word, sourceLanguage, targetLanguage, level])
 }
@@ -391,34 +394,34 @@ model UserWordHistory {
   wordId    String
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id])
-  word      Word     @relation(fields: [wordId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+  word Word @relation(fields: [wordId], references: [id])
 
   @@unique([userId, wordId])
 }
 
 model WritingSubmission {
-  id               String   @id @default(uuid())
+  id               String  @id @default(uuid())
   userId           String?
   originalText     String
   detectedLanguage String?
   style            String?
-  level            String   @default("Beginner")
+  level            String  @default("Beginner")
 
   score            Int?
   grammarScore     Int?
   vocabularyScore  Int?
   clarityScore     Int?
   meaningScore     Int?
-  summary String?
+  summary          String?
   corrections      Json?
   suggestedVersion String?
   phrases          Json?
   learningTips     Json?
   miuNote          String?
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user             User?    @relation(fields: [userId], references: [id])
+  user User? @relation(fields: [userId], references: [id])
 }
