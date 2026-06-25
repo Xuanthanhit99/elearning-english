@@ -10,8 +10,8 @@ export class WritingController {
 
   @UseGuards(OptionalJwtGuard)
   @Post('check')
-  checkWriting(@Body() dto: CheckWritingDto) {
-    return this.writingService.checkWriting(dto);
+  checkWriting(@Body() dto: CheckWritingDto, @Req() req: any) {
+    return this.writingService.checkWriting(dto, req.user.id);
   }
 
   @UseGuards(JwtAuthGuard)

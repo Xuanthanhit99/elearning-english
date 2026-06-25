@@ -86,6 +86,15 @@ export default function CheckWritingPage() {
     }
   };
 
+  const speakText = (text: string) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "en-US";
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+
+    window.speechSynthesis.speak(utterance);
+  };
+
   return (
     <main className="min-h-screen bg-[#fff4e8] px-4 py-14">
       <section className="mx-auto max-w-6xl">
@@ -138,6 +147,13 @@ export default function CheckWritingPage() {
               <span className="mb-2 block text-xs font-extrabold text-[#5b6b85]">
                 Bài viết tiếng Anh
               </span>
+
+              <button
+                onClick={() => speakText(result.suggestedVersion || text)}
+                className="mb-2 block text-xs font-extrabold text-[#5b6b85]"
+              >
+                🔊 Nghe bài viết
+              </button>
 
               <textarea
                 value={text}
@@ -232,16 +248,14 @@ function ScoreCard({ data }: { data: WritingCheckResult }) {
                 {data.score}
               </p>
 
-              <p className="text-sm font-bold text-[#5b6b85]">
-                XP
-              </p>
+              <p className="text-sm font-bold text-[#5b6b85]">XP</p>
             </div>
           </div>
 
           <div className="absolute -bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-[#ff6b00] px-4 py-1 text-xs font-extrabold text-white shadow-lg shadow-orange-200 animate-[scoreBadge_2s_ease-in-out_infinite]">
-  <span className="animate-bounce">🏆</span>
-  <span>Điểm tổng thể</span>
-</div>
+            <span className="animate-bounce">🏆</span>
+            <span>Điểm tổng thể</span>
+          </div>
         </div>
 
         {/* Content */}
@@ -251,7 +265,8 @@ function ScoreCard({ data }: { data: WritingCheckResult }) {
           </h2>
 
           <p className="mt-3 leading-7 text-[#5b6b85]">
-            Miu đã kiểm tra ngữ pháp, từ vựng, cách diễn đạt và khả năng truyền đạt ý nghĩa của bài viết.
+            Miu đã kiểm tra ngữ pháp, từ vựng, cách diễn đạt và khả năng truyền
+            đạt ý nghĩa của bài viết.
           </p>
 
           <div className="mt-4 flex flex-wrap gap-2">
@@ -525,9 +540,7 @@ function ScoreItem({
         </span>
       </div>
 
-      <h3 className="mt-4 font-extrabold text-[#1f2a44]">
-        {title}
-      </h3>
+      <h3 className="mt-4 font-extrabold text-[#1f2a44]">{title}</h3>
 
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
         <div
