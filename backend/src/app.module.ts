@@ -27,6 +27,10 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { SpeakingModule } from './modules/speaking/speaking.module';
 import { WordsModule } from './modules/words/words.module';
 import { WritingModule } from './modules/writing/writing.module';
+import { PlacementTestsModule } from './modules/placement-tests/placement-tests.module';
+import { GeminiService } from './modules/gemini/gemini.service';
+import { GeminiController } from './modules/gemini/gemini.controller';
+import { GeminiModule } from './modules/gemini/gemini.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -57,7 +61,11 @@ import { WritingModule } from './modules/writing/writing.module';
     SpeakingModule,
     WordsModule,
     WritingModule,
+    PlacementTestsModule,
+    GeminiModule,
   ],
+  providers: [GeminiService],
+  controllers: [GeminiController],
   // controllers: [AppController],
   // providers: [AppService],
 })

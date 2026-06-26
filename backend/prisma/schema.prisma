@@ -80,6 +80,8 @@ model User {
 
   writingSubmissions WritingSubmission[]
 
+  placementTest PlacementTest[]
+
   createAt  DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -424,4 +426,29 @@ model WritingSubmission {
   updatedAt DateTime @updatedAt
 
   user User? @relation(fields: [userId], references: [id])
+}
+
+model PlacementTest {
+  id        String   @id @default(uuid())
+  userId    String?
+  level     String
+  score     Int
+  total     Int
+  correct   Int
+  result    Json
+  answers   Json
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+}
+
+model PlacementQuestion {
+  id        String   @id @default(uuid())
+  testId    String
+  skill     String
+  question  String
+  options   Json
+  answer    String
+  explain   String?
+  createdAt DateTime @default(now())
 }
