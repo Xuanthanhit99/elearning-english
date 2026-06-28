@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/src/lib/axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import LearningPetPanel from "@/src/Components/Pets/LearningPetPanel";
 
 export interface WordHistory {
   id: string;
@@ -108,6 +109,8 @@ export default function ProfilePage() {
             <ProgressCard />
             <StatsCard />
           </div>
+
+          <LearningPetPanel />
 
           <CoursesProgress />
           <ToolHistory
@@ -1250,6 +1253,7 @@ function PrettyInfoRow({
   icon: string;
   label: string;
   value: string;
+  readonly?: boolean;
 }) {
   return (
     <div className="flex items-center gap-3 rounded-2xl bg-white/80 px-4 py-3 shadow-sm ring-1 ring-[#ead8c2]/70">

@@ -17,28 +17,55 @@ export class PlacementTestsService {
   ) {}
 
   async generateTest(userId: string, dto: GeneratePlacementTestDto) {
+    const mode = dto.mode || 'ADAPTIVE';
     const level = dto.level || 'Beginner';
     const goal = dto.goal || 'General English';
+
+    const levelRule =
+      mode === 'LEVEL_BASED'
+        ? `
+Test mode: LEVEL_BASED.
+Generate all 20 questions at level: ${level}.
+The test should measure the learner's ability inside this selected level.
+Every question.level must be "${level}".
+`
+        : `
+Test mode: ADAPTIVE.
+Generate questions from easy to hard:
+- 5 Beginner questions
+- 5 A1 questions
+- 5 A2 questions
+- 5 B1 questions
+The test should estimate the learner's real level.
+`;
 
     const prompt = `
 You are an English placement test generator for Vietnamese learners.
 
-Return JSON only. Do not use markdown. Do not explain outside JSON.
+Return JSON only.
+Do not use markdown.
+Do not explain outside JSON.
 
 Generate exactly 20 multiple-choice questions.
 
-Schema:
+${levelRule}
+
+Return JSON with this exact schema:
 {
   "durationMinutes": 10,
   "totalQuestions": 20,
-  "level": "${level}",
+  "mode": "${mode}",
+  "level": "${mode === 'LEVEL_BASED' ? level : 'Adaptive'}",
   "goal": "${goal}",
   "questions": [
     {
       "id": "q1",
+      "level": "A1",
       "skill": "Grammar",
+      "type": "multiple_choice",
       "question": "Choose the correct answer.",
       "sentence": "My brother usually ___ to work by bus.",
+      "audioText": "",
       "options": [
         { "key": "A", "text": "go" },
         { "key": "B", "text": "goes" },
@@ -51,21 +78,100 @@ Schema:
   ]
 }
 
-Rules:
-- Exactly 20 questions.
-- Mix skills:
-  - 5 Vocabulary
-  - 7 Grammar
-  - 4 Reading
-  - 4 Communication
-- Difficulty should match level: ${level}.
-- Goal should match: ${goal}.
-- Questions must be suitable for Vietnamese learners.
-- Options must have keys A, B, C, D.
-- answer must be one of A, B, C, D.
+Question distribution:
+- Grammar: 4 questions
+- Vocabulary: 4 questions
+- Reading: 3 questions
+- Listening: 3 questions
+- Speaking: 3 questions
+- Writing: 3 questions
+Total: 20 questions.
+
+IMPORTANT:
+Generate EXACTLY:
+- 4 Grammar questions
+- 4 Vocabulary questions
+- 3 Reading questions
+- 3 Listening questions
+- 3 Speaking questions
+- 3 Writing questions
+
+Do not generate more or less for each skill.
+
+Allowed skills:
+- Grammar
+- Vocabulary
+- Reading
+- Listening
+- Speaking
+- Writing
+
+Allowed types:
+- multiple_choice
+- reading
+- listening
+- speaking
+- writing
+
+Rules for all questions:
+- Every question must have 4 options.
+- Option keys must be exactly A, B, C, D.
+- answer must be exactly one of A, B, C, D.
 - explain must be short and written in Vietnamese.
-- For Reading questions, include a short sentence or mini paragraph in "sentence".
+- Questions must be suitable for Vietnamese learners.
 - Do not duplicate questions.
+- Do not leave question, options, answer, or explain empty.
+- For Reading/Writing/Speaking, sentence must not be empty.
+- For Listening, audioText must not be empty.
+
+Specific rules:
+
+1. Grammar questions
+- skill = "Grammar"
+- type = "multiple_choice"
+- sentence should contain a grammar gap or grammar context.
+
+2. Vocabulary questions
+- skill = "Vocabulary"
+- type = "multiple_choice"
+- question should test meaning, synonym, antonym, or word usage.
+
+3. Reading questions
+- skill = "Reading"
+- type = "reading"
+- sentence must contain a short paragraph.
+- question must ask about the paragraph.
+
+4. Listening questions
+- skill = "Listening"
+- type = "listening"
+- audioText must contain a short spoken dialogue.
+- sentence can repeat the audioText.
+- question must ask about the dialogue.
+
+Example listening:
+audioText: "Tom: Hi Mary. Are you free this afternoon? Mary: Yes, I am."
+question: "What are they talking about?"
+
+5. Speaking questions
+- skill = "Speaking"
+- type = "speaking"
+- sentence must contain a real-life conversation context.
+- question must ask the learner to choose the most natural spoken response.
+
+Example speaking:
+sentence: "A: Good morning. How are you today?"
+question: "What is the best reply?"
+
+6. Writing questions
+- skill = "Writing"
+- type = "writing"
+- sentence must contain an incorrect sentence.
+- question must ask the learner to choose the best corrected sentence.
+
+Example writing:
+sentence: "I wants improve my English."
+question: "Choose the best corrected sentence."
 `;
 
     try {
@@ -78,11 +184,11 @@ Rules:
           'Gemini tạo quá ít câu hỏi hợp lệ.',
         );
       }
-
       return {
+        mode,
         durationMinutes: Number(aiData?.durationMinutes) || 10,
         totalQuestions: questions.length,
-        level,
+        level: mode === 'LEVEL_BASED' ? level : 'Adaptive',
         goal,
         questions,
       };
@@ -95,8 +201,7 @@ Rules:
   }
 
   async submitTest(userId: string, dto: SubmitPlacementTestDto) {
-    const { questions, answers } = dto;
-
+    const { questions, answers, mode, selectedLevel } = dto as any;
     if (!questions?.length) {
       throw new BadRequestException('Danh sách câu hỏi không hợp lệ.');
     }
@@ -111,9 +216,12 @@ Rules:
 
       return {
         id: q.id,
+        level: q.level,
+        type: q.type,
         skill: q.skill,
         question: q.question,
         sentence: q.sentence,
+        audioText: q.audioText,
         options: q.options,
         correctAnswer: q.answer,
         userAnswer,
@@ -124,7 +232,12 @@ Rules:
 
     const total = questions.length;
     const score = Math.round((correct / total) * 100);
-    const level = this.calculateLevel(score);
+    const level =
+      mode === 'LEVEL_BASED'
+        ? selectedLevel ||
+          questions?.[0]?.level ||
+          this.calculateAdaptiveLevel(details)
+        : this.calculateAdaptiveLevel(details);
     const skillScores = this.calculateSkillScores(details);
 
     const result = {
@@ -132,6 +245,8 @@ Rules:
       score,
       total,
       correct,
+      mode: mode || 'ADAPTIVE',
+      selectedLevel: selectedLevel || null,
       wrong: total - correct,
       skillScores,
       recommendedCourses: this.getRecommendedCourses(level),
@@ -161,33 +276,102 @@ Rules:
 
   private normalizeQuestions(questions: any[]) {
     return questions
-      .filter((q) => {
-        return (
-          q &&
-          q.question &&
-          Array.isArray(q.options) &&
-          q.options.length === 4 &&
-          ['A', 'B', 'C', 'D'].includes(q.answer)
+      .map((q, index) => {
+        const options = (q.options || []).map(
+          (option: any, optionIndex: number) => ({
+            key: option.key || ['A', 'B', 'C', 'D'][optionIndex],
+            text: option.text || '',
+          }),
         );
+
+        const answer = this.normalizeAnswer(
+          q.answer || q.correctAnswer,
+          options,
+        );
+
+        return {
+          id: q.id || `q${index + 1}`,
+          level: q.level || 'Beginner',
+          skill: q.skill || 'Grammar',
+          type: q.type || 'multiple_choice',
+          question: q.question || '',
+          sentence: q.sentence || '',
+          audioText: q.audioText || '',
+          options,
+          answer,
+          explain: q.explain || q.explanation || '',
+        };
       })
-      .map((q, index) => ({
-        id: q.id || `q${index + 1}`,
-        skill: q.skill || 'Grammar',
-        question: q.question || '',
-        sentence: q.sentence || '',
-        options: q.options.map((option: any, optionIndex: number) => ({
-          key: option.key || ['A', 'B', 'C', 'D'][optionIndex],
-          text: option.text || '',
-        })),
-        answer: q.answer,
-        explain: q.explain || '',
-      }));
+      .filter(
+        (q) =>
+          q.question &&
+          q.options.length === 4 &&
+          ['A', 'B', 'C', 'D'].includes(q.answer) &&
+          [
+            'Grammar',
+            'Vocabulary',
+            'Reading',
+            'Listening',
+            'Speaking',
+            'Writing',
+          ].includes(q.skill) &&
+          [
+            'multiple_choice',
+            'reading',
+            'listening',
+            'speaking',
+            'writing',
+          ].includes(q.type),
+      );
   }
 
-  private calculateLevel(score: number) {
-    if (score >= 85) return 'B1';
-    if (score >= 70) return 'A2';
-    if (score >= 50) return 'A1';
+  private normalizeAnswer(answer: any, options: any[]) {
+    if (!answer) return '';
+
+    const raw = String(answer).trim();
+
+    if (['A', 'B', 'C', 'D'].includes(raw.toUpperCase())) {
+      return raw.toUpperCase();
+    }
+
+    const found = options.find(
+      (option: any) =>
+        String(option.text).trim().toLowerCase() === raw.toLowerCase(),
+    );
+
+    return found?.key || '';
+  }
+
+  private calculateAdaptiveLevel(details: any[]) {
+    const levels = {
+      Beginner: { total: 0, correct: 0 },
+      A1: { total: 0, correct: 0 },
+      A2: { total: 0, correct: 0 },
+      B1: { total: 0, correct: 0 },
+    };
+
+    for (const item of details) {
+      if (!levels[item.level]) continue;
+
+      levels[item.level].total++;
+
+      if (item.isCorrect) {
+        levels[item.level].correct++;
+      }
+    }
+
+    const getRate = (level: keyof typeof levels) => {
+      const data = levels[level];
+
+      if (data.total === 0) return 0;
+
+      return data.correct / data.total;
+    };
+
+    if (getRate('B1') >= 0.8) return 'B1';
+    if (getRate('A2') >= 0.8) return 'A2';
+    if (getRate('A1') >= 0.8) return 'A1';
+
     return 'Beginner';
   }
 

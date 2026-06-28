@@ -1,0 +1,40 @@
+CREATE TABLE "PetProfile" (
+  "id" TEXT NOT NULL,
+  "userId" TEXT NOT NULL,
+  "petType" TEXT NOT NULL,
+  "petName" TEXT NOT NULL,
+  "hp" INTEGER NOT NULL DEFAULT 100,
+  "energy" INTEGER NOT NULL DEFAULT 100,
+  "happiness" INTEGER NOT NULL DEFAULT 100,
+  "hunger" INTEGER NOT NULL DEFAULT 80,
+  "xp" INTEGER NOT NULL DEFAULT 0,
+  "coins" INTEGER NOT NULL DEFAULT 0,
+  "food" INTEGER NOT NULL DEFAULT 2,
+  "streak" INTEGER NOT NULL DEFAULT 0,
+  "bestStreak" INTEGER NOT NULL DEFAULT 0,
+  "completedLessons" INTEGER NOT NULL DEFAULT 0,
+  "lastStudyDate" TIMESTAMP(3),
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL,
+
+  CONSTRAINT "PetProfile_pkey" PRIMARY KEY ("id")
+);
+
+CREATE TABLE "PetReward" (
+  "id" TEXT NOT NULL,
+  "userId" TEXT NOT NULL,
+  "lessonId" TEXT NOT NULL,
+  "xp" INTEGER NOT NULL DEFAULT 30,
+  "coins" INTEGER NOT NULL DEFAULT 12,
+  "food" INTEGER NOT NULL DEFAULT 1,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT "PetReward_pkey" PRIMARY KEY ("id")
+);
+
+CREATE UNIQUE INDEX "PetProfile_userId_key" ON "PetProfile"("userId");
+CREATE UNIQUE INDEX "PetReward_userId_lessonId_key" ON "PetReward"("userId", "lessonId");
+
+ALTER TABLE "PetProfile" ADD CONSTRAINT "PetProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "PetReward" ADD CONSTRAINT "PetReward_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "PetReward" ADD CONSTRAINT "PetReward_lessonId_fkey" FOREIGN KEY ("lessonId") REFERENCES "Lesson"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

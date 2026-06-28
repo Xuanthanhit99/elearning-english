@@ -149,7 +149,8 @@ export default function CheckWritingPage() {
               </span>
 
               <button
-                onClick={() => speakText(result.suggestedVersion || text)}
+                disabled={!result}
+                onClick={() => speakText(result?.suggestedVersion || text)}
                 className="mb-2 block text-xs font-extrabold text-[#5b6b85]"
               >
                 🔊 Nghe bài viết

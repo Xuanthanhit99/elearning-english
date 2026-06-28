@@ -4,10 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { PetsService } from '../pets/pets.service';
 
 @Injectable()
 export class ProgressService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private petsService: PetsService,
+  ) {}
 
   async completeLesson(userId, lessonId) {
     const lesson = await this.prismaService.lesson.findUnique({
@@ -60,7 +64,7 @@ export class ProgressService {
       }
     }
 
-    return this.prismaService.lessonProgress.upsert({
+    const progress = await this.prismaService.lessonProgress.upsert({
       where: {
         userId_lessonId: {
           userId,
@@ -79,6 +83,13 @@ export class ProgressService {
         completedAt: new Date(),
       },
     });
+
+    const petReward = await this.petsService.rewardLesson(userId, lessonId);
+
+    return {
+      progress,
+      petReward,
+    };
   }
 
   async getCourseProgress(userId: string, courseId: string) {

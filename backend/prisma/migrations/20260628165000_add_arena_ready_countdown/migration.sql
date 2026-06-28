@@ -1,0 +1,2 @@
+ALTER TABLE "ArenaRoom" ADD COLUMN "countdownEndsAt" TIMESTAMP(3);
+ALTER TABLE "ArenaParticipant" ADD COLUMN "ready" BOOLEAN NOT NULL DEFAULT false;

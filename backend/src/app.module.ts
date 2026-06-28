@@ -31,6 +31,9 @@ import { PlacementTestsModule } from './modules/placement-tests/placement-tests.
 import { GeminiService } from './modules/gemini/gemini.service';
 import { GeminiController } from './modules/gemini/gemini.controller';
 import { GeminiModule } from './modules/gemini/gemini.module';
+import { PronunciationModule } from './modules/pronunciation/pronunciation.module';
+import { PetsModule } from './modules/pets/pets.module';
+import { ArenaModule } from './modules/arena/arena.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -63,6 +66,9 @@ import { GeminiModule } from './modules/gemini/gemini.module';
     WritingModule,
     PlacementTestsModule,
     GeminiModule,
+    PronunciationModule,
+    PetsModule,
+    ArenaModule,
   ],
   providers: [GeminiService],
   controllers: [GeminiController],

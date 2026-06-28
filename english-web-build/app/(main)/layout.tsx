@@ -1,11 +1,11 @@
 "use client";
 
-import AuthInitializer from "@/src/Components/Auth/AuthInitializer";
 import Header from "@/src/Components/HomePage/Header";
+import FloatingPetCompanion from "@/src/Components/Pets/FloatingPetCompanion";
+import PetSelectionPrompt from "@/src/Components/Pets/PetSelectionPrompt";
 import WelcomeLoginModal from "@/src/Components/WelcomeLoginModal";
 import { api } from "@/src/lib/axios";
 import { useAuthStore } from "@/src/store/authStore";
-import axios from "axios";
 import { useEffect, useState } from "react";
 
 export default function MainLayout({
@@ -16,18 +16,28 @@ export default function MainLayout({
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showPetPrompt, setShowPetPrompt] = useState(false);
+  const [petDaysLeft, setPetDaysLeft] = useState(7);
 
   useEffect(() => {
     const getMe = async () => {
       try {
         const res = await api.get("/auth/me");
-        console.log(res);
-        setUser(res.data.data.getUser);
+        const currentUser = res.data.data.getUser;
+        setUser(currentUser);
 
-        const hasShown = sessionStorage.getItem("welcome_shown");
-          setShowWelcome(true);
+        const petRes = await api.get("/pets/me");
+        if (petRes.data?.mustChoosePet) {
+          sessionStorage.removeItem("welcome_shown");
+          setPetDaysLeft(petRes.data.daysLeftToChoose ?? 7);
+          setShowWelcome(false);
+          setShowPetPrompt(true);
+          return;
+        }
 
-        if (!hasShown) {
+        setShowPetPrompt(false);
+        const hasShownWelcome = sessionStorage.getItem("welcome_shown");
+        if (!hasShownWelcome) {
           setShowWelcome(true);
           sessionStorage.setItem("welcome_shown", "true");
         }
@@ -42,17 +52,22 @@ export default function MainLayout({
 
   return (
     <>
-      {/* <AuthInitializer /> */}
-
       <Header />
       <WelcomeLoginModal
-        open={showWelcome}
+        open={showWelcome && !showPetPrompt}
         fullname={user?.fullname}
         avatar="/cat-home.jpg"
         onClose={() => setShowWelcome(false)}
       />
+      <PetSelectionPrompt
+        open={showPetPrompt}
+        fullname={user?.fullname}
+        daysLeft={petDaysLeft}
+        onClose={() => setShowPetPrompt(false)}
+      />
 
       {children}
+      <FloatingPetCompanion />
     </>
   );
 }

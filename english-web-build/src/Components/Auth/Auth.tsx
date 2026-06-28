@@ -9,8 +9,8 @@ import { AuthErrorModal } from "../AuthErrorModal";
 
 type Mode = "login" | "register";
 
-export default function Auth() {
-  const [currentMode, setCurrentMode] = useState<Mode>("login");
+export default function Auth({ mode = "login" }: { mode?: Mode }) {
+  const [currentMode, setCurrentMode] = useState<Mode>(mode);
 
   return (
     <main className="min-h-screen bg-[#fff4e8] p-3 sm:p-4">

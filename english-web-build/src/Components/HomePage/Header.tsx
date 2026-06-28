@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/src/store/authStore";
 import { useEffect, useRef, useState } from "react";
+import LearningPetPanel from "@/src/Components/Pets/LearningPetPanel";
 
 export default function Header() {
   const pathname = usePathname();
@@ -127,6 +128,7 @@ export default function Header() {
                     label: "Kiểm tra trình độ",
                     href: "/placement-test",
                   },
+                  { icon: "🐱", label: "Thú cưng học tập", href: "/pet" },
                 ].map((item) => (
                   <Link
                     key={item.href}

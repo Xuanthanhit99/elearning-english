@@ -258,7 +258,12 @@ export default function CheckWordPage() {
                   fallbackWord={word}
                 />
 
-                <ExampleCard examples={searchData?.examples} />
+                <ExampleCard
+                  examples={searchData?.examples?.map((example: any) => ({
+                    source: example.source || example.en || "",
+                    target: example.target || example.vi || "",
+                  }))}
+                />
 
                 <StudySuggestion
                   suggestion={searchData?.suggestion}

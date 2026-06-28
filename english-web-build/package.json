@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@capacitor/cli": "^7.6.7",
+    "@capacitor/core": "^8.4.1",
     "axios": "^1.18.1",
     "canvas-confetti": "^1.9.4",
     "framer-motion": "^12.40.0",

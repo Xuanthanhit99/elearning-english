@@ -43,6 +43,11 @@ enum DiscountType {
   FIXED
 }
 
+enum ModeType {
+  LEVEL_BASED
+  ADAPTIVE
+}
+
 model User {
   id           String     @id @default(uuid())
   fullname     String
@@ -81,6 +86,19 @@ model User {
   writingSubmissions WritingSubmission[]
 
   placementTest PlacementTest[]
+
+  petProfile PetProfile?
+  petRewards PetReward[]
+
+  arenaProfile      ArenaProfile?
+  arenaRooms        ArenaRoom[]
+  arenaParticipants ArenaParticipant[]
+  arenaRewards      ArenaRewardLog[]
+  arenaAnswers      ArenaAnswer[]
+  arenaQueue        ArenaQueue?
+  arenaRoomEvents   ArenaRoomEvent[]
+
+  pronunciationResult PronunciationResult[]
 
   createAt  DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -144,6 +162,8 @@ model Lesson {
   section Section @relation(fields: [sectionId], references: [id])
 
   lessonProgress LessonProgress[]
+
+  petRewards PetReward[]
 
   quizzes Quiz[]
 
@@ -438,8 +458,8 @@ model PlacementTest {
   result    Json
   answers   Json
   createdAt DateTime @default(now())
-
-  user User? @relation(fields: [userId], references: [id])
+  mode      ModeType @default(ADAPTIVE)
+  user      User?    @relation(fields: [userId], references: [id])
 }
 
 model PlacementQuestion {
@@ -451,4 +471,257 @@ model PlacementQuestion {
   answer    String
   explain   String?
   createdAt DateTime @default(now())
+}
+
+model PronunciationExercise {
+  id          String   @id @default(uuid())
+  title       String
+  type        String   @default("sentence")
+  level       String   @default("A2")
+  text        String
+  ipa         String?
+  focusSounds Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  results PronunciationResult[]
+}
+
+model PronunciationResult {
+  id          String   @id @default(uuid())
+  userId      String
+  exerciseId  String
+  audioUrl    String?
+  score       Int
+  clarity     Int
+  stress      Int
+  endingSound Int
+  fluency     Int
+  feedback    Json
+  createdAt   DateTime @default(now())
+
+  user     User                  @relation(fields: [userId], references: [id])
+  exercise PronunciationExercise @relation(fields: [exerciseId], references: [id])
+}
+
+model PetProfile {
+  id               String    @id @default(uuid())
+  userId           String    @unique
+  petType          String
+  petName          String
+  isChosen         Boolean   @default(false)
+  chooseDeadline   DateTime?
+  selectedAt       DateTime?
+  randomAssigned   Boolean   @default(false)
+  hp               Int       @default(100)
+  energy           Int       @default(100)
+  happiness        Int       @default(100)
+  hunger           Int       @default(80)
+  xp               Int       @default(0)
+  coins            Int       @default(0)
+  food             Int       @default(2)
+  streak           Int       @default(0)
+  bestStreak       Int       @default(0)
+  completedLessons Int       @default(0)
+  lastStudyDate    DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model PetReward {
+  id        String   @id @default(uuid())
+  userId    String
+  lessonId  String
+  xp        Int      @default(30)
+  coins     Int      @default(12)
+  food      Int      @default(1)
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  lesson Lesson @relation(fields: [lessonId], references: [id])
+
+  @@unique([userId, lessonId])
+}
+
+enum ArenaRoomStatus {
+  WAITING
+  PLAYING
+  FINISHED
+  CANCELLED
+}
+
+enum ArenaVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum ArenaTeam {
+  A
+  B
+}
+
+model ArenaProfile {
+  id            String    @id @default(uuid())
+  userId        String    @unique
+  mmr           Int       @default(1500)
+  arenaPoint    Int       @default(1500)
+  level         Int       @default(1)
+  winCount      Int       @default(0)
+  loseCount     Int       @default(0)
+  winStreak     Int       @default(0)
+  bestWinStreak Int       @default(0)
+  arenaFood     Int       @default(0)
+  gold          Int       @default(0)
+  trophy        Int       @default(0)
+  lastMatchAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model ArenaRoom {
+  id              String          @id @default(uuid())
+  hostId          String
+  name            String
+  visibility      ArenaVisibility @default(PUBLIC)
+  password        String?
+  gameMode        String
+  skill           String
+  winCondition    String
+  durationSec     Int?
+  maxWrong        Int?
+  targetCorrect   Int?
+  bestOf          Int?
+  difficulty      String
+  topic           String
+  teamSize        Int             @default(1)
+  maxPlayers      Int             @default(2)
+  voiceChat       Boolean         @default(false)
+  emojiEnabled    Boolean         @default(true)
+  pingEnabled     Boolean         @default(true)
+  status          ArenaRoomStatus @default(WAITING)
+  countdownEndsAt DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  host         User               @relation(fields: [hostId], references: [id])
+  participants ArenaParticipant[]
+  matches      ArenaMatch[]
+  events       ArenaRoomEvent[]
+}
+
+model ArenaParticipant {
+  id       String    @id @default(uuid())
+  roomId   String
+  userId   String
+  team     ArenaTeam @default(A)
+  score    Int       @default(0)
+  correct  Int       @default(0)
+  wrong    Int       @default(0)
+  ready    Boolean   @default(false)
+  joinedAt DateTime  @default(now())
+
+  room ArenaRoom @relation(fields: [roomId], references: [id])
+  user User      @relation(fields: [userId], references: [id])
+
+  @@unique([roomId, userId])
+}
+
+model ArenaMatch {
+  id         String    @id @default(uuid())
+  roomId     String
+  winnerTeam String?
+  result     Json?
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+
+  room      ArenaRoom        @relation(fields: [roomId], references: [id])
+  rewards   ArenaRewardLog[]
+  questions ArenaQuestion[]
+  answers   ArenaAnswer[]
+}
+
+model ArenaRewardLog {
+  id          String   @id @default(uuid())
+  matchId     String
+  userId      String
+  isWinner    Boolean
+  mmrBefore   Int
+  mmrAfter    Int
+  arenaDelta  Int
+  foodDelta   Int
+  goldDelta   Int
+  trophyDelta Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  match ArenaMatch @relation(fields: [matchId], references: [id])
+  user  User       @relation(fields: [userId], references: [id])
+}
+
+model ArenaQueue {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  gameMode     String
+  skill        String
+  difficulty   String
+  topic        String
+  mmr          Int
+  searchMinMmr Int
+  searchMaxMmr Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model ArenaRoomEvent {
+  id        String   @id @default(uuid())
+  roomId    String
+  userId    String
+  type      String
+  payload   Json
+  createdAt DateTime @default(now())
+
+  room ArenaRoom @relation(fields: [roomId], references: [id])
+  user User      @relation(fields: [userId], references: [id])
+}
+
+model ArenaQuestion {
+  id          String   @id @default(uuid())
+  matchId     String
+  order       Int
+  type        String
+  skill       String
+  prompt      String
+  options     Json?
+  answer      String
+  explanation String?
+  mediaUrl    String?
+  points      Int      @default(10)
+  createdAt   DateTime @default(now())
+
+  match   ArenaMatch    @relation(fields: [matchId], references: [id])
+  answers ArenaAnswer[]
+
+  @@unique([matchId, order])
+}
+
+model ArenaAnswer {
+  id         String   @id @default(uuid())
+  matchId    String
+  questionId String
+  userId     String
+  answer     String
+  isCorrect  Boolean
+  points     Int      @default(0)
+  answeredAt DateTime @default(now())
+
+  match    ArenaMatch    @relation(fields: [matchId], references: [id])
+  question ArenaQuestion @relation(fields: [questionId], references: [id])
+  user     User          @relation(fields: [userId], references: [id])
+
+  @@unique([questionId, userId])
 }
