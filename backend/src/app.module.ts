@@ -34,6 +34,7 @@ import { GeminiModule } from './modules/gemini/gemini.module';
 import { PronunciationModule } from './modules/pronunciation/pronunciation.module';
 import { PetsModule } from './modules/pets/pets.module';
 import { ArenaModule } from './modules/arena/arena.module';
+import { CommunityModule } from './modules/community/community.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -69,6 +70,7 @@ import { ArenaModule } from './modules/arena/arena.module';
     PronunciationModule,
     PetsModule,
     ArenaModule,
+    CommunityModule,
   ],
   providers: [GeminiService],
   controllers: [GeminiController],

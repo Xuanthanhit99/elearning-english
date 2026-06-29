@@ -167,3 +167,28 @@ body {
     transform: translateX(-50%) translateY(-4px) scale(1.04);
   }
 }
+
+.icon-btn {
+  @apply flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 text-lg transition hover:bg-orange-50 hover:scale-105;
+}
+
+
+@keyframes mascotFloat {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-8px) rotate(2deg); }
+}
+
+@keyframes mascotBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.04); }
+}
+
+@keyframes mascotDrift {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(10px, -8px) rotate(8deg); }
+}
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.75); opacity: .6; }
+  50% { transform: scaleY(1.2); opacity: 1; }
+}

@@ -48,6 +48,23 @@ enum ModeType {
   ADAPTIVE
 }
 
+enum CommunityPostType {
+  POST
+  SPEAKING
+  WRITING
+  WORD
+  QUESTION
+  IMAGE
+}
+
+enum CommunityVisibility {
+  PUBLIC
+  FRIENDS
+  STUDY_GROUP
+  ONLY_ME
+}
+
+
 model User {
   id           String     @id @default(uuid())
   fullname     String
@@ -97,6 +114,11 @@ model User {
   arenaAnswers      ArenaAnswer[]
   arenaQueue        ArenaQueue?
   arenaRoomEvents   ArenaRoomEvent[]
+
+  communityPosts    CommunityPost[]
+communityComments CommunityComment[]
+communityLikes    CommunityLike[]
+communitySaves    CommunitySave[]
 
   pronunciationResult PronunciationResult[]
 
@@ -724,4 +746,152 @@ model ArenaAnswer {
   user     User          @relation(fields: [userId], references: [id])
 
   @@unique([questionId, userId])
+}
+
+model CommunityPost {
+  id          String              @id @default(uuid())
+  userId      String
+  type        CommunityPostType
+  visibility  CommunityVisibility @default(PUBLIC)
+
+  title       String?
+  content     String?
+  hashtags    String[]            @default([])
+
+  audioUrl    String?
+  imageUrl    String?
+
+  aiScore     Int?
+  grammar     Int?
+  vocabulary  Int?
+  natural     Int?
+  accuracy    Int?
+
+  word        String?
+  ipa         String?
+  meaning     String?
+  example     String?
+  memoryTip   String?
+
+  allowListen Boolean             @default(false)
+  wantFeedback Boolean            @default(false)
+
+  user        User                @relation(fields: [userId], references: [id])
+  comments    CommunityComment[]
+  likes       CommunityLike[]
+  saves       CommunitySave[]
+
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}
+
+model CommunityComment {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  content   String
+
+  post      CommunityPost @relation(fields: [postId], references: [id])
+  user      User          @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model CommunityLike {
+  id        String @id @default(uuid())
+  postId    String
+  userId    String
+
+  post      CommunityPost @relation(fields: [postId], references: [id])
+  user      User          @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+}
+
+model CommunitySave {
+  id        String @id @default(uuid())
+  postId    String
+  userId    String
+
+  post      CommunityPost @relation(fields: [postId], references: [id])
+  user      User          @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+}model CommunityPost {
+  id          String              @id @default(uuid())
+  userId      String
+  type        CommunityPostType
+  visibility  CommunityVisibility @default(PUBLIC)
+
+  title       String?
+  content     String?
+  hashtags    String[]            @default([])
+
+  audioUrl    String?
+  imageUrl    String?
+
+  aiScore     Int?
+  grammar     Int?
+  vocabulary  Int?
+  natural     Int?
+  accuracy    Int?
+
+  word        String?
+  ipa         String?
+  meaning     String?
+  example     String?
+  memoryTip   String?
+
+  allowListen Boolean             @default(false)
+  wantFeedback Boolean            @default(false)
+
+  user        User                @relation(fields: [userId], references: [id])
+  comments    CommunityComment[]
+  likes       CommunityLike[]
+  saves       CommunitySave[]
+
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}
+
+model CommunityComment {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  content   String
+
+  post      CommunityPost @relation(fields: [postId], references: [id])
+  user      User          @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model CommunityLike {
+  id        String @id @default(uuid())
+  postId    String
+  userId    String
+
+  post      CommunityPost @relation(fields: [postId], references: [id])
+  user      User          @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+}
+
+model CommunitySave {
+  id        String @id @default(uuid())
+  postId    String
+  userId    String
+
+  post      CommunityPost @relation(fields: [postId], references: [id])
+  user      User          @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
 }
