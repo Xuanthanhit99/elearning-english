@@ -35,6 +35,7 @@ import { PronunciationModule } from './modules/pronunciation/pronunciation.modul
 import { PetsModule } from './modules/pets/pets.module';
 import { ArenaModule } from './modules/arena/arena.module';
 import { CommunityModule } from './modules/community/community.module';
+import { MissionsModule } from './modules/missions/missions.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -71,6 +72,7 @@ import { CommunityModule } from './modules/community/community.module';
     PetsModule,
     ArenaModule,
     CommunityModule,
+    MissionsModule,
   ],
   providers: [GeminiService],
   controllers: [GeminiController],

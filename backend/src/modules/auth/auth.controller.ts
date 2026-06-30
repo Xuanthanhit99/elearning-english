@@ -4,6 +4,7 @@ import {
   Get,
   Patch,
   Post,
+  Query,
   Req,
   Res,
   UploadedFile,
@@ -53,7 +54,7 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   me(@Req() req: any) {
-    return this.authService.getMe(req.user.email);
+    return this.authService.getMe(req.user.id);
   }
 
   @Get('teacher-test')
@@ -146,5 +147,10 @@ export class AuthController {
   @UseInterceptors(FileInterceptor('avatar'))
   updateAvatar(@Req() req: any, @UploadedFile() file: Express.Multer.File) {
     return this.authService.updateAvatar(req.user.id, file);
+  }
+
+  @Get('check-username')
+  checkUsername(@Query('username') username: string, @Req() req) {
+    return this.authService.checkUsername(username, req.user.id);
   }
 }

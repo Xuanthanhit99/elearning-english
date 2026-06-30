@@ -14,6 +14,7 @@ import * as ExcelJS from 'exceljs';
 import * as nodemailer from 'nodemailer';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UploadService } from '../upload/upload.service';
+import { Prisma } from '@prisma/client';
 @Injectable()
 export class AuthService {
   constructor(
@@ -261,17 +262,22 @@ export class AuthService {
     return { accessToken, dbUser, refreshToken };
   }
 
-  async getMe(email: string) {
+  async getMe(userId: string) {
     const getUser = await this.prisma.user.findUnique({
-      where: { email },
+      where: { id: userId },
       select: {
         id: true,
         fullname: true,
-        avatar: true,
-        role: true,
-        status: true,
         email: true,
-        phone: true,
+        avatar: true,
+        username: true,
+        bio: true,
+        goal: true,
+        interests: true,
+        level: true,
+        xp: true,
+        isPro: true,
+        createAt: true,
       },
     });
 
@@ -391,25 +397,68 @@ export class AuthService {
 
   // users.service.ts
   async updateProfile(userId: string, dto: UpdateProfileDto) {
+    if (dto.username) {
+      const existed = await this.prisma.user.findFirst({
+        where: {
+          username: dto.username,
+          NOT: { id: userId },
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (existed) {
+        throw new BadRequestException('Username đã được sử dụng');
+      }
+    }
+
+    const data: Prisma.UserUpdateInput = {};
+
+    if (dto.fullname !== undefined) data.fullname = dto.fullname;
+    if (dto.username !== undefined) data.username = dto.username;
+    if (dto.bio !== undefined) data.bio = dto.bio;
+    if (dto.goal !== undefined) data.goal = dto.goal;
+    if (dto.interests !== undefined) data.interests = dto.interests;
+    if (dto.phone !== undefined) data.phone = dto.phone;
+    if (dto.englishLevel !== undefined) data.englishLevel = dto.englishLevel;
+    if (dto.learningGoal !== undefined) data.learningGoal = dto.learningGoal;
+
     return this.prisma.user.update({
       where: { id: userId },
-      data: {
-        fullname: dto.fullname,
-        phone: dto.phone,
-        englishLevel: dto.englishLevel,
-        learningGoal: dto.learningGoal,
-      },
+      data: dto,
       select: {
         id: true,
         fullname: true,
+        username: true,
         email: true,
         avatar: true,
+        bio: true,
+        goal: true,
+        interests: true,
         phone: true,
         englishLevel: true,
         learningGoal: true,
         role: true,
+        level: true,
+        xp: true,
+        isPro: true,
       },
     });
+  }
+
+  async checkUsername(username: string, userId: string) {
+    const existed = await this.prisma.user.findFirst({
+      where: {
+        username,
+        NOT: { id: userId },
+      },
+    });
+
+    return {
+      username,
+      available: !existed,
+    };
   }
 
   // users.service.ts
