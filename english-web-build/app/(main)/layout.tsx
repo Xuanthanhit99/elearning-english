@@ -6,6 +6,7 @@ import PetSelectionPrompt from "@/src/Components/Pets/PetSelectionPrompt";
 import WelcomeLoginModal from "@/src/Components/WelcomeLoginModal";
 import { api } from "@/src/lib/axios";
 import { useAuthStore } from "@/src/store/authStore";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function MainLayout({
@@ -15,6 +16,14 @@ export default function MainLayout({
 }) {
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
+  const pathname = usePathname();
+  const usesCustomDashboardShell =
+    pathname === "/" ||
+    pathname.startsWith("/profile") ||
+    pathname.startsWith("/pet") ||
+    pathname.startsWith("/missions") ||
+    pathname.startsWith("/community") ||
+    pathname.startsWith("/vocabulary");
   const [showWelcome, setShowWelcome] = useState(false);
   const [showPetPrompt, setShowPetPrompt] = useState(false);
   const [petDaysLeft, setPetDaysLeft] = useState(7);
@@ -52,7 +61,7 @@ export default function MainLayout({
 
   return (
     <>
-      <Header />
+      {!usesCustomDashboardShell && <Header />}
       <WelcomeLoginModal
         open={showWelcome && !showPetPrompt}
         fullname={user?.fullname}
@@ -67,7 +76,7 @@ export default function MainLayout({
       />
 
       {children}
-      <FloatingPetCompanion />
+      {!usesCustomDashboardShell && <FloatingPetCompanion />}
     </>
   );
 }

@@ -201,7 +201,7 @@ export default function LearningPetPanel({ compact = false }: { compact?: boolea
               <p className="text-sm font-extrabold uppercase tracking-wide text-[#ff6b00]">Thông báo chọn thú cưng</p>
               <h3 className="mt-2 text-2xl font-black text-[#1f2a44]">Bạn chỉ được chọn một loại thú cưng</h3>
               <p className="mt-2 font-bold leading-7 text-[#5b6b85]">
-                Hãy chọn trong {pet.daysLeftToChoose} ngày. Nếu quá 7 ngày chưa chọn, MiuLingo sẽ chọn ngẫu nhiên một thú cưng cho bạn và loại đó sẽ được khóa.
+                Hãy chọn trong {pet.daysLeftToChoose} ngày. Nếu quá 7 ngày chưa chọn, PoppyLingo sẽ chọn ngẫu nhiên một thú cưng cho bạn và loại đó sẽ được khóa.
               </p>
             </div>
           )}

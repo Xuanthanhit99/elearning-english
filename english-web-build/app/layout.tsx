@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MiuLingo",
+  title: "PoppyLingo",
   description: "Học ngôn ngữ cùng Miu",
 };
 

@@ -4,6 +4,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
+import { AppIcon, LegacyIcon } from "@/src/Components/UI/AppIcon";
 
 type Props = {
   open: boolean;
@@ -61,16 +62,16 @@ export default function WelcomeLoginModal({
         <div className="relative h-[300px] overflow-hidden bg-gradient-to-br from-[#8b73bd] via-[#7b63ad] to-[#5b438c] px-8 py-8">
           <div className="absolute right-24 top-12 h-52 w-52 rounded-[40px] border border-white/30 bg-white/10" />
 
-          <div className="absolute right-64 top-12 flex h-16 w-16 animate-bounce items-center justify-center rounded-full border border-white/30 bg-white/20 text-3xl">
-            🔥
+          <div className="absolute right-64 top-12 flex h-16 w-16 animate-bounce items-center justify-center rounded-full border border-white/30 bg-white/20">
+            <AppIcon name="fire" tone="orange" size={28} bare />
           </div>
 
           <div className="absolute right-20 top-24 flex h-16 w-16 animate-pulse items-center justify-center rounded-full border border-white/30 bg-white/20 text-3xl">
             🎉
           </div>
 
-          <div className="absolute right-80 bottom-16 flex h-16 w-16 animate-bounce items-center justify-center rounded-full border border-white/30 bg-white/20 text-3xl">
-            ⭐
+          <div className="absolute right-80 bottom-16 flex h-16 w-16 animate-bounce items-center justify-center rounded-full border border-white/30 bg-white/20">
+            <AppIcon name="star" tone="yellow" size={28} bare />
           </div>
 
           <div className="relative z-10 max-w-md rounded-[22px] bg-white p-6 shadow-xl">
@@ -151,8 +152,8 @@ function StatCard({
 }) {
   return (
     <div className="rounded-[22px] border border-[#ead8c2] bg-[#fffaf5] p-5 text-center">
-      <div className="text-2xl font-extrabold text-[#ff6b00]">
-        {icon} {value}
+      <div className="flex items-center justify-center gap-2 text-2xl font-extrabold text-[#ff6b00]">
+        <LegacyIcon icon={icon || "⭐"} label={label} tone="orange" size={16} /> {value}
       </div>
       <p className="mt-2 font-extrabold text-[#5b6b85]">{label}</p>
     </div>
@@ -170,8 +171,8 @@ function Mission({
 }) {
   return (
     <div className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 font-extrabold text-[#1f2a44]">
-      <span>
-        {icon} {title}
+      <span className="inline-flex items-center gap-2">
+        <LegacyIcon icon={icon} label={title} tone="purple" className="h-8 w-8" size={16} /> {title}
       </span>
       <span className="text-emerald-600">{time}</span>
     </div>

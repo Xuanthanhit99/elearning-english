@@ -1,6 +1,7 @@
 // src/Components/Footer.tsx
 import Image from "next/image";
 import Link from "next/link";
+import AppLogo from "@/src/Components/UI/AppLogo";
 
 export default function Footer() {
   return (
@@ -16,7 +17,7 @@ export default function Footer() {
               <h2 className="mt-6 text-4xl font-extrabold leading-tight text-white sm:text-5xl">
                 Bắt đầu miễn phí
                 <br />
-                cùng MiuLingo
+                cùng PoppyLingo
               </h2>
 
               <p className="mt-5 max-w-xl text-lg leading-8 text-white/80">
@@ -44,7 +45,7 @@ export default function Footer() {
               <div className="rounded-[34px] border border-white/20 bg-white/10 p-5 backdrop-blur">
                 <Image
                   src="/cat-home.jpg"
-                  alt="Miu mascot"
+                  alt="Poppy mascot"
                   width={220}
                   height={220}
                   className="rounded-[28px] object-cover"
@@ -55,11 +56,11 @@ export default function Footer() {
         </div>
 
          <div className="flex flex-col items-center justify-between gap-4 py-10 text-white/70 md:flex-row">
-      <div className="font-extrabold text-white">
-        Miu<span className="text-[#ff8a00]">Lingo</span>
+      <div className="rounded-2xl bg-white/95 px-3 py-2">
+        <AppLogo compact />
       </div>
 
-      <p>© 2026 MiuLingo. Học ngôn ngữ cùng Miu.</p>
+      <p>© 2026 PoppyLingo. Học ngôn ngữ cùng Poppy.</p>
     </div>
   </div>
 </footer>

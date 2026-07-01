@@ -1,1368 +1,495 @@
-// src/Components/Profile/ProfilePage.tsx
 "use client";
 
-import Image from "next/image";
-import { useAuthStore } from "@/src/store/authStore";
-import { useEffect, useState } from "react";
-import { api } from "@/src/lib/axios";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import LearningPetPanel from "@/src/Components/Pets/LearningPetPanel";
+import { useEffect, useMemo, useState } from "react";
+import { api } from "@/src/lib/axios";
+import SpiritPetAvatar from "@/src/Components/Pets/SpiritPetAvatar";
+import { useAuthStore } from "@/src/store/authStore";
+import { AppIcon, LegacyIcon } from "@/src/Components/UI/AppIcon";
+import AppLogo from "@/src/Components/UI/AppLogo";
 
 export interface WordHistory {
   id: string;
-  userId: string;
-  wordId: string;
   createdAt: string;
-  word: {
-    id: string;
-    word: string;
-    sourceLanguage: string;
-    targetLanguage: string;
-    level: string;
-    ipa: string;
-    audio: string;
-    partOfSpeech: string;
-    definition: string;
-    mainMeaning: string;
-    shortExplanation: string;
-    synonyms: {
-      word: string;
-      meaning: string;
-    }[];
-    phrases: {
-      phrase: string;
-      meaning: string;
-    }[];
-    examples: {
-      source: string;
-      target: string;
-    }[];
+  word?: {
+    word?: string;
+    mainMeaning?: string;
+    level?: string;
   };
 }
 
 export interface WritingHistory {
   id: string;
-  userId: string;
   originalText: string;
-  detectedLanguage: string;
-  style: string;
-  level: string;
   score: number;
-  grammarScore: number;
-  vocabularyScore: number;
-  clarityScore: number;
-  meaningScore: number;
-  summary: string | null;
-  corrections: {
-    type: string;
-    level: string;
-    wrong: string;
-    correct: string;
-    explanation: string;
-  }[];
-  suggestedVersion: string;
-  phrases: string[];
-  learningTips: string[];
-  miuNote: string;
   createdAt: string;
-  updatedAt: string;
 }
+
+type ArenaProfile = {
+  arenaPoint?: number;
+  arenaFood?: number;
+  gold?: number;
+  mmr?: number;
+  winStreak?: number;
+  level?: number;
+};
+
+type PetProfile = {
+  petType?: string;
+  name?: string;
+  level?: number;
+  xp?: number;
+  coins?: number;
+  energy?: number;
+  happiness?: number;
+  hunger?: number;
+  hygiene?: number;
+};
+
+const mainMenu = [
+  { icon: "⌂", label: "Tổng quan", href: "/" },
+  { icon: "▰", label: "Học tập", href: "/courses" },
+  { icon: "⚔", label: "Đấu trường", href: "/arena" },
+  { icon: "🤖", label: "AI Tutor", href: "/check-writing", badge: "AI" },
+  { icon: "▣", label: "Kiểm tra miễn phí", href: "/check-word", badge: "FREE" },
+  { icon: "◇", label: "Thư viện", href: "/courses" },
+  { icon: "●", label: "Cộng đồng", href: "/community" },
+  { icon: "▣", label: "Khóa học", href: "/courses" },
+  { icon: "◈", label: "Shop", href: "/pet" },
+];
+
+const personalMenu = [
+  { icon: "●", label: "Hồ sơ của tôi", href: "/profile", active: true },
+  { icon: "🐾", label: "Linh thú của tôi", href: "/pet" },
+  { icon: "🏆", label: "Thành tích", href: "/profile" },
+  { icon: "✣", label: "Nhiệm vụ", href: "/missions" },
+  { icon: "👥", label: "Bạn bè", href: "/community" },
+  { icon: "⚙", label: "Cài đặt", href: "/profile" },
+];
+
+const careActions = [
+  { title: "Cho ăn", icon: "🍔", reward: "+10", mood: "💗", bg: "from-orange-100 to-amber-50" },
+  { title: "Chơi đùa", icon: "🏀", reward: "+15", mood: "😄", bg: "from-pink-100 to-purple-50" },
+  { title: "Vuốt ve", icon: "💞", reward: "+10", mood: "💗", bg: "from-rose-100 to-orange-50" },
+  { title: "Tắm rửa", icon: "🛁", reward: "+10", mood: "🙂", bg: "from-sky-100 to-blue-50" },
+  { title: "Ngủ", icon: "💤", reward: "+20", mood: "⚡", bg: "from-violet-100 to-indigo-50" },
+];
+
+const inventory = [
+  { icon: "🍎", name: "Táo", count: 12 },
+  { icon: "🍪", name: "Bánh quy", count: 8 },
+  { icon: "🍣", name: "Cá hồi", count: 6 },
+  { icon: "🥛", name: "Sữa", count: 4 },
+  { icon: "🍔", name: "Burger", count: 2 },
+];
 
 export default function ProfilePage() {
   const user = useAuthStore((state) => state.user);
-  const [userWordHistory, setUserHistory] = useState<WordHistory[]>([]);
-  const [userWritingHistory, setWritingHistory] = useState<WritingHistory[]>(
-    [],
-  );
+  const setUser = useAuthStore((state) => state.setUser);
+  const [wordHistory, setWordHistory] = useState<WordHistory[]>([]);
+  const [writingHistory, setWritingHistory] = useState<WritingHistory[]>([]);
+  const [arenaProfile, setArenaProfile] = useState<ArenaProfile | null>(null);
+  const [pet, setPet] = useState<PetProfile | null>(null);
+  const [actionMessage, setActionMessage] = useState("");
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [nameInput, setNameInput] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
+
   useEffect(() => {
-    const getMe = async () => {
-      try {
-        const resWords = await api.get("/words/history");
-        const resWriting = await api.get("/writing/history");
+    const loadProfile = async () => {
+      const [wordsRes, writingRes, arenaRes, petRes] = await Promise.allSettled([
+        api.get("/words/history"),
+        api.get("/writing/history"),
+        api.get("/arena/lobby"),
+        api.get("/pets/me"),
+      ]);
 
-        if (resWords.statusText === "OK") {
-          setUserHistory(resWords.data);
-        }
+      if (wordsRes.status === "fulfilled" && Array.isArray(wordsRes.value.data)) {
+        setWordHistory(wordsRes.value.data);
+      }
 
-        if (resWriting.statusText === "OK") {
-          setWritingHistory(resWriting.data);
-        }
-      } catch (error) {
-        console.log("writing", error);
+      if (writingRes.status === "fulfilled" && Array.isArray(writingRes.value.data)) {
+        setWritingHistory(writingRes.value.data);
+      }
+
+      if (arenaRes.status === "fulfilled") {
+        setArenaProfile(arenaRes.value.data?.profile || null);
+      }
+
+      if (petRes.status === "fulfilled") {
+        setPet(petRes.value.data?.pet || petRes.value.data || null);
       }
     };
 
-    getMe();
-  }, [user]);
+    loadProfile();
+  }, []);
+
+  const displayName = user?.fullname || "Minh Anh";
+  const avatar = user?.avatar || "/avatar-default.png";
+  const level = pet?.level || arenaProfile?.level || 18;
+  const petName = pet?.name || "Foxy";
+  const petType = pet?.petType || "fox";
+  const xp = pet?.xp || 850;
+  const streak = arenaProfile?.winStreak || 18;
+  const gems = arenaProfile?.gold || 5230;
+  const coins = pet?.coins || arenaProfile?.arenaPoint || 2450;
+
+  const learnedWords = wordHistory.length || 2458;
+  const completedLessons = writingHistory.length || 128;
+  const averageScore = useMemo(() => {
+    if (!writingHistory.length) return 95;
+    return Math.round(writingHistory.reduce((total, item) => total + (item.score || 0), 0) / writingHistory.length);
+  }, [writingHistory]);
+  const showAction = (message: string) => {
+    setActionMessage(message);
+    window.setTimeout(() => setActionMessage(""), 2400);
+  };
+  const openEditProfile = () => {
+    setNameInput(displayName);
+    setEditingProfile(true);
+  };
+  const saveProfile = async () => {
+    if (!nameInput.trim()) {
+      showAction("Tên không được để trống.");
+      return;
+    }
+
+    try {
+      setSavingProfile(true);
+      const res = await api.patch("/auth/me/profile", { fullname: nameInput.trim() });
+      setUser({ ...user, ...res.data });
+      setEditingProfile(false);
+      showAction("Đã cập nhật hồ sơ.");
+    } catch (error) {
+      console.error(error);
+      showAction("Cập nhật hồ sơ thất bại, thử lại nhé.");
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   return (
-    <main className="min-h-screen bg-[#fff4e8] px-4 py-10">
-      <section className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[320px_1fr]">
-        <div className="space-y-6">
-          <ProfileCard user={user} />
-          <PersonalInfo user={user} />
-        </div>
+    <main className="min-h-screen overflow-x-hidden bg-[#f8f7ff] text-[#121735]">
+      <div className="mx-auto flex max-w-[1920px]">
+        <ProfileSidebar onAction={showAction} />
 
-        <div className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-            <ProgressCard />
-            <StatsCard />
+        <section className="min-w-0 flex-1">
+          <TopBar displayName={displayName} avatar={avatar} level={level} streak={streak} gems={gems} coins={coins} />
+
+          <div className="grid gap-5 p-4 lg:p-5 2xl:grid-cols-[minmax(0,1fr)_500px]">
+            <div className="min-w-0 space-y-5">
+              <ProfileHero displayName={displayName} avatar={avatar} user={user} petName={petName} petType={petType} level={level} onEditProfile={openEditProfile} onAction={showAction} />
+              <PetVitals pet={pet} averageScore={averageScore} />
+              <CarePanel onAction={showAction} />
+
+              <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
+                <AchievementPanel />
+                <LearningStats learnedWords={learnedWords} completedLessons={completedLessons} />
+              </div>
+
+              <EvolutionRoad level={level} />
+            </div>
+
+            <aside className="space-y-5">
+              <PetStatus petName={petName} level={level} xp={xp} />
+              <InventoryPanel onAction={showAction} />
+              <MiniGames onAction={showAction} />
+              <FriendsPanel onAction={showAction} />
+            </aside>
           </div>
-
-          <LearningPetPanel />
-
-          <CoursesProgress />
-          <ToolHistory
-            userWordHistory={userWordHistory}
-            userWritingHistory={userWritingHistory}
-          />
+        </section>
+      </div>
+      {actionMessage && (
+        <div className="fixed bottom-6 left-1/2 z-[80] -translate-x-1/2 rounded-2xl bg-[#121735] px-5 py-3 text-sm font-black text-white shadow-2xl">
+          {actionMessage}
         </div>
-      </section>
+      )}
+      {editingProfile && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+            <h2 className="text-xl font-black">Chỉnh sửa hồ sơ</h2>
+            <label className="mt-5 block text-sm font-black text-[#69708b]">Tên hiển thị</label>
+            <input
+              value={nameInput}
+              onChange={(event) => setNameInput(event.target.value)}
+              className="mt-2 w-full rounded-2xl border border-[#e8e9f5] px-4 py-3 font-bold outline-none focus:border-[#6d35ff]"
+              placeholder="Nhập tên của bạn"
+            />
+            <div className="mt-6 flex justify-end gap-3">
+              <button onClick={() => setEditingProfile(false)} className="rounded-xl border border-[#e8e9f5] px-4 py-3 text-sm font-black">
+                Hủy
+              </button>
+              <button onClick={saveProfile} disabled={savingProfile} className="rounded-xl bg-[#6d35ff] px-4 py-3 text-sm font-black text-white disabled:opacity-60">
+                {savingProfile ? "Đang lưu..." : "Lưu hồ sơ"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
 
-function ProfileCard({ user }: { user: any }) {
-  const setUser = useAuthStore((state) => state.setUser);
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [fullname, setFullname] = useState(user?.fullname || "");
-  const [avatarPreview, setAvatarPreview] = useState(
-    user?.avatar || "/cat-home.jpg",
-  );
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    setFullname(user?.fullname || "");
-    setAvatarPreview(user?.avatar || "/cat-home.jpg");
-    setAvatarFile(null);
-  }, [user]);
-
-  const handleChangeAvatar = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setAvatarFile(file);
-    setAvatarPreview(URL.createObjectURL(file));
-  };
-
-  const handleSaveProfile = async () => {
-    const oldUser = user;
-    const oldFullname = user?.fullname || "";
-    const oldAvatar = user?.avatar || "/cat-home.jpg";
-
-    try {
-      setSaving(true);
-
-      let updatedUser = oldUser;
-
-      if (avatarFile) {
-        const formData = new FormData();
-        formData.append("avatar", avatarFile);
-
-        const avatarRes = await api.patch("/auth/me/avatar", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-
-        updatedUser = {
-          ...updatedUser,
-          ...avatarRes.data,
-        };
-      }
-
-      const profileRes = await api.patch("/auth/me/profile", {
-        fullname,
-      });
-
-      updatedUser = {
-        ...updatedUser,
-        ...profileRes.data,
-      };
-
-      setUser(updatedUser);
-      setFullname(updatedUser.fullname || "");
-      setAvatarPreview(updatedUser.avatar || "/cat-home.jpg");
-      setAvatarFile(null);
-      setIsEditing(false);
-    } catch (error) {
-      console.error(error);
-
-      setUser(oldUser);
-      setFullname(oldFullname);
-      setAvatarPreview(oldAvatar);
-      setAvatarFile(null);
-
-      alert("Cập nhật hồ sơ thất bại. Thông tin đã được giữ nguyên.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleCancel = () => {
-    setFullname(user?.fullname || "");
-    setAvatarPreview(user?.avatar || "/cat-home.jpg");
-    setAvatarFile(null);
-    setIsEditing(false);
-  };
-
+function ProfileSidebar({ onAction }: { onAction: (message: string) => void }) {
   return (
-    <div className="relative overflow-hidden rounded-[30px] bg-gradient-to-br from-[#1f2a44] via-[#4d4378] to-[#6b5796] p-6 text-white shadow-xl">
-      {saving && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center bg-[#1f2a44]/70 backdrop-blur-sm">
-          <div className="rounded-2xl bg-white px-5 py-4 text-center font-extrabold text-[#1f2a44] shadow-xl">
-            <div className="mx-auto mb-2 h-6 w-6 animate-spin rounded-full border-2 border-[#ff6b00]/30 border-t-[#ff6b00]" />
-            Đang cập nhật...
+    <aside className="sticky top-0 hidden h-screen w-[238px] shrink-0 overflow-y-auto border-r border-[#e7e8f3] bg-white px-3.5 py-5 2xl:block">
+      <AppLogo />
+
+      <nav className="mt-7 space-y-1">
+        {mainMenu.map((item) => <SideItem key={item.label} item={item} />)}
+      </nav>
+
+      <nav className="mt-6 space-y-1">
+        <p className="px-3 text-[10px] font-black uppercase tracking-wide text-[#8b91aa]">Cá nhân</p>
+        {personalMenu.map((item) => <SideItem key={item.label} item={item} />)}
+      </nav>
+
+      <section className="mt-5 rounded-2xl bg-[#f4f0ff] p-3.5">
+        <AppIcon name="crown" tone="yellow" size={18} />
+        <h3 className="mt-1.5 text-sm font-black text-[#652cff]">Nâng cấp Premium</h3>
+        {["Học không giới hạn", "AI Tutor nâng cao", "Ưu đãi độc quyền", "Bỏ quảng cáo"].map((item) => (
+          <p key={item} className="mt-2 text-[11px] font-bold text-[#555d78]">✓ {item}</p>
+        ))}
+        <button onClick={() => onAction("Gói Premium sẽ được mở ở bước thanh toán tiếp theo.")} className="mt-3 w-full rounded-xl bg-[#6d35ff] px-3 py-2.5 text-xs font-black text-white">Nâng cấp ngay</button>
+      </section>
+
+      <section className="mt-4 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#ececf7]">
+        <div className="flex items-center gap-2.5">
+          <SpiritPetAvatar petType="fox" level={18} size="sm" showLevelBadge={false} />
+          <div className="min-w-0">
+            <h3 className="text-xs font-black">Foxy đang chờ bạn!</h3>
+            <p className="mt-0.5 text-[10px] font-bold leading-4 text-[#69708b]">Cùng học để nhận thưởng nhé!</p>
+            <div className="mt-2 h-1.5 rounded-full bg-[#e4e6f2]"><div className="h-1.5 w-2/3 rounded-full bg-[#6d35ff]" /></div>
           </div>
         </div>
-      )}
-
-      <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10" />
-      <div className="absolute right-10 top-16 h-20 w-20 rounded-full bg-[#ff6b00]/20 blur-2xl" />
-
-      <div className="relative z-10">
-        <div className="relative mx-auto h-32 w-32">
-          <div className="absolute inset-0 animate-pulse rounded-[32px] bg-[#ff6b00]/30 blur-xl" />
-
-          <div className="relative h-full w-full overflow-hidden rounded-[32px] border-4 border-white bg-white shadow-2xl">
-            <Image
-              src={avatarPreview}
-              alt={fullname || "User"}
-              fill
-              className="object-cover"
-            />
-          </div>
-
-          {isEditing && (
-            <label className="absolute -bottom-3 left-1/2 flex -translate-x-1/2 cursor-pointer items-center gap-1 rounded-full bg-[#ff6b00] px-4 py-2 text-xs font-extrabold text-white shadow-lg transition hover:scale-105">
-              📷 Đổi ảnh
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleChangeAvatar}
-                disabled={saving}
-                className="hidden"
-              />
-            </label>
-          )}
-        </div>
-
-        <div className="mt-8 text-center">
-          {isEditing ? (
-            <input
-              value={fullname}
-              onChange={(e) => setFullname(e.target.value)}
-              disabled={saving}
-              className="w-full rounded-2xl bg-white px-4 py-3 text-center text-xl font-extrabold text-[#1f2a44] outline-none disabled:opacity-70"
-              placeholder="Nhập tên của bạn"
-            />
-          ) : (
-            <h1 className="text-2xl font-extrabold">
-              {fullname || user?.email || "Người học MiuLingo"}
-            </h1>
-          )}
-
-          <p className="mt-2 text-sm leading-6 text-white/80">
-            Học viên MiuLingo · mục tiêu giao tiếp tiếng Anh trong công việc.
-          </p>
-
-          <div className="mt-4 flex justify-center gap-2">
-            {isEditing ? (
-              <>
-                <button
-                  type="button"
-                  onClick={handleSaveProfile}
-                  disabled={saving || !fullname.trim()}
-                  className="rounded-full bg-emerald-500 px-5 py-2 text-sm font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {saving ? "Đang lưu..." : "Lưu"}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  disabled={saving}
-                  className="rounded-full bg-white/20 px-5 py-2 text-sm font-extrabold text-white disabled:opacity-60"
-                >
-                  Hủy
-                </button>
-              </>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setIsEditing(true)}
-                className="rounded-full bg-white/20 px-5 py-2 text-sm font-extrabold text-white transition hover:bg-white/30"
-              >
-                ✏️ Sửa hồ sơ
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-5 flex flex-wrap justify-center gap-2">
-          <Badge text="🔥 12 ngày" />
-          <Badge text="⭐ Level 03" />
-          <Badge text="🎯 A2 - B1" />
-        </div>
-      </div>
-    </div>
+      </section>
+    </aside>
   );
 }
 
-function PersonalInfo({ user }: { user: any }) {
-  const setUser = useAuthStore((state) => state.setUser);
-
-  const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  const [form, setForm] = useState({
-    phone: user?.phone || "",
-    englishLevel: user?.englishLevel || "Beginner",
-    learningGoal: user?.learningGoal || "General English",
-  });
-
-  useEffect(() => {
-    setForm({
-      phone: user?.phone || "",
-      englishLevel: user?.englishLevel || "Beginner",
-      learningGoal: user?.learningGoal || "General English",
-    });
-  }, [user]);
-
-  const handleCancel = () => {
-    setForm({
-      phone: user?.phone || "",
-      englishLevel: user?.englishLevel || "Beginner",
-      learningGoal: user?.learningGoal || "General English",
-    });
-    setEditing(false);
-  };
-
-  const handleSave = async () => {
-    const oldUser = user;
-
-    try {
-      setSaving(true);
-      setErrorMessage("");
-
-      const res = await api.patch("/auth/me/profile", form);
-
-      setUser({
-        ...oldUser,
-        ...res.data,
-      });
-
-      setEditing(false);
-    } catch (error) {
-      console.error(error);
-
-      setUser(oldUser);
-      setForm({
-        phone: oldUser?.phone || "",
-        englishLevel: oldUser?.englishLevel || "Beginner",
-        learningGoal: oldUser?.learningGoal || "General English",
-      });
-
-      setErrorMessage("Cập nhật thông tin thất bại. Dữ liệu đã được giữ nguyên.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
+function SideItem({ item }: { item: { icon: string; label: string; href: string; active?: boolean; badge?: string } }) {
   return (
-    <div className="relative overflow-hidden rounded-[28px] border border-[#ead8c2] bg-white p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
-      {saving && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/75 backdrop-blur-sm">
-          <div className="rounded-2xl bg-[#1f2a44] px-5 py-4 text-center font-extrabold text-white shadow-xl">
-            <div className="mx-auto mb-2 h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-            Đang cập nhật...
-          </div>
-        </div>
-      )}
-
-      <div className="absolute -right-12 -top-12 h-36 w-36 rounded-full bg-[#fff0dc]" />
-      <div className="absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-[#f7f1fb]" />
-
-      <div className="relative z-10">
-        <div className="mb-5 flex items-center justify-between">
-          <div>
-            <p className="text-sm font-extrabold text-[#ff6b00]">
-              👤 Hồ sơ học viên
-            </p>
-            <h2 className="mt-1 text-2xl font-extrabold text-[#1f2a44]">
-              Thông tin cá nhân
-            </h2>
-          </div>
-
-          <div className="flex gap-2">
-            {editing && (
-              <button
-                type="button"
-                onClick={handleCancel}
-                disabled={saving}
-                className="rounded-full bg-slate-100 px-4 py-2 text-xs font-extrabold text-[#1f2a44] disabled:opacity-60"
-              >
-                Hủy
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={() => (editing ? handleSave() : setEditing(true))}
-              disabled={saving}
-              className="rounded-full bg-[#ff6b00] px-4 py-2 text-xs font-extrabold text-white shadow-lg shadow-orange-200 disabled:opacity-60"
-            >
-              {editing ? "Lưu" : "Sửa"}
-            </button>
-          </div>
-        </div>
-
-<div className="space-y-3 rounded-[24px] bg-white/50 p-3">
-          <PrettyInfoRow
-            icon="📧"
-            label="Email"
-            value={user?.email || "--"}
-            readonly
-          />
-
-          <PrettyEditableRow
-            icon="📱"
-            label="Số điện thoại"
-            value={form.phone}
-            editing={editing}
-            placeholder="Chưa cập nhật"
-            onChange={(value) => setForm({ ...form, phone: value })}
-          />
-
-          <PrettyEditableRow
-            icon="📈"
-            label="Trình độ"
-            value={form.englishLevel}
-            editing={editing}
-            placeholder="Beginner"
-            onChange={(value) => setForm({ ...form, englishLevel: value })}
-          />
-
-          <PrettyEditableRow
-            icon="🎯"
-            label="Mục tiêu"
-            value={form.learningGoal}
-            editing={editing}
-            placeholder="General English"
-            onChange={(value) => setForm({ ...form, learningGoal: value })}
-          />
-        </div>
-      </div>
-
-      {errorMessage && (
-        <ErrorModal
-          message={errorMessage}
-          onClose={() => setErrorMessage("")}
-        />
-      )}
-    </div>
+    <Link href={item.href} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-black transition ${item.active ? "bg-[#efe9ff] text-[#652cff]" : "text-[#69708b] hover:bg-[#f5f2ff] hover:text-[#652cff]"}`}>
+      <LegacyIcon icon={item.icon} label={item.label} tone={item.active ? "purple" : "slate"} className="h-8 w-8" size={16} />
+      <span className="min-w-0 flex-1 truncate">{item.label}</span>
+      {item.badge && <span className={`rounded-md px-1.5 py-0.5 text-[9px] ${item.badge === "FREE" ? "bg-[#dcfce7] text-[#16a34a]" : "bg-[#efe9ff] text-[#652cff]"}`}>{item.badge}</span>}
+    </Link>
   );
 }
 
-function ProgressCard() {
+function TopBar({ displayName, avatar, level, streak, gems, coins }: { displayName: string; avatar: string; level: number; streak: number; gems: number; coins: number }) {
   return (
-    <Card title="Tiến độ tổng quan" right="Tuần này">
-      <div className="flex items-center gap-6">
-        <div className="flex h-36 w-36 items-center justify-center rounded-full border-[14px] border-[#ff6b00]">
-          <div className="text-center">
-            <div className="text-3xl font-extrabold text-[#ff6b00]">76%</div>
-            <p className="text-xs font-bold text-[#5b6b85]">hoàn thành</p>
-          </div>
+    <header className="sticky top-0 z-40 border-b border-[#e7e8f3] bg-white/90 px-4 py-2.5 backdrop-blur">
+      <div className="flex items-center gap-3">
+        <AppLogo compact className="2xl:hidden" />
+        <nav className="hidden flex-1 items-center justify-center gap-1.5 xl:flex">
+          {["Trang chủ", "Học tập", "Đấu trường", "AI Tutor", "Thư viện", "Cộng đồng", "Shop"].map((label) => (
+            <Link key={label} href={label === "Trang chủ" ? "/" : label === "Đấu trường" ? "/arena" : label === "Cộng đồng" ? "/community" : label === "Shop" ? "/pet" : "/courses"} className="whitespace-nowrap rounded-xl px-3 py-2 text-xs font-black text-[#303956] hover:bg-[#f5f2ff]">
+              {label}
+            </Link>
+          ))}
+        </nav>
+        <div className="ml-auto flex items-center gap-2">
+          <TopPill icon="🔥" value={streak} label="Streak" />
+          <TopPill icon="💎" value={gems.toLocaleString("vi-VN")} label="Xu" />
+          <TopPill icon="🪙" value={coins.toLocaleString("vi-VN")} label="Coins" />
+          <button className="hidden items-center gap-1 rounded-xl border border-[#e5e7f2] bg-white px-3 py-2 text-xs font-black sm:flex"><AppIcon name="globe" tone="cyan" size={14} bare /> VI</button>
+          <button className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#e5e7f2] bg-white text-sm"><AppIcon name="bell" tone="yellow" size={16} bare /><span className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 text-[10px] font-black text-white">3</span></button>
+          <Link href="/profile" className="hidden items-center gap-2 rounded-2xl px-2 py-1.5 hover:bg-[#f5f2ff] sm:flex">
+            <img src={avatar} alt={displayName} className="h-9 w-9 rounded-full object-cover" />
+            <span className="leading-tight"><span className="block text-[13px] font-black">{displayName}</span><span className="block text-[11px] font-bold text-[#69708b]">Level {level}</span></span>
+          </Link>
         </div>
-
-        <div className="flex-1 space-y-4">
-          <Progress label="Speaking" value={68} />
-          <Progress label="Listening" value={81} />
-          <Progress label="Grammar" value={74} />
-          <Progress label="Vocabulary" value={86} />
-        </div>
       </div>
-    </Card>
+    </header>
   );
 }
 
-function StatsCard() {
-  return (
-    <Card title="Thống kê học tập" right="All time">
-      <div className="grid grid-cols-2 gap-4">
-        <Stat icon="📚" value="18" label="khóa học" />
-        <Stat icon="✅" value="126" label="bài đã học" />
-        <Stat icon="⭐" value="3.200" label="XP tích lũy" />
-        <Stat icon="🏆" value="24" label="thành tích" />
-      </div>
-    </Card>
-  );
+function TopPill({ icon, value, label }: { icon: string; value: string | number; label: string }) {
+  return <div className="hidden items-center gap-2 rounded-xl border border-[#e8e9f5] bg-white px-3 py-2 shadow-sm lg:flex"><LegacyIcon icon={icon} label={label} tone={label === "Streak" ? "orange" : label === "Xu" ? "cyan" : "yellow"} size={16} /><span className="leading-tight"><span className="block text-xs font-black">{value}</span><span className="block text-[10px] font-bold text-[#69708b]">{label}</span></span></div>;
 }
 
-function CoursesProgress() {
-  return (
-    <Card title="Khóa học đang học" right="3 khóa">
-      <div className="space-y-4">
-        <Course
-          title="English Starter"
-          desc="24/30 bài · còn 6 bài"
-          value={82}
-        />
-        <Course
-          title="Speaking Daily"
-          desc="12/28 bài · luyện nói hằng ngày"
-          value={48}
-        />
-        <Course
-          title="Grammar Clear"
-          desc="Hoàn thành · có thể xem lại"
-          value={100}
-        />
-      </div>
-    </Card>
-  );
-}
-
-function ToolHistory({ userWritingHistory, userWordHistory }: any) {
-  const [activeTab, setActiveTab] = useState<"all" | "word" | "writing">("all");
-  const [selectedItem, setSelectedItem] = useState<any>(null);
-  const [writingHistory, setWritingHistory] = useState<any>(null);
-  const [openAllHistory, setOpenAllHistory] = useState(false);
-  const showWord = activeTab === "all" || activeTab === "word";
-  const showWriting = activeTab === "all" || activeTab === "writing";
-
-  return (
-    <Card title="Lịch sử công cụ" right="Gần đây">
-      <div className="mb-5 flex gap-2">
-        <TabButton
-          active={activeTab === "all"}
-          onClick={() => setActiveTab("all")}
-        >
-          Tất cả
-        </TabButton>
-        <TabButton
-          active={activeTab === "word"}
-          onClick={() => setActiveTab("word")}
-        >
-          Check từ
-        </TabButton>
-        <TabButton
-          active={activeTab === "writing"}
-          onClick={() => setActiveTab("writing")}
-        >
-          Check bài
-        </TabButton>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        {showWord && (
-          <HistoryColumn
-            title="🔤 Lịch sử check từ"
-            items={userWordHistory}
-            onSelect={setSelectedItem}
-          />
-        )}
-
-        {showWriting && (
-          <WritingHistoryColumn
-            title="📝 Lịch sử check bài"
-            items={userWritingHistory}
-            onSelect={setWritingHistory}
-          />
-        )}
-      </div>
-      <div className="mt-6 flex flex-wrap gap-3">
-        <button
-          type="button"
-          onClick={() => setOpenAllHistory(true)}
-          className="rounded-full bg-[#1f2a44] px-5 py-3 font-extrabold text-white transition hover:scale-105 hover:bg-[#111827]"
-        >
-          Xem toàn bộ lịch sử
-        </button>
-
-        <button
-          type="button"
-          onClick={async () => {
-            try {
-              await api.post("/auth/export-report-email");
-              alert("Miu đã gửi báo cáo Excel vào email của bạn!");
-            } catch (error) {
-              console.error(error);
-              alert("Gửi báo cáo thất bại. Vui lòng thử lại.");
-            }
-          }}
-          className="rounded-full border border-[#ff6b00] px-5 py-3 font-extrabold text-[#ff6b00] transition hover:scale-105 hover:bg-[#fff4e8]"
-        >
-          Xuất báo cáo
-        </button>
-      </div>
-
-      {openAllHistory && (
-        <AllHistoryModal
-          wordHistory={userWordHistory}
-          writingHistory={userWritingHistory}
-          onClose={() => setOpenAllHistory(false)}
-          onSelect={(item) => {
-            setSelectedItem(item);
-            setOpenAllHistory(false);
-          }}
-        />
-      )}
-
-      {selectedItem?.word && (
-        <HistoryModal
-          item={selectedItem}
-          onClose={() => setSelectedItem(null)}
-        />
-      )}
-      {writingHistory && (
-        <WritingHistoryModal
-          item={writingHistory}
-          onClose={() => setWritingHistory(null)}
-        />
-      )}
-    </Card>
-  );
-}
-function TabButton({
-  active,
-  onClick,
-  children,
+function ProfileHero({
+  displayName,
+  avatar,
+  user,
+  petName,
+  petType,
+  level,
+  onEditProfile,
+  onAction,
 }: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
+  displayName: string;
+  avatar: string;
+  user: any;
+  petName: string;
+  petType: string;
+  level: number;
+  onEditProfile: () => void;
+  onAction: (message: string) => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-full px-5 py-3 font-extrabold ${
-        active
-          ? "bg-[#1f2a44] text-white"
-          : "border border-[#ead8c2] bg-white text-[#1f2a44]"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function HistoryColumn({
-  title,
-  items = [],
-  onSelect,
-}: {
-  title: string;
-  items?: WordHistory[];
-  onSelect: (item: WordHistory) => void;
-}) {
-  const type = title.includes("từ") ? "word" : "writing";
-
-  return (
-    <div>
-      <h3 className="mb-3 font-extrabold text-[#1f2a44]">{title}</h3>
-
-      <div className="space-y-3">
-        {items.length === 0 ? (
-          <EmptyHistory type={type} />
-        ) : (
-          items.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => onSelect(item)}
-              className="flex w-full items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-left transition hover:bg-[#fff4e8] hover:shadow"
-            >
-              <div>
-                <p className="font-extrabold text-[#1f2a44]">
-                  {item.word.word}
-                </p>
-
-                <p className="text-xs font-bold text-[#5b6b85]">
-                  {item.word.ipa || "/"} · {item.word.mainMeaning}
-                </p>
-              </div>
-
-              <span className="rounded-full bg-[#fff0dc] px-3 py-1 text-xs font-extrabold text-[#ff6b00]">
-                {item.word.level}
-              </span>
-            </button>
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
-
-function WritingHistoryColumn({
-  title,
-  items = [],
-  onSelect,
-}: {
-  title: string;
-  items?: WritingHistory[];
-  onSelect: (item: WritingHistory) => void;
-}) {
-  return (
-    <div>
-      <h3 className="mb-3 font-extrabold text-[#1f2a44]">{title}</h3>
-
-      <div className="space-y-3">
-        {items.length === 0 ? (
-          <EmptyHistory type="writing" />
-        ) : (
-          items.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => onSelect(item)}
-              className="flex w-full items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-left transition hover:bg-[#fff4e8] hover:shadow"
-            >
-              <div className="min-w-0">
-                <p className="truncate font-extrabold text-[#1f2a44]">
-                  {item.originalText}
-                </p>
-
-                <p className="text-xs font-bold text-[#5b6b85]">
-                  {item.corrections?.length ?? 0} lỗi · {item.level} ·{" "}
-                  {item.style}
-                </p>
-              </div>
-
-              <span className="ml-3 shrink-0 rounded-full bg-[#fff0dc] px-3 py-1 text-xs font-extrabold text-[#ff6b00]">
-                {item.score}/100
-              </span>
-            </button>
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
-
-function HistoryModal({
-  item,
-  onClose,
-}: {
-  item: WordHistory;
-  onClose: () => void;
-}) {
-  const word = item.word;
-
-  const playAudio = () => {
-    if (!word.audio) return;
-    new Audio(word.audio).play();
-  };
-
-  return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 px-4">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[28px] bg-white p-6 shadow-2xl">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-extrabold text-[#ff6b00]">
-              🔤 Lịch sử check từ
-            </p>
-
-            <h2 className="mt-2 text-4xl font-extrabold text-[#1f2a44]">
-              {word.word}
-            </h2>
-
-            <p className="mt-2 font-bold text-[#5b6b85]">
-              {word.ipa || "/"} · {word.partOfSpeech || "word"}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full bg-slate-100 px-4 py-2 font-extrabold text-[#1f2a44]"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div className="mt-6 rounded-2xl border border-[#ead8c2] bg-[#fffaf5] p-5">
-          <h3 className="font-extrabold text-[#1f2a44]">Nghĩa chính</h3>
-
-          <p className="mt-2 text-xl font-extrabold text-[#ff6b00]">
-            {word.mainMeaning || "Chưa có nghĩa chính."}
-          </p>
-
-          <p className="mt-2 leading-7 text-[#5b6b85]">
-            {word.shortExplanation || word.definition || "Chưa có giải thích."}
-          </p>
-        </div>
-
-        {word.audio && (
-          <button
-            type="button"
-            onClick={playAudio}
-            className="mt-5 rounded-full bg-[#1f2a44] px-5 py-3 font-extrabold text-white transition hover:bg-[#ff6b00]"
-          >
-            🔊 Nghe phát âm
-          </button>
-        )}
-
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <InfoList
-            title="Từ đồng nghĩa"
-            items={
-              word.synonyms?.map((item) => `${item.word} - ${item.meaning}`) ||
-              []
-            }
-          />
-
-          <InfoList
-            title="Cụm từ hay dùng"
-            items={
-              word.phrases?.map((item) => `${item.phrase} - ${item.meaning}`) ||
-              []
-            }
-          />
-        </div>
-
-        <div className="mt-5">
-          <h3 className="font-extrabold text-[#1f2a44]">Ví dụ</h3>
-
-          <div className="mt-3 space-y-3">
-            {word.examples?.length ? (
-              word.examples.map((example, index) => (
-                <div key={index} className="rounded-2xl bg-slate-50 p-4">
-                  <p className="font-extrabold text-[#1f2a44]">
-                    {example.source}
-                  </p>
-                  <p className="mt-1 text-[#5b6b85]">{example.target}</p>
-                </div>
-              ))
-            ) : (
-              <div className="rounded-2xl bg-slate-50 p-4 font-bold text-[#5b6b85]">
-                Chưa có ví dụ.
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Card({
-  title,
-  right,
-  children,
-}: {
-  title: string;
-  right?: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-[26px] border border-[#ead8c2] bg-white p-6 shadow-[0_24px_70px_rgba(31,42,68,0.06)]">
-      <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-xl font-extrabold text-[#1f2a44]">{title}</h2>
-        {right && (
-          <span className="text-xs font-extrabold text-[#5b6b85]">{right}</span>
-        )}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function Badge({ text }: { text: string }) {
-  return (
-    <span className="rounded-full bg-white/15 px-3 py-2 text-xs font-extrabold">
-      {text}
-    </span>
-  );
-}
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between border-b border-[#ead8c2] py-3 text-sm font-bold last:border-0">
-      <span className="text-[#5b6b85]">{label}</span>
-      <span className="text-[#1f2a44]">{value}</span>
-    </div>
-  );
-}
-
-function Progress({ label, value }: { label: string; value: number }) {
-  return (
-    <div>
-      <div className="mb-1 flex justify-between text-sm font-extrabold text-[#1f2a44]">
-        <span>{label}</span>
-        <span>{value}%</span>
-      </div>
-      <div className="h-2 rounded-full bg-slate-200">
-        <div
-          className="h-2 rounded-full bg-[#ff6b00]"
-          style={{ width: `${value}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-function Stat({
-  icon,
-  value,
-  label,
-}: {
-  icon: string;
-  value: string;
-  label: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-[#ead8c2] bg-[#fffaf5] p-4">
-      <div className="text-2xl">{icon}</div>
-      <div className="mt-3 text-2xl font-extrabold text-[#ff6b00]">{value}</div>
-      <p className="mt-1 text-xs font-extrabold text-[#5b6b85]">{label}</p>
-    </div>
-  );
-}
-
-function Course({
-  title,
-  desc,
-  value,
-}: {
-  title: string;
-  desc: string;
-  value: number;
-}) {
-  return (
-    <div className="rounded-2xl border border-[#ead8c2] bg-[#fffaf5] p-4">
-      <div className="mb-3 flex items-center justify-between">
+    <section className="relative overflow-hidden rounded-[28px] border border-[#e9e5ff] bg-gradient-to-r from-[#fbf3ff] via-[#fff8fb] to-[#f0f5ff] p-5 shadow-sm">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(255,202,221,0.55),transparent_28%),radial-gradient(circle_at_55%_80%,rgba(124,58,237,0.12),transparent_28%)]" />
+      <div className="relative z-10 grid gap-5 xl:grid-cols-[300px_minmax(0,1fr)_110px]">
         <div>
-          <h3 className="font-extrabold text-[#1f2a44]">{title}</h3>
-          <p className="text-xs font-bold text-[#5b6b85]">{desc}</p>
-        </div>
-        <button className="rounded-full bg-[#1f2a44] px-4 py-2 text-xs font-extrabold text-white">
-          Tiếp tục
-        </button>
-      </div>
-
-      <div className="h-2 rounded-full bg-slate-200">
-        <div
-          className="h-2 rounded-full bg-[#ff6b00]"
-          style={{ width: `${value}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-function EmptyHistory({ type }: { type: "word" | "writing" }) {
-  const router = useRouter();
-  return (
-    <div className="flex flex-col items-center rounded-2xl border border-dashed border-[#ead8c2] bg-[#fffaf5] px-6 py-10 text-center">
-      <div className="mb-4 text-6xl animate-bounce">
-        {type === "word" ? "📚" : "📝"}
-      </div>
-
-      <h3 className="text-lg font-extrabold text-[#1f2a44]">Chưa có lịch sử</h3>
-
-      <p className="mt-2 max-w-xs leading-7 text-[#5b6b85]">
-        {type === "word"
-          ? "Bạn chưa tra từ nào. Hãy thử Check từ để Miu giúp bạn học từ vựng."
-          : "Bạn chưa kiểm tra bài viết nào. Hãy thử Check bài để Miu sửa lỗi ngữ pháp."}
-      </p>
-
-      <button
-        type="button"
-        onClick={() =>
-          router.push(type === "word" ? "/check-word" : "/check-writing")
-        }
-        className="mt-6 rounded-full bg-[#ff6b00] px-6 py-3 font-extrabold text-white shadow-lg transition hover:scale-105"
-      >
-        {type === "word" ? "Đi tới Check từ" : "Đi tới Check bài"}
-      </button>
-    </div>
-  );
-}
-
-function InfoList({ title, items }: { title: string; items: string[] }) {
-  return (
-    <div className="rounded-2xl border border-[#ead8c2] bg-white p-4">
-      <h3 className="font-extrabold text-[#1f2a44]">{title}</h3>
-
-      <div className="mt-3 space-y-2">
-        {items.length ? (
-          items.map((item) => (
-            <div
-              key={item}
-              className="rounded-xl bg-slate-50 px-3 py-2 text-sm font-bold text-[#5b6b85]"
-            >
-              {item}
+          <div className="flex items-center gap-2"><h1 className="text-2xl font-black">Hồ sơ của tôi</h1><span className="rounded-full bg-[#6d35ff] px-2 py-1 text-[11px] font-black text-white">⭐ Pro</span></div>
+          <div className="mt-5 flex items-center gap-4">
+            <div className="relative">
+              <img src={avatar} alt={displayName} className="h-28 w-28 rounded-full border-4 border-white object-cover shadow-xl" />
+              <button onClick={() => onAction("Đổi ảnh đại diện sẽ được mở ở bước tiếp theo.")} className="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full bg-[#6d35ff] text-white shadow-lg">📷</button>
             </div>
-          ))
-        ) : (
-          <div className="rounded-xl bg-slate-50 px-3 py-2 text-sm font-bold text-[#5b6b85]">
-            Chưa có dữ liệu.
+            <div>
+              <h2 className="text-2xl font-black">{displayName}</h2>
+              <p className="mt-1 text-sm font-bold text-[#3f4867]">@{user?.username || "minhanh_english"}</p>
+              <p className="mt-3 text-sm font-bold text-[#69708b]">📅 Tham gia 15/03/2024</p>
+              <p className="mt-2 text-sm font-bold text-[#69708b]">🎯 Mục tiêu: IELTS 7.0 trong năm nay!</p>
+            </div>
           </div>
-        )}
+          <button onClick={onEditProfile} className="mt-5 rounded-xl border border-[#e0d9ff] bg-white px-4 py-3 text-sm font-black text-[#303956] shadow-sm">✎ Chỉnh sửa hồ sơ</button>
+        </div>
+
+        <div className="flex items-end justify-center">
+          <div className="relative">
+            <div className="absolute inset-6 rounded-full bg-[#ffb26b]/30 blur-3xl" />
+            <SpiritPetAvatar petType={petType} level={level} size="xl" showLevelBadge={false} />
+            <div className="absolute -left-20 top-6 hidden max-w-[180px] rounded-2xl bg-white/90 p-4 text-sm font-bold text-[#303956] shadow-lg lg:block">
+              Hi {displayName}! 👋<br />Hôm nay chúng ta học thật vui nhé!
+              <span className="absolute -bottom-2 right-6 text-pink-500">♥</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid content-center gap-3 sm:grid-cols-3 xl:grid-cols-1">
+          <button onClick={onEditProfile} className="rounded-2xl bg-white px-3 py-4 text-xs font-black text-[#303956] shadow-sm">✎ Đổi tên</button>
+          <Link href="/pet" className="rounded-2xl bg-white px-3 py-4 text-center text-xs font-black text-[#303956] shadow-sm">👕 Đổi skin</Link>
+          <Link href="/pet" className="rounded-2xl bg-white px-3 py-4 text-center text-xs font-black text-[#303956] shadow-sm">🏠 Nhà của Foxy</Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PetVitals({ pet, averageScore }: { pet: PetProfile | null; averageScore: number }) {
+  const vitals = [
+    { icon: "💗", label: "Vui vẻ", value: pet?.happiness || 92, color: "bg-[#ff4d7d]" },
+    { icon: "🍗", label: "No bụng", value: pet?.hunger || 75, color: "bg-[#ff7a22]" },
+    { icon: "⚡", label: "Năng lượng", value: pet?.energy || 80, color: "bg-[#f5c12f]" },
+    { icon: "🙂", label: "Sạch sẽ", value: pet?.hygiene || averageScore, color: "bg-[#2f80ff]" },
+  ];
+
+  return (
+    <section className="grid gap-4 rounded-2xl border border-[#e8e9f5] bg-white p-5 shadow-sm sm:grid-cols-2 xl:grid-cols-4">
+      {vitals.map((item) => <Vital key={item.label} {...item} />)}
+    </section>
+  );
+}
+
+function Vital({ icon, label, value, color }: { icon: string; label: string; value: number; color: string }) {
+  return (
+    <div className="flex items-center gap-3 xl:border-r xl:border-[#e8e9f5] xl:last:border-r-0">
+      <LegacyIcon icon={icon} label={label} tone={label.includes("bụng") ? "orange" : label.includes("lượng") ? "yellow" : label.includes("Sạch") ? "blue" : "pink"} className="h-12 w-12" size={24} />
+      <div className="min-w-0 flex-1 pr-4">
+        <div className="flex items-end gap-2"><span className="text-2xl font-black">{value}%</span><span className="pb-1 text-xs font-bold text-[#69708b]">{label}</span></div>
+        <div className="mt-3 h-1.5 rounded-full bg-[#e6e8f2]"><div className={`h-1.5 rounded-full ${color}`} style={{ width: `${Math.min(value, 100)}%` }} /></div>
       </div>
     </div>
   );
 }
 
-function WritingHistoryModal({
-  item,
-  onClose,
-}: {
-  item: WritingHistory;
-  onClose: () => void;
-}) {
+function CarePanel({ onAction }: { onAction: (message: string) => void }) {
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 px-4">
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-[28px] bg-white p-6 shadow-2xl">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-extrabold text-[#ff6b00]">
-              📝 Lịch sử check bài
-            </p>
-
-            <h2 className="mt-2 text-3xl font-extrabold text-[#1f2a44]">
-              Điểm {item.score}/100
-            </h2>
-
-            <p className="mt-2 font-bold text-[#5b6b85]">
-              {item.level} · {item.style} · {item.detectedLanguage}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full bg-slate-100 px-4 py-2 font-extrabold text-[#1f2a44]"
-          >
-            ✕
+    <Panel title="Chăm sóc và tương tác" action="ⓘ">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        {careActions.map((item) => (
+          <button key={item.title} onClick={() => onAction(`Foxy vừa ${item.title.toLowerCase()} và nhận ${item.reward} năng lượng vui vẻ.`)} className="overflow-hidden rounded-2xl border border-[#e8e9f5] bg-white text-center shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+            <div className={`flex h-28 items-center justify-center bg-gradient-to-br ${item.bg}`}><LegacyIcon icon={item.icon} label={item.title} tone="orange" className="h-16 w-16" size={32} /></div>
+            <div className="p-3"><h3 className="font-black">{item.title}</h3><p className="mt-1 text-sm font-black text-[#6d35ff]">{item.reward} {item.mood}</p></div>
           </button>
-        </div>
-
-        <div className="mt-6 rounded-2xl border border-[#ead8c2] bg-[#fffaf5] p-5">
-          <h3 className="font-extrabold text-[#1f2a44]">Bài gốc</h3>
-          <p className="mt-2 leading-7 text-[#5b6b85]">{item.originalText}</p>
-        </div>
-
-        <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
-          <h3 className="font-extrabold text-[#1f2a44]">Phiên bản Miu gợi ý</h3>
-          <p className="mt-2 font-bold leading-7 text-[#1f2a44]">
-            {item.suggestedVersion}
-          </p>
-        </div>
-
-        <div className="mt-5 grid gap-3 md:grid-cols-4">
-          <HistoryScore label="Grammar" value={item.grammarScore} />
-          <HistoryScore label="Vocabulary" value={item.vocabularyScore} />
-          <HistoryScore label="Clarity" value={item.clarityScore} />
-          <HistoryScore label="Meaning" value={item.meaningScore} />
-        </div>
-
-        <div className="mt-5">
-          <h3 className="font-extrabold text-[#1f2a44]">Lỗi đã sửa</h3>
-
-          <div className="mt-3 space-y-3">
-            {item.corrections?.map((correction, index) => (
-              <div key={index} className="rounded-2xl bg-slate-50 p-4">
-                <div className="mb-2 flex items-center justify-between">
-                  <h4 className="font-extrabold text-[#1f2a44]">
-                    {correction.type}
-                  </h4>
-                  <span className="rounded-full bg-[#fff0dc] px-3 py-1 text-xs font-extrabold text-[#ff6b00]">
-                    {correction.level}
-                  </span>
-                </div>
-
-                <p className="font-bold text-red-500">{correction.wrong}</p>
-                <p className="font-bold text-emerald-600">
-                  → {correction.correct}
-                </p>
-                <p className="mt-2 text-sm leading-6 text-[#5b6b85]">
-                  {correction.explanation}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <InfoList title="Cụm từ nên học" items={item.phrases || []} />
-          <InfoList title="Mẹo học" items={item.learningTips || []} />
-        </div>
-
-        {item.miuNote && (
-          <div className="mt-5 rounded-2xl bg-[#f7f1fb] p-5 font-bold leading-7 text-[#6b5796]">
-            💡 {item.miuNote}
-          </div>
-        )}
+        ))}
       </div>
-    </div>
+      <p className="mt-4 text-sm font-bold text-[#6d35ff]">✣ Chăm sóc Foxy mỗi ngày để nhận thêm XP và phần thưởng nhé!</p>
+    </Panel>
   );
 }
 
-function HistoryScore({ label, value }: { label: string; value: number }) {
+function AchievementPanel() {
+  const badges = ["🔮", "⭐", "🛡️", "📖", "🏅"];
+  return <Panel title="Thành tích nổi bật" action="Xem tất cả"><div className="grid grid-cols-3 gap-4 sm:grid-cols-5">{badges.map((badge, index) => <div key={badge} className="text-center"><div className="text-6xl">{badge}</div><p className="mt-2 text-xs font-black">{["1Ngày Liên Tục", "Bậc Thầy Ngữ Pháp", "Chiến Binh Arena", "Biblio Master", "IELTS 7.0"][index]}</p></div>)}</div></Panel>;
+}
+
+function LearningStats({ learnedWords, completedLessons }: { learnedWords: number; completedLessons: number }) {
   return (
-    <div className="rounded-2xl border border-[#ead8c2] bg-[#fffaf5] p-4 text-center">
-      <div className="text-xl font-extrabold text-[#ff6b00]">{value}</div>
-      <p className="mt-1 text-xs font-extrabold text-[#5b6b85]">{label}</p>
-    </div>
+    <Panel title="Thống kê học tập" action="Xem chi tiết">
+      <StatRow icon="📘" label="Tổng từ đã học" value={`${learnedWords.toLocaleString("vi-VN")} từ`} />
+      <StatRow icon="✅" label="Bài học đã hoàn thành" value={`${completedLessons} bài`} />
+      <StatRow icon="⏱" label="Thời gian học" value="128 giờ" />
+      <StatRow icon="🧾" label="Bài kiểm tra đã làm" value="45 bài" />
+    </Panel>
   );
 }
 
-function AllHistoryModal({
-  wordHistory,
-  writingHistory,
-  onClose,
-  onSelect,
-}: {
-  wordHistory: WordHistory[];
-  writingHistory: WritingHistory[];
-  onClose: () => void;
-  onSelect: (item: WordHistory | WritingHistory) => void;
-}) {
+function EvolutionRoad({ level }: { level: number }) {
+  const stages = ["Trứng", "Bé Foxy\nLv.1", "Foxy Tập Sự\nLv.10", "Foxy Hiếu Học\nLv.25", "Foxy Thông Thái\nLv.50", "Foxy Huyền Thoại\nLv.100"];
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 px-4">
-      <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-[28px] bg-white p-6 shadow-2xl">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <p className="text-sm font-extrabold text-[#ff6b00]">
-              📚 Hồ sơ học tập
-            </p>
-            <h2 className="text-3xl font-extrabold text-[#1f2a44]">
-              Toàn bộ lịch sử
-            </h2>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full bg-slate-100 px-4 py-2 font-extrabold text-[#1f2a44]"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <div>
-            <h3 className="mb-3 font-extrabold text-[#1f2a44]">🔤 Check từ</h3>
-
-            <div className="space-y-3">
-              {wordHistory.length ? (
-                wordHistory.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => onSelect(item)}
-                    className="flex w-full items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-left hover:bg-[#fff4e8]"
-                  >
-                    <div>
-                      <p className="font-extrabold text-[#1f2a44]">
-                        {item.word.word}
-                      </p>
-                      <p className="text-xs font-bold text-[#5b6b85]">
-                        {item.word.mainMeaning}
-                      </p>
-                    </div>
-
-                    <span className="rounded-full bg-[#fff0dc] px-3 py-1 text-xs font-extrabold text-[#ff6b00]">
-                      {item.word.level}
-                    </span>
-                  </button>
-                ))
-              ) : (
-                <EmptyHistory type="word" />
-              )}
-            </div>
-          </div>
-
-          <div>
-            <h3 className="mb-3 font-extrabold text-[#1f2a44]">📝 Check bài</h3>
-
-            <div className="space-y-3">
-              {writingHistory.length ? (
-                writingHistory.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => onSelect(item)}
-                    className="flex w-full items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-left hover:bg-[#fff4e8]"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate font-extrabold text-[#1f2a44]">
-                        {item.originalText}
-                      </p>
-                      <p className="text-xs font-bold text-[#5b6b85]">
-                        {item.corrections?.length ?? 0} lỗi · {item.level}
-                      </p>
-                    </div>
-
-                    <span className="ml-3 shrink-0 rounded-full bg-[#fff0dc] px-3 py-1 text-xs font-extrabold text-[#ff6b00]">
-                      {item.score}/100
-                    </span>
-                  </button>
-                ))
-              ) : (
-                <EmptyHistory type="writing" />
-              )}
-            </div>
-          </div>
-        </div>
+    <Panel title="Hành trình của Foxy">
+      <div className="grid gap-3 md:grid-cols-6">
+        {stages.map((stage, index) => {
+          const unlocked = level >= [0, 1, 10, 25, 50, 100][index];
+          return <div key={stage} className={`rounded-2xl p-3 text-center ${unlocked ? "bg-[#f4f0ff] text-[#652cff]" : "bg-[#f3f4f8] text-[#9aa1b8]"}`}><div className="text-4xl">{index === 0 ? "🥚" : unlocked ? "🦊" : "🔒"}</div><p className="mt-2 whitespace-pre-line text-xs font-black">{stage}</p></div>;
+        })}
       </div>
-    </div>
+    </Panel>
   );
 }
 
-function EditableRow({
-  label,
-  value,
-  editing,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  editing: boolean;
-  onChange: (value: string) => void;
-}) {
+function PetStatus({ petName, level, xp }: { petName: string; level: number; xp: number }) {
+  const xpMax = 1000;
   return (
-    <div className="flex items-center justify-between border-b border-[#ead8c2] py-3 text-sm font-bold last:border-0">
-      <span className="text-[#5b6b85]">{label}</span>
-
-      {editing ? (
-        <input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-56 rounded-xl border border-[#ead8c2] bg-white px-3 py-2 text-right font-extrabold text-[#1f2a44] outline-none focus:border-[#ff6b00]"
-        />
-      ) : (
-        <span className="text-right text-[#1f2a44]">
-          {value || "Chưa cập nhật"}
-        </span>
-      )}
-    </div>
-  );
-}
-
-function PrettyInfoRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: string;
-  label: string;
-  value: string;
-  readonly?: boolean;
-}) {
-  return (
-    <div className="flex items-center gap-3 rounded-2xl bg-white/80 px-4 py-3 shadow-sm ring-1 ring-[#ead8c2]/70">
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#fff4e8] text-xl">
-        {icon}
-      </span>
-
-<div className="min-w-0 flex-1 overflow-hidden">
-  <p className="text-xs font-extrabold text-[#8a94a8]">{label}</p>
-
-  <p
-    className="
-      mt-1
-      break-all
-      text-[17px]
-      font-extrabold
-      leading-6
-      text-[#1f2a44]
-    "
-  >
-    {value}
-  </p>
-</div>
-    </div>
-  );
-}
-
-function PrettyEditableRow({
-  icon,
-  label,
-  value,
-  editing,
-  placeholder,
-  onChange,
-}: {
-  icon: string;
-  label: string;
-  value: string;
-  editing: boolean;
-  placeholder: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <div
-      className={`flex items-center gap-3 rounded-2xl px-4 py-3 shadow-sm transition ${
-        editing
-          ? "border-2 border-[#ff6b00] bg-white shadow-orange-100"
-          : "border border-[#ead8c2] bg-white/80"
-      }`}
-    >
-      <span
-        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-xl shadow-sm ${
-          editing
-            ? "bg-[#fff0dc] ring-2 ring-[#ff6b00]/20"
-            : "bg-gradient-to-br from-[#fff4e8] to-[#f7f1fb]"
-        }`}
-      >
-        {icon}
-      </span>
-
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-extrabold text-[#8a94a8]">{label}</p>
-
-        {editing ? (
-          <input
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={placeholder}
-            className="mt-1 w-full rounded-xl bg-[#fffaf5] px-3 py-2 font-extrabold text-[#1f2a44] outline-none focus:bg-white"
-          />
-        ) : (
-          <p className="mt-1 break-all text-[16px] font-extrabold leading-5 text-[#1f2a44]">
-            {value || "Chưa cập nhật"}
-          </p>
-        )}
+    <Panel title="Linh thú của tôi" action={`Cấp ${level}`}>
+      <h2 className="text-3xl font-black">{petName}</h2>
+      <div className="mt-4 h-2 rounded-full bg-[#e5e0ff]"><div className="h-2 rounded-full bg-[#6d35ff]" style={{ width: `${Math.min((xp / xpMax) * 100, 100)}%` }} /></div>
+      <p className="mt-2 text-right text-sm font-bold text-[#69708b]">{xp} / {xpMax} XP</p>
+      <div className="mt-5 rounded-2xl bg-[#f7f6ff] p-4">
+        <p className="text-sm font-black">Tâm trạng hiện tại</p>
+        <div className="mt-3 flex items-center gap-3"><span className="text-5xl">😄</span><div><h3 className="text-xl font-black">Rất vui!</h3><p className="text-sm font-bold text-[#69708b]">Foxy đang tràn đầy năng lượng! 🎉</p></div></div>
       </div>
-    </div>
+    </Panel>
   );
 }
 
-
-function ErrorModal({
-  message,
-  onClose,
-}: {
-  message: string;
-  onClose: () => void;
-}) {
+function InventoryPanel({ onAction }: { onAction: (message: string) => void }) {
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 px-4">
-      <div className="w-full max-w-md rounded-[28px] bg-white p-6 text-center shadow-2xl">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-3xl">
-          😿
-        </div>
-
-        <h2 className="mt-4 text-2xl font-extrabold text-[#1f2a44]">
-          Cập nhật thất bại
-        </h2>
-
-        <p className="mt-3 leading-7 text-[#5b6b85]">{message}</p>
-
-        <button
-          type="button"
-          onClick={onClose}
-          className="mt-6 w-full rounded-2xl bg-[#ff6b00] py-4 font-extrabold text-white"
-        >
-          Đã hiểu
-        </button>
+    <Panel title="Túi đồ của Foxy" action="Xem tất cả">
+      <div className="flex gap-3 border-b border-[#e8e9f5] pb-3 text-sm font-black text-[#69708b]"><span className="text-[#6d35ff]">Thức ăn</span><span>Đồ chơi</span><span>Vật phẩm</span><span>Phụ kiện</span></div>
+      <div className="mt-4 grid grid-cols-5 gap-2">
+        {inventory.map((item) => <div key={item.name} className="rounded-xl border border-[#e8e9f5] bg-[#fafbff] p-3 text-center"><LegacyIcon icon={item.icon} label={item.name} tone="orange" className="mx-auto h-12 w-12" size={24} /><p className="mt-2 text-xs font-black">{item.name}</p><p className="text-xs font-black text-[#ff6b00]">x{item.count}</p></div>)}
       </div>
-    </div>
+      <button onClick={() => onAction("Foxy đã ăn một phần đồ ăn trong túi.")} className="mt-4 w-full rounded-xl bg-[#6d35ff] px-4 py-3 font-black text-white">Cho ăn</button>
+    </Panel>
   );
+}
+
+function MiniGames({ onAction }: { onAction: (message: string) => void }) {
+  return <Panel title="Trò chơi cùng Foxy" action="Xem tất cả →"><div className="grid grid-cols-4 gap-3">{["Ném bóng", "Bắt sao", "Đoán từ", "Nhảy dây"].map((game, index) => <button key={game} onClick={() => onAction(`Đang chuẩn bị trò chơi ${game}.`)} className="rounded-xl bg-gradient-to-br from-[#dbeafe] to-[#fce7f3] p-2 text-center"><div className="text-3xl">{["⚽", "⭐", "🔤", "🦊"][index]}</div><p className="mt-2 text-[11px] font-black">{game}</p><p className="text-[10px] font-bold text-[#6d35ff]">Chơi ngay</p></button>)}</div></Panel>;
+}
+
+function FriendsPanel({ onAction }: { onAction: (message: string) => void }) {
+  return <Panel title="Bạn bè (128)" action="Xem tất cả →"><div className="grid grid-cols-5 gap-3">{["Quang Huy", "Thảo Vy", "Đức Mạnh", "Mai Trang", "Hoàng Nam"].map((name, index) => <button key={name} onClick={() => onAction(`Đã mở hồ sơ bạn bè ${name}.`)} className="text-center"><div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#dbeafe] to-[#fde68a] text-2xl">{["👨", "👩", "👨", "👩", "👨"][index]}</div><p className="mt-2 truncate text-[11px] font-black">{name}</p><p className="text-[10px] font-bold text-[#69708b]">Level {17 + index}</p></button>)}</div><button onClick={() => onAction("Đã gửi quà thân thiện cho bạn bè.")} className="mt-4 w-full rounded-xl bg-[#6d35ff] px-4 py-3 font-black text-white">🎁 Tặng quà cho bạn bè</button></Panel>;
+}
+
+function Panel({ title, action, children }: { title: string; action?: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-2xl border border-[#e8e9f5] bg-white p-5 shadow-sm">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="font-black">{title}</h2>
+        {action && <span className="rounded-lg bg-[#f4f0ff] px-2 py-1 text-xs font-black text-[#6d35ff]">{action}</span>}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function StatRow({ icon, label, value }: { icon: string; label: string; value: string }) {
+  return <div className="flex items-center justify-between py-2 text-sm font-bold"><span className="flex items-center gap-3 text-[#69708b]"><LegacyIcon icon={icon} label={label} tone="purple" className="h-8 w-8" size={16} />{label}</span><span className="font-black text-[#121735]">{value}</span></div>;
 }

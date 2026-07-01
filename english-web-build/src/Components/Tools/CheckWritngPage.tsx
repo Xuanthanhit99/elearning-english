@@ -106,7 +106,7 @@ export default function CheckWritingPage() {
 
             <h1 className="max-w-3xl text-5xl font-extrabold leading-tight text-[#1f2a44] lg:text-6xl">
               Check bài viết cùng{" "}
-              <span className="text-[#ff6b00]">MiuLingo</span>
+              <span className="text-[#ff6b00]">PoppyLingo</span>
             </h1>
 
             <p className="mt-5 max-w-3xl text-lg leading-8 text-[#5b6b85]">

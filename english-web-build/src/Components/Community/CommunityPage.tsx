@@ -1,460 +1,324 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import { useAuthStore } from "@/src/store/authStore";
+import SpiritPetAvatar from "@/src/Components/Pets/SpiritPetAvatar";
 import CommunityComposerBox from "./CommunityComposerBox";
+import { AppIcon, LegacyIcon } from "@/src/Components/UI/AppIcon";
+import AppLogo from "@/src/Components/UI/AppLogo";
 
-type ComposerMode =
-  | "post"
-  | "speaking"
-  | "writing"
-  | "word"
-  | "question"
-  | "image";
+type ComposerMode = "post" | "speaking" | "writing" | "word" | "question" | "image" | "poll";
+
+const leftMenu = [
+  { icon: "⌂", label: "Bảng tin", active: true },
+  { icon: "⌕", label: "Khám phá" },
+  { icon: "✣", label: "Bài viết của bạn" },
+  { icon: "👥", label: "Bạn bè" },
+  { icon: "●", label: "Nhóm" },
+  { icon: "▣", label: "Sự kiện" },
+  { icon: "?", label: "Hỏi đáp" },
+];
+
+const topNav = [
+  { label: "Trang chủ", href: "/" },
+  { label: "Học tập", href: "/courses" },
+  { label: "Đấu trường", href: "/arena" },
+  { label: "AI Tutor", href: "/check-writing" },
+  { label: "Thư viện", href: "/courses" },
+  { label: "Cộng đồng", href: "/community", active: true },
+  { label: "Shop", href: "/pet" },
+];
+
+const posts = [
+  {
+    author: "Lan Phương",
+    level: "B1",
+    time: "2 giờ trước",
+    text: "Mình vừa học xong 50 từ vựng chủ đề “Environment”. Chia sẻ với mọi người một số từ mình thấy thú vị nhé! 🌍💚",
+    tags: "#Vocabulary #Environment",
+    words: [
+      ["sustainable", "/səˈsteɪnəbl/", "bền vững, có thể duy trì"],
+      ["recycle", "/riːˈsaɪkl/", "tái chế"],
+      ["pollution", "/pəˈluːʃn/", "ô nhiễm"],
+      ["conserve", "/kənˈsɜːv/", "bảo tồn"],
+    ],
+    reactions: 128,
+    comments: 32,
+    shares: 12,
+  },
+  {
+    author: "Hoàng Nam",
+    level: "A2",
+    time: "4 giờ trước",
+    text: "Ai có tips để cải thiện kỹ năng Listening không ạ? Mình nghe mà toàn miss ý chính 🥺",
+    tags: "#Listening",
+    reactions: 45,
+    comments: 21,
+  },
+  {
+    author: "English With Me",
+    level: "Giáo viên",
+    time: "6 giờ trước",
+    text: "🎯 5 cấu trúc câu hữu ích cho người học tiếng Anh mỗi ngày! Lưu lại và luyện tập nhé các bạn ❤️",
+    tags: "",
+    image: true,
+    reactions: 256,
+    comments: 18,
+    shares: 45,
+  },
+];
 
 export default function CommunityPage() {
+  const user = useAuthStore((state) => state.user);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
-  const [mode, setMode] = useState<ComposerMode>("speaking");
+  const [mode, setMode] = useState<ComposerMode>("post");
+  const displayName = user?.fullname || "Minh Anh";
+  const avatar = user?.avatar || "/avatar-default.png";
+
+  if (isComposerOpen) {
+    return (
+      <main className="min-h-screen overflow-x-hidden bg-[#f8f7ff] text-[#121735]">
+        <div className="mx-auto flex max-w-[1920px]">
+          <ComposerSidebar onPost={() => setIsComposerOpen(false)} />
+          <section className="min-w-0 flex-1">
+            <TopBar displayName={displayName} avatar={avatar} />
+            <div className="grid gap-5 p-4 lg:p-5 2xl:grid-cols-[minmax(0,1fr)_420px]">
+              <CommunityComposerBox mode={mode} setMode={setMode} onClose={() => setIsComposerOpen(false)} />
+              <ComposerRightPanel displayName={displayName} avatar={avatar} />
+            </div>
+          </section>
+        </div>
+      </main>
+    );
+  }
+
+  const openComposer = (nextMode: ComposerMode = "post") => {
+    setMode(nextMode);
+    setIsComposerOpen(true);
+  };
 
   return (
-    <main className="min-h-screen bg-[#fff6ec] px-6 py-6 text-[#13213c]">
-      {!isComposerOpen ? (
-        <CommunityHome onOpen={() => setIsComposerOpen(true)} />
-      ) : (
-        <CommunityComposerBox
-          mode={mode}
-          setMode={setMode}
-          onClose={() => setIsComposerOpen(false)}
-        />
-      )}
+    <main className="min-h-screen overflow-x-hidden bg-[#f8f7ff] text-[#121735]">
+      <div className="mx-auto flex max-w-[1920px]">
+        <CommunitySidebar onPost={() => openComposer("post")} />
+        <section className="min-w-0 flex-1">
+          <TopBar displayName={displayName} avatar={avatar} />
+          <div className="grid gap-5 p-4 lg:p-5 2xl:grid-cols-[minmax(0,1fr)_420px]">
+            <section className="min-w-0 space-y-4">
+              <ComposerPreview avatar={avatar} onOpen={openComposer} />
+              <FeedTabs />
+              {posts.map((post, index) => <PostCard key={`${post.author}-${index}`} post={post} />)}
+            </section>
+            <aside className="space-y-5">
+              <TrendingPanel />
+              <GroupsPanel />
+              <EventPanel />
+              <SuggestionsPanel />
+            </aside>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
 
-function CommunityHome({ onOpen }: { onOpen: () => void }) {
+function CommunitySidebar({ onPost }: { onPost: () => void }) {
   return (
-    <div className="mx-auto max-w-6xl">
-      <div className="mb-8 flex items-start justify-between gap-6">
-        <section>
-          <div className="mb-3 inline-flex rounded-full border border-orange-200 bg-white px-4 py-1 text-xs font-bold text-orange-500">
-            🔥 Cộng đồng học tiếng Anh
-          </div>
-
-          <h1 className="text-5xl font-extrabold leading-tight">
-            Học cùng nhau, tiến bộ <br />
-            <span className="text-orange-500">mỗi ngày</span>
-          </h1>
-
-          <p className="mt-4 max-w-xl text-sm text-slate-500">
-            Chia sẻ bài viết, hỏi đáp tiếng Anh, tham gia thử thách speaking và
-            kết nối với những người học có cùng mục tiêu.
-          </p>
-        </section>
-
-        <div className="mt-5 w-80 rounded-3xl bg-[#2f2859] p-6 text-white shadow-xl">
-          <h3 className="font-bold">Thử thách tuần này</h3>
-          <p className="mt-3 text-sm text-white/80">
-            Viết 2 câu giới thiệu bản thân với động từ tobe bằng tiếng Anh.
-          </p>
-          <p className="mt-3 text-sm font-bold text-orange-200">
-            1.280 thành viên · 220 bài chia sẻ
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-[220px_1fr_260px] gap-6">
-        <aside className="space-y-4">
-          <Card>
-            <h3 className="mb-3 font-extrabold">Khám phá</h3>
-            <MenuItem text="Tất cả bài viết" count="230" active />
-            <MenuItem text="Hỏi đáp ngữ pháp" count="48" />
-            <MenuItem text="Luyện speaking" count="64" />
-            <MenuItem text="Check bài cộng đồng" count="31" />
-            <MenuItem text="Tài liệu học" count="43" />
-          </Card>
-
-          <div className="rounded-3xl bg-orange-500 p-5 text-white shadow-md">
-            <h3 className="font-extrabold">🎯 Daily Challenge</h3>
-            <p className="mt-2 text-sm text-white/90">
-              Hoàn thành 5 dòng tiếng Anh cùng cộng đồng để nhận +60XP.
-            </p>
-            <div className="mt-4 font-bold">2 / 5 nhiệm vụ</div>
-          </div>
-        </aside>
-
-        <section className="space-y-4">
-          <div className="rounded-3xl border border-orange-100 bg-white p-4 shadow-sm">
-            <button
-              onClick={onOpen}
-              className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-500 hover:border-orange-300"
-            >
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-500 font-bold text-white">
-                T
-              </div>
-              Bạn muốn chia sẻ hoặc hỏi gì hôm nay?
-            </button>
-
-            <div className="mt-3 flex flex-wrap gap-2">
-              {["Speaking", "Question", "Check bài", "Word"].map((item) => (
-                <button
-                  key={item}
-                  onClick={onOpen}
-                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold hover:bg-orange-50"
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <PostCard
-            name="Minh Anh"
-            role="12 phút trước · Speaking Daily"
-            tag="Speaking"
-            title="I want to improve my English speaking skills."
-            body="Mình đang luyện câu này nhưng vẫn bị sai âm cuối. Mọi người nghe thử giúp mình với 🙏"
-          />
-
-          <PostCard
-            name="Hoàng Nam"
-            role="32 phút trước · Grammar"
-            tag="Question"
-            title="Ví dụ"
-            body="Cho mình hỏi khi nào dùng I have worked và I have been working here for three years."
-          />
-
-          <PostCard
-            name="Linh Chi"
-            role="1 giờ trước · Writing Check"
-            tag="Writing"
-            title="Hello everyone, my name is Linh..."
-            body="Mình viết đoạn giới thiệu bản thân, mong mọi người góp ý cách diễn đạt tự nhiên hơn."
-          />
-        </section>
-
-        <aside className="space-y-4">
-          <Card>
-            <h3 className="mb-3 font-extrabold">🏆 Bảng xếp hạng</h3>
-            <Rank name="Minh Anh" xp="2.480 XP" index={1} />
-            <Rank name="Thanh" xp="2.320 XP" index={2} />
-            <Rank name="Linh Chi" xp="2.180 XP" index={3} />
-          </Card>
-
-          <Card>
-            <h3 className="mb-3 font-extrabold">👥 Nhóm học</h3>
-            <Group name="Speaking A2" members="132 thành viên" />
-            <Group name="Business English" members="86 thành viên" />
-            <Group name="IELTS Beginner" members="74 thành viên" />
-          </Card>
-
-          <Card>
-            <h3 className="mb-3 font-extrabold">📌 Quy tắc</h3>
-            <p className="text-sm font-semibold text-slate-600">
-              Tôn trọng người học
-            </p>
-            <p className="mt-3 text-sm font-semibold text-slate-600">
-              Góp ý rõ ràng
-            </p>
-            <p className="mt-3 text-sm font-semibold text-slate-600">
-              Không spam
-            </p>
-          </Card>
-        </aside>
-      </div>
-    </div>
-  );
-}
-
-function CommunityComposer({
-  mode,
-  setMode,
-  onClose,
-}: {
-  mode: Mode;
-  setMode: (mode: Mode) => void;
-  onClose: () => void;
-}) {
-  return (
-    <div className="mx-auto max-w-6xl">
-      <button
-        onClick={onClose}
-        className="mb-4 rounded-full bg-white px-4 py-2 text-sm font-bold shadow-sm"
-      >
-        ← Quay lại cộng đồng
+    <aside className="sticky top-0 hidden h-screen w-[270px] shrink-0 overflow-y-auto border-r border-[#e7e8f3] bg-white px-4 py-5 2xl:block">
+      <AppLogo />
+      <nav className="mt-7 space-y-1">
+        {leftMenu.map((item) => (
+          <button key={item.label} className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-black ${item.active ? "bg-[#efe9ff] text-[#652cff]" : "text-[#69708b] hover:bg-[#f5f2ff]"}`}>
+            <LegacyIcon icon={item.icon} label={item.label} tone={item.active ? "purple" : "slate"} className="h-8 w-8" size={16} />
+            <span>{item.label}</span>
+          </button>
+        ))}
+      </nav>
+      <button onClick={onPost} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#6d35ff] px-4 py-3 font-black text-white shadow-[0_16px_32px_rgba(109,53,255,0.24)]">
+        <AppIcon name="plus" tone="purple" size={18} bare /> Tạo bài viết
       </button>
-
-      <h1 className="text-4xl font-extrabold">Composer cộng đồng MiuLingo</h1>
-      <p className="mt-2 text-sm text-slate-500">
-        Nhập chủ đề cần đăng bài, mô tả nội dung; AI có thể hỗ trợ viết,
-        speaking, từ mới, câu hỏi và nhận xét bài AI.
-      </p>
-
-      <div className="mt-6 grid grid-cols-[1fr_300px] gap-6">
-        <div className="rounded-3xl border border-orange-100 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-500 text-white">
-              T
-            </div>
-            Bạn muốn chia sẻ hoặc hỏi gì hôm nay?
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            <ModeButton active={mode === "speaking"} onClick={() => setMode("speaking")}>
-              🎙 Speaking
-            </ModeButton>
-            <ModeButton active={mode === "question"} onClick={() => setMode("question")}>
-              ❓ Question
-            </ModeButton>
-            <ModeButton active={mode === "check"} onClick={() => setMode("check")}>
-              ✅ Check bài
-            </ModeButton>
-            <ModeButton active={mode === "word"} onClick={() => setMode("word")}>
-              📘 Từ mới
-            </ModeButton>
-          </div>
-
-          <div className="mt-5">
-            <label className="text-sm font-extrabold">Tiêu đề</label>
-            <input
-              placeholder="Mình muốn luyện câu giới thiệu bản thân tự nhiên hơn"
-              className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-orange-400"
-            />
-          </div>
-
-          <div className="mt-5">
-            <label className="text-sm font-extrabold">Nội dung chia sẻ</label>
-            <textarea
-              rows={7}
-              defaultValue="Hello everyone, my name is Thanh. I am learning English for my job. I want to improve my speaking and communicate with customers more confidently."
-              className="mt-2 w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-orange-400"
-            />
-          </div>
-
-          <div className="mt-5">
-            <label className="text-sm font-extrabold">Tag</label>
-            <input
-              defaultValue="#Speaking #IntroduceYourself #Beginner"
-              className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-orange-400"
-            />
-          </div>
-
-          <div className="mt-6 flex items-center justify-between border-t pt-4">
-            <div className="flex gap-2">
-              {["Emoji", "Ảnh", "Ghi âm", "AI sửa lỗi"].map((item) => (
-                <button
-                  key={item}
-                  className="rounded-full bg-orange-50 px-3 py-2 text-xs font-bold text-orange-600"
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex gap-2">
-              <button className="rounded-full bg-slate-900 px-5 py-3 text-sm font-bold text-white">
-                Lưu nháp
-              </button>
-              <button className="rounded-full bg-orange-500 px-5 py-3 text-sm font-bold text-white">
-                Đăng bài
-              </button>
-            </div>
-          </div>
+      <section className="mt-5 rounded-2xl bg-[#f4f0ff] p-4 text-center shadow-sm">
+        <div className="flex items-center justify-between">
+          <h3 className="font-black">Foxy</h3>
+          <span className="rounded-lg bg-[#e0d4ff] px-2 py-1 text-xs font-black text-[#6d35ff]">Lv.12</span>
         </div>
-
-        <aside className="space-y-4">
-          <Card>
-            <h3 className="font-extrabold">✨ AI hỗ trợ</h3>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl bg-orange-50 p-4 text-center">
-                <div className="text-2xl font-extrabold text-orange-500">88</div>
-                <p className="text-xs font-bold">Writing</p>
-              </div>
-              <div className="rounded-2xl bg-orange-50 p-4 text-center">
-                <div className="text-2xl font-extrabold text-orange-500">A2</div>
-                <p className="text-xs font-bold">Level</p>
-              </div>
-            </div>
-
-            <div className="mt-4 rounded-2xl border border-orange-100 p-4">
-              <p className="text-sm font-bold">Speaking preview</p>
-              <div className="mt-3 text-center text-3xl text-orange-500">
-                ▂▅▇▅▂
-              </div>
-            </div>
-
-            <div className="mt-4 rounded-2xl bg-slate-50 p-4">
-              <p className="text-sm font-bold">Gợi ý AI</p>
-              <p className="mt-2 text-xs text-slate-500">
-                Bạn có thể viết tự nhiên hơn: “I am learning English for work
-                and want to speak with customers more confidently.”
-              </p>
-            </div>
-          </Card>
-        </aside>
-      </div>
-
-      <div className="mt-6 grid grid-cols-2 gap-6">
-        <Card>
-          <h3 className="mb-3 font-extrabold">Các loại bài đăng</h3>
-          <Info text="🎙 Speaking - Chia sẻ bài nói" />
-          <Info text="✅ Check bài - Chia sẻ bài viết để được AI sửa" />
-          <Info text="📘 The Word of the day" />
-        </Card>
-
-        <Card>
-          <h3 className="mb-3 font-extrabold">Trạng thái khi chọn từng chế độ</h3>
-          <Info text="Writing: textarea + AI gợi ý" />
-          <Info text="Speaking: tiêu đề + ghi âm + transcript" />
-          <Info text="Upload ảnh: mô tả bài viết + file ảnh" />
-        </Card>
-      </div>
-    </div>
+        <SpiritPetAvatar petType="fox" level={12} size="md" showLevelBadge={false} />
+        <div className="mt-2 h-1.5 rounded-full bg-[#e4e6f2]"><div className="h-1.5 w-[55%] rounded-full bg-[#6d35ff]" /></div>
+        <Link href="/pet" className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-[#d9ceff] bg-white px-4 py-3 text-sm font-black text-[#6d35ff]">Vào nhà Foxy <AppIcon name="home" tone="purple" size={14} bare /></Link>
+      </section>
+      <OnlineFriends />
+    </aside>
   );
 }
 
-function Card({ children }: { children: React.ReactNode }) {
+function ComposerSidebar({ onPost }: { onPost: () => void }) {
   return (
-    <div className="rounded-3xl border border-orange-100 bg-white p-5 shadow-sm">
-      {children}
-    </div>
+    <aside className="sticky top-0 hidden h-screen w-[270px] shrink-0 overflow-y-auto border-r border-[#e7e8f3] bg-white px-4 py-5 2xl:block">
+      <AppLogo />
+      <nav className="mt-7 space-y-1">
+        {[
+          ["⌂", "Bảng tin"],
+          ["⌕", "Khám phá"],
+          ["✣", "Bài viết của bạn"],
+          ["👥", "Nhóm của bạn"],
+          ["👥", "Khám phá nhóm"],
+          ["+", "Tạo nhóm mới"],
+          ["▣", "Sự kiện"],
+          ["?", "Sự kiện của bạn"],
+        ].map(([icon, label]) => (
+          <button key={label} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-black text-[#69708b] hover:bg-[#f5f2ff]">
+            <LegacyIcon icon={icon} label={label} tone="slate" className="h-8 w-8" size={16} />
+            <span>{label}</span>
+          </button>
+        ))}
+      </nav>
+      <button onClick={onPost} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#6d35ff] px-4 py-3 font-black text-white shadow-[0_16px_32px_rgba(109,53,255,0.24)]">
+        <AppIcon name="plus" tone="purple" size={18} bare /> Tạo bài viết
+      </button>
+      <section className="mt-8 rounded-2xl bg-white p-5 text-center shadow-sm ring-1 ring-[#e8e9f5]">
+        <div className="mx-auto flex justify-center"><AppIcon name="paw" tone="orange" className="h-24 w-24 rounded-[28px]" size={52} /></div>
+        <h3 className="mt-4 font-black">Chia sẻ để lan tỏa</h3>
+        <p className="mt-3 text-sm font-bold leading-6 text-[#69708b]">Kiến thức của bạn hôm nay có thể giúp ai đó tiến bộ!</p>
+      </section>
+    </aside>
   );
 }
 
-function MenuItem({
-  text,
-  count,
-  active,
-}: {
-  text: string;
-  count: string;
-  active?: boolean;
-}) {
+function ComposerRightPanel({ displayName, avatar }: { displayName: string; avatar: string }) {
   return (
-    <div
-      className={`mb-2 flex items-center justify-between rounded-xl px-3 py-2 text-sm font-bold ${
-        active ? "bg-orange-50 text-orange-600" : "text-slate-600"
-      }`}
-    >
-      <span>{text}</span>
-      <span className="text-xs">{count}</span>
-    </div>
-  );
-}
-
-function PostCard({
-  name,
-  role,
-  tag,
-  title,
-  body,
-}: {
-  name: string;
-  role: string;
-  tag: string;
-  title: string;
-  body: string;
-}) {
-  return (
-    <article className="rounded-3xl border border-orange-100 bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between">
-        <div className="flex gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-orange-500 text-lg font-extrabold text-white">
-            {name.charAt(0)}
+    <aside className="space-y-5">
+      <RightPanel title="💡 Mẹo đăng bài">
+        {["Tiêu đề rõ ràng, hấp dẫn", "Nội dung hữu ích, dễ hiểu", "Sử dụng chủ đề phù hợp", "Tôn trọng mọi thành viên", "Kiểm tra lỗi chính tả trước khi đăng"].map((tip) => (
+          <div key={tip} className="flex items-center gap-3 py-2 text-sm font-bold text-[#59627f]">
+            <span className="text-[#6d35ff]">ⓘ</span>
+            {tip}
           </div>
+        ))}
+      </RightPanel>
+      <RightPanel title="Xem trước bài viết">
+        <div className="flex items-center gap-3">
+          <img src={avatar} alt={displayName} className="h-12 w-12 rounded-full object-cover" />
           <div>
-            <h3 className="font-extrabold">{name}</h3>
-            <p className="text-xs font-semibold text-slate-400">{role}</p>
+            <h3 className="font-black">{displayName}</h3>
+            <p className="text-xs font-bold text-[#69708b]">🌐 Công khai · vừa xong</p>
           </div>
         </div>
-
-        <span className="rounded-full bg-purple-50 px-3 py-1 text-xs font-bold text-purple-500">
-          {tag}
-        </span>
-      </div>
-
-      <p className="mt-4 text-sm text-slate-600">{body}</p>
-
-      <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold">
-        {title}
-      </div>
-
-      <div className="mt-4 flex items-center justify-between">
-        <div className="flex gap-3 text-xs font-bold text-slate-500">
-          <span>🔥 24</span>
-          <span>💬 8 góp ý</span>
-          <span>🎧 Nghe</span>
+        <h3 className="mt-5 font-black">Tiêu đề bài viết của bạn</h3>
+        <p className="mt-3 text-sm font-bold leading-6 text-[#59627f]">Đây là nội dung bài viết của bạn sẽ hiển thị trên bảng tin cộng đồng...</p>
+        <div className="mt-5 flex h-36 items-center justify-center rounded-2xl bg-[#f1eaff] text-6xl text-[#c7b9ff]">▧</div>
+        <div className="mt-5 flex items-center justify-between text-sm font-bold text-[#59627f]">
+          <span>♡ 128</span>
+          <span>▢ 32</span>
+          <span>↗ Chia sẻ</span>
         </div>
+      </RightPanel>
+      <RightPanel title="🛡 Quy định cộng đồng">
+        <p className="text-sm font-bold leading-7 text-[#69708b]">Hãy cùng xây dựng một môi trường học tập lành mạnh và tích cực.</p>
+        <button className="mt-4 font-black text-[#6d35ff]">Xem chi tiết quy định →</button>
+      </RightPanel>
+    </aside>
+  );
+}
 
-        <button className="rounded-full bg-orange-500 px-4 py-2 text-xs font-bold text-white">
-          Góp ý
-        </button>
+function TopBar({ displayName, avatar }: { displayName: string; avatar: string }) {
+  return (
+    <header className="sticky top-0 z-40 border-b border-[#e7e8f3] bg-white/90 px-4 py-2.5 backdrop-blur">
+      <div className="flex items-center gap-3">
+        <AppLogo compact className="2xl:hidden" />
+        <nav className="hidden flex-1 items-center justify-center gap-1.5 xl:flex">
+          {topNav.map((item) => <Link key={item.label} href={item.href} className={`whitespace-nowrap rounded-xl px-3 py-2 text-xs font-black ${item.active ? "bg-[#efe9ff] text-[#652cff]" : "text-[#303956] hover:bg-[#f5f2ff]"}`}>{item.label}</Link>)}
+        </nav>
+        <div className="ml-auto flex items-center gap-2">
+          <TopPill icon="🔥" value={18} label="Streak" />
+          <TopPill icon="💎" value="5.230" label="Xu" />
+          <TopPill icon="🪙" value="2.450" label="Coins" />
+          <button className="hidden rounded-xl border border-[#e5e7f2] bg-white px-3 py-2 text-xs font-black sm:block"><AppIcon name="gift" tone="purple" size={16} bare /></button>
+          <button className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#e5e7f2] bg-white text-sm"><AppIcon name="bell" tone="yellow" size={16} bare /><span className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 text-[10px] font-black text-white">3</span></button>
+          <Link href="/profile" className="hidden items-center gap-2 rounded-2xl px-2 py-1.5 hover:bg-[#f5f2ff] sm:flex">
+            <img src={avatar} alt={displayName} className="h-9 w-9 rounded-full object-cover" />
+            <span className="leading-tight"><span className="block text-[13px] font-black">{displayName}</span><span className="block text-[11px] font-bold text-[#69708b]">Level 18</span></span>
+          </Link>
+        </div>
       </div>
+    </header>
+  );
+}
+
+function TopPill({ icon, value, label }: { icon: string; value: string | number; label: string }) {
+  return <div className="hidden items-center gap-2 rounded-xl border border-[#e8e9f5] bg-white px-3 py-2 shadow-sm lg:flex"><LegacyIcon icon={icon} label={label} tone={label === "Streak" ? "orange" : label === "Xu" ? "cyan" : "yellow"} size={16} /><span className="leading-tight"><span className="block text-xs font-black">{value}</span><span className="block text-[10px] font-bold text-[#69708b]">{label}</span></span></div>;
+}
+
+function ComposerPreview({ avatar, onOpen }: { avatar: string; onOpen: (mode?: ComposerMode) => void }) {
+  return (
+    <section className="rounded-2xl border border-[#e8e9f5] bg-white p-4 shadow-sm">
+      <div className="flex items-center gap-4">
+        <img src={avatar} alt="Bạn" className="h-14 w-14 rounded-full object-cover" />
+        <button onClick={() => onOpen("post")} className="flex-1 rounded-2xl border border-[#e8e9f5] px-5 py-4 text-left font-bold text-[#8b91aa] hover:border-[#6d35ff]">Bạn muốn chia sẻ điều gì hôm nay?</button>
+      </div>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        {[
+          ["✎ Viết bài", "post"],
+          ["🖼 Ảnh", "image"],
+          ["✦ Từ mới", "word"],
+          ["☑ Check bài", "writing"],
+          ["⊕ Hỏi đáp", "question"],
+          ["▥ Thăm dò", "poll"],
+        ].map(([label, itemMode]) => <button key={label} onClick={() => onOpen(itemMode as ComposerMode)} className="rounded-xl px-3 py-2 text-sm font-black text-[#59627f] hover:bg-[#f5f2ff]">{label}</button>)}
+        <button className="ml-auto rounded-xl border border-[#e8e9f5] px-4 py-2 text-sm font-black">🌐 Công khai</button>
+        <button onClick={() => onOpen("post")} className="rounded-xl bg-[#6d35ff] px-5 py-3 text-sm font-black text-white">Đăng bài</button>
+      </div>
+    </section>
+  );
+}
+
+function FeedTabs() {
+  return <section className="flex items-center rounded-2xl border border-[#e8e9f5] bg-white p-2 shadow-sm"><div className="grid flex-1 grid-cols-4 text-center text-sm font-black text-[#69708b]">{["Tất cả", "Đang theo dõi", "Thịnh hành", "Gần đây"].map((tab, index) => <button key={tab} className={`rounded-xl px-4 py-3 ${index === 0 ? "bg-[#efe9ff] text-[#652cff]" : "hover:bg-[#f5f2ff]"}`}>{tab}</button>)}</div><button className="ml-2 rounded-xl border border-[#e8e9f5] px-4 py-3">☷</button></section>;
+}
+
+function PostCard({ post }: { post: any }) {
+  return (
+    <article className="rounded-2xl border border-[#e8e9f5] bg-white p-5 shadow-sm">
+      <div className="flex items-start gap-3">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#dbeafe] to-[#fde68a] text-2xl">👩</div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2"><h3 className="font-black">{post.author}</h3><span className="rounded-md bg-emerald-100 px-2 py-1 text-xs font-black text-emerald-700">{post.level}</span></div>
+          <p className="text-xs font-bold text-[#69708b]">{post.time}</p>
+        </div>
+        <button className="text-[#69708b]">•••</button>
+      </div>
+      <p className="mt-4 whitespace-pre-line text-[15px] font-bold leading-7">{post.text}</p>
+      {post.tags && <p className="mt-3 font-black text-[#4f20dc]">{post.tags}</p>}
+      {post.words && <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{post.words.map((word: string[]) => <div key={word[0]} className="rounded-xl border border-[#e8e9f5] p-4"><h4 className="font-black text-emerald-700">{word[0]} ✦</h4><p className="mt-1 text-sm font-bold text-[#69708b]">{word[1]}</p><p className="mt-1 text-sm font-bold">{word[2]}</p></div>)}</div>}
+      {post.image && <div className="mt-4 overflow-hidden rounded-2xl bg-[#ffdfad] p-5"><div className="flex items-center gap-4"><div className="text-7xl">👩‍🏫</div><div className="flex-1"><h3 className="text-3xl font-black text-[#b45309]">5 USEFUL SENTENCE PATTERNS</h3><div className="mt-4 grid grid-cols-5 gap-2 text-center text-sm font-black">{["It's + adj + to V", "I used to + V", "I wish + ...", "The more + ...", "Not only + ..."].map((item, index) => <div key={item} className="rounded-xl bg-white p-3">{index + 1}. {item}</div>)}</div></div></div></div>}
+      <div className="mt-5 flex items-center gap-4 text-sm font-bold text-[#59627f]"><span>🔵 ❤️ 😄 {post.reactions}</span><span className="ml-auto">{post.comments} bình luận</span>{post.shares && <span>{post.shares} chia sẻ</span>}</div>
     </article>
   );
 }
 
-function Rank({
-  name,
-  xp,
-  index,
-}: {
-  name: string;
-  xp: string;
-  index: number;
-}) {
-  return (
-    <div className="mb-3 flex items-center justify-between text-sm">
-      <div className="flex items-center gap-2">
-        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-50 font-bold text-orange-500">
-          {index}
-        </span>
-        <b>{name}</b>
-      </div>
-      <span className="text-xs font-bold text-slate-400">{xp}</span>
-    </div>
-  );
+function RightPanel({ title, action, children }: { title: string; action?: string; children: React.ReactNode }) {
+  return <section className="rounded-2xl border border-[#e8e9f5] bg-white p-5 shadow-sm"><div className="mb-4 flex items-center justify-between"><h2 className="font-black">{title}</h2>{action && <button className="text-xs font-black text-[#6d35ff]">{action}</button>}</div>{children}</section>;
 }
 
-function Group({ name, members }: { name: string; members: string }) {
-  return (
-    <div className="mb-3 flex items-center justify-between">
-      <div>
-        <p className="text-sm font-extrabold">{name}</p>
-        <p className="text-xs text-slate-400">{members}</p>
-      </div>
-      <button className="rounded-full bg-slate-900 px-3 py-1 text-xs font-bold text-white">
-        Tham gia
-      </button>
-    </div>
-  );
+function TrendingPanel() {
+  const items = ["Cách ghi nhớ từ vựng hiệu quả", "Tips luyện Speaking mỗi ngày", "Tài liệu IELTS miễn phí", "Ngữ pháp: Thì hiện tại hoàn thành", "Ứng dụng học tiếng Anh tốt nhất"];
+  return <RightPanel title="🔥 Thịnh hành" action="Xem tất cả">{items.map((item, index) => <div key={item} className="flex gap-3 py-2"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-sm font-black text-amber-700">{index + 1}</span><div><h3 className="text-sm font-black">{item}</h3><p className="text-xs font-bold text-[#69708b]">{123 - index * 12} bài viết</p></div></div>)}</RightPanel>;
 }
 
-function ModeButton({
-  active,
-  onClick,
-  children,
-}: {
-  active?: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`rounded-full px-4 py-2 text-xs font-extrabold ${
-        active
-          ? "bg-slate-900 text-white"
-          : "border border-slate-200 bg-white text-slate-600"
-      }`}
-    >
-      {children}
-    </button>
-  );
+function GroupsPanel() {
+  const groups = [["IELTS Fighter", "12.6K thành viên"], ["English Speaking Club", "8.3K thành viên"], ["Từ vựng mỗi ngày", "15.2K thành viên"], ["Exam Preparation", "6.7K thành viên"]];
+  return <RightPanel title="Nhóm nổi bật" action="Xem tất cả">{groups.map(([name, count], index) => <div key={name} className="flex items-center gap-3 py-2"><span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#f4f0ff] text-2xl">{["🏅", "🎙", "📚", "🧾"][index]}</span><div className="min-w-0 flex-1"><h3 className="text-sm font-black">{name}</h3><p className="text-xs font-bold text-[#69708b]">{count}</p></div><button className="rounded-xl border border-[#d9ceff] px-4 py-2 text-xs font-black text-[#6d35ff]">Tham gia</button></div>)}</RightPanel>;
 }
 
-function Info({ text }: { text: string }) {
-  return (
-    <div className="mb-3 rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-slate-600">
-      {text}
-    </div>
-  );
+function EventPanel() {
+  return <RightPanel title="Sự kiện sắp diễn ra" action="Xem tất cả"><div className="flex items-center gap-4"><div className="flex-1"><h3 className="font-black">Arena Championship #12</h3><p className="mt-1 text-sm font-bold text-[#69708b]">Thi đấu & nhận thưởng hấp dẫn!</p><p className="mt-3 text-xs font-bold text-[#69708b]">📅 25/06/2026 • 20:00</p><p className="mt-1 text-xs font-bold text-[#69708b]">👥 1.2K người tham gia</p><button className="mt-4 rounded-xl border border-[#6d35ff] px-5 py-2 text-sm font-black text-[#6d35ff]">Đăng ký ngay</button></div><div className="text-7xl">🏆</div></div></RightPanel>;
+}
+
+function SuggestionsPanel() {
+  return <RightPanel title="Gợi ý cho bạn" action="Xem tất cả">{[["Quốc Bảo", "B1 • 356 bài viết"], ["Thảo Vy", "A2 • 278 bài viết"], ["Mr. David", "Giáo viên • 1.3K bài viết"]].map(([name, desc], index) => <div key={name} className="flex items-center gap-3 py-2"><span className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-[#dbeafe] to-[#fde68a] text-xl">{["👩", "👨", "👨‍🏫"][index]}</span><div className="min-w-0 flex-1"><h3 className="text-sm font-black">{name}</h3><p className="text-xs font-bold text-[#69708b]">{desc}</p></div><button className="rounded-xl border border-[#d9ceff] px-4 py-2 text-xs font-black text-[#6d35ff]">Theo dõi</button></div>)}</RightPanel>;
+}
+
+function OnlineFriends() {
+  const friends = [["Lan Phương", "Đang học"], ["Hoàng Nam", "Trong phòng Arena"], ["Tuấn Kiệt", "Đang luyện Speaking"], ["Khánh Linh", "Online"]];
+  return <section className="mt-5"><div className="flex items-center justify-between text-sm font-black"><h3>Bạn bè online • <span className="text-emerald-600">12</span></h3><button className="text-xs text-[#6d35ff]">Xem tất cả</button></div><div className="mt-3 space-y-3">{friends.map(([name, status], index) => <div key={name} className="flex items-center gap-3"><span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#dbeafe] to-[#fde68a] text-xl">{["👩", "👨", "👨", "👩"][index]}<span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" /></span><div><p className="text-xs font-black">{name}</p><p className="text-[11px] font-bold text-[#69708b]">{status}</p></div></div>)}</div></section>;
 }

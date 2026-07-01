@@ -491,7 +491,7 @@ function RegisterSuccessModal({
           </h2>
 
           <p className="mt-2 text-white/90">
-            Chào mừng bạn đến với MiuLingo
+            Chào mừng bạn đến với PoppyLingo
           </p>
         </div>
 

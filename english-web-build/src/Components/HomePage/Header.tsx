@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/src/store/authStore";
 import { useEffect, useRef, useState } from "react";
 import LearningPetPanel from "@/src/Components/Pets/LearningPetPanel";
+import AppLogo from "@/src/Components/UI/AppLogo";
+import { api } from "@/src/lib/axios";
 
 export default function Header() {
   const pathname = usePathname();
@@ -64,10 +66,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-[#fff4e8] px-4 py-3">
       <div className="mx-auto grid max-w-7xl grid-cols-[220px_1fr_320px] items-center rounded-[28px] bg-white px-7 py-4 shadow-sm">
-        <Link href="/" className="text-3xl font-black tracking-tight">
-          <span className="text-black">Miu</span>
-          <span className="text-[#ff6b00]">Lingo</span>
-        </Link>
+        <AppLogo />
 
         <nav className="flex items-center justify-center gap-10">
           <Link

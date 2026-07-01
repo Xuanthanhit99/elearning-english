@@ -105,6 +105,13 @@ export class AuthService {
       maxAge,
     });
 
+    res.cookie('logged_in', 'true', {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge,
+    });
+
     return {
       message: 'Đăng nhập thành công',
       accessToken: accessToken,
@@ -165,6 +172,14 @@ export class AuthService {
         maxAge: 15 * 60 * 1000,
       });
 
+      res.cookie('logged_in', 'true', {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 15 * 60 * 1000,
+      });
+
       return {
         success: true,
         message: 'Refresh token thành công',
@@ -187,6 +202,7 @@ export class AuthService {
   async logout(res: Response) {
     res.clearCookie('refresh_token');
     res.clearCookie('access_token');
+    res.clearCookie('logged_in');
     return {
       message: 'Đăng xuất thành công',
     };
@@ -307,7 +323,7 @@ export class AuthService {
       include: {
         word: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { searchedAt: 'desc' },
     });
 
     const writingHistory = await this.prisma.writingSubmission.findMany({
@@ -330,10 +346,10 @@ export class AuthService {
     wordHistory.forEach((item) => {
       wordSheet.addRow({
         word: item.word.word,
-        meaning: item.word.mainMeaning,
+        meaning: item.word.meaningVi || item.word.meaningEn,
         level: item.word.level,
         partOfSpeech: item.word.partOfSpeech,
-        createdAt: item.createdAt.toLocaleString(),
+        createdAt: item.searchedAt.toLocaleString(),
       });
     });
 
@@ -373,9 +389,9 @@ export class AuthService {
     });
 
     await transporter.sendMail({
-      from: `"MiuLingo" <${process.env.MAIL_USER}>`,
+      from: `"PoppyLingo" <${process.env.MAIL_USER}>`,
       to: user.email,
-      subject: 'Báo cáo học tập MiuLingo',
+      subject: 'Báo cáo học tập PoppyLingo',
       html: `
         <h2>Xin chào ${user.fullname || 'bạn'},</h2>
         <p>Miu gửi bạn file Excel báo cáo lịch sử học tập.</p>

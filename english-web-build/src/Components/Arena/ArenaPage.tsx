@@ -73,7 +73,7 @@ const defaultForm = {
 export default function ArenaPage() {
   const [profile, setProfile] = useState<ArenaProfile | null>(null);
   const [rooms, setRooms] = useState<ArenaRoom[]>([]);
-  const [myActiveRoom, setMyActiveRoom] = useState<ArenaRoom | null>(null);
+  const [myActiveRoom, setMyActiveRoom] = useState<any>(null);
   const [form, setForm] = useState<any>(defaultForm);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -185,7 +185,7 @@ export default function ArenaPage() {
       <section className="mx-auto max-w-7xl space-y-6">
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <div className="rounded-[34px] bg-[#1f2a44] p-7 text-white shadow-xl">
-            <p className="text-sm font-extrabold uppercase tracking-wide text-[#ffd7ad]">MiuLingo Arena</p>
+            <p className="text-sm font-extrabold uppercase tracking-wide text-[#ffd7ad]">PoppyLingo Arena</p>
             <h1 className="mt-3 text-4xl font-black leading-tight">Đấu trường học tiếng Anh & nuôi linh thú</h1>
             <p className="mt-4 max-w-3xl text-lg font-bold leading-8 text-white/75">
               Học bài để nhận năng lượng Arena, đấu PvP để nhận Arena Point, Food, Gold, Trophy, rồi dùng phần thưởng nuôi linh thú tiến hóa.
@@ -215,19 +215,19 @@ export default function ArenaPage() {
 
         {message && <div className="rounded-2xl bg-white px-5 py-4 font-extrabold text-[#ff6b00] shadow-sm">{message}</div>}
 
-        {myActiveRoom && (
+        {false && myActiveRoom && (
           <div className="rounded-[26px] border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-extrabold uppercase tracking-wide text-emerald-700">Bạn đang ở trong phòng</p>
-                <h2 className="mt-1 text-2xl font-black text-[#1f2a44]">{myActiveRoom.name}</h2>
+                <h2 className="mt-1 text-2xl font-black text-[#1f2a44]">{myActiveRoom?.name}</h2>
                 <p className="mt-1 text-sm font-bold text-[#5b6b85]">
                   {myActiveRoom.participants.length}/{myActiveRoom.maxPlayers} người · {myActiveRoom.status || "WAITING"}
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => (window.location.href = `/arena/rooms?roomId=${myActiveRoom.id}`)}
+                onClick={() => myActiveRoom && (window.location.href = `/arena/rooms?roomId=${myActiveRoom.id}`)}
                 className="rounded-2xl bg-emerald-600 px-5 py-3 font-black text-white"
               >
                 Quay lại phòng

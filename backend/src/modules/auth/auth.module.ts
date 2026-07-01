@@ -8,6 +8,8 @@ import { PassportModule } from '@nestjs/passport';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { FacebookStrategy } from './strategies/facebook.strategy';
 import { UploadService } from '../upload/upload.service';
+import { VocabularyModule } from '../vocabulary/vocabulary.module';
+import { VocabularyJobModule } from '../vocabulary-job/vocabulary-job.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { UploadService } from '../upload/upload.service';
     PassportModule,
     GoogleStrategy,
     FacebookStrategy,
+    VocabularyModule,
+    VocabularyJobModule,
   ],
   controllers: [AuthController],
   providers: [

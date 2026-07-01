@@ -16,7 +16,7 @@ export class GeminiService {
       .replace(/```/g, '')
       .trim();
 
-    const match = cleaned.match(/\{[\s\S]*\}/);
+    const match = cleaned.match(/\[[\s\S]*\]/) || cleaned.match(/\{[\s\S]*\}/);
 
     if (!match) {
       throw new Error('Gemini did not return valid JSON');
@@ -26,7 +26,7 @@ export class GeminiService {
   }
 
   async generateJson(prompt: string) {
-    const models = ['gemini-2.5-flash', 'gemini-2.0-flash'].sort(
+    const models = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'].sort(
       () => Math.random() - 0.5,
     );
 
@@ -42,7 +42,7 @@ export class GeminiService {
           const result = await Promise.race([
             model.generateContent(prompt),
             new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Gemini timeout')), 25000),
+              setTimeout(() => reject(new Error('Gemini timeout')), 10000),
             ),
           ]);
 

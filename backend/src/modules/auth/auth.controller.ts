@@ -22,10 +22,15 @@ import { UserRole } from '@prisma/client';
 import { AuthGuard } from '@nestjs/passport';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-
+import { VocabularyJobService } from '../vocabulary-job/vocabulary-job.service';
+import { VocabularyService } from '../vocabulary/vocabulary.service';
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly vocabularyService: VocabularyService,
+    private readonly vocabularyJobService: VocabularyJobService,
+  ) {}
 
   @Post('register')
   register(@Body() dto: RegisterDto) {
@@ -88,6 +93,12 @@ export class AuthController {
         sameSite: 'lax',
         maxAge: 15 * 60 * 1000,
       });
+      res.cookie('logged_in', 'true', {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 15 * 60 * 1000,
+      });
       return res.redirect(
         `${process.env.FRONTEND_URL}/auth/callback?status=success`,
       );
@@ -116,6 +127,12 @@ export class AuthController {
 
       res.cookie('access_token', result.accessToken, {
         httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 15 * 60 * 1000,
+      });
+      res.cookie('logged_in', 'true', {
+        httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         maxAge: 15 * 60 * 1000,
@@ -152,5 +169,12 @@ export class AuthController {
   @Get('check-username')
   checkUsername(@Query('username') username: string, @Req() req) {
     return this.authService.checkUsername(username, req.user.id);
+  }
+
+  @Post('jobs/generate-weekly-pool')
+  @UseGuards(JwtAuthGuard)
+  @Roles('ADMIN')
+  generateWeeklyPool() {
+    return this.vocabularyJobService.generateWeeklyTopicPools();
   }
 }

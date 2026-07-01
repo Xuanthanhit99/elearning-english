@@ -79,13 +79,59 @@ enum MissionAction {
   LOGIN
 }
 
+enum WordSource {
+  SEED
+  DICTIONARY_API
+  GEMINI
+  ADMIN
+}
+
+enum WordProgressStatus {
+  NEW
+  LEARNING
+  REVIEW
+  KNOWN
+  MASTERED
+}
+
+enum VocabularyQuestionType {
+  MULTIPLE_CHOICE
+  WRITE_MEANING
+  WRITE_WORD
+  WRITE_SENTENCE
+}
+
+enum WeeklyTestStatus {
+  LOCKED
+  AVAILABLE
+  PASSED
+  FAILED
+}
+
+enum DailyVocabularyStatus {
+  LOCKED
+  AVAILABLE
+  COMPLETED
+  MISSED
+}
+
 model User {
-  id           String     @id @default(uuid())
-  fullname     String
-  email        String     @unique
-  password     String
-  role         UserRole   @default(STUDENT)
-  avatar       String?
+  id       String   @id @default(uuid())
+  fullname String
+  email    String   @unique
+  password String
+  role     UserRole @default(STUDENT)
+  avatar   String?
+
+  username String? @unique
+  bio      String?
+  goal     String?
+  level    Int     @default(1)
+  xp       Int     @default(0)
+  isPro    Boolean @default(false)
+
+  interests String[] @default([])
+
   status       UserStatus @default(ACTIVE)
   provider     String?
   providerId   String?
@@ -93,15 +139,6 @@ model User {
   phone        String?
   englishLevel String?    @default("Beginner")
   learningGoal String?    @default("General English")
-  username     String?    @unique
-
-  bio   String?
-  goal  String?
-  level Int     @default(1)
-  xp    Int     @default(0)
-  isPro Boolean @default(false)
-
-  interests String[] @default([])
 
   enrollments Enrollment[]
 
@@ -147,8 +184,13 @@ model User {
 
   missions UserMission[]
 
-  createAt  DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createAt                  DateTime                   @default(now())
+  updatedAt                 DateTime                   @updatedAt
+  userLearningProfile       UserLearningProfile?
+  userWordProgresses        UserWordProgress[]
+  userWeeklyVocabularyPlans UserWeeklyVocabularyPlan[]
+  weeklyVocabularyTests     WeeklyVocabularyTest[]
+  vocabularyNotebookItems   UserVocabularyNotebook[]
 }
 
 model Course {
@@ -435,38 +477,54 @@ model SpeakingResult {
 }
 
 model Word {
-  id               String   @id @default(uuid())
-  word             String
-  sourceLanguage   String
-  targetLanguage   String
-  level            String?
-  ipa              String?
-  audio            String?
-  partOfSpeech     String?
-  definition       String?
-  mainMeaning      String?
-  shortExplanation String?
-  synonyms         Json?
-  phrases          Json?
-  examples         Json?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id           String   @id @default(uuid())
+  word         String   @unique
+  phonetic     String?
+  audio        String?
+  partOfSpeech String?
+  meaningVi    String?
+  meaningEn    String?
+  example      String?
+  synonyms     String[] @default([])
+  antonyms     String[] @default([])
 
-  histories UserWordHistory[]
+  level      String @default("A1")
+  difficulty Int    @default(1)
 
-  @@unique([word, sourceLanguage, targetLanguage, level])
+  topicId String?
+  topic   WordTopic? @relation(fields: [topicId], references: [id])
+
+  source        WordSource @default(SEED)
+  isAiGenerated Boolean    @default(false)
+  needsReview   Boolean    @default(false)
+
+  searchCount Int @default(0)
+
+  histories  UserWordHistory[]
+  progress   UserWordProgress[]
+  dailyWords UserDailyVocabularyWord[]
+  weeklyVocabularyQuestions WeeklyVocabularyQuestion[]
+  notebookItems UserVocabularyNotebook[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([level])
+  @@index([topicId])
 }
 
 model UserWordHistory {
-  id        String   @id @default(uuid())
-  userId    String
-  wordId    String
-  createdAt DateTime @default(now())
+  id         String   @id @default(uuid())
+  userId     String
+  wordId     String
+  keyword    String
+  searchedAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
   word Word @relation(fields: [wordId], references: [id])
 
-  @@unique([userId, wordId])
+  @@index([userId])
+  @@index([wordId])
 }
 
 model WritingSubmission {
@@ -889,4 +947,201 @@ model UserMission {
   mission Mission @relation(fields: [missionId], references: [id])
 
   @@unique([userId, missionId, periodkey])
+}
+
+model UserLearningProfile {
+  id              String  @id @default(uuid())
+  userId          String  @unique
+  level           String  @default("A1")
+  goal            String?
+  dailyWordTarget Int     @default(10)
+  user            User    @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WordTopic {
+  id          String  @id @default(uuid())
+  name        String
+  slug        String  @unique
+  description String?
+  icon        String?
+  color       String?
+
+  words      Word[]
+  poolItems  WeeklyTopicPoolItem[]
+  dailyPlans UserDailyVocabularyPlan[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserWordProgress {
+  id        String             @id @default(uuid())
+  userId    String
+  wordId    String
+
+  status    WordProgressStatus @default(NEW)
+
+  seenCount Int @default(0)
+  correctCount Int @default(0)
+  wrongCount   Int @default(0)
+
+  easeFactor Int @default(250) // 2.5
+  interval   Int @default(0)   // số ngày ôn tiếp theo
+  reviewAt   DateTime?
+  learnedAt  DateTime?
+  masteredAt DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+  word Word @relation(fields: [wordId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, wordId])
+  @@index([userId])
+  @@index([reviewAt])
+}
+
+model WeeklyTopicPool {
+  id        String   @id @default(uuid())
+  level     String
+  weekStart DateTime
+  weekEnd   DateTime
+  isActive  Boolean  @default(true)
+
+  topics    WeeklyTopicPoolItem[]
+  userPlans UserWeeklyVocabularyPlan[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([level, weekStart])
+}
+
+model WeeklyTopicPoolItem {
+  id      String @id @default(uuid())
+  poolId  String
+  topicId String
+  order   Int
+
+  pool  WeeklyTopicPool @relation(fields: [poolId], references: [id])
+  topic WordTopic       @relation(fields: [topicId], references: [id])
+
+  @@unique([poolId, topicId])
+}
+
+model UserWeeklyVocabularyPlan {
+  id        String   @id @default(uuid())
+  userId    String
+  poolId    String
+  level     String
+  weekStart DateTime
+  weekEnd   DateTime
+
+  user User            @relation(fields: [userId], references: [id])
+  pool WeeklyTopicPool @relation(fields: [poolId], references: [id])
+
+  days UserDailyVocabularyPlan[]
+  weeklyTests WeeklyVocabularyTest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, weekStart])
+}
+
+model UserDailyVocabularyPlan {
+  id        String   @id @default(uuid())
+  planId    String
+  date      DateTime
+  dayOfWeek Int
+  topicId   String
+  level     String
+
+  status    DailyVocabularyStatus @default(AVAILABLE)
+
+  plan  UserWeeklyVocabularyPlan @relation(fields: [planId], references: [id])
+  topic WordTopic                @relation(fields: [topicId], references: [id])
+
+  words UserDailyVocabularyWord[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([planId, date])
+}
+model UserDailyVocabularyWord {
+  id     String @id @default(uuid())
+  dayId  String
+  wordId String
+  order  Int
+
+  day  UserDailyVocabularyPlan @relation(fields: [dayId], references: [id])
+  word Word                    @relation(fields: [wordId], references: [id])
+
+  @@unique([dayId, wordId])
+}
+
+model UserVocabularyNotebook {
+  id        String   @id @default(uuid())
+  userId    String
+  wordId    String
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+  word Word @relation(fields: [wordId], references: [id])
+
+  @@unique([userId, wordId])
+  @@index([userId])
+  @@index([wordId])
+}
+
+model WeeklyVocabularyTest {
+    id        String @id @default(uuid())
+  userId    String
+  planId    String
+
+  status    WeeklyTestStatus @default(LOCKED)
+
+  totalQuestions Int @default(0)
+  score          Int @default(0)
+  passScore      Int @default(70)
+  attemptCount   Int @default(0)
+
+  unlockedAt DateTime?
+  passedAt   DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+  plan UserWeeklyVocabularyPlan @relation(fields: [planId], references: [id])
+
+  questions WeeklyVocabularyQuestion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, planId])
+}
+
+model WeeklyVocabularyQuestion {
+  id         String @id @default(uuid())
+  testId     String
+  wordId     String
+
+  type       VocabularyQuestionType
+  question   String
+  options    String[] @default([])
+  answer     String
+
+  userAnswer String?
+  isCorrect  Boolean?
+  score      Int @default(0)
+  order      Int
+
+  test WeeklyVocabularyTest @relation(fields: [testId], references: [id])
+  word Word @relation(fields: [wordId], references: [id])
 }

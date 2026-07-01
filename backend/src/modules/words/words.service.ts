@@ -304,12 +304,7 @@ JSON format:
 
     let word = await this.prisma.word.findUnique({
       where: {
-        word_sourceLanguage_targetLanguage_level: {
-          word: wordText,
-          sourceLanguage: dto.sourceLanguage,
-          targetLanguage: dto.targetLanguage,
-          level,
-        },
+        word: wordText,
       },
     });
 
@@ -363,19 +358,13 @@ JSON format:
   private async saveHistory(userId: string | undefined, wordId: string) {
     if (!userId) return;
 
-    await this.prisma.userWordHistory.upsert({
-      where: {
-        userId_wordId: {
-          userId,
-          wordId,
-        },
-      },
-      update: {
-        createdAt: new Date(),
-      },
-      create: {
+    const word = await this.prisma.word.findUnique({ where: { id: wordId } });
+
+    await this.prisma.userWordHistory.create({
+      data: {
         userId,
         wordId,
+        keyword: word?.word || '',
       },
     });
   }
@@ -387,7 +376,7 @@ JSON format:
         word: true,
       },
       orderBy: {
-        createdAt: 'desc',
+        searchedAt: 'desc',
       },
       take: 20,
     });

@@ -43,7 +43,7 @@ export default function PetSelectionPrompt({
                 Chào {fullname}, bạn chưa chọn thú cưng học tập
               </h2>
               <p className="mt-3 font-bold leading-7 text-[#5b6b85]">
-                Bạn chỉ được chọn một loại thú cưng. Nếu sau {daysLeft} ngày bạn chưa chọn, MiuLingo sẽ chọn ngẫu nhiên và khóa thú cưng đó cho tài khoản của bạn.
+                Bạn chỉ được chọn một loại thú cưng. Nếu sau {daysLeft} ngày bạn chưa chọn, PoppyLingo sẽ chọn ngẫu nhiên và khóa thú cưng đó cho tài khoản của bạn.
               </p>
             </div>
           </div>

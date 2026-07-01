@@ -29,7 +29,7 @@ const testimonials = [
   {
     name: "Hà My",
     avatar: "M",
-    text: "MiuLingo tạo cảm giác học nhẹ nhàng hơn, không bị áp lực như trước.",
+    text: "PoppyLingo tạo cảm giác học nhẹ nhàng hơn, không bị áp lực như trước.",
   },
 ];
 
@@ -43,7 +43,7 @@ export default function TestimonialsSection() {
           </p>
 
           <h2 className="text-4xl font-extrabold text-[#1f2a44] sm:text-5xl">
-            Người học nói gì về MiuLingo?
+            Người học nói gì về PoppyLingo?
           </h2>
 
           <p className="mt-5 text-lg leading-8 text-[#5b6b85]">

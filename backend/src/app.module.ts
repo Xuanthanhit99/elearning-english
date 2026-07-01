@@ -36,11 +36,16 @@ import { PetsModule } from './modules/pets/pets.module';
 import { ArenaModule } from './modules/arena/arena.module';
 import { CommunityModule } from './modules/community/community.module';
 import { MissionsModule } from './modules/missions/missions.module';
+import { VocabularyModule } from './modules/vocabulary/vocabulary.module';
+import { VocabularyJobModule } from './modules/vocabulary-job/vocabulary-job.module';
+import { ScheduleModule } from '@nestjs/schedule';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     PrismaModule,
     AuthModule,
     UsersModule,
@@ -73,6 +78,8 @@ import { MissionsModule } from './modules/missions/missions.module';
     ArenaModule,
     CommunityModule,
     MissionsModule,
+    VocabularyModule,
+    VocabularyJobModule,
   ],
   providers: [GeminiService],
   controllers: [GeminiController],

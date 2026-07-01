@@ -134,7 +134,7 @@ export default function CoursesPage() {
 <div className="grid items-center gap-10 lg:grid-cols-[1.25fr_0.75fr]">
   <div>
     <div className="mb-5 inline-flex rounded-full border border-[#ffd4ad] bg-white px-4 py-2 text-sm font-extrabold text-[#ff6b00] shadow-sm">
-      🎓 Khóa học MiuLingo
+      🎓 Khóa học PoppyLingo
     </div>
 
     <h1 className="max-w-4xl text-5xl font-extrabold leading-tight text-[#1f2a44] lg:text-6xl">

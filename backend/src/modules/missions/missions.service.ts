@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { MissionAction, MissionType } from '@prisma/client';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { MissionAction, MissionType, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class MissionsService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
   private getPeriodKey(type: MissionType) {
     const now = new Date();
@@ -24,7 +24,7 @@ export class MissionsService {
   }
 
   async getMyMissions(userId: string) {
-    const missions = await this.prismaService.mission.findMany({
+    const missions = await this.prisma.mission.findMany({
       where: {
         isActive: true,
       },
@@ -33,27 +33,27 @@ export class MissionsService {
       },
     });
 
-    const result = [];
+    const result: any[] = [];
 
     for (const mission of missions) {
       const periodKey = await this.getPeriodKey(mission.type);
 
-      let userMission = await this.prismaService.userMission.findUnique({
+      let userMission = await this.prisma.userMission.findUnique({
         where: {
           userId_missionId_periodkey: {
             userId,
             missionId: mission.id,
-            periodKey,
+            periodkey: periodKey,
           },
         },
       });
 
       if (!userMission) {
-        this.prismaService.userMission.create({
+        userMission = await this.prisma.userMission.create({
           data: {
             userId,
             missionId: mission.id,
-            periodKey,
+            periodkey: periodKey,
           },
         });
       }
@@ -64,15 +64,15 @@ export class MissionsService {
           target: mission.target,
           completed: userMission.completed,
           claimed: userMission.claimed,
-          periodKey: userMission.periodKey,
+          periodKey: userMission.periodkey,
         },
       });
     }
     return result;
   }
 
-  async increaseProgress(userId: string, action: MissionAction, amount: 1) {
-    const missions = await this.prismaService.mission.findMany({
+  async increaseProgress(userId: string, action: MissionAction, amount = 1) {
+    const missions = await this.prisma.mission.findMany({
       where: {
         action,
         isActive: true,
@@ -84,16 +84,16 @@ export class MissionsService {
 
       const current = await this.prisma.userMission.upsert({
         where: {
-          userId_missionId_periodKey: {
+          userId_missionId_periodkey: {
             userId,
             missionId: mission.id,
-            periodKey,
+            periodkey: periodKey,
           },
         },
         create: {
           userId,
           missionId: mission.id,
-          periodKey,
+          periodkey: periodKey,
           progress: Math.min(amount, mission.target),
           completed: amount >= mission.target,
           completedAt: amount >= mission.target ? new Date() : null,
@@ -136,10 +136,10 @@ export class MissionsService {
 
     const userMission = await this.prisma.userMission.findUnique({
       where: {
-        userId_missionId_periodKey: {
+        userId_missionId_periodkey: {
           userId,
           missionId,
-          periodKey,
+          periodkey: periodKey,
         },
       },
     });
