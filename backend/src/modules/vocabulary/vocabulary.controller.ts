@@ -19,6 +19,7 @@ import { UpdateLearningProfileDto } from './dto/update-learning-profile.dto';
 import { SubmitWeeklyTestDto } from './dto/submit-weekly-test.dto';
 import { SubmitReviewDto } from './dto/submit-review.dto';
 import { UpdateWordProgressDto } from './dto/update-word-progress.dto';
+import { SubmitReviewSessionDto } from './dto/review-session-answer.dto';
 
 @Controller('vocabulary')
 export class VocabularyController {
@@ -175,7 +176,8 @@ export class VocabularyController {
   reviewFlashcard(
     @CurrentUser() user: any,
     @Param('wordId') wordId: string,
-    @Body() body: { isCorrect?: boolean; rating?: 'AGAIN' | 'HARD' | 'GOOD' | 'EASY' },
+    @Body()
+    body: { isCorrect?: boolean; rating?: 'AGAIN' | 'HARD' | 'GOOD' | 'EASY' },
   ) {
     return this.vocabularyService.reviewFlashcard(
       user.id,
@@ -297,7 +299,11 @@ export class VocabularyController {
   submitChallenge(
     @CurrentUser() user: any,
     @Param('challengeId') challengeId: string,
-    @Body() body: { answers?: Array<{ wordId: string; answer: string }>; sentence?: string },
+    @Body()
+    body: {
+      answers?: Array<{ wordId: string; answer: string }>;
+      sentence?: string;
+    },
   ) {
     return this.vocabularyService.submitChallenge(
       user.id,
@@ -321,5 +327,20 @@ export class VocabularyController {
   @UseGuards(JwtAuthGuard)
   submitReview(@CurrentUser() user: any, @Body() dto: SubmitReviewDto) {
     return this.vocabularyService.submitReview(user.id, dto);
+  }
+
+  @Get('review/session')
+  @UseGuards(JwtAuthGuard)
+  getReviewSession(@CurrentUser() user: any) {
+    return this.vocabularyService.getReviewSession(user.id);
+  }
+
+  @Post('review/session')
+  @UseGuards(JwtAuthGuard)
+  submitReviewSession(
+    @CurrentUser() user: any,
+    @Body() dto: SubmitReviewSessionDto,
+  ) {
+    return this.vocabularyService.submitReviewSession(user.id, dto);
   }
 }

@@ -10,7 +10,7 @@ type AppLogoProps = {
 
 export default function AppLogo({ compact = false, className = "", href = "/" }: AppLogoProps) {
   return (
-    <Link href={href} className={`inline-flex min-w-0 items-center ${className}`}>
+    <Link href={href} className={`flex justify-center min-w-0 items-center ${className}`}>
       <img
         src="/poppylingo-logo.png"
         alt="PoppyLingo"

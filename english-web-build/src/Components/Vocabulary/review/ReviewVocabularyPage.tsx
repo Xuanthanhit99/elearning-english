@@ -84,6 +84,7 @@ export default function ReviewVocabularyPage() {
 
   const [suggestions, setSuggestions] = useState<any>(null);
   const [suggestionsDashboard, setSuggestionsDashboard] = useState<any>(null);
+  const [reviewSession, setReviewSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
@@ -93,9 +94,10 @@ export default function ReviewVocabularyPage() {
     setLoading(true);
     setMessage("");
 
-    const [ReviewWordRes, ReviewDashboardRes] = await Promise.allSettled([
+    const [ReviewWordRes, ReviewDashboardRes, reviewSessionRes] = await Promise.allSettled([
       api.get("/vocabulary/review"),
       api.get("/vocabulary/review/dashboard"),
+      api.get("/vocabulary/review/session"),
     ]);
 
     if (ReviewWordRes.status === "fulfilled") {
@@ -103,6 +105,8 @@ export default function ReviewVocabularyPage() {
     }
     if (ReviewDashboardRes.status === "fulfilled") {
       setSuggestionsDashboard(ReviewDashboardRes.value.data);
+    }if (reviewSessionRes.status === "fulfilled") {
+      setReviewSession(reviewSessionRes.value.data);
     }
 
     setLoading(false);

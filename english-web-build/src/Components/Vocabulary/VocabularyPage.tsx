@@ -985,11 +985,26 @@ function WeeklyTopics({ plan }: { plan: WeeklyPlan | null }) {
     ["T7", "library", "Culture", false],
     ["CN", "target", "Review", false],
   ] as const;
+
+  const dayLabelMap: Record<number, string> = {
+  0: "Chủ nhật",
+  2: "Thứ 2",
+  3: "Thứ 3",
+  4: "Thứ 4",
+  5: "Thứ 5",
+  6: "Thứ 6",
+  7: "Thứ 7",
+};
+
+const getDayLabel = (dayOfWeek: number) => {
+  return dayLabelMap[dayOfWeek] || `T${dayOfWeek}`;
+};
+
   const days = plan?.days?.length
     ? plan.days.map(
         (day) =>
           [
-            `T${day.dayOfWeek}`,
+            `${getDayLabel(day.dayOfWeek)}`,
             "leaf",
             day.topic?.name || "Topic",
             day.status === "AVAILABLE",

@@ -19,6 +19,7 @@ import {
   buildQuestion,
   pickQuestionType,
 } from 'src/common/helpers/questions.helper';
+import { SubmitReviewSessionDto } from './dto/review-session-answer.dto';
 
 type GeminiWordItem = {
   word: string;
@@ -39,6 +40,19 @@ export class VocabularyService {
     private geminiService: GeminiService,
     private vocabularyJobService: VocabularyJobService,
   ) {}
+
+  private isLockedPlan(plan: any): plan is {
+    locked: true;
+    reason: string;
+    testRequired: boolean;
+    previousTest: any;
+  } {
+    return !!plan && plan.locked === true;
+  }
+
+  private hasDays(plan: any): plan is { id: string; days: any[] } {
+    return !!plan && Array.isArray(plan.days);
+  }
 
   async getTopics() {
     return this.prisma.wordTopic.findMany({
@@ -216,36 +230,46 @@ export class VocabularyService {
     });
 
     if (existed) {
-      if (existed.days.length < 7) {
-        await this.repairUserWeeklyPlanDays(
-          userId,
-          existed.id,
-          existed.weekStart,
-          existed.level,
-          profile.dailyWordTarget,
-        );
+  const topicIds = existed.days.map((day) => day.topicId);
+  const uniqueTopicIds = new Set(topicIds);
 
-        return this.prisma.userWeeklyVocabularyPlan.findUnique({
-          where: { id: existed.id },
-          include: {
-            days: {
-              include: {
-                topic: true,
-                words: {
-                  include: { word: true },
-                  orderBy: { order: 'asc' },
-                },
-              },
-              orderBy: { date: 'asc' },
-            },
+  const hasNotEnoughDays = existed.days.length < 7;
+
+  const hasDuplicatedTopic =
+    topicIds.length > 0 && uniqueTopicIds.size !== topicIds.length;
+
+  const hasNotEnoughWords = existed.days.some(
+    (day) => day.words.length < profile.dailyWordTarget,
+  );
+
+  if (hasDuplicatedTopic) {
+    await this.rebuildUserWeeklyPlan(userId, existed.id);
+  } else if (hasNotEnoughDays || hasNotEnoughWords) {
+    await this.repairUserWeeklyPlanDays(
+      userId,
+      existed.id,
+      existed.weekStart,
+      existed.level,
+      profile.dailyWordTarget,
+    );
+  }
+
+  return this.prisma.userWeeklyVocabularyPlan.findUnique({
+    where: { id: existed.id },
+    include: {
+      days: {
+        include: {
+          topic: true,
+          words: {
+            include: { word: true },
+            orderBy: { order: 'asc' },
           },
-        });
-      }
-
-      return existed;
-    }
-
-    if (existed) return existed;
+        },
+        orderBy: { date: 'asc' },
+      },
+    },
+  });
+}
 
     let pool = await this.prisma.weeklyTopicPool.findUnique({
       where: {
@@ -305,10 +329,20 @@ export class VocabularyService {
       );
     }
 
-    const shuffledTopics = this.shuffle(availableTopics);
-    const randomTopics = Array.from({ length: 7 }, (_, index) => {
-      return shuffledTopics[index % shuffledTopics.length];
-    });
+    // const shuffledTopics = this.shuffle(availableTopics);
+    // const randomTopics = Array.from({ length: 7 }, (_, index) => {
+    //   return shuffledTopics[index % shuffledTopics.length];
+    // });
+
+    const uniqueTopics = Array.from(
+      new Map(availableTopics.map((item) => [item.topicId, item])).values(),
+    );
+
+    if (uniqueTopics.length < 7) {
+      throw new BadRequestException('Chưa đủ 7 chủ đề khác nhau cho tuần này');
+    }
+
+    const randomTopics = this.shuffle(uniqueTopics).slice(0, 7);
 
     const plan = await this.prisma.userWeeklyVocabularyPlan.create({
       data: {
@@ -334,7 +368,7 @@ export class VocabularyService {
         data: {
           planId: plan.id,
           date,
-          dayOfWeek: i + 1,
+          dayOfWeek: i === 6 ? 0 : i + 2,
           topicId: randomTopics[i].topicId,
           level: profile.level,
           status,
@@ -348,6 +382,10 @@ export class VocabularyService {
         limit: profile.dailyWordTarget,
       });
 
+      console.log(
+        `Picked ${words.length} words for user ${userId} on day ${i + 1}`,
+      );
+
       for (let j = 0; j < words.length; j++) {
         await this.prisma.userDailyVocabularyWord.create({
           data: {
@@ -359,44 +397,91 @@ export class VocabularyService {
       }
     }
 
-    return this.getOrCreateUserWeeklyPlan(userId);
+    return this.prisma.userWeeklyVocabularyPlan.findUnique({
+      where: { id: plan.id },
+      include: {
+        days: {
+          include: {
+            topic: true,
+            words: {
+              include: { word: true },
+              orderBy: { order: 'asc' },
+            },
+          },
+          orderBy: { date: 'asc' },
+        },
+      },
+    });
   }
 
   async getTodayVocabulary(userId: string) {
-    const plan = await this.bootstrapTodayVocabulary(userId);
-    if ('locked' in plan && plan.locked) {
-      return plan;
+    const profile = await this.getOrCreateProfile(userId);
+
+    const todayPlan = await this.findTodayPlan(userId);
+
+    if (todayPlan) {
+      const required = profile.dailyWordTarget || 10;
+
+      if (todayPlan.words.length < required) {
+        await this.fillTodayPlanWords(userId, todayPlan, required);
+      }
+
+      const updated = await this.findTodayPlan(userId);
+
+      if (!updated) {
+        throw new NotFoundException('Không tìm thấy bài học hôm nay');
+      }
+
+      return {
+        locked: false,
+        completed: updated.status === 'COMPLETED',
+        ...updated,
+      };
     }
+
+    const plan = await this.bootstrapTodayVocabulary(userId);
+
+    if (!this.hasDays(plan)) return plan;
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const todayPlan = plan.days.find((day) => {
+
+    const createdTodayPlan = plan.days.find((day) => {
       const d = new Date(day.date);
       d.setHours(0, 0, 0, 0);
       return d.getTime() === today.getTime();
     });
-    console.log({
-      today,
-      days: plan.days.map((x) => x.date),
-    });
-    if (!todayPlan) {
+
+    if (!createdTodayPlan) {
       throw new NotFoundException('Không tìm thấy bài học hôm nay');
     }
 
-    if (todayPlan.status === 'COMPLETED') {
+    if (createdTodayPlan.words.length < (profile.dailyWordTarget || 10)) {
+      await this.fillTodayPlanWords(
+        userId,
+        createdTodayPlan,
+        profile.dailyWordTarget || 10,
+      );
+
+      const updated = await this.findTodayPlan(userId);
+
+      if (!updated) {
+        throw new NotFoundException('Không tìm thấy bài học hôm nay');
+      }
+
       return {
         locked: false,
-        completed: true,
-        message: 'Bạn đã hoàn thành bài học hôm nay',
-        dayId: todayPlan.id,
-        topic: todayPlan.topic,
-        words: todayPlan.words,
-        nextAction: 'REVIEW_OR_FLASHCARD',
+        completed: updated.status === 'COMPLETED',
+        ...updated,
       };
     }
 
-    return { locked: false, ...todayPlan };
+    return {
+      locked: false,
+      completed: createdTodayPlan.status === 'COMPLETED',
+      ...createdTodayPlan,
+    };
   }
-
   async pickWordsForUser(params: {
     userId: string;
     topicId: string;
@@ -406,10 +491,14 @@ export class VocabularyService {
     const learned = await this.prisma.userWordProgress.findMany({
       where: {
         userId: params.userId,
-        status: 'KNOWN',
+        status: {
+          in: ['KNOWN', 'MASTERED'],
+        },
       },
       select: { wordId: true },
     });
+
+    console.log('learned', learned);
 
     const learnedIds = learned.map((x) => x.wordId);
 
@@ -425,27 +514,34 @@ export class VocabularyService {
       take: params.limit,
     });
 
-    if (words.length < params.limit) {
-      const missing = params.limit - words.length;
+    console.log('learned-words', words);
 
-      await this.generateFallbackWords({
+    if (words.length >= params.limit) {
+      return words;
+    }
+
+    const missing = params.limit - words.length;
+    console.log('learned-words-missing', missing);
+
+    console.log('missing', missing);
+
+    await this.generateWordsByGemini({
+      topicId: params.topicId,
+      level: params.level,
+      count: missing + 5,
+    });
+
+    words = await this.prisma.word.findMany({
+      where: {
         topicId: params.topicId,
         level: params.level,
-        count: missing + 5,
-      });
-
-      words = await this.prisma.word.findMany({
-        where: {
-          topicId: params.topicId,
-          level: params.level,
-          id: {
-            notIn: learnedIds,
-          },
+        id: {
+          notIn: learnedIds,
         },
-        orderBy: [{ difficulty: 'asc' }, { searchCount: 'asc' }],
-        take: params.limit,
-      });
-    }
+      },
+      orderBy: [{ difficulty: 'asc' }, { searchCount: 'asc' }],
+      take: params.limit,
+    });
 
     return words;
   }
@@ -614,32 +710,39 @@ export class VocabularyService {
     const prompt = `
 Bạn là hệ thống tạo dữ liệu từ vựng cho app học tiếng Anh.
 
-Hãy tạo ${params.count} từ tiếng Anh theo yêu cầu:
+Hãy tạo ${params.count} từ tiếng Anh thật theo yêu cầu:
 
 Chủ đề: ${topic.name}
 Cấp độ CEFR: ${params.level}
 
 Không tạo các từ đã có:
-${existedText}
+${existedText || 'Không có'}
 
-Yêu cầu:
-- Từ phải phù hợp đúng chủ đề.
+Yêu cầu bắt buộc:
+- Chỉ tạo từ/cụm từ tiếng Anh có thật, tự nhiên, người bản xứ dùng.
+- Tuyệt đối không tạo placeholder như "${topic.name} word", "${topic.name} word 1", "word 1", "example word".
+- Từ phải phù hợp đúng chủ đề "${topic.name}".
 - Từ phải phù hợp cấp độ ${params.level}.
 - Từ dễ đến khó.
 - Không trùng từ.
-- Ví dụ ngắn, dễ hiểu.
-- Trả về JSON thuần, không markdown.
+- meaningVi phải là nghĩa tiếng Việt tự nhiên.
+- meaningEn phải là định nghĩa tiếng Anh ngắn gọn.
+- example phải là câu tiếng Anh tự nhiên, ngắn, dễ hiểu.
+- phonetic dùng IPA chuẩn, nếu không chắc thì để null.
+- synonyms và antonyms là array, nếu không có thì [].
+- difficulty là số từ 1 đến 5.
+- Trả về JSON thuần, không markdown, không giải thích.
 
 Format bắt buộc:
 [
   {
-    "word": "example",
-    "phonetic": "/ÉªÉ¡ËˆzÉ‘ËmpÉ™l/",
+    "word": "doctor",
+    "phonetic": "/ˈdɑːk.tər/",
     "partOfSpeech": "noun",
-    "meaningVi": "ví dụ",
-    "meaningEn": "something that shows or explains an idea",
-    "example": "This is a good example.",
-    "synonyms": ["sample"],
+    "meaningVi": "bác sĩ",
+    "meaningEn": "a person whose job is to treat sick people",
+    "example": "I need to see a doctor.",
+    "synonyms": ["physician"],
     "antonyms": [],
     "difficulty": 1
   }
@@ -820,28 +923,13 @@ Format bắt buộc:
       ],
     };
 
-    const base = banks[topic] || [
-      {
-        word: `${topicName} word`,
-        phonetic: null,
-        partOfSpeech: 'noun',
-        meaningVi: `từ vựng về ${topicName}`,
-        meaningEn: `a word about ${topicName}`,
-        example: `This word is about ${topicName}.`,
-        synonyms: [],
-        antonyms: [],
-        difficulty: 1,
-      },
-    ];
+    const base = banks[topic];
 
-    return Array.from({ length: count }, (_, index) => {
-      const item = base[index % base.length];
-      return {
-        ...item,
-        word: index < base.length ? item.word : `${item.word} ${index + 1}`,
-        difficulty: item.difficulty || Math.min(5, index + 1),
-      };
-    });
+    if (!base) {
+      return [];
+    }
+
+    return base.slice(0, count);
   }
 
   async generateFallbackWords(params: {
@@ -1139,7 +1227,10 @@ Format bắt buộc:
     if (plan) return plan;
 
     const created = await this.getOrCreateUserWeeklyPlan(userId);
-    if ('locked' in created && created.locked) return null;
+
+    if (!this.hasDays(created)) {
+      return null;
+    }
 
     return created;
   }
@@ -1151,9 +1242,11 @@ Format bắt buộc:
       throw new NotFoundException('Chưa có kế hoạch học từ vựng');
     }
 
+    const planId = plan.id;
+
     const completedDays = await this.prisma.userDailyVocabularyPlan.count({
       where: {
-        planId: plan.id,
+        planId,
         status: 'COMPLETED',
       },
     });
@@ -1162,23 +1255,19 @@ Format bắt buộc:
       where: {
         userId_planId: {
           userId,
-          planId: plan.id,
+          planId,
         },
       },
       include: {
         questions: {
-          include: {
-            word: true,
-          },
-          orderBy: {
-            order: 'asc',
-          },
+          include: { word: true },
+          orderBy: { order: 'asc' },
         },
       },
     });
 
     if (!test && completedDays >= 7) {
-      test = await this.createWeeklyTest(userId, plan.id);
+      test = await this.createWeeklyTest(userId, planId);
     }
 
     if (!test) {
@@ -1875,8 +1964,10 @@ Format bắt buộc:
   }
 
   async getTodayChallenge(userId: string) {
-    const today = await this.getTodayVocabulary(userId);
-    if ('locked' in today && today.locked) return today;
+    const today = await this.getTodayPlan(userId);
+    if (!today) {
+      throw new NotFoundException('Không có bài học hôm nay');
+    }
 
     const dailyWords = await this.getDailyWords(userId, today.id);
     const target = dailyWords.words[0]?.word;
@@ -1902,6 +1993,25 @@ Format bắt buộc:
           ]
         : [],
     };
+  }
+
+  private async getTodayPlan(userId: string) {
+    const plan = await this.getOrCreateUserWeeklyPlan(userId);
+
+    if (!this.hasDays(plan)) {
+      return null;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return (
+      plan.days.find((day) => {
+        const d = new Date(day.date);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime() === today.getTime();
+      }) ?? null
+    );
   }
 
   async submitChallenge(
@@ -2051,15 +2161,17 @@ Rules:
   async bootstrapTodayVocabulary(userId: string) {
     const profile = await this.getOrCreateProfile(userId);
     const { weekStart } = this.getWeekRange();
-
+    console.log('bootstrapTodayVocabulary------------------------->1');
     // 1. Tạo topic nếu DB chưa có
     await this.ensureTopicsForLevel(profile.level);
+    console.log('bootstrapTodayVocabulary------------------------->2');
 
     // 2. Tạo word nếu topic chưa đủ từ
-    await this.ensureWordsForLevel(profile.level);
+    // await this.ensureWordsForLevel(profile.level);
 
     // 3. Tạo weekly pool nếu chưa có
     await this.ensureWeeklyPool(profile.level, weekStart);
+    console.log('bootstrapTodayVocabulary------------------------>3');
 
     // 4. Tạo user weekly plan
     return this.getOrCreateUserWeeklyPlan(userId);
@@ -2186,7 +2298,7 @@ Rules:
         data: {
           planId,
           date,
-          dayOfWeek: i + 1,
+          dayOfWeek: i === 6 ? 0 : i + 2,
           topicId: topic.topicId,
           level,
           status,
@@ -2213,53 +2325,295 @@ Rules:
   }
 
   async getReviewDashboard(userId: string) {
-    const now = new Date();
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
 
-    const tomorrow = new Date(now);
-    tomorrow.setDate(now.getDate() + 1);
+    const next7Days = new Date();
+    next7Days.setDate(next7Days.getDate() + 7);
 
-    const nextWeek = new Date(now);
-    nextWeek.setDate(now.getDate() + 7);
+    const next30Days = new Date();
+    next30Days.setDate(next30Days.getDate() + 30);
 
-    const nextMonth = new Date(now);
-    nextMonth.setDate(now.getDate() + 30);
+    const [urgent, normal, later, completedToday] = await Promise.all([
+      this.prisma.userWordProgress.count({
+        where: {
+          userId,
+          reviewAt: { lte: endOfToday },
+          status: {
+            in: ['LEARNING', 'REVIEW', 'KNOWN'],
+          },
+        },
+      }),
+      this.prisma.userWordProgress.count({
+        where: {
+          userId,
+          status: { in: ['LEARNING', 'REVIEW', 'KNOWN'] },
+          reviewAt: {
+            gt: endOfToday,
+            lte: next7Days,
+          },
+        },
+      }),
 
-    const progress = await this.prisma.userWordProgress.findMany({
+      this.prisma.userWordProgress.count({
+        where: {
+          userId,
+          status: { in: ['LEARNING', 'REVIEW', 'KNOWN'] },
+          reviewAt: {
+            gt: next7Days,
+            lte: next30Days,
+          },
+        },
+      }),
+
+      this.prisma.userWordProgress.count({
+        where: {
+          userId,
+          updatedAt: {
+            gte: this.startOfToday(),
+            lte: endOfToday,
+          },
+        },
+      }),
+    ]);
+
+    return {
+      summary: {
+        totalReview: urgent + normal + later,
+        urgent,
+        normal,
+        later,
+      },
+      today: {
+        reviewToday: urgent,
+        completed: completedToday,
+        total: urgent,
+        estimatedTime: Math.max(1, Math.ceil(urgent * 0.5)),
+        canStart: urgent > 0,
+      },
+      streak: {
+        current: 7, // sau này nối bảng streak thật
+        best: 18,
+        rewardAt: 14,
+        days: [
+          { day: 'MON', completed: true },
+          { day: 'TUE', completed: true },
+          { day: 'WED', completed: true },
+          { day: 'THU', completed: true },
+          { day: 'FRI', completed: true },
+          { day: 'SAT', completed: true },
+          { day: 'SUN', completed: false },
+        ],
+      },
+    };
+  }
+
+  startOfToday() {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+
+  async getReviewSession(userId: string) {
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const items = await this.prisma.userWordProgress.findMany({
       where: {
         userId,
+        status: { in: ['LEARNING', 'REVIEW', 'KNOWN'] },
         reviewAt: {
-          not: null,
-        },
-        status: {
-          in: ['LEARNING', 'REVIEW', 'KNOWN'],
+          lte: endOfToday,
         },
       },
-      select: {
-        reviewAt: true,
+      include: {
+        word: {
+          include: {
+            topic: true,
+          },
+        },
+      },
+      orderBy: [{ reviewAt: 'asc' }, { wrongCount: 'desc' }],
+      take: 30,
+    });
+
+    return {
+      sessionId: `review-${userId}-${Date.now()}`,
+      total: items.length,
+      cards: items.map((item, index) => ({
+        order: index + 1,
+        progressId: item.id,
+        wordId: item.wordId,
+        word: item.word.word,
+        phonetic: item.word.phonetic,
+        audio: item.word.audio,
+        meaningVi: item.word.meaningVi,
+        meaningEn: item.word.meaningEn,
+        example: item.word.example,
+        partOfSpeech: item.word.partOfSpeech,
+        topic: item.word.topic,
+        status: item.status,
+        interval: item.interval,
+        easeFactor: item.easeFactor,
+        correctCount: item.correctCount,
+        wrongCount: item.wrongCount,
+        reviewAt: item.reviewAt,
+      })),
+    };
+  }
+
+  async submitReviewSession(userId: string, dto: SubmitReviewSessionDto) {
+    type ReviewUpdate = {
+      wordId: string;
+      rating: 'AGAIN' | 'HARD' | 'GOOD' | 'EASY';
+      isCorrect: boolean;
+      nextStatus: WordProgressStatus;
+      nextReviewAt: Date | null;
+      interval: number;
+      easeFactor: number;
+    };
+
+    const updates: ReviewUpdate[] = [];
+
+    for (const item of dto.answers) {
+      const result = await this.reviewFlashcard(
+        userId,
+        item.wordId,
+        undefined,
+        item.quality,
+      );
+
+      updates.push(result);
+    }
+
+    const again = updates.filter((x) => x.rating === 'AGAIN').length;
+    const hard = updates.filter((x) => x.rating === 'HARD').length;
+    const good = updates.filter((x) => x.rating === 'GOOD').length;
+    const easy = updates.filter((x) => x.rating === 'EASY').length;
+
+    const remembered = good + easy;
+    const reviewed = updates.length;
+
+    return {
+      completed: true,
+      sessionId: dto.sessionId || null,
+      reviewed,
+      remembered,
+      again,
+      hard,
+      good,
+      easy,
+      accuracy: reviewed ? Math.round((remembered / reviewed) * 100) : 0,
+      reward: {
+        xp: remembered * 5 + easy * 2,
+        coin: remembered * 2,
+        petXp: remembered,
+      },
+      updates,
+    };
+  }
+
+  async findTodayPlan(userId: string) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return this.prisma.userDailyVocabularyPlan.findFirst({
+      where: {
+        date: today,
+        plan: {
+          userId,
+        },
+      },
+      include: {
+        topic: true,
+        words: {
+          include: {
+            word: true,
+          },
+          orderBy: {
+            order: 'asc',
+          },
+        },
+        _count: {
+          select: {
+            words: true,
+          },
+        },
+      },
+    });
+  }
+
+  private async fillTodayPlanWords(userId: string, day: any, required: number) {
+    const existedIds = day.words.map((x) => x.wordId);
+
+    const words = await this.pickWordsForUser({
+      userId,
+
+      topicId: day.topicId,
+
+      level: day.level,
+
+      limit: required,
+    });
+
+    const missing = words.filter((x) => !existedIds.includes(x.id));
+
+    if (!missing.length) return;
+
+    await this.prisma.userDailyVocabularyWord.createMany({
+      data: missing.map((w, index) => ({
+        dayId: day.id,
+
+        wordId: w.id,
+
+        order: existedIds.length + index + 1,
+      })),
+
+      skipDuplicates: true,
+    });
+  }
+
+  async rebuildUserWeeklyPlan(userId: string, planId: string) {
+    const plan = await this.prisma.userWeeklyVocabularyPlan.findFirst({
+      where: {
+        id: planId,
+        userId,
+      },
+      include: {
+        days: {
+          include: {
+            words: true,
+          },
+        },
       },
     });
 
-    let urgent = 0;
-    let normal = 0;
-    let later = 0;
-
-    for (const item of progress) {
-      if (!item.reviewAt) continue;
-
-      if (item.reviewAt <= tomorrow) {
-        urgent++;
-      } else if (item.reviewAt <= nextWeek) {
-        normal++;
-      } else if (item.reviewAt <= nextMonth) {
-        later++;
-      }
+    if (!plan) {
+      throw new NotFoundException('Không tìm thấy weekly plan');
     }
 
-    return {
-      totalReview: urgent + normal + later,
-      urgentReview: urgent,
-      normalReview: normal,
-      laterReview: later,
-    };
+    const dayIds = plan.days.map((day) => day.id);
+
+    await this.prisma.userDailyVocabularyWord.deleteMany({
+      where: {
+        dayId: {
+          in: dayIds,
+        },
+      },
+    });
+
+    await this.prisma.userDailyVocabularyPlan.deleteMany({
+      where: {
+        planId,
+      },
+    });
+
+    await this.prisma.userWeeklyVocabularyPlan.delete({
+      where: {
+        id: planId,
+      },
+    });
+
+    return this.getOrCreateUserWeeklyPlan(userId);
   }
 }
