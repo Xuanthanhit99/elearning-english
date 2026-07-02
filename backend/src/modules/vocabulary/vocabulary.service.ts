@@ -230,46 +230,46 @@ export class VocabularyService {
     });
 
     if (existed) {
-  const topicIds = existed.days.map((day) => day.topicId);
-  const uniqueTopicIds = new Set(topicIds);
+      const topicIds = existed.days.map((day) => day.topicId);
+      const uniqueTopicIds = new Set(topicIds);
 
-  const hasNotEnoughDays = existed.days.length < 7;
+      const hasNotEnoughDays = existed.days.length < 7;
 
-  const hasDuplicatedTopic =
-    topicIds.length > 0 && uniqueTopicIds.size !== topicIds.length;
+      const hasDuplicatedTopic =
+        topicIds.length > 0 && uniqueTopicIds.size !== topicIds.length;
 
-  const hasNotEnoughWords = existed.days.some(
-    (day) => day.words.length < profile.dailyWordTarget,
-  );
+      const hasNotEnoughWords = existed.days.some(
+        (day) => day.words.length < profile.dailyWordTarget,
+      );
 
-  if (hasDuplicatedTopic) {
-    await this.rebuildUserWeeklyPlan(userId, existed.id);
-  } else if (hasNotEnoughDays || hasNotEnoughWords) {
-    await this.repairUserWeeklyPlanDays(
-      userId,
-      existed.id,
-      existed.weekStart,
-      existed.level,
-      profile.dailyWordTarget,
-    );
-  }
+      if (hasDuplicatedTopic) {
+        await this.rebuildUserWeeklyPlan(userId, existed.id);
+      } else if (hasNotEnoughDays || hasNotEnoughWords) {
+        await this.repairUserWeeklyPlanDays(
+          userId,
+          existed.id,
+          existed.weekStart,
+          existed.level,
+          profile.dailyWordTarget,
+        );
+      }
 
-  return this.prisma.userWeeklyVocabularyPlan.findUnique({
-    where: { id: existed.id },
-    include: {
-      days: {
+      return this.prisma.userWeeklyVocabularyPlan.findUnique({
+        where: { id: existed.id },
         include: {
-          topic: true,
-          words: {
-            include: { word: true },
-            orderBy: { order: 'asc' },
+          days: {
+            include: {
+              topic: true,
+              words: {
+                include: { word: true },
+                orderBy: { order: 'asc' },
+              },
+            },
+            orderBy: { date: 'asc' },
           },
         },
-        orderBy: { date: 'asc' },
-      },
-    },
-  });
-}
+      });
+    }
 
     let pool = await this.prisma.weeklyTopicPool.findUnique({
       where: {
@@ -491,59 +491,57 @@ export class VocabularyService {
     const learned = await this.prisma.userWordProgress.findMany({
       where: {
         userId: params.userId,
-        status: {
-          in: ['KNOWN', 'MASTERED'],
-        },
+        status: { in: ['KNOWN', 'MASTERED'] },
       },
       select: { wordId: true },
     });
 
-    console.log('learned', learned);
-
     const learnedIds = learned.map((x) => x.wordId);
 
-    let words = await this.prisma.word.findMany({
-      where: {
-        topicId: params.topicId,
-        level: params.level,
-        id: {
-          notIn: learnedIds,
+    const findStrict = () =>
+      this.prisma.word.findMany({
+        where: {
+          topicId: params.topicId,
+          level: params.level,
+          id: { notIn: learnedIds },
         },
-      },
-      orderBy: [{ difficulty: 'asc' }, { searchCount: 'asc' }],
-      take: params.limit,
-    });
+        orderBy: [{ difficulty: 'asc' }, { searchCount: 'asc' }],
+        take: params.limit,
+      });
 
-    console.log('learned-words', words);
+    let words = await findStrict();
 
-    if (words.length >= params.limit) {
-      return words;
-    }
+    if (words.length >= params.limit) return words;
 
     const missing = params.limit - words.length;
-    console.log('learned-words-missing', missing);
 
-    console.log('missing', missing);
-
-    await this.generateWordsByGemini({
+    const created = await this.generateWordsByGemini({
       topicId: params.topicId,
       level: params.level,
-      count: missing + 5,
+      count: missing + 10,
     });
 
-    words = await this.prisma.word.findMany({
+    console.log('Gemini created:', created.length);
+
+    words = await findStrict();
+
+    if (words.length >= params.limit) return words;
+
+    // fallback mềm: lấy cùng topic, bỏ qua level
+    const fallbackWords = await this.prisma.word.findMany({
       where: {
         topicId: params.topicId,
-        level: params.level,
-        id: {
-          notIn: learnedIds,
-        },
+        id: { notIn: learnedIds },
       },
       orderBy: [{ difficulty: 'asc' }, { searchCount: 'asc' }],
       take: params.limit,
     });
 
-    return words;
+    if (fallbackWords.length > 0) return fallbackWords;
+
+    throw new BadRequestException(
+      `Không tạo được từ cho topicId=${params.topicId}, level=${params.level}`,
+    );
   }
   async updateWordProgress(
     userId: string,
@@ -757,11 +755,15 @@ Format bắt buộc:
       )) as GeminiWordItem[];
 
       result = Array.isArray(aiResult) ? aiResult : [];
-    } catch {
+    } catch (error) {
+      console.error('GEMINI ERROR:', error);
       result = this.buildFallbackWords(topic.name, params.level, params.count);
     }
 
-    if (!Array.isArray(result)) {
+    console.log('GEMINI RESULT:', result);
+
+    if (!Array.isArray(result) || result.length === 0) {
+      console.warn('Gemini không tạo được từ cho topic:', topic.name);
       return [];
     }
 
@@ -772,6 +774,11 @@ Format bắt buộc:
 
       const cleanWord = item.word.toLowerCase().trim();
 
+      if (this.isInvalidGeneratedWord(cleanWord, topic.name)) {
+        console.warn('SKIP INVALID WORD:', cleanWord);
+        continue;
+      }
+
       const word = await this.prisma.word.upsert({
         where: {
           word: cleanWord,
@@ -779,6 +786,14 @@ Format bắt buộc:
         update: {
           topicId: params.topicId,
           level: params.level,
+          phonetic: item.phonetic || undefined,
+          partOfSpeech: item.partOfSpeech || undefined,
+          meaningVi: item.meaningVi || undefined,
+          meaningEn: item.meaningEn || undefined,
+          example: item.example || undefined,
+          synonyms: item.synonyms || undefined,
+          antonyms: item.antonyms || undefined,
+          difficulty: item.difficulty || undefined,
         },
         create: {
           word: cleanWord,
@@ -800,6 +815,8 @@ Format bắt buộc:
 
       createdWords.push(word);
     }
+
+    console.log('CREATED WORDS:', createdWords.length);
 
     return createdWords;
   }
@@ -2615,5 +2632,19 @@ Rules:
     });
 
     return this.getOrCreateUserWeeklyPlan(userId);
+  }
+
+  private isInvalidGeneratedWord(word: string, topicName: string) {
+    const clean = word.toLowerCase().trim();
+    const topic = topicName.toLowerCase().trim();
+
+    return (
+      !clean ||
+      clean.includes(`${topic} word`) ||
+      clean.includes('word ') ||
+      clean === 'example' ||
+      (clean === 'doctor' && topic !== 'health') ||
+      /\d/.test(clean)
+    );
   }
 }
