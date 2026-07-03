@@ -167,6 +167,8 @@ model User {
   petProfile PetProfile?
   petRewards PetReward[]
 
+  listeningSession ListeningSession[]
+
   arenaProfile      ArenaProfile?
   arenaRooms        ArenaRoom[]
   arenaParticipants ArenaParticipant[]
@@ -500,11 +502,11 @@ model Word {
 
   searchCount Int @default(0)
 
-  histories  UserWordHistory[]
-  progress   UserWordProgress[]
-  dailyWords UserDailyVocabularyWord[]
+  histories                 UserWordHistory[]
+  progress                  UserWordProgress[]
+  dailyWords                UserDailyVocabularyWord[]
   weeklyVocabularyQuestions WeeklyVocabularyQuestion[]
-  notebookItems UserVocabularyNotebook[]
+  notebookItems             UserVocabularyNotebook[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -978,18 +980,18 @@ model WordTopic {
 }
 
 model UserWordProgress {
-  id        String             @id @default(uuid())
-  userId    String
-  wordId    String
+  id     String @id @default(uuid())
+  userId String
+  wordId String
 
-  status    WordProgressStatus @default(NEW)
+  status WordProgressStatus @default(NEW)
 
-  seenCount Int @default(0)
+  seenCount    Int @default(0)
   correctCount Int @default(0)
   wrongCount   Int @default(0)
 
-  easeFactor Int @default(250) // 2.5
-  interval   Int @default(0)   // số ngày ôn tiếp theo
+  easeFactor Int       @default(250) // 2.5
+  interval   Int       @default(0) // số ngày ôn tiếp theo
   reviewAt   DateTime?
   learnedAt  DateTime?
   masteredAt DateTime?
@@ -1044,7 +1046,7 @@ model UserWeeklyVocabularyPlan {
   user User            @relation(fields: [userId], references: [id])
   pool WeeklyTopicPool @relation(fields: [poolId], references: [id])
 
-  days UserDailyVocabularyPlan[]
+  days        UserDailyVocabularyPlan[]
   weeklyTests WeeklyVocabularyTest[]
 
   createdAt DateTime @default(now())
@@ -1061,7 +1063,7 @@ model UserDailyVocabularyPlan {
   topicId   String
   level     String
 
-  status    DailyVocabularyStatus @default(AVAILABLE)
+  status DailyVocabularyStatus @default(AVAILABLE)
 
   plan  UserWeeklyVocabularyPlan @relation(fields: [planId], references: [id])
   topic WordTopic                @relation(fields: [topicId], references: [id])
@@ -1073,6 +1075,7 @@ model UserDailyVocabularyPlan {
 
   @@unique([planId, date])
 }
+
 model UserDailyVocabularyWord {
   id     String @id @default(uuid())
   dayId  String
@@ -1102,11 +1105,11 @@ model UserVocabularyNotebook {
 }
 
 model WeeklyVocabularyTest {
-    id        String @id @default(uuid())
-  userId    String
-  planId    String
+  id     String @id @default(uuid())
+  userId String
+  planId String
 
-  status    WeeklyTestStatus @default(LOCKED)
+  status WeeklyTestStatus @default(LOCKED)
 
   totalQuestions Int @default(0)
   score          Int @default(0)
@@ -1116,7 +1119,7 @@ model WeeklyVocabularyTest {
   unlockedAt DateTime?
   passedAt   DateTime?
 
-  user User @relation(fields: [userId], references: [id])
+  user User                     @relation(fields: [userId], references: [id])
   plan UserWeeklyVocabularyPlan @relation(fields: [planId], references: [id])
 
   questions WeeklyVocabularyQuestion[]
@@ -1128,20 +1131,80 @@ model WeeklyVocabularyTest {
 }
 
 model WeeklyVocabularyQuestion {
-  id         String @id @default(uuid())
-  testId     String
-  wordId     String
+  id     String @id @default(uuid())
+  testId String
+  wordId String
 
-  type       VocabularyQuestionType
-  question   String
-  options    String[] @default([])
-  answer     String
+  type     VocabularyQuestionType
+  question String
+  options  String[]               @default([])
+  answer   String
 
   userAnswer String?
   isCorrect  Boolean?
-  score      Int @default(0)
+  score      Int      @default(0)
   order      Int
 
   test WeeklyVocabularyTest @relation(fields: [testId], references: [id])
-  word Word @relation(fields: [wordId], references: [id])
+  word Word                 @relation(fields: [wordId], references: [id])
+}
+
+model ListeningQuestion {
+  id            String  @id @default(uuid())
+  title         String?
+  level         String
+  topic         String
+  audioUrl      String
+  transcript    String?
+  question      String
+  options       Json
+  correctAnswer String
+  explanation   String?
+  duration      Int     @default(0)
+  isActive      Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  answers ListeningSessionAnswer[]
+}
+
+model ListeningSession {
+  id      String  @id @default(uuid())
+  userId  String
+  level   String?
+  topic   String?
+  total   Int     @default(0)
+  correct Int     @default(0)
+  wrong   Int     @default(0)
+  skipped Int     @default(0)
+  score   Int     @default(0)
+  status  String  @default("IN_PROGRESS")
+  xpEarned    Int      @default(0)
+  coinsEarned Int      @default(0)
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  user   User                     @relation(fields: [userId], references: [id])
+  answer ListeningSessionAnswer[]
+}
+
+model ListeningSessionAnswer {
+  id             String   @id @default(uuid())
+  sessionId      String
+  questionId     String
+  selectedAnswer String?
+  isCorrect      Boolean?
+  isSkipped      Boolean  @default(false)
+  isFlagged      Boolean  @default(false)
+
+  timeSpent     Int @default(0)
+  listenedCount Int @default(0)
+
+  answeredAt DateTime @default(now())
+
+  session  ListeningSession  @relation(fields: [sessionId], references: [id])
+  question ListeningQuestion @relation(fields: [questionId], references: [id])
+
+  @@unique([sessionId, questionId])
 }
