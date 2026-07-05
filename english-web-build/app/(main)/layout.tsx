@@ -3,6 +3,7 @@
 import Header from "@/src/Components/HomePage/Header";
 import FloatingPetCompanion from "@/src/Components/Pets/FloatingPetCompanion";
 import PetSelectionPrompt from "@/src/Components/Pets/PetSelectionPrompt";
+import StudySidebar from "@/src/Components/Layout/StudySidebar";
 import WelcomeLoginModal from "@/src/Components/WelcomeLoginModal";
 import { api } from "@/src/lib/axios";
 import { useAuthStore } from "@/src/store/authStore";
@@ -19,11 +20,23 @@ export default function MainLayout({
   const pathname = usePathname();
   const usesCustomDashboardShell =
     pathname === "/" ||
+    pathname.startsWith("/courses") ||
+    pathname.startsWith("/flashcards") ||
+    pathname.startsWith("/grammar") ||
+    pathname.startsWith("/reading") ||
+    pathname.startsWith("/speaking") ||
+    pathname.startsWith("/writing") ||
     pathname.startsWith("/profile") ||
     pathname.startsWith("/pet") ||
     pathname.startsWith("/missions") ||
     pathname.startsWith("/community") ||
-    pathname.startsWith("/vocabulary");
+    pathname.startsWith("/vocabulary") ||
+    pathname.startsWith("/listening") ||
+    pathname.startsWith("/dictionary") ||
+    pathname.startsWith("/pronunciation") ||
+    pathname.startsWith("/placement-test") ||
+    pathname.startsWith("/check") ||
+    pathname.startsWith("/check-word");
   const [showWelcome, setShowWelcome] = useState(false);
   const [showPetPrompt, setShowPetPrompt] = useState(false);
   const [petDaysLeft, setPetDaysLeft] = useState(7);
@@ -75,7 +88,38 @@ export default function MainLayout({
         onClose={() => setShowPetPrompt(false)}
       />
 
-      {children}
+      {usesCustomDashboardShell ? (
+        <div className="single-menu-shell min-h-screen bg-[#fbfbff]">
+          <StudySidebar fixed />
+          <div className="single-menu-content min-h-screen xl:pl-[286px]">
+            {children}
+          </div>
+          <style jsx global>{`
+            .single-menu-content > main,
+            .single-menu-content main[class*="ml-"],
+            .single-menu-content main[class*="ml-\\["] {
+              margin-left: 0 !important;
+            }
+
+            .single-menu-content > div > .flex > aside[class*="fixed"][class*="left-0"][class*="h-screen"],
+            .single-menu-content > div > .flex > aside[class*="sticky"][class*="h-screen"],
+            .single-menu-content main > div > aside[class*="sticky"][class*="h-screen"],
+            .single-menu-content main > div > aside[class*="fixed"][class*="left-0"][class*="h-screen"],
+            .single-menu-content section > div > aside[class*="sticky"][class*="h-screen"],
+            .single-menu-content section > div > aside[class*="fixed"][class*="left-0"][class*="h-screen"] {
+              display: none !important;
+            }
+
+            .single-menu-content > div > .flex > main[class*="ml-"],
+            .single-menu-content main > div > section,
+            .single-menu-content section > div > section {
+              margin-left: 0 !important;
+            }
+          `}</style>
+        </div>
+      ) : (
+        children
+      )}
       {!usesCustomDashboardShell && <FloatingPetCompanion />}
     </>
   );

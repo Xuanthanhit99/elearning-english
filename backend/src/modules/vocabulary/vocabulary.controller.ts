@@ -36,6 +36,46 @@ export class VocabularyController {
     return this.vocabularyService.getOrCreateProfile(user.id);
   }
 
+  @Get('overview')
+  @UseGuards(JwtAuthGuard)
+  getOverview(@CurrentUser() user: any) {
+    return this.vocabularyService.getLearningOverview(user.id);
+  }
+
+  @Get('overview/skills')
+  @UseGuards(JwtAuthGuard)
+  getSkillOverview(@CurrentUser() user: any) {
+    return this.vocabularyService.getSkillProgressOverview(user.id);
+  }
+
+  @Get('overview/achievements')
+  @UseGuards(JwtAuthGuard)
+  getAchievementOverview(@CurrentUser() user: any) {
+    return this.vocabularyService.getAchievementOverview(user.id);
+  }
+
+  @Get('overview/achievements/:key')
+  @UseGuards(JwtAuthGuard)
+  getAchievementDetail(@CurrentUser() user: any, @Param('key') key: string) {
+    return this.vocabularyService.getAchievementDetail(user.id, key);
+  }
+
+  @Get('overview/achievements/:key/activity')
+  @UseGuards(JwtAuthGuard)
+  getAchievementActivityDetail(
+    @CurrentUser() user: any,
+    @Param('key') key: string,
+    @Query('type') type?: string,
+    @Query('id') id?: string,
+  ) {
+    return this.vocabularyService.getAchievementActivityDetail(
+      user.id,
+      key,
+      type || '',
+      id || '',
+    );
+  }
+
   @Patch('profile')
   @UseGuards(JwtAuthGuard)
   updateProfile(
@@ -266,8 +306,15 @@ export class VocabularyController {
 
   @Get('review')
   @UseGuards(JwtAuthGuard)
-  getReviewWords(@CurrentUser() user: any) {
-    return this.vocabularyService.getReviewWords(user.id);
+  getReviewWords(
+    @CurrentUser() user: any,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.vocabularyService.getReviewWords(user.id, {
+      page: Number(page) || 1,
+      limit: Number(limit) || 8,
+    });
   }
 
   @Get('review/dashboard')

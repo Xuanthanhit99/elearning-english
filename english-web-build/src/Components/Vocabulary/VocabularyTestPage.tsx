@@ -94,13 +94,8 @@ export default function VocabularyTestPage() {
   };
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#fbfbff] text-[#101733]">
-      <div className="mx-auto flex min-h-screen max-w-[1920px]">
-        <TestSidebar />
-        <section className="min-w-0 flex-1">
-          <TopBar displayName={displayName} avatar={avatar} />
-
-          <div className="grid gap-7 px-4 py-8 lg:px-10 xl:grid-cols-[minmax(0,1fr)_420px]">
+    <>
+      <div className="grid gap-7 px-4 py-8 lg:px-10 xl:grid-cols-[minmax(0,1fr)_420px]">
             <section className="min-w-0 space-y-6">
               <div>
                 <h1 className="text-3xl font-black">Ôn tập & Kiểm tra</h1>
@@ -126,8 +121,6 @@ export default function VocabularyTestPage() {
               <WeekSchedule plan={weeklyPlan} />
               <MemoryTips />
             </aside>
-          </div>
-        </section>
       </div>
 
       <WeeklyTestModal
@@ -140,7 +133,7 @@ export default function VocabularyTestPage() {
           loadData();
         }}
       />
-    </main>
+    </>
   );
 }
 

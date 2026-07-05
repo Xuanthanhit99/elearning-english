@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "GrammarLesson" ADD COLUMN     "aiPrompt" TEXT,
+ADD COLUMN     "dailyGenerate" INTEGER NOT NULL DEFAULT 30,
+ADD COLUMN     "isGenerateAI" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "maxQuestions" INTEGER NOT NULL DEFAULT 1000;

@@ -41,6 +41,7 @@ import { VocabularyJobModule } from './modules/vocabulary-job/vocabulary-job.mod
 import { ScheduleModule } from '@nestjs/schedule';
 import { ListeningModule } from './modules/listening/listening.module';
 import { ListeningJobService } from './modules/listening-job/listening-job.service';
+import { GrammarModule } from './modules/grammar/grammar.module';
 
 @Module({
   imports: [
@@ -83,6 +84,7 @@ import { ListeningJobService } from './modules/listening-job/listening-job.servi
     VocabularyModule,
     VocabularyJobModule,
     ListeningModule,
+    GrammarModule,
   ],
   providers: [GeminiService, ListeningJobService],
   controllers: [GeminiController],

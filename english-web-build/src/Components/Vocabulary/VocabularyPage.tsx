@@ -1,11 +1,13 @@
 ﻿"use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
 import { api } from "@/src/lib/axios";
 import { useAuthStore } from "@/src/store/authStore";
 import { AppIcon, AppIconName } from "@/src/Components/UI/AppIcon";
 import AppLogo from "@/src/Components/UI/AppLogo";
+import StudySidebar from "@/src/Components/Layout/StudySidebar";
 import { X, Gift, BookOpen, Star, Target, RotateCcw } from "lucide-react";
 
 type VocabularyWord = {
@@ -13,12 +15,14 @@ type VocabularyWord = {
   word: string;
   phonetic?: string | null;
   audio?: string | null;
+  imageUrl?: string | null;
   partOfSpeech?: string | null;
   meaningVi?: string | null;
   meaningEn?: string | null;
   example?: string | null;
   synonyms?: string[];
   antonyms?: string[];
+  difficulty?: number | null;
   topic?: { id: string; name: string } | null;
   progress?: { status: string } | null;
 };
@@ -34,6 +38,7 @@ type DailyWordItem = {
 
 type TodayVocabulary = {
   locked?: boolean;
+  completed?: boolean;
   reason?: string;
   id?: string;
   status?: string;
@@ -75,8 +80,100 @@ type TodayChallenge = {
   questions?: Array<{ wordId: string; prompt: string; options: string[] }>;
 };
 
+type NotebookItem = {
+  id: string;
+  createdAt?: string;
+  word: VocabularyWord;
+};
+
 const levels = ["A1", "A2", "B1", "B2", "C1", "C2"];
 const fallbackWeakWords = ["pollution", "recycle", "conserve"];
+
+const vocabularyEmojiMap: Record<string, string> = {
+  airplane: "2708-fe0f",
+  apple: "1f34e",
+  banana: "1f34c",
+  beach: "1f3d6-fe0f",
+  bicycle: "1f6b2",
+  book: "1f4d6",
+  bread: "1f35e",
+  bus: "1f68c",
+  camera: "1f4f7",
+  car: "1f697",
+  cat: "1f431",
+  city: "1f3d9-fe0f",
+  coffee: "2615",
+  computer: "1f4bb",
+  dog: "1f436",
+  earth: "1f30d",
+  environment: "1f30d",
+  family: "1f46a",
+  fire: "1f525",
+  flower: "1f33c",
+  forest: "1f332",
+  globe: "1f30d",
+  health: "1f3e5",
+  hospital: "1f3e5",
+  hotel: "1f3e8",
+  house: "1f3e0",
+  internet: "1f310",
+  leaf: "1f343",
+  lemon: "1f34b",
+  medicine: "1f48a",
+  money: "1f4b0",
+  moon: "1f319",
+  music: "1f3b5",
+  orange: "1f34a",
+  phone: "1f4f1",
+  pizza: "1f355",
+  plane: "2708-fe0f",
+  recycle: "267b-fe0f",
+  rice: "1f35a",
+  school: "1f3eb",
+  ship: "1f6a2",
+  shopping: "1f6cd-fe0f",
+  soccer: "26bd",
+  star: "2b50",
+  sun: "2600-fe0f",
+  technology: "1f4bb",
+  train: "1f686",
+  travel: "1f9f3",
+  tree: "1f333",
+  water: "1f4a7",
+  weather: "2601-fe0f",
+};
+
+const getImageLock = (value: string) =>
+  value.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0) % 1000;
+
+const getVocabularyImageUrl = (word?: VocabularyWord | null) => {
+  if (!word) return { src: "", mode: "photo" as const };
+  if (word.imageUrl) return { src: word.imageUrl, mode: "custom" as const };
+
+  const cleanWord = (word.word || "").toLowerCase().trim();
+  const emojiCode = vocabularyEmojiMap[cleanWord];
+
+  if (emojiCode) {
+    return {
+      src: `https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/${emojiCode}.svg`,
+      mode: "sticker" as const,
+    };
+  }
+
+  const keyword = (word.word || word.meaningEn || word.meaningVi || "english")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, ",");
+  const lock = getImageLock(keyword || "english");
+
+  return {
+    src: `https://loremflickr.com/640/480/${encodeURIComponent(
+      `${keyword || "english"},object,illustration`,
+    )}?lock=${lock}`,
+    mode: "photo" as const,
+  };
+};
 
 export default function VocabularyPage() {
   const user = useAuthStore((state) => state.user);
@@ -89,6 +186,7 @@ export default function VocabularyPage() {
   const [stats, setStats] = useState<VocabStats | null>(null);
   const [suggestions, setSuggestions] = useState<any>(null);
   const [challenge, setChallenge] = useState<TodayChallenge | null>(null);
+  const [notebookItems, setNotebookItems] = useState<NotebookItem[]>([]);
   const [notebookCount, setNotebookCount] = useState(0);
   const [level, setLevel] = useState("A1");
   const [activeIndex, setActiveIndex] = useState(0);
@@ -96,6 +194,7 @@ export default function VocabularyPage() {
   const [message, setMessage] = useState("");
   const [detail, setDetail] = useState<VocabularyWord | null>(null);
   const [relations, setRelations] = useState<any>(null);
+  const [inlineRelations, setInlineRelations] = useState<any>(null);
   const [flashcard, setFlashcard] = useState<any>(null);
   const [showChallenge, setShowChallenge] = useState(false);
   const [challengeAnswers, setChallengeAnswers] = useState<
@@ -105,15 +204,25 @@ export default function VocabularyPage() {
   const [challengeResult, setChallengeResult] = useState<any>(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [shareContent, setShareContent] = useState("");
-  const [openModalProgress, setOpenModalProgress] = useState(true);
+  const [openModalProgress, setOpenModalProgress] = useState(false);
 
+  const isTodayCompleted = Boolean(
+    today?.completed || today?.status === "COMPLETED",
+  );
   const currentItem = dailyWords[activeIndex] || today?.words?.[0] || null;
   const currentWord = currentItem?.word || null;
+  const previousItem = activeIndex > 0 ? dailyWords[activeIndex - 1] : null;
+  const nextItem =
+    activeIndex < dailyWords.length - 1 ? dailyWords[activeIndex + 1] : null;
   const learnedCount = dailyWords.filter((item) =>
-    ["KNOWN", "MASTERED"].includes(item.progress?.status || ""),
+    ["KNOWN", "MASTERED", "REVIEW", "LEARNING"].includes(
+      item.progress?.status || "",
+    ),
   ).length;
   const totalWords = dailyWords.length || today?.words?.length || 10;
-  const progressPercent = totalWords
+  const progressPercent = isTodayCompleted
+    ? 100
+    : totalWords
     ? Math.round((learnedCount / totalWords) * 100)
     : 0;
 
@@ -146,17 +255,22 @@ export default function VocabularyPage() {
     if (statsRes.status === "fulfilled") setStats(statsRes.value.data);
     if (suggestionsRes.status === "fulfilled")
       setSuggestions(suggestionsRes.value.data);
-    if (notebookRes.status === "fulfilled")
+    if (notebookRes.status === "fulfilled") {
+      setNotebookItems(notebookRes.value.data || []);
       setNotebookCount(notebookRes.value.data?.length || 0);
+    }
     if (challengeRes.status === "fulfilled")
       setChallenge(challengeRes.value.data);
-    if (todayRes.status === "fulfilled" && todayRes.value.data?.completed) {
-      setOpenModalProgress(true);
-    }
 
     if (todayRes.status === "fulfilled") {
       const data = todayRes.value.data;
       setToday(data);
+      if (data?.completed) {
+        setDailyWords(data.words || []);
+        setActiveIndex(0);
+        setLoading(false);
+        return;
+      }
       if (data?.id && !data?.locked) {
         try {
           const wordsRes = await api.get(`/vocabulary/daily/${data.id}/words`);
@@ -186,6 +300,18 @@ export default function VocabularyPage() {
     loadVocabulary();
   }, []);
 
+  useEffect(() => {
+    if (!currentWord?.id) {
+      setInlineRelations(null);
+      return;
+    }
+
+    api
+      .get(`/vocabulary/words/${currentWord.id}/relations`)
+      .then((res) => setInlineRelations(res.data))
+      .catch(() => setInlineRelations(null));
+  }, [currentWord?.id]);
+
   const updateLevel = async (nextLevel: string) => {
     setLevel(nextLevel);
     await api.patch("/vocabulary/profile", { level: nextLevel });
@@ -193,9 +319,11 @@ export default function VocabularyPage() {
   };
 
   const markProgress = async (status: "KNOWN" | "REVIEW" | "LEARNING") => {
-    if (!currentWord?.id || today?.locked) {
+    if (!currentWord?.id || today?.locked || isTodayCompleted) {
       setMessage(
-        "Chưa có từ vựng hợp lệ để lưu tiến độ. Hãy đăng nhập và tải lại bài học.",
+        isTodayCompleted
+          ? "Bạn đã hoàn thành bài học hôm nay. Ngày mai sẽ có chủ đề mới."
+          : "Chưa có từ vựng hợp lệ để lưu tiến độ. Hãy đăng nhập và tải lại bài học.",
       );
       return;
     }
@@ -210,11 +338,22 @@ export default function VocabularyPage() {
             : item,
         ),
       );
-      setMessage(
-        status === "KNOWN"
-          ? "Đã lưu: bạn đã biết từ này."
-          : "Đã đưa từ vào lịch ôn tập.",
-      );
+
+      const nextIndex = activeIndex + 1;
+      if (nextIndex < dailyWords.length) {
+        setActiveIndex(nextIndex);
+        setMessage(
+          status === "KNOWN"
+            ? "Đã lưu: bạn đã biết từ này. Chuyển sang từ tiếp theo."
+            : "Đã đưa từ vào lịch ôn tập. Chuyển sang từ tiếp theo.",
+        );
+      } else {
+        setMessage(
+          status === "KNOWN"
+            ? "Đã lưu: bạn đã biết từ này. Bạn đã xem hết danh sách hôm nay."
+            : "Đã đưa từ vào lịch ôn tập. Bạn đã xem hết danh sách hôm nay.",
+        );
+      }
     } catch {
       setMessage("Không lưu được tiến độ. Hãy đăng nhập lại rồi thử tiếp.");
     }
@@ -243,6 +382,7 @@ export default function VocabularyPage() {
         ),
       );
       const notebookRes = await api.get("/vocabulary/notebook");
+      setNotebookItems(notebookRes.data || []);
       setNotebookCount(notebookRes.data?.length || 0);
     } catch {
       setMessage("Không cập nhật được sổ tay. Hãy đăng nhập lại rồi thử tiếp.");
@@ -263,19 +403,11 @@ export default function VocabularyPage() {
   };
 
   const openFlashcard = async () => {
-    if (today?.id) {
-      const res = await api.get(`/vocabulary/daily/${today.id}/flashcards`);
-      const firstCard = res.data?.cards?.[0];
-      if (firstCard)
-        setFlashcard({ ...firstCard, session: res.data, cardIndex: 0 });
+    if (isTodayCompleted) {
+      setMessage("Bạn đã hoàn thành bài học hôm nay. Hãy ôn lại trong mục Ôn tập.");
       return;
     }
-    if (currentWord?.id) {
-      const res = await api.get(
-        `/vocabulary/words/${currentWord.id}/flashcard`,
-      );
-      setFlashcard(res.data);
-    }
+    window.location.href = "/vocabulary/flashcards";
   };
 
   const reviewFlashcard = async (
@@ -313,6 +445,10 @@ export default function VocabularyPage() {
   };
 
   const nextWord = async () => {
+    if (isTodayCompleted) {
+      setOpenModalProgress(true);
+      return;
+    }
     if (!today?.id || !currentWord?.id) return;
     const res = await api.get(
       `/vocabulary/daily/${today.id}/words/${currentWord.id}/navigation`,
@@ -325,7 +461,7 @@ export default function VocabularyPage() {
   };
 
   const completeToday = async () => {
-    if (!today?.id || today.locked) return;
+    if (!today?.id || today.locked || isTodayCompleted) return;
     await api.post(`/vocabulary/daily/${today.id}/complete`);
     setOpenModalProgress(true);
     setMessage(
@@ -362,14 +498,9 @@ export default function VocabularyPage() {
   };
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#fbfbff] text-[#101733]">
-      <div className="mx-auto flex min-h-screen max-w-[1920px]">
-        <VocabularySidebar />
-        <section className="min-w-0 flex-1">
-          <TopBar displayName={displayName} avatar={avatar} />
-
-          <div className="grid gap-7 px-4 py-6 lg:px-8 xl:grid-cols-[minmax(0,1fr)_420px]">
-            <section className="min-w-0 space-y-6">
+    <>
+      <div className="grid gap-7 px-4 py-6 lg:px-8 xl:grid-cols-[minmax(0,1fr)_420px]">
+            <section className="min-w-0 space-y-4">
               <div className="flex items-center gap-4">
                 <Link
                   href="/courses"
@@ -384,46 +515,48 @@ export default function VocabularyPage() {
                 <LockedNotice reason={today.reason} />
               ) : (
                 <>
-                  <TopicHero
-                    level={level}
-                    onLevelChange={updateLevel}
-                    today={today}
-                  />
-                  <ActionRow onOpenChallenge={() => setShowChallenge(true)} />
-                  <FoxyNote loading={loading} suggestions={suggestions} />
-                  <WordCard
+                  <WordStudyCard
                     activeIndex={activeIndex}
+                    completed={isTodayCompleted}
                     item={currentItem}
-                    locked={false}
-                    total={dailyWords.length}
+                    locked={isTodayCompleted}
+                    total={totalWords}
                     word={currentWord}
-                    onDetail={openDetail}
                     onFlashcard={openFlashcard}
                     onKnown={() => markProgress("KNOWN")}
-                    onLearning={() => markProgress("LEARNING")}
-                    onNext={nextWord}
                     onNotebook={toggleNotebook}
                     onReview={() => markProgress("REVIEW")}
                     onShare={() => setShareOpen(true)}
                     onAudio={playAudio}
+                  />
+                  <WordPager
+                    activeIndex={activeIndex}
+                    completed={isTodayCompleted}
+                    nextItem={nextItem}
+                    previousItem={previousItem}
+                    total={totalWords}
+                    onComplete={completeToday}
+                    onNext={nextWord}
+                    onPrevious={() =>
+                      setActiveIndex((index) => Math.max(0, index - 1))
+                    }
+                  />
+                  <WordDetailTabs
+                    level={level}
+                    relations={inlineRelations}
+                    word={currentWord}
+                    onFlashcard={openFlashcard}
                   />
                   {message && (
                     <div className="rounded-xl bg-[#ecfdf5] px-5 py-4 font-bold text-[#15803d]">
                       {message}
                     </div>
                   )}
-                  <ProgressCard
-                    learned={learnedCount}
-                    percent={progressPercent}
-                    total={totalWords}
-                    onComplete={completeToday}
-                  />
                 </>
               )}
             </section>
 
             <aside className="space-y-6">
-              <WeeklyTopics plan={weeklyPlan} />
               <StatsPanel
                 stats={stats}
                 fallbackLearned={
@@ -431,19 +564,23 @@ export default function VocabularyPage() {
                   totalWords
                 }
                 notebookCount={notebookCount}
+                percent={progressPercent}
               />
-              <TodayHint
+              <NotebookPanel
+                items={notebookItems}
+                currentWord={currentWord}
+                onSelectWord={openWordDetail}
+              />
+              <ReviewSuggestionPanel
                 suggestions={suggestions}
                 onSelectWord={openWordDetail}
               />
               <ChallengeCard
                 challenge={challenge}
                 onOpen={() => setShowChallenge(true)}
+                word={currentWord?.word}
               />
-              <LearningTip />
             </aside>
-          </div>
-        </section>
       </div>
 
       {detail && (
@@ -485,7 +622,7 @@ export default function VocabularyPage() {
         open={openModalProgress}
         onClose={() => setOpenModalProgress(false)}
       />
-    </main>
+    </>
   );
 }
 
@@ -509,84 +646,7 @@ function LockedNotice({ reason }: { reason?: string }) {
 }
 
 export function VocabularySidebar() {
-  const menu = [
-    { icon: "home", label: "Trang chủ", href: "/" },
-    { icon: "book", label: "Học tập", href: "/courses" },
-    { icon: "arena", label: "Đấu trường", href: "/arena" },
-    { icon: "bot", label: "AI Tutor", href: "/check-writing" },
-    { icon: "graduation", label: "Khóa học", href: "/courses" },
-    { icon: "users", label: "Cộng đồng", href: "/community" },
-    { icon: "shop", label: "Shop", href: "/pet" },
-    { icon: "paw", label: "Hồ sơ", href: "/profile" },
-  ] satisfies Array<{ icon: AppIconName; label: string; href: string }>;
-
-  return (
-    <aside className="sticky top-0 hidden h-screen w-[286px] shrink-0 overflow-y-auto border-r border-[#e8e9f5] bg-white px-4 py-6 xl:block">
-      <AppLogo />
-      <nav className="mt-9 space-y-1">
-        {menu.map(({ icon, label, href }) => (
-          <Link
-            key={label}
-            href={href}
-            className={`flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-black transition ${label === "Học tập" ? "bg-[#efe9ff] text-[#652cff]" : "text-[#5d6587] hover:bg-[#f5f2ff] hover:text-[#652cff]"}`}
-          >
-            <AppIcon
-              name={icon}
-              tone={label === "Học tập" ? "purple" : "slate"}
-              bare
-              size={18}
-            />
-            <span className="min-w-0 flex-1">{label}</span>
-          </Link>
-        ))}
-        <div className="ml-[27px] border-l-2 border-[#e2ddff] py-1 pl-6">
-          {[
-            "Tổng quan",
-            "Từ vựng",
-            "Nghe",
-            "Nói",
-            "Ngữ pháp",
-            "Đọc hiểu",
-            "Viết",
-            "Flashcards",
-          ].map((label) => (
-            <Link
-              href={label === "Từ vựng" ? "/vocabulary" : "/courses"}
-              key={label}
-              className={`relative block rounded-xl px-4 py-2.5 text-sm font-black ${label === "Từ vựng" ? "bg-[#f1ecff] text-[#652cff]" : "text-[#101733] hover:bg-[#f7f5ff]"}`}
-            >
-              {label === "Từ vựng" && (
-                <span className="absolute -left-[31px] top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-[#6d35ff]" />
-              )}
-              {label}
-            </Link>
-          ))}
-        </div>
-        <p className="px-4 pt-5 text-xs font-black uppercase text-[#8b91aa]">
-          Ôn tập & kiểm tra
-        </p>
-        <Link
-          href="/vocabulary/test"
-          className="flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-black text-[#5d6587] hover:bg-[#f5f2ff] hover:text-[#652cff]"
-        >
-          <AppIcon name="shield" tone="purple" bare size={17} /> Kiểm tra{" "}
-          <span className="rounded-lg bg-[#efe9ff] px-2 py-1 text-xs text-[#6d35ff]">
-            Mới
-          </span>
-        </Link>
-      </nav>
-      <section className="mt-8 rounded-2xl bg-[#f4f0ff] p-5">
-        <AppIcon name="crown" tone="yellow" />
-        <h3 className="mt-2 font-black text-[#652cff]">Nâng cấp Premium</h3>
-        <p className="mt-3 text-sm font-bold leading-6 text-[#69708b]">
-          Học không giới hạn, nhận nhiều đặc quyền hấp dẫn!
-        </p>
-        <button className="mt-5 w-full rounded-xl bg-[#6d35ff] px-4 py-3 text-sm font-black text-white">
-          Nâng cấp ngay
-        </button>
-      </section>
-    </aside>
-  );
+  return <StudySidebar />;
 }
 
 export function TopBar({
@@ -775,6 +835,1231 @@ function FoxyNote({
   );
 }
 
+function WordStudyCard(props: {
+  locked: boolean;
+  completed: boolean;
+  activeIndex: number;
+  total: number;
+  word: VocabularyWord | null;
+  item: DailyWordItem | null;
+  onKnown: () => void;
+  onReview: () => void;
+  onNotebook: () => void;
+  onFlashcard: () => void;
+  onShare: () => void;
+  onAudio: () => void;
+}) {
+  const { completed, item, locked, total, word } = props;
+  const displayWord = word?.word || "Environment";
+  const meaning =
+    word?.meaningVi || word?.meaningEn || "Môi trường, hoàn cảnh xung quanh";
+  const example =
+    word?.example ||
+    "We should protect the environment for future generations.";
+  const exampleVi = word?.meaningVi
+    ? `Nghĩa: ${word.meaningVi}`
+    : "Chúng ta nên bảo vệ môi trường cho các thế hệ tương lai.";
+  const image = getVocabularyImageUrl(word);
+
+  return (
+    <section className="overflow-hidden rounded-2xl border border-[#ece8fb] bg-white shadow-sm">
+      <div className="grid min-h-[340px] gap-6 bg-[#f1edff] p-6 md:grid-cols-[minmax(0,1fr)_360px] md:p-8">
+        <div className="min-w-0">
+          {completed && (
+            <span className="mb-4 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-700">
+              Đã hoàn thành hôm nay
+            </span>
+          )}
+          <div className="flex flex-wrap items-center gap-4">
+            <h2 className="text-4xl font-black leading-tight text-[#101733] md:text-5xl">
+              {displayWord}
+            </h2>
+            <button
+              onClick={props.onAudio}
+              className="flex h-14 w-14 items-center justify-center rounded-xl bg-white text-[#6d35ff] shadow-sm"
+            >
+              <AppIcon name="volume" bare size={24} />
+            </button>
+          </div>
+
+          <p className="mt-4 text-lg font-bold text-[#7377a8]">
+            {word?.phonetic || "/ɪnˈvaɪrənmənt/"}
+          </p>
+          <span className="mt-5 inline-flex rounded-lg bg-[#dcfce7] px-3 py-1.5 text-sm font-black text-[#16a34a]">
+            {word?.partOfSpeech || "Danh từ"}
+          </span>
+
+          <h3 className="mt-6 text-lg font-black text-[#101733]">
+            {meaning}
+          </h3>
+          <div className="mt-5 border-l-4 border-[#6d35ff] pl-4">
+            <p className="text-sm font-black text-[#6d35ff]">Ví dụ</p>
+            <p className="mt-3 font-bold leading-7 text-[#101733]">
+              {example}
+            </p>
+            <p className="mt-1 text-sm font-bold text-[#7377a8]">
+              {exampleVi}
+            </p>
+          </div>
+        </div>
+
+        <div className="relative flex min-h-[260px] items-center justify-center overflow-hidden rounded-[30px] bg-[#f5e79a] p-8 shadow-inner">
+          <span className="absolute left-8 top-8 h-16 w-16 rounded-full bg-white/30 blur-xl" />
+          <span className="absolute bottom-8 right-10 h-24 w-24 rounded-full bg-[#ffd76a]/60 blur-2xl" />
+          <span className="absolute inset-x-12 bottom-8 h-10 rounded-full bg-[#c58a1f]/15 blur-xl" />
+          <div className="relative z-10 grid h-full min-h-[210px] w-full place-items-center rounded-[26px] border border-white/40 bg-[#f6e89f]">
+            <div className="absolute inset-0 rounded-[26px] bg-[radial-gradient(circle_at_35%_25%,rgba(255,255,255,0.65),transparent_28%),radial-gradient(circle_at_70%_75%,rgba(255,184,0,0.22),transparent_32%)]" />
+            {image.src ? (
+              <img
+                src={image.src}
+                alt={
+                  word?.word ? `Ảnh minh họa từ ${word.word}` : "Ảnh từ vựng"
+                }
+                loading="lazy"
+                onError={(event) => {
+                  event.currentTarget.style.display = "none";
+                }}
+                className={`relative z-10 drop-shadow-[0_18px_18px_rgba(107,67,12,0.22)] ${
+                  image.mode === "photo" || image.mode === "custom"
+                    ? "h-[210px] w-[260px] rounded-[24px] object-cover"
+                    : "h-[190px] w-[230px] object-contain"
+                }`}
+              />
+            ) : (
+              <AppIcon
+                name="leaf"
+                bare
+                size={108}
+                className="relative z-10 text-emerald-600"
+              />
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-4 border-t border-[#ece8fb] bg-white p-5 sm:grid-cols-2 lg:grid-cols-5">
+        <ActionButton
+          active={Boolean(item?.inNotebook)}
+          icon="plus"
+          label={item?.inNotebook ? "Đã lưu sổ tay" : "Thêm vào sổ tay"}
+          onClick={props.onNotebook}
+        />
+        <ActionButton
+          disabled={locked}
+          icon="notebook"
+          label="Flashcard"
+          onClick={props.onFlashcard}
+        />
+        <ActionButton
+          disabled={locked}
+          icon="shield"
+          label="Đã biết"
+          onClick={props.onKnown}
+        />
+        <ActionButton
+          disabled={locked}
+          icon="shield"
+          label="Cần ôn lại"
+          onClick={props.onReview}
+        />
+        <ActionButton icon="message" label="Chia sẻ" onClick={props.onShare} />
+      </div>
+
+      <div className="border-t border-[#ece8fb] px-6 py-3 text-center text-sm font-black text-[#7377a8]">
+        Từ {Math.min(props.activeIndex + 1, Math.max(total, 1))}/{Math.max(total, 1)}
+      </div>
+    </section>
+  );
+}
+
+function ActionButton({
+  active,
+  disabled,
+  icon,
+  label,
+  onClick,
+}: {
+  active?: boolean;
+  disabled?: boolean;
+  icon: AppIconName;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      disabled={disabled}
+      onClick={onClick}
+      className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-50 ${
+        active
+          ? "border-[#6d35ff] bg-[#6d35ff] text-white"
+          : "border-[#e4e0f4] bg-white text-[#27245f] hover:border-[#6d35ff] hover:text-[#6d35ff]"
+      }`}
+    >
+      <AppIcon name={icon} bare size={17} />
+      {label}
+    </button>
+  );
+}
+
+function WordDetailTabs({
+  level,
+  relations,
+  word,
+  onFlashcard,
+}: {
+  level: string;
+  relations: any;
+  word: VocabularyWord | null;
+  onFlashcard: () => void;
+}) {
+  const [activeTab, setActiveTab] = useState("Chi tiết");
+  const synonyms = word?.synonyms?.length
+    ? word.synonyms
+    : relations?.synonyms || [];
+  const antonyms = word?.antonyms?.length
+    ? word.antonyms
+    : relations?.antonyms || [];
+  const sameTopic = relations?.sameTopic || [];
+
+  return (
+    <section className="overflow-hidden rounded-2xl border border-[#ece8fb] bg-white shadow-sm">
+      <div className="flex overflow-x-auto border-b border-[#ece8fb] text-sm font-black text-[#5e6391]">
+        {["Chi tiết", "Ví dụ", "Từ đồng nghĩa", "Từ trái nghĩa", "Cụm từ liên quan"].map(
+          (label) => (
+            <button
+              key={label}
+              onClick={() => setActiveTab(label)}
+              className={`min-w-fit px-7 py-4 ${activeTab === label ? "bg-[#f4f0ff] text-[#6d35ff]" : ""}`}
+            >
+              {label}
+            </button>
+          ),
+        )}
+      </div>
+
+      {activeTab === "Ví dụ" ? (
+        <ExampleTabContent
+          level={level}
+          relations={relations}
+          word={word}
+          onFlashcard={onFlashcard}
+        />
+      ) : activeTab === "Từ đồng nghĩa" ? (
+        <SynonymTabContent
+          level={level}
+          relations={relations}
+          synonyms={synonyms}
+          word={word}
+          onFlashcard={onFlashcard}
+        />
+      ) : activeTab === "Từ trái nghĩa" ? (
+        <AntonymTabContent
+          antonyms={antonyms}
+          relations={relations}
+          word={word}
+          onFlashcard={onFlashcard}
+        />
+      ) : activeTab === "Cụm từ liên quan" ? (
+        <RelatedPhraseTabContent
+          relations={relations}
+          word={word}
+          onFlashcard={onFlashcard}
+        />
+      ) : (
+      <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="space-y-5 text-sm font-bold text-[#59627f]">
+          <InfoRow label="Loại từ" value={word?.partOfSpeech || "Danh từ"} />
+          <InfoRow
+            label="Cấp độ"
+            value={level}
+            badge={word?.difficulty ? `Độ khó ${word.difficulty}` : "Trung cấp"}
+          />
+          <InfoRow
+            label="Chủ đề"
+            value={word?.topic?.name || "Theo chủ đề hôm nay"}
+          />
+
+          <div>
+            <p className="font-black text-[#101733]">Word family</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {(synonyms.length ? synonyms : [word?.word || "environment"])
+                .slice(0, 4)
+                .map((item: string) => (
+                  <span
+                    key={item}
+                    className="rounded-lg bg-[#efe9ff] px-3 py-1.5 text-xs font-black text-[#6d35ff]"
+                  >
+                    {item}
+                  </span>
+                ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="font-black text-[#101733]">Collocations</p>
+            <ul className="mt-3 list-disc space-y-2 pl-5">
+              {(sameTopic.length
+                ? sameTopic.slice(0, 3).map((item: VocabularyWord) => item.word)
+                : [
+                    `learn ${word?.word || "vocabulary"}`,
+                    `use ${word?.word || "it"} naturally`,
+                    `review ${word?.word || "it"} later`,
+                  ]
+              ).map((item: string) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+
+          {antonyms.length > 0 && (
+            <div>
+              <p className="font-black text-[#101733]">Từ trái nghĩa</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {antonyms.slice(0, 4).map((item: string) => (
+                  <span
+                    key={item}
+                    className="rounded-lg bg-[#fff1f2] px-3 py-1.5 text-xs font-black text-[#e11d48]"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-2xl bg-[#f7f5ff] p-6">
+          <p className="font-black text-[#101733]">Ghi nhớ</p>
+          <p className="mt-4 text-sm font-bold leading-6 text-[#27245f]">
+            Liên tưởng: “{word?.word || "word"}” với ngữ cảnh thật trong ví dụ.
+            Dùng flashcard để ôn lại nhanh và lưu lịch ôn tự động.
+          </p>
+          <div className="mt-8 flex items-end gap-5">
+            <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-3xl bg-white text-[#f97316] shadow-sm">
+              <AppIcon name="paw" bare size={72} />
+            </div>
+            <div className="rounded-2xl bg-white p-4 text-sm font-bold leading-6 text-[#101733] shadow-sm">
+              Ghi nhớ từ mới hiệu quả hơn với flashcard nhé!
+              <button
+                onClick={onFlashcard}
+                className="mt-4 block rounded-xl bg-[#6d35ff] px-5 py-3 text-sm font-black text-white"
+              >
+                Học với flashcard
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      )}
+    </section>
+  );
+}
+
+function ExampleTabContent({
+  level,
+  relations,
+  word,
+  onFlashcard,
+}: {
+  level: string;
+  relations: any;
+  word: VocabularyWord | null;
+  onFlashcard: () => void;
+}) {
+  const image = getVocabularyImageUrl(word);
+  const sameTopic = relations?.sameTopic || [];
+  const examples = [
+    word?.example ||
+      `The city is investing in ${word?.word || "sustainable"} energy sources to reduce carbon emissions.`,
+    `We should use ${word?.word || "this word"} naturally in daily English.`,
+    `This company is committed to ${word?.word || "English"} development.`,
+  ];
+  const viExamples = [
+    word?.meaningVi
+      ? `Nghĩa chính: ${word.meaningVi}.`
+      : "Thành phố đang đầu tư vào các nguồn năng lượng bền vững để giảm lượng khí thải carbon.",
+    "Chúng ta nên dùng từ này tự nhiên trong tiếng Anh hằng ngày.",
+    "Công ty này cam kết phát triển bền vững.",
+  ];
+  const family = (
+    word?.synonyms?.length ? word.synonyms : sameTopic.map((item: VocabularyWord) => item.word)
+  ).slice(0, 3);
+
+  return (
+    <div className="grid gap-6 p-5 lg:grid-cols-[210px_minmax(0,1fr)]">
+      <aside className="space-y-5 text-sm font-bold text-[#4f5790]">
+        <ExampleMeta label="Loại từ" value={word?.partOfSpeech || "adjective (tính từ)"} />
+        <ExampleMeta
+          action={word?.audio ? () => new Audio(word.audio || "").play() : undefined}
+          label="Phiên âm"
+          value={word?.phonetic || "/səˈsteɪ.nə.bəl/"}
+        />
+        <ExampleMeta
+          badge={level}
+          label="Cấp độ"
+          value={word?.difficulty ? `Độ khó ${word.difficulty}` : "Trung cấp cao"}
+        />
+        <ExampleMeta
+          icon="leaf"
+          label="Chủ đề"
+          value={word?.topic?.name || "Environment"}
+        />
+
+        <div>
+          <p className="font-black text-[#101733]">Word family</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {(family.length ? family : ["sustain", "sustainability"])
+              .slice(0, 3)
+              .map((item: string) => (
+                <span
+                  key={item}
+                  className="rounded-lg bg-[#efe9ff] px-2.5 py-1 text-xs font-black text-[#6d35ff]"
+                >
+                  {item}
+                </span>
+              ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="font-black text-[#101733]">Collocations</p>
+          <ul className="mt-3 list-disc space-y-2 pl-4 text-xs leading-5">
+            {(sameTopic.length
+              ? sameTopic.slice(0, 4).map((item: VocabularyWord) => item.word)
+              : [
+                  `${word?.word || "sustainable"} development`,
+                  `${word?.word || "sustainable"} energy`,
+                  `${word?.word || "sustainable"} solution`,
+                  `${word?.word || "sustainable"} future`,
+                ]
+            ).map((item: string) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      </aside>
+
+      <div className="overflow-hidden rounded-2xl border border-[#ece8fb] bg-white shadow-sm">
+        <div className="grid gap-5 bg-[#f7f2ff] p-6 md:grid-cols-[minmax(0,1fr)_220px]">
+          <div>
+            <div className="flex items-center gap-3">
+              <h3 className="text-3xl font-black text-[#6d35ff]">
+                {word?.word || "sustainable"}
+              </h3>
+              <button
+                onClick={() => word?.audio && new Audio(word.audio).play()}
+                className="grid h-10 w-10 place-items-center rounded-xl bg-white text-[#6d35ff] shadow-sm"
+              >
+                <AppIcon name="volume" bare size={18} />
+              </button>
+            </div>
+            <p className="mt-3 text-sm font-bold text-[#4f5790]">
+              {word?.phonetic || "/səˈsteɪ.nə.bəl/"}
+            </p>
+            <p className="mt-5 text-sm font-black text-[#101733]">Nghĩa</p>
+            <p className="mt-2 max-w-xl text-sm font-bold leading-6 text-[#4f5790]">
+              {word?.meaningVi ||
+                word?.meaningEn ||
+                "Có thể duy trì lâu dài mà không gây hại cho môi trường hoặc cạn kiệt tài nguyên."}
+            </p>
+          </div>
+
+          <div className="grid min-h-[140px] place-items-center rounded-2xl bg-[#f6e89f] p-4">
+            {image.src ? (
+              <img
+                src={image.src}
+                alt={word?.word ? `Ảnh minh họa từ ${word.word}` : "Ảnh ví dụ"}
+                className={`h-28 w-40 rounded-xl ${
+                  image.mode === "sticker" ? "object-contain" : "object-cover"
+                }`}
+                onError={(event) => {
+                  event.currentTarget.style.display = "none";
+                }}
+              />
+            ) : (
+              <AppIcon name="leaf" bare size={64} className="text-emerald-600" />
+            )}
+          </div>
+        </div>
+
+        <div className="p-6">
+          <h4 className="text-xl font-black">Ví dụ</h4>
+          <div className="mt-4 space-y-3">
+            {examples.map((example, index) => (
+              <div
+                key={`${example}-${index}`}
+                className="flex gap-3 rounded-xl border border-[#ece8fb] bg-white p-4"
+              >
+                <span className="font-black text-[#101733]">{index + 1}.</span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-black leading-6 text-[#101733]">
+                    {highlightWord(example, word?.word)}
+                  </p>
+                  <p className="mt-1 text-sm font-bold leading-6 text-[#69708b]">
+                    {viExamples[index]}
+                  </p>
+                </div>
+                <button
+                  onClick={() => word?.audio && new Audio(word.audio).play()}
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#efe9ff] text-[#6d35ff]"
+                >
+                  <AppIcon name="volume" bare size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+            <button className="inline-flex items-center gap-2 rounded-xl border border-[#e8e9f5] px-6 py-3 text-sm font-black text-[#6d35ff]">
+              <AppIcon name="notebook" bare size={16} />
+              Lưu từ
+            </button>
+            <button
+              onClick={onFlashcard}
+              className="inline-flex items-center gap-2 rounded-xl bg-[#6d35ff] px-8 py-3 text-sm font-black text-white"
+            >
+              <AppIcon name="notebook" bare size={16} />
+              Học với flashcard
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SynonymTabContent({
+  level,
+  relations,
+  synonyms,
+  word,
+  onFlashcard,
+}: {
+  level: string;
+  relations: any;
+  synonyms: string[];
+  word: VocabularyWord | null;
+  onFlashcard: () => void;
+}) {
+  const image = getVocabularyImageUrl(word);
+  const sameTopic = relations?.sameTopic || [];
+  const synonymItems: Array<{
+    word: string;
+    phonetic: string;
+    meaning: string;
+    example: string;
+    level: string;
+    image: ReturnType<typeof getVocabularyImageUrl>;
+  }> = (
+    synonyms.length
+      ? synonyms
+      : sameTopic.length
+        ? sameTopic.slice(0, 5).map((item: VocabularyWord) => item.word)
+        : ["eco-friendly", "renewable", "viable", "lasting", "enduring"]
+  )
+    .slice(0, 6)
+    .map((item: string, index: number) => {
+      const synonymWord: VocabularyWord = {
+        id: `${item}-${index}`,
+        word: item,
+        meaningVi: buildSynonymMeaning(item),
+      };
+      return {
+        word: item,
+        phonetic: buildSimplePhonetic(item),
+        meaning: buildSynonymMeaning(item),
+        example: buildSynonymExample(item),
+        level: index < 2 ? "B1" : "B2",
+        image: getVocabularyImageUrl(synonymWord),
+      };
+    });
+
+  return (
+    <div>
+      <div className="grid gap-5 bg-[#f7f2ff] p-6 md:grid-cols-[minmax(0,1fr)_220px]">
+        <div>
+          <div className="flex items-center gap-3">
+            <h3 className="text-2xl font-black text-[#6d35ff]">
+              {word?.word || "sustainable"}
+            </h3>
+            <button
+              onClick={() => word?.audio && new Audio(word.audio).play()}
+              className="grid h-9 w-9 place-items-center rounded-xl bg-white text-[#6d35ff] shadow-sm"
+            >
+              <AppIcon name="volume" bare size={16} />
+            </button>
+          </div>
+          <p className="mt-2 text-sm font-bold text-[#4f5790]">
+            {word?.phonetic || "/səˈsteɪ.nə.bəl/"}
+          </p>
+          <p className="mt-4 max-w-xl text-sm font-bold leading-6 text-[#4f5790]">
+            {word?.meaningVi ||
+              word?.meaningEn ||
+              "Có thể duy trì lâu dài mà không gây hại cho môi trường hoặc cạn kiệt tài nguyên."}
+          </p>
+        </div>
+
+        <div className="grid min-h-[130px] place-items-center rounded-2xl bg-[#f6e89f] p-4">
+          {image.src ? (
+            <img
+              src={image.src}
+              alt={word?.word ? `Ảnh minh họa từ ${word.word}` : "Ảnh từ chính"}
+              className={`h-28 w-40 rounded-xl ${
+                image.mode === "sticker" ? "object-contain" : "object-cover"
+              }`}
+              onError={(event) => {
+                event.currentTarget.style.display = "none";
+              }}
+            />
+          ) : (
+            <AppIcon name="leaf" bare size={64} className="text-emerald-600" />
+          )}
+        </div>
+      </div>
+
+      <div className="p-6">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h4 className="text-xl font-black">Từ đồng nghĩa</h4>
+            <p className="mt-1 text-sm font-bold text-[#69708b]">
+              Những từ có nghĩa tương tự với “{word?.word || "sustainable"}”.
+            </p>
+          </div>
+          <button className="inline-flex items-center gap-2 rounded-xl border border-[#e8e9f5] px-4 py-2 text-sm font-black text-[#6d35ff]">
+            <AppIcon name="sparkles" bare size={15} />
+            Xem tất cả
+          </button>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {synonymItems.map((item, index) => (
+            <article
+              key={item.word}
+              className="rounded-2xl border border-[#ece8fb] bg-white p-4 shadow-sm"
+            >
+              <div className="flex items-start gap-4">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-black text-[#6d35ff]">
+                      {index + 1}. {item.word}
+                    </span>
+                    <button className="text-[#6d35ff]">
+                      <AppIcon name="volume" bare size={13} />
+                    </button>
+                  </div>
+                  <p className="mt-1 text-xs font-bold text-[#4f5790]">
+                    {item.phonetic}
+                  </p>
+                  <span className="mt-2 inline-flex rounded-md bg-emerald-100 px-2 py-0.5 text-[11px] font-black text-emerald-700">
+                    {item.level}
+                  </span>
+                </div>
+
+                <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-[#eefdf4]">
+                  {item.image.src ? (
+                    <img
+                      src={item.image.src}
+                      alt={`Ảnh minh họa từ đồng nghĩa ${item.word}`}
+                      className={`h-11 w-11 ${
+                        item.image.mode === "sticker"
+                          ? "object-contain"
+                          : "rounded-full object-cover"
+                      }`}
+                      onError={(event) => {
+                        event.currentTarget.style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <AppIcon name="leaf" bare size={28} className="text-emerald-600" />
+                  )}
+                </div>
+              </div>
+
+              <p className="mt-3 text-sm font-black text-[#101733]">
+                {item.meaning}
+              </p>
+              <p className="mt-2 text-sm font-bold leading-6 text-[#4f5790]">
+                {highlightWord(item.example, item.word)}
+              </p>
+            </article>
+          ))}
+        </div>
+
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#f7f2ff] p-5">
+          <div className="flex items-center gap-3">
+            <AppIcon name="sparkles" tone="purple" />
+            <div>
+              <p className="font-black">Ghi nhớ nhanh</p>
+              <p className="text-sm font-bold text-[#69708b]">
+                Học từ đồng nghĩa giúp bạn diễn đạt tự nhiên hơn và ghi nhớ từ
+                vựng lâu hơn.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onFlashcard}
+            className="inline-flex items-center gap-2 rounded-xl border border-[#6d35ff] px-6 py-3 text-sm font-black text-[#6d35ff]"
+          >
+            <AppIcon name="zap" bare size={15} />
+            Luyện tập ngay
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AntonymTabContent({
+  antonyms,
+  relations,
+  word,
+  onFlashcard,
+}: {
+  antonyms: string[];
+  relations: any;
+  word: VocabularyWord | null;
+  onFlashcard: () => void;
+}) {
+  const image = getVocabularyImageUrl(word);
+  const sameTopic = relations?.sameTopic || [];
+  const antonymItems: Array<{
+    word: string;
+    phonetic: string;
+    meaning: string;
+    example: string;
+    level: string;
+    image: ReturnType<typeof getVocabularyImageUrl>;
+    icon: AppIconName;
+  }> = (
+    antonyms.length
+      ? antonyms
+      : ["unsustainable", "destructive", "harmful", "wasteful", "short-term"]
+  )
+    .slice(0, 6)
+    .map((item: string, index: number) => {
+      const antonymWord: VocabularyWord = {
+        id: `${item}-${index}`,
+        word: item,
+        meaningVi: buildAntonymMeaning(item),
+      };
+      const icons: AppIconName[] = ["zap", "settings", "x", "gift", "calendar"];
+      return {
+        word: item,
+        phonetic: buildSimplePhonetic(item),
+        meaning: buildAntonymMeaning(item),
+        example: buildAntonymExample(item),
+        level: index < 3 ? "B1" : "B2",
+        image: getVocabularyImageUrl(antonymWord),
+        icon: icons[index % icons.length],
+      };
+    });
+
+  return (
+    <div>
+      <div className="grid gap-5 bg-[#f7f2ff] p-6 md:grid-cols-[minmax(0,1fr)_220px]">
+        <div>
+          <div className="flex items-center gap-3">
+            <h3 className="text-2xl font-black text-[#6d35ff]">
+              {word?.word || "sustainable"}
+            </h3>
+            <button
+              onClick={() => word?.audio && new Audio(word.audio).play()}
+              className="grid h-9 w-9 place-items-center rounded-xl bg-white text-[#6d35ff] shadow-sm"
+            >
+              <AppIcon name="volume" bare size={16} />
+            </button>
+          </div>
+          <p className="mt-2 text-sm font-bold text-[#4f5790]">
+            {word?.phonetic || "/səˈsteɪ.nə.bəl/"}
+          </p>
+          <p className="mt-4 max-w-xl text-sm font-bold leading-6 text-[#4f5790]">
+            {word?.meaningVi ||
+              word?.meaningEn ||
+              "Có thể duy trì lâu dài mà không gây hại cho môi trường hoặc cạn kiệt tài nguyên."}
+          </p>
+        </div>
+
+        <div className="grid min-h-[130px] place-items-center rounded-2xl bg-[#f6e89f] p-4">
+          {image.src ? (
+            <img
+              src={image.src}
+              alt={word?.word ? `Ảnh minh họa từ ${word.word}` : "Ảnh từ chính"}
+              className={`h-28 w-40 rounded-xl ${
+                image.mode === "sticker" ? "object-contain" : "object-cover"
+              }`}
+              onError={(event) => {
+                event.currentTarget.style.display = "none";
+              }}
+            />
+          ) : (
+            <AppIcon name="leaf" bare size={64} className="text-emerald-600" />
+          )}
+        </div>
+      </div>
+
+      <div className="p-6">
+        <div className="mb-5">
+          <h4 className="text-xl font-black">Từ trái nghĩa</h4>
+          <p className="mt-1 text-sm font-bold text-[#69708b]">
+            Những từ có nghĩa trái ngược với “{word?.word || "sustainable"}”.
+          </p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {antonymItems.map((item, index) => (
+            <article
+              key={item.word}
+              className="rounded-2xl border border-[#f4dfe4] bg-white p-4 shadow-sm"
+            >
+              <div className="flex items-start gap-4">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-black text-[#e11d48]">
+                      {index + 1}. {item.word}
+                    </span>
+                    <button className="text-[#6d35ff]">
+                      <AppIcon name="volume" bare size={13} />
+                    </button>
+                  </div>
+                  <p className="mt-1 text-xs font-bold text-[#4f5790]">
+                    {item.phonetic}
+                  </p>
+                  <span className="mt-2 inline-flex rounded-md bg-orange-100 px-2 py-0.5 text-[11px] font-black text-orange-600">
+                    {item.level}
+                  </span>
+                </div>
+
+                <div className="relative grid h-16 w-16 shrink-0 place-items-center rounded-full bg-red-50">
+                  {item.image.src && item.image.mode === "sticker" ? (
+                    <img
+                      src={item.image.src}
+                      alt={`Ảnh minh họa từ trái nghĩa ${item.word}`}
+                      className="h-10 w-10 object-contain opacity-80"
+                      onError={(event) => {
+                        event.currentTarget.style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <AppIcon name={item.icon} bare size={26} className="text-red-500" />
+                  )}
+                </div>
+              </div>
+
+              <p className="mt-3 text-sm font-black text-[#101733]">
+                {item.meaning}
+              </p>
+              <p className="mt-2 text-sm font-bold leading-6 text-[#4f5790]">
+                {highlightWord(item.example, item.word)}
+              </p>
+            </article>
+          ))}
+        </div>
+
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+          <button className="inline-flex items-center gap-2 rounded-xl border border-[#e8e9f5] px-6 py-3 text-sm font-black text-[#6d35ff]">
+            <AppIcon name="notebook" bare size={16} />
+            Lưu từ
+          </button>
+          <button
+            onClick={onFlashcard}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#6d35ff] px-8 py-3 text-sm font-black text-white"
+          >
+            <AppIcon name="zap" bare size={16} />
+            Luyện tập ngay
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RelatedPhraseTabContent({
+  relations,
+  word,
+  onFlashcard,
+}: {
+  relations: any;
+  word: VocabularyWord | null;
+  onFlashcard: () => void;
+}) {
+  const image = getVocabularyImageUrl(word);
+  const baseWord = word?.word || "sustainable";
+  const sameTopic = relations?.sameTopic || [];
+  const phrases = buildRelatedPhrases(baseWord, sameTopic);
+
+  return (
+    <div>
+      <div className="grid gap-5 bg-[#f7f2ff] p-6 md:grid-cols-[minmax(0,1fr)_220px]">
+        <div>
+          <div className="flex items-center gap-3">
+            <h3 className="text-2xl font-black text-[#6d35ff]">{baseWord}</h3>
+            <button
+              onClick={() => word?.audio && new Audio(word.audio).play()}
+              className="grid h-9 w-9 place-items-center rounded-xl bg-white text-[#6d35ff] shadow-sm"
+            >
+              <AppIcon name="volume" bare size={16} />
+            </button>
+          </div>
+          <p className="mt-2 text-sm font-bold text-[#4f5790]">
+            {word?.phonetic || "/səˈsteɪ.nə.bəl/"}
+          </p>
+          <p className="mt-4 max-w-xl text-sm font-bold leading-6 text-[#4f5790]">
+            {word?.meaningVi ||
+              word?.meaningEn ||
+              "Có thể duy trì lâu dài mà không gây hại cho môi trường hoặc cạn kiệt tài nguyên."}
+          </p>
+        </div>
+
+        <div className="grid min-h-[130px] place-items-center rounded-2xl bg-[#f6e89f] p-4">
+          {image.src ? (
+            <img
+              src={image.src}
+              alt={word?.word ? `Ảnh minh họa từ ${word.word}` : "Ảnh từ chính"}
+              className={`h-28 w-40 rounded-xl ${
+                image.mode === "sticker" ? "object-contain" : "object-cover"
+              }`}
+              onError={(event) => {
+                event.currentTarget.style.display = "none";
+              }}
+            />
+          ) : (
+            <AppIcon name="leaf" bare size={64} className="text-emerald-600" />
+          )}
+        </div>
+      </div>
+
+      <div className="p-6">
+        <h4 className="text-xl font-black">
+          Cụm từ thường gặp với “{baseWord}”
+        </h4>
+
+        <div className="mt-5 grid gap-4 lg:grid-cols-2">
+          {phrases.map((item, index) => (
+            <article
+              key={item.phrase}
+              className="flex gap-4 rounded-2xl border border-[#ece8fb] bg-white p-4 shadow-sm"
+            >
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#efe9ff] text-sm font-black text-[#6d35ff]">
+                {index + 1}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-black text-[#6d35ff]">{item.phrase}</p>
+                    <p className="mt-1 text-sm font-bold text-[#4f5790]">
+                      {item.meaning}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => word?.audio && new Audio(word.audio).play()}
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#efe9ff] text-[#6d35ff]"
+                  >
+                    <AppIcon name="volume" bare size={15} />
+                  </button>
+                </div>
+                <p className="mt-3 text-sm font-bold leading-6 text-[#4f5790]">
+                  {highlightWord(item.example, item.phrase)}
+                </p>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+          <button className="inline-flex items-center gap-2 rounded-xl border border-[#e8e9f5] px-6 py-3 text-sm font-black text-[#6d35ff]">
+            <AppIcon name="notebook" bare size={16} />
+            Lưu từ
+          </button>
+          <button
+            onClick={onFlashcard}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#6d35ff] px-8 py-3 text-sm font-black text-white"
+          >
+            <AppIcon name="zap" bare size={16} />
+            Luyện tập ngay
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function buildRelatedPhrases(
+  word: string,
+  sameTopic: VocabularyWord[],
+): Array<{ phrase: string; meaning: string; example: string }> {
+  const clean = word.toLowerCase();
+  const presets: Record<string, Array<{ phrase: string; meaning: string; example: string }>> = {
+    sustainable: [
+      {
+        phrase: "sustainable development",
+        meaning: "phát triển bền vững",
+        example: "The UN promotes sustainable development worldwide.",
+      },
+      {
+        phrase: "sustainable energy",
+        meaning: "năng lượng bền vững",
+        example: "Solar and wind are examples of sustainable energy.",
+      },
+      {
+        phrase: "sustainable future",
+        meaning: "tương lai bền vững",
+        example: "We must act now to secure a sustainable future.",
+      },
+      {
+        phrase: "sustainable living",
+        meaning: "lối sống bền vững",
+        example: "He adopted a sustainable living to reduce waste.",
+      },
+      {
+        phrase: "sustainable solutions",
+        meaning: "giải pháp bền vững",
+        example: "We need sustainable solutions to climate change.",
+      },
+      {
+        phrase: "sustainable practices",
+        meaning: "thực hành bền vững",
+        example: "The company follows sustainable practices in production.",
+      },
+      {
+        phrase: "environmentally sustainable",
+        meaning: "bền vững về môi trường",
+        example: "This product is made with environmentally sustainable materials.",
+      },
+      {
+        phrase: "financially sustainable",
+        meaning: "bền vững về tài chính",
+        example: "The project is financially sustainable in the long term.",
+      },
+    ],
+  };
+
+  if (presets[clean]) return presets[clean];
+
+  const topicWords = sameTopic.slice(0, 4).map((item) => item.word);
+  const base = [
+    `${word} practice`,
+    `${word} habit`,
+    `${word} solution`,
+    `${word} example`,
+    `${word} idea`,
+    `${word} topic`,
+    `${word} skill`,
+    `${word} review`,
+  ];
+
+  return base.map((phrase, index) => ({
+    phrase,
+    meaning: topicWords[index % Math.max(topicWords.length, 1)]
+      ? `liên quan đến ${topicWords[index % topicWords.length]}`
+      : "cụm từ liên quan",
+    example: `Try using ${phrase} in a natural English sentence.`,
+  }));
+}
+
+function buildSimplePhonetic(value: string) {
+  const clean = value.toLowerCase().replace(/[^a-z]/g, "");
+  return clean ? `/${clean.slice(0, 8)}/` : "/word/";
+}
+
+function buildSynonymMeaning(value: string) {
+  const meanings: Record<string, string> = {
+    "eco-friendly": "thân thiện với môi trường",
+    conservation: "sự bảo tồn",
+    conserve: "bảo tồn, giữ gìn",
+    durable: "bền, dùng được lâu",
+    ecology: "sinh thái học",
+    ecosystem: "hệ sinh thái",
+    efficient: "hiệu quả, tiết kiệm",
+    environmental: "thuộc về môi trường",
+    green: "xanh, thân thiện với môi trường",
+    lasting: "lâu dài",
+    reusable: "có thể tái sử dụng",
+    renewable: "có thể tái tạo",
+    recycle: "tái chế",
+    recyclable: "có thể tái chế",
+    responsible: "có trách nhiệm",
+    sustain: "duy trì",
+    sustainable: "bền vững",
+    sustainability: "sự bền vững",
+    viable: "khả thi, có thể duy trì",
+    enduring: "bền vững, lâu dài",
+  };
+  return meanings[value.toLowerCase()] || "Nghĩa đang cập nhật";
+}
+
+function buildSynonymExample(value: string) {
+  const examples: Record<string, string> = {
+    "eco-friendly": "This product is made from eco-friendly materials.",
+    renewable: "Solar energy is a renewable resource.",
+    viable: "We need a viable solution for the future.",
+    lasting: "They built a lasting partnership.",
+    enduring: "Enduring habits lead to success.",
+  };
+  return examples[value.toLowerCase()] || `Try using ${value} in your own sentence.`;
+}
+
+function buildAntonymMeaning(value: string) {
+  const meanings: Record<string, string> = {
+    destructive: "gây hủy hoại",
+    harmful: "có hại",
+    "short-term": "ngắn hạn",
+    unsustainable: "không bền vững",
+    wasteful: "lãng phí",
+  };
+  return meanings[value.toLowerCase()] || "Nghĩa đang cập nhật";
+}
+
+function buildAntonymExample(value: string) {
+  const examples: Record<string, string> = {
+    destructive: "Deforestation is a destructive action for ecosystems.",
+    harmful: "Using plastic bags is harmful to marine life.",
+    "short-term": "We need long-term solutions, not short-term fixes.",
+    unsustainable: "Rapid population growth is unsustainable.",
+    wasteful: "It is wasteful to leave the lights on all day.",
+  };
+  return examples[value.toLowerCase()] || `Try using ${value} in your own sentence.`;
+}
+
+function ExampleMeta({
+  action,
+  badge,
+  icon,
+  label,
+  value,
+}: {
+  action?: () => void;
+  badge?: string;
+  icon?: AppIconName;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div>
+      <p className="font-black text-[#101733]">{label}</p>
+      <div className="mt-2 flex items-center gap-2">
+        {icon && <AppIcon name={icon} tone="emerald" size={15} />}
+        {badge && (
+          <span className="rounded-lg bg-emerald-100 px-2 py-1 text-xs font-black text-emerald-700">
+            {badge}
+          </span>
+        )}
+        <span className="text-xs leading-5">{value}</span>
+        {action && (
+          <button
+            onClick={action}
+            className="grid h-7 w-7 place-items-center rounded-lg bg-[#efe9ff] text-[#6d35ff]"
+          >
+            <AppIcon name="volume" bare size={13} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function highlightWord(text: string, word?: string) {
+  if (!word) return text;
+  const index = text.toLowerCase().indexOf(word.toLowerCase());
+  if (index < 0) return text;
+
+  return (
+    <>
+      {text.slice(0, index)}
+      <span className="text-[#6d35ff]">{text.slice(index, index + word.length)}</span>
+      {text.slice(index + word.length)}
+    </>
+  );
+}
+
+function InfoRow({
+  badge,
+  label,
+  value,
+}: {
+  badge?: string;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div>
+      <p className="font-black text-[#101733]">{label}</p>
+      <div className="mt-2 flex flex-wrap items-center gap-3">
+        <span>{value}</span>
+        {badge && (
+          <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-black text-emerald-700">
+            {badge}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function WordPager({
+  activeIndex,
+  completed,
+  nextItem,
+  previousItem,
+  total,
+  onComplete,
+  onNext,
+  onPrevious,
+}: {
+  activeIndex: number;
+  completed: boolean;
+  nextItem: DailyWordItem | null;
+  previousItem: DailyWordItem | null;
+  total: number;
+  onComplete: () => void;
+  onNext: () => void;
+  onPrevious: () => void;
+}) {
+  const isLast = activeIndex >= total - 1;
+  return (
+    <section className="grid items-center gap-4 sm:grid-cols-[1fr_auto_1fr]">
+      <button
+        disabled={!previousItem}
+        onClick={onPrevious}
+        className="flex items-center gap-3 rounded-xl border border-[#ece8fb] bg-white px-5 py-4 text-left font-black text-[#101733] shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        <AppIcon name="chevronLeft" bare size={20} className="text-[#6d35ff]" />
+        <span>
+          <span className="block">Từ trước</span>
+          <span className="block text-xs text-[#7377a8]">
+            {previousItem?.word?.word || "Không có"}
+          </span>
+        </span>
+      </button>
+      <div className="text-center text-sm font-black text-[#27245f]">
+        {Math.min(activeIndex + 1, Math.max(total, 1))} / {Math.max(total, 1)}
+      </div>
+      {isLast ? (
+        <button
+          disabled={completed}
+          onClick={onComplete}
+          className="rounded-xl bg-[#6d35ff] px-5 py-4 font-black text-white shadow-sm disabled:cursor-not-allowed disabled:bg-emerald-500"
+        >
+          {completed ? "Đã hoàn thành" : "Hoàn thành bài học"}
+        </button>
+      ) : (
+        <button
+          disabled={!nextItem}
+          onClick={onNext}
+          className="flex items-center justify-end gap-3 rounded-xl border border-[#ece8fb] bg-white px-5 py-4 text-right font-black text-[#101733] shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <span>
+            <span className="block">Từ tiếp</span>
+            <span className="block text-xs text-[#7377a8]">
+              {nextItem?.word?.word || "Không có"}
+            </span>
+          </span>
+          <AppIcon name="chevronRight" bare size={20} className="text-[#6d35ff]" />
+        </button>
+      )}
+    </section>
+  );
+}
+
 function WordCard(props: {
   locked: boolean;
   activeIndex: number;
@@ -812,7 +2097,8 @@ function WordCard(props: {
             </button>
             <button
               onClick={props.onFlashcard}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#eef6ff] px-3 py-2 text-sm font-black text-[#2563eb]"
+              disabled={locked}
+              className="inline-flex items-center gap-2 rounded-lg bg-[#eef6ff] px-3 py-2 text-sm font-black text-[#2563eb] disabled:cursor-not-allowed disabled:opacity-50"
             >
               <AppIcon name="notebook" bare size={15} />
               Flashcard
@@ -853,7 +2139,8 @@ function WordCard(props: {
         </div>
         <button
           onClick={props.onNext}
-          className="self-center rounded-full border border-[#e8e9f5] bg-white px-4 py-5 text-3xl font-black text-[#101733] shadow-sm"
+          disabled={locked}
+          className="self-center rounded-full border border-[#e8e9f5] bg-white px-4 py-5 text-3xl font-black text-[#101733] shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
         >
           <AppIcon name="chevronRight" bare size={28} />
         </button>
@@ -934,11 +2221,13 @@ function StatusButton({
 }
 
 function ProgressCard({
+  completed,
   learned,
   percent,
   total,
   onComplete,
 }: {
+  completed?: boolean;
   learned: number;
   percent: number;
   total: number;
@@ -967,9 +2256,10 @@ function ProgressCard({
       <span className="font-black text-[#59627f]">{percent}%</span>
       <button
         onClick={onComplete}
-        className="rounded-xl bg-[#6d35ff] px-8 py-4 font-black text-white"
+        disabled={completed}
+        className="rounded-xl bg-[#6d35ff] px-8 py-4 font-black text-white disabled:cursor-not-allowed disabled:bg-[#22c55e]"
       >
-        Hoàn thành
+        {completed ? "Đã hoàn thành" : "Hoàn thành"}
       </button>
     </section>
   );
@@ -1038,35 +2328,124 @@ function StatsPanel({
   stats,
   fallbackLearned,
   notebookCount,
+  percent,
 }: {
   stats: VocabStats | null;
   fallbackLearned: number;
   notebookCount: number;
+  percent: number;
 }) {
+  const mastered = stats?.masteredWords || 0;
+  const learned = stats?.learnedWords || fallbackLearned;
+  const reviewDue = stats?.reviewDue || 0;
+  const displayPercent = stats?.memoryRate || percent || 0;
+
   return (
-    <Panel title="Thống kê của bạn" action="Xem chi tiết">
-      <div className="grid grid-cols-3 gap-3 py-3 text-center">
-        <MiniStat
-          icon="book"
-          value={String(stats?.learnedWords || fallbackLearned)}
-          label="Từ đã học"
-        />
-        <MiniStat
-          icon="check"
-          value={`${stats?.memoryRate || 0}%`}
-          label="Tỷ lệ ghi nhớ"
-        />
-        <MiniStat
-          icon="notebook"
-          value={String(stats?.notebookWords || notebookCount)}
-          label="Sổ tay"
-        />
+    <Panel title="Tiến độ của bạn">
+      <div className="grid items-center gap-6 sm:grid-cols-[150px_1fr]">
+        <div
+          className="grid h-36 w-36 place-items-center rounded-full"
+          style={{
+            background: `conic-gradient(#6d35ff ${displayPercent * 3.6}deg, #ebe7ff 0deg)`,
+          }}
+        >
+          <div className="grid h-24 w-24 place-items-center rounded-full bg-white text-center">
+            <span>
+              <span className="block text-3xl font-black text-[#101733]">
+                {displayPercent}%
+              </span>
+              <span className="block text-xs font-bold text-[#7377a8]">
+                Đã thành thạo
+              </span>
+            </span>
+          </div>
+        </div>
+        <div className="space-y-4 text-sm font-bold text-[#59627f]">
+          <ProgressLegend color="#7c3aed" label="Đã học" value={`${learned} từ`} />
+          <ProgressLegend color="#22c55e" label="Thành thạo" value={`${mastered} từ`} />
+          <ProgressLegend color="#ef4444" label="Cần ôn" value={`${reviewDue} từ`} />
+          <ProgressLegend color="#6d35ff" label="Sổ tay" value={`${stats?.notebookWords || notebookCount} từ`} />
+        </div>
       </div>
     </Panel>
   );
 }
 
-function TodayHint({
+function ProgressLegend({
+  color,
+  label,
+  value,
+}: {
+  color: string;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="inline-flex items-center gap-2">
+        <span
+          className="h-3 w-3 rounded-full"
+          style={{ backgroundColor: color }}
+        />
+        {label}
+      </span>
+      <span className="font-black text-[#27245f]">{value}</span>
+    </div>
+  );
+}
+
+function NotebookPanel({
+  currentWord,
+  items,
+  onSelectWord,
+}: {
+  currentWord: VocabularyWord | null;
+  items: NotebookItem[];
+  onSelectWord: (wordId: string) => void;
+}) {
+  const list = items.length
+    ? items.slice(0, 3)
+    : currentWord
+      ? [{ id: currentWord.id, word: currentWord }]
+      : [];
+
+  return (
+    <Panel title="Sổ tay của tôi" action="Xem tất cả">
+      <div className="space-y-3">
+        {list.length ? (
+          list.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => onSelectWord(item.word.id)}
+              className="grid w-full grid-cols-[48px_1fr_24px] items-center gap-3 rounded-xl px-1 py-2 text-left hover:bg-[#f8f6ff]"
+            >
+              <span className="grid h-12 w-12 place-items-center rounded-xl bg-[#efe9ff] text-[#6d35ff]">
+                <AppIcon name="notebook" bare size={22} />
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate font-black text-[#101733]">
+                  {item.word.word}
+                </span>
+                <span className="block truncate text-xs font-bold text-[#7377a8]">
+                  {item.createdAt
+                    ? `Đã thêm vào ${new Date(item.createdAt).toLocaleDateString("vi-VN")}`
+                    : item.word.meaningVi || item.word.meaningEn || "Từ hôm nay"}
+                </span>
+              </span>
+              <AppIcon name="notebook" bare size={18} className="text-[#6d35ff]" />
+            </button>
+          ))
+        ) : (
+          <p className="text-sm font-bold text-[#7377a8]">
+            Chưa có từ nào trong sổ tay.
+          </p>
+        )}
+      </div>
+    </Panel>
+  );
+}
+
+function ReviewSuggestionPanel({
   suggestions,
   onSelectWord,
 }: {
@@ -1077,31 +2456,29 @@ function TodayHint({
     ? suggestions.weakWords.slice(0, 3)
     : fallbackWeakWords.map((word) => ({ word, wordId: "" }));
   return (
-    <Panel title="Gợi ý hôm nay">
-      <h3 className="font-black">Ôn lại các từ dễ nhầm</h3>
-      <p className="mt-2 text-sm font-bold text-[#69708b]">
-        {suggestions?.dueToday
-          ? `Bạn có ${suggestions.dueToday} từ cần ôn hôm nay`
-          : "Chưa có từ cần ôn, hãy học bài hôm nay trước nhé."}
-      </p>
-      <div className="mt-4 flex flex-wrap gap-2">
+    <Panel title="Ôn tập gợi ý" action="Xem tất cả">
+      <div className="space-y-3">
         {words.map((item: any) => (
           <button
             key={item.word}
             disabled={!item.wordId}
             onClick={() => onSelectWord(item.wordId)}
-            className="rounded-lg bg-[#efe9ff] px-3 py-2 text-sm font-black text-[#6d35ff] disabled:cursor-default"
+            className="grid w-full grid-cols-[48px_1fr] items-center gap-3 rounded-xl px-1 py-2 text-left disabled:cursor-default"
           >
-            {item.word}
+            <span className="grid h-12 w-12 place-items-center rounded-xl bg-emerald-50 text-emerald-600">
+              <AppIcon name="leaf" bare size={22} />
+            </span>
+            <span>
+              <span className="block font-black text-[#101733]">
+                {item.word}
+              </span>
+              <span className="block text-xs font-bold text-[#7377a8]">
+                {item.meaningVi || item.meaningEn || item.status || "B1 · Danh từ"}
+              </span>
+            </span>
           </button>
         ))}
       </div>
-      <Link
-        href="/vocabulary/test"
-        className="mt-5 inline-block font-black text-[#6d35ff]"
-      >
-        Ôn ngay →
-      </Link>
     </Panel>
   );
 }
@@ -1109,20 +2486,41 @@ function TodayHint({
 function ChallengeCard({
   challenge,
   onOpen,
+  word,
 }: {
   challenge: TodayChallenge | null;
   onOpen: () => void;
+  word?: string;
 }) {
+  const total = challenge?.total || 1;
+  const done = 0;
   return (
     <Panel title="Thử thách hôm nay">
-      <p className="text-sm font-bold text-[#69708b]">
-        {challenge?.locked
-          ? challenge.reason
-          : `${challenge?.total || 0} câu hỏi từ bài học hôm nay`}
-      </p>
+      <div className="flex items-start gap-3">
+        <AppIcon name="target" tone="purple" />
+        <p className="text-sm font-bold leading-6 text-[#59627f]">
+          {challenge?.locked
+            ? challenge.reason
+            : challenge?.prompt ||
+              `Sử dụng từ "${challenge?.word || word || "vocabulary"}" trong 1 câu`}
+        </p>
+      </div>
+      <div className="mt-5 flex items-center gap-3 text-sm font-black text-[#7377a8]">
+        <span>
+          {done}/{total}
+        </span>
+        <div className="h-2 flex-1 rounded-full bg-[#eeeafb]">
+          <div
+            className="h-2 rounded-full bg-[#6d35ff]"
+            style={{ width: `${(done / total) * 100}%` }}
+          />
+        </div>
+        <span className="text-[#6d35ff]">+10 XP</span>
+      </div>
       <button
         onClick={onOpen}
-        className="mt-4 w-full rounded-xl bg-[#6d35ff] px-5 py-3 font-black text-white"
+        disabled={Boolean(challenge?.locked)}
+        className="mt-6 w-full rounded-xl border border-[#6d35ff] bg-white px-5 py-3 font-black text-[#6d35ff] disabled:cursor-not-allowed disabled:opacity-50"
       >
         Bắt đầu thử thách
       </button>
@@ -1569,12 +2967,18 @@ function LessonCompletedModal({
 
           {/* Actions */}
           <div className="mt-5 grid grid-cols-2 gap-3">
-            <button className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+            <button
+              onClick={onClose}
+              className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+            >
               <RotateCcw size={16} />
               Ôn lại từ đã học
             </button>
 
-            <button className="rounded-xl bg-violet-600 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-200 hover:bg-violet-700">
+            <button
+              onClick={onClose}
+              className="rounded-xl bg-violet-600 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-200 hover:bg-violet-700"
+            >
               Tiếp tục hành trình →
             </button>
           </div>
