@@ -16,6 +16,10 @@ export class GrammarJobService {
     private readonly geminiService: GeminiService,
   ) {}
 
+  private sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
   @Cron('0 2 * * *')
   // @Cron('*/1 * * * *')
   async generateDailyGrammarData() {
@@ -23,8 +27,8 @@ export class GrammarJobService {
 
     const categories = await this.seedCategories();
 
-    for (const category of categories) {
-      for (const level of ['A1', 'A2', 'B1', 'B2'] as GrammarLevel[]) {
+    for (const category of categories.slice(0, 1)) {
+      for (const level of ['A1'] as GrammarLevel[]) {
         const existingTopicCount = await this.prisma.grammarTopic.count({
           where: {
             categoryId: category.id,
@@ -39,9 +43,10 @@ export class GrammarJobService {
         const topics = await this.generateTopicsByGemini({
           categoryTitle: category.title,
           level,
-          count: 3,
+          count: 1,
         });
 
+        await this.sleep(3000);
         for (const topic of topics) {
           const topicSlug = this.slugify(`${topic.title}-${level}`);
 
@@ -300,17 +305,61 @@ Format:
     return this.safeJsonParse(text);
   }
 
-  private safeJsonParse(text: string) {
+  // private safeJsonParse(text: string) {
+  //   try {
+  //     const cleaned = text
+  //       .replace(/```json/g, '')
+  //       .replace(/```/g, '')
+  //       .trim();
+
+  //     return JSON.parse(cleaned);
+  //   } catch (error) {
+  //     this.logger.error('Gemini JSON parse failed');
+  //     this.logger.error(text);
+  //     return [];
+  //   }
+  // }
+  private safeJsonParse(result: any) {
     try {
-      const cleaned = text
+      if (Array.isArray(result)) {
+        return result;
+      }
+
+      if (typeof result === 'object' && result !== null) {
+        return [result];
+      }
+
+      if (typeof result !== 'string') {
+        this.logger.error('Gemini result is not string or object');
+        this.logger.error(result);
+        return [];
+      }
+
+      const cleaned = result
         .replace(/```json/g, '')
         .replace(/```/g, '')
         .trim();
 
-      return JSON.parse(cleaned);
+      const match =
+        cleaned.match(/\[[\s\S]*\]/) || cleaned.match(/\{[\s\S]*\}/);
+
+      if (!match) {
+        this.logger.error('Gemini did not return valid JSON');
+        this.logger.error(result);
+        return [];
+      }
+
+      const parsed = JSON.parse(match[0]);
+
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+
+      return [parsed];
     } catch (error) {
       this.logger.error('Gemini JSON parse failed');
-      this.logger.error(text);
+      this.logger.error(result);
+      this.logger.error(error);
       return [];
     }
   }

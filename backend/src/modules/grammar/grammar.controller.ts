@@ -58,4 +58,39 @@ export class GrammarController {
   ) {
     return this.grammarService.submitLesson(user.id, lessonId, body.answers);
   }
+
+  @Get('topics/:topicId/detail')
+  getTopicDetail(@CurrentUser() user: any, @Param('topicId') topicId: string) {
+    return this.grammarService.getTopicDetail(user.id, topicId);
+  }
+
+  @Get('lessons/:lessonId/learning')
+  getLessonLearning(
+    @CurrentUser() user: any,
+    @Param('lessonId') lessonId: string,
+  ) {
+    return this.grammarService.getLessonLearning(user.id, lessonId);
+  }
+
+  @Post('lessons/:lessonId/start')
+  startLesson(@CurrentUser() user: any, @Param('lessonId') lessonId: string) {
+    return this.grammarService.startLesson(user.id, lessonId);
+  }
+
+  @Post('lessons/:lessonId/complete')
+  completeLesson(
+    @CurrentUser() user: any,
+    @Param('lessonId') lessonId: string,
+  ) {
+    return this.grammarService.completeLesson(user.id, lessonId);
+  }
+
+  @Post('lessons/:lessonId/note')
+  saveLessonNote(
+    @CurrentUser() user: any,
+    @Param('lessonId') lessonId: string,
+    @Body() body: { note: string },
+  ) {
+    return this.grammarService.saveLessonNote(user.id, lessonId, body.note);
+  }
 }

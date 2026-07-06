@@ -353,13 +353,13 @@ function TopicRow({ topic, index }: { topic: GrammarTopic; index: number }) {
           </span>
         </div>
       </div>
-      <div className="hidden w-[230px] items-center gap-5 sm:flex">
+      <Link href={`/grammar/topic/${topic.id}`} className="hidden w-[230px] items-center gap-5 sm:flex">
         <div className="h-2 flex-1 rounded-full bg-slate-100">
           <div className={`h-2 rounded-full ${tone.bar}`} style={{ width: `${topic.progress}%` }} />
         </div>
         <span className="w-10 text-sm font-black">{topic.progress}%</span>
         <ChevronRight className="text-slate-400" />
-      </div>
+      </Link>
     </div>
   );
 }

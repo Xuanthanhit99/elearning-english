@@ -171,6 +171,7 @@ model User {
 
   grammarLessonProgress GrammarLessonProgress[]
   grammarTopicProgress  GrammarTopicProgress[]
+  grammarLessonNotes    GrammarLessonNote[]
 
   arenaProfile      ArenaProfile?
   arenaRooms        ArenaRoom[]
@@ -1266,15 +1267,15 @@ model GrammarTopic {
 }
 
 model GrammarLesson {
-  id       String  @id @default(uuid())
-  topicId  String
-  title    String
-  slug     String  @unique
-  content  Json
-  duration Int     @default(10)
-  isActive Boolean @default(true)
-  order    Int     @default(0)
-
+  id        String                  @id @default(uuid())
+  topicId   String
+  title     String
+  slug      String                  @unique
+  content   Json
+  duration  Int                     @default(10)
+  isActive  Boolean                 @default(true)
+  order     Int                     @default(0)
+  notes     GrammarLessonNote[]
   topic     GrammarTopic            @relation(fields: [topicId], references: [id], onDelete: Cascade)
   questions GrammarQuestion[]
   progress  GrammarLessonProgress[]
@@ -1313,8 +1314,8 @@ model GrammarLessonProgress {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([userId, lessonId])
   @@unique([userId, lessonId])
+  @@index([userId, lessonId])
 }
 
 model GrammarTopicProgress {
@@ -1330,4 +1331,19 @@ model GrammarTopicProgress {
   createdAt DateTime @default(now())
 
   @@unique([userId, topicId])
+}
+
+model GrammarLessonNote {
+  id       String @id @default(uuid())
+  userId   String
+  lessonId String
+  note     String @db.Text
+
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson GrammarLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, lessonId])
 }
