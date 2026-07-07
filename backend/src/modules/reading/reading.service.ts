@@ -635,7 +635,7 @@ export class ReadingService {
         description: article.description,
         thumbnail: article.thumbnail,
         difficulty: article.difficulty,
-        difficultyText: this.formatDifficulty(article.difficulty),
+        difficultyText: this.formatDifficultyArticleDetail(article.difficulty),
         readTime: article.readTime,
         readTimeText: `~ ${article.readTime} phút`,
         wordCount: article.wordCount ?? 0,
@@ -702,5 +702,231 @@ export class ReadingService {
           wordCountText: item.wordCountText,
         })),
     };
+  }
+
+  async getReadingArticleDetail(userId: string, slug: string) {
+    const article = await this.prisma.readingArticle.findUnique({
+      where: { slug },
+      include: {
+        category: true,
+        questions: {
+          orderBy: { order: 'asc' },
+        },
+        sessions: {
+          where: { userId },
+          take: 1,
+          include: {
+            answers: true,
+          },
+        },
+      },
+    });
+
+    if (!article) {
+      throw new NotFoundException('Không tìm thấy bài đọc');
+    }
+
+    const session = article.sessions[0];
+
+    return {
+      article: {
+        id: article.id,
+        title: article.title,
+        slug: article.slug,
+        description: article.description,
+        thumbnail: article.thumbnail,
+        content: article.content,
+        categoryName: article.category.name,
+        categorySlug: article.category.slug,
+        difficulty: article.difficulty,
+        difficultyText: this.formatDifficulty(article.difficulty),
+        readTimeText: `${article.readTime} phút đọc`,
+        wordCountText: `${article.wordCount ?? 0} từ`,
+        xpReward: article.xpReward,
+      },
+
+      session: session
+        ? {
+            id: session.id,
+            isCompleted: session.isCompleted,
+            score: session.score,
+            accuracy: session.accuracy,
+            answeredCount: session.answers.length,
+            totalQuestions: article.questions.length,
+            progressPercent:
+              article.questions.length > 0
+                ? Math.round((session.answers.length / article.questions.length) * 100)
+                : 0,
+          }
+        : null,
+
+      questions: article.questions.map((q, index) => {
+        const answer = session?.answers.find((a) => a.questionId === q.id);
+
+        return {
+          id: q.id,
+          index: index + 1,
+          question: q.question,
+          options: q.options,
+          selected: answer?.selected ?? null,
+        };
+      }),
+
+      vocabulary: await this.getVocabularyByArticle(article.id),
+
+      tip: {
+        title: 'Mẹo nhỏ',
+        content:
+          'Đọc lướt toàn bài trước để nắm ý chính, sau đó trả lời câu hỏi sẽ giúp bạn hiểu sâu và nhớ lâu hơn.',
+      },
+    };
+  }
+
+  async startReadingArticle(userId: string, articleId: string) {
+    const article = await this.prisma.readingArticle.findUnique({
+      where: { id: articleId },
+    });
+
+    if (!article) {
+      throw new NotFoundException('Không tìm thấy bài đọc');
+    }
+
+    const session = await this.prisma.readingSession.upsert({
+      where: {
+        userId_articleId: {
+          userId,
+          articleId,
+        },
+      },
+      update: {},
+      create: {
+        userId,
+        articleId,
+      },
+    });
+
+    return {
+      sessionId: session.id,
+      articleId,
+      startedAt: session.startedAt,
+    };
+  }
+
+  async answerReadingQuestion(
+    sessionId: string,
+    body: {
+      questionId: string;
+      selected: string;
+    },
+  ) {
+    const question = await this.prisma.readingQuestion.findUnique({
+      where: { id: body.questionId },
+    });
+
+    if (!question) {
+      throw new NotFoundException('Không tìm thấy câu hỏi');
+    }
+
+    const isCorrect = question.correctAnswer === body.selected;
+
+    const answer = await this.prisma.readingAnswer.upsert({
+      where: {
+        sessionId_questionId: {
+          sessionId,
+          questionId: body.questionId,
+        },
+      },
+      update: {
+        selected: body.selected,
+        isCorrect,
+      },
+      create: {
+        sessionId,
+        questionId: body.questionId,
+        selected: body.selected,
+        isCorrect,
+      },
+    });
+
+    return {
+      id: answer.id,
+      questionId: answer.questionId,
+      selected: answer.selected,
+      isCorrect: answer.isCorrect,
+    };
+  }
+
+  async submitReadingSession(sessionId: string) {
+    const session = await this.prisma.readingSession.findUnique({
+      where: { id: sessionId },
+      include: {
+        article: {
+          include: {
+            questions: true,
+          },
+        },
+        answers: true,
+      },
+    });
+
+    if (!session) {
+      throw new NotFoundException('Không tìm thấy phiên làm bài');
+    }
+
+    const totalQuestions = session.article.questions.length;
+    const correctCount = session.answers.filter((a) => a.isCorrect).length;
+
+    const accuracy =
+      totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+
+    const score = accuracy;
+    const earnedXp = Math.round((session.article.xpReward * accuracy) / 100);
+
+    const completed = await this.prisma.readingSession.update({
+      where: { id: sessionId },
+      data: {
+        isCompleted: true,
+        completedAt: new Date(),
+        score,
+        accuracy,
+        earnedXp,
+      },
+    });
+
+    return {
+      sessionId: completed.id,
+      score,
+      accuracy,
+      correctCount,
+      totalQuestions,
+      earnedXp,
+      isCompleted: true,
+    };
+  }
+
+  private async getVocabularyByArticle(articleId: string) {
+    const words = await this.prisma.readingVocabulary.findMany({
+      where: { articleId },
+      take: 6,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return words.map((item) => ({
+      id: item.id,
+      word: item.word,
+      partOfSpeech: item.partOfSpeech,
+      meaning: item.meaning,
+      audioUrl: item.audioUrl,
+    }));
+  }
+
+  private formatDifficultyArticleDetail(difficulty: 'EASY' | 'MEDIUM' | 'HARD') {
+    const map = {
+      EASY: 'Dễ',
+      MEDIUM: 'Trung bình',
+      HARD: 'Khó',
+    };
+
+    return map[difficulty];
   }
 }

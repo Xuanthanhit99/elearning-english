@@ -1364,16 +1364,16 @@ enum ReadingDifficulty {
 }
 
 model ReadingCategory {
-  id          String  @id @default(uuid())
+  id          String           @id @default(uuid())
   name        String
-  slug        String  @unique
+  slug        String           @unique
   description String?
   icon        String?
   color       String?
-  order       Int     @default(0)
-  isActive    Boolean @default(true)
+  order       Int              @default(0)
+  isActive    Boolean          @default(true)
   thumbnail   String?
-  articles ReadingArticle[]
+  articles    ReadingArticle[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1387,7 +1387,7 @@ model ReadingArticle {
   description   String?
   thumbnail     String?
   content       String
-  level         String
+  level         ReadingLevel
   difficulty    ReadingDifficulty @default(EASY)
   readTime      Int               @default(5)
   questionCount Int               @default(0)
@@ -1395,11 +1395,12 @@ model ReadingArticle {
   isPublished   Boolean           @default(true)
   viewCount     Int               @default(0)
   order         Int               @default(0)
-  wordCount Int @default(0)
+  wordCount     Int               @default(0)
 
-  category ReadingCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  sessions ReadingSession[]
+  category     ReadingCategory     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  sessions     ReadingSession[]
   vocabularies ReadingVocabulary[]
+  questions    ReadingQuestion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1416,6 +1417,8 @@ model ReadingSession {
   accuracy    Int       @default(0)
   earnedXp    Int       @default(0)
   isCompleted Boolean   @default(false)
+
+  answers ReadingAnswer[]
 
   article ReadingArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
 
@@ -1439,7 +1442,7 @@ model UserReadingProgress {
 }
 
 model ReadingVocabulary {
-  id           String @id @default(uuid())
+  id           String  @id @default(uuid())
   articleId    String
   word         String
   meaning      String
@@ -1451,4 +1454,36 @@ model ReadingVocabulary {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model ReadingQuestion {
+  id            String  @id @default(uuid())
+  articleId     String
+  question      String
+  options       Json
+  correctAnswer String
+  explanation   String?
+  order         Int     @default(0)
+
+  article ReadingArticle  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  answers ReadingAnswer[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ReadingAnswer {
+  id         String  @id @default(uuid())
+  sessionId  String
+  questionId String
+  selected   String?
+  isCorrect  Boolean @default(false)
+
+  session  ReadingSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question ReadingQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([sessionId, questionId])
 }
