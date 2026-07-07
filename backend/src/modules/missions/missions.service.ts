@@ -5,6 +5,81 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class MissionsService {
   constructor(private prisma: PrismaService) {}
 
+  private readonly defaultMissions: Prisma.MissionCreateManyInput[] = [
+    {
+      title: 'Học 3 bài bất kỳ',
+      description: 'Hoàn thành 3 bài học trong ngày',
+      type: MissionType.DAILY,
+      action: MissionAction.STUDY_LESSON,
+      target: 3,
+      rewardXp: 20,
+      rewardCoins: 50,
+    },
+    {
+      title: 'Luyện nói 15 phút',
+      description: 'Luyện nói hoặc phát âm ít nhất 15 phút',
+      type: MissionType.DAILY,
+      action: MissionAction.PRACTIVE_PRONUNCIATION,
+      target: 15,
+      rewardXp: 25,
+      rewardCoins: 60,
+    },
+    {
+      title: 'Học 20 từ mới',
+      description: 'Học và ghi nhớ 20 từ mới',
+      type: MissionType.DAILY,
+      action: MissionAction.LEARN_WORD,
+      target: 20,
+      rewardXp: 30,
+      rewardCoins: 80,
+    },
+    {
+      title: 'Hoàn thành 2 bài quiz',
+      description: 'Làm 2 bài quiz bất kỳ',
+      type: MissionType.DAILY,
+      action: MissionAction.COMPLETE_QUIZ,
+      target: 2,
+      rewardXp: 20,
+      rewardCoins: 50,
+    },
+    {
+      title: 'Hoàn thành 20 bài học',
+      description: 'Tiếp tục học tập mỗi ngày để đạt mục tiêu tuần',
+      type: MissionType.WEEKLY,
+      action: MissionAction.STUDY_LESSON,
+      target: 20,
+      rewardXp: 150,
+      rewardCoins: 200,
+    },
+    {
+      title: 'Đạt 90% bài kiểm tra ngữ pháp',
+      description: 'Củng cố ngữ pháp để tiến bộ hơn',
+      type: MissionType.WEEKLY,
+      action: MissionAction.COMPLETE_QUIZ,
+      target: 3,
+      rewardXp: 120,
+      rewardCoins: 150,
+    },
+    {
+      title: 'Kiểm tra viết 3 lần',
+      description: 'Gửi bài viết để AI góp ý và nhận điểm',
+      type: MissionType.WEEKLY,
+      action: MissionAction.CHECK_WRITING,
+      target: 3,
+      rewardXp: 100,
+      rewardCoins: 120,
+    },
+    {
+      title: 'Đăng nhập đều đặn',
+      description: 'Duy trì thói quen học mỗi ngày',
+      type: MissionType.ACHIEVEMENT,
+      action: MissionAction.LOGIN,
+      target: 7,
+      rewardXp: 80,
+      rewardCoins: 100,
+    },
+  ];
+
   private getPeriodKey(type: MissionType) {
     const now = new Date();
 
@@ -24,6 +99,8 @@ export class MissionsService {
   }
 
   async getMyMissions(userId: string) {
+    await this.ensureDefaultMissions();
+
     const missions = await this.prisma.mission.findMany({
       where: {
         isActive: true,
@@ -68,7 +145,78 @@ export class MissionsService {
         },
       });
     }
-    return result;
+    return {
+      missions: result,
+      summary: this.buildSummary(result),
+      specialEvent: this.buildSpecialEvent(result),
+    };
+  }
+
+  private async ensureDefaultMissions() {
+    const count = await this.prisma.mission.count({
+      where: {
+        isActive: true,
+      },
+    });
+
+    if (count > 0) return;
+
+    await this.prisma.mission.createMany({
+      data: this.defaultMissions,
+      skipDuplicates: true,
+    });
+  }
+
+  private buildSummary(missions: any[]) {
+    const daily = missions.filter((mission) => mission.type === MissionType.DAILY);
+    const weekly = missions.filter((mission) => mission.type === MissionType.WEEKLY);
+    const completedDaily = daily.filter((mission) => mission.userProgress.completed);
+    const claimable = missions.filter(
+      (mission) =>
+        mission.userProgress.completed && !mission.userProgress.claimed,
+    );
+    const claimed = missions.filter((mission) => mission.userProgress.claimed);
+    const missionPoints = missions.reduce((sum, mission) => {
+      const progress = Math.min(
+        mission.userProgress.progress || 0,
+        mission.userProgress.target || mission.target || 1,
+      );
+      return sum + progress;
+    }, 0);
+
+    return {
+      missionPoints,
+      nextChestPoints: Math.max(0, 200 - missionPoints),
+      dailyCompleted: completedDaily.length,
+      dailyTotal: daily.length,
+      weeklyCompleted: weekly.filter((mission) => mission.userProgress.completed)
+        .length,
+      weeklyTotal: weekly.length,
+      claimableCount: claimable.length,
+      claimedCount: claimed.length,
+      streakDays: 18,
+      nextReward: {
+        xp: 50,
+        title: 'Rương đồng',
+      },
+    };
+  }
+
+  private buildSpecialEvent(missions: any[]) {
+    const total = missions.reduce((sum, mission) => sum + mission.target, 0);
+    const progress = missions.reduce(
+      (sum, mission) => sum + Math.min(mission.userProgress.progress, mission.target),
+      0,
+    );
+
+    return {
+      title: 'Thử thách học tập mùa hè',
+      description: 'Hoàn thành nhiệm vụ để nhận trang bị hiếm cho Foxy!',
+      progress,
+      target: Math.max(total, 1000),
+      daysLeft: 3,
+      joined: true,
+    };
   }
 
   async increaseProgress(userId: string, action: MissionAction, amount = 1) {
@@ -163,11 +311,11 @@ export class MissionsService {
         },
       });
 
-      await tx.petProfile.update({
+      await tx.petProfile.upsert({
         where: {
           userId,
         },
-        data: {
+        update: {
           xp: {
             increment: mission.rewardXp,
           },
@@ -183,6 +331,17 @@ export class MissionsService {
           happiness: {
             increment: mission.rewardHappiness,
           },
+        },
+        create: {
+          userId,
+          petType: 'fox',
+          petName: 'Foxy',
+          isChosen: true,
+          xp: mission.rewardXp,
+          coins: mission.rewardCoins,
+          food: mission.rewardFood,
+          energy: 70 + mission.rewardEnergy,
+          happiness: 70 + mission.rewardHappiness,
         },
       });
 

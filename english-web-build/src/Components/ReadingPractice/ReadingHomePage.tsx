@@ -1,413 +1,690 @@
 "use client";
 
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import {
+  Bell,
   BookOpen,
-  Home,
-  Search,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  Clock,
   Flame,
-  Star,
+  FlaskConical,
   Gem,
   Gift,
-  Bell,
-  LogOut,
-  Check,
-  X,
-  Clock,
-  Lightbulb,
-  Bookmark,
-  ArrowLeft,
-  ArrowRight,
-  Volume2,
-  ChevronDown,
+  Globe2,
+  GraduationCap,
+  Leaf,
+  Monitor,
+  Search,
+  ShieldCheck,
+  Star,
 } from "lucide-react";
+import { api } from "@/src/lib/axios";
 
-const menu = [
-  "Trang chủ",
-  "Tổng quan",
-  "Từ vựng",
-  "Ngữ pháp",
-  "Nghe",
-  "Nói",
-  "Đọc hiểu",
-  "Viết",
-  "Flashcards",
+type ReadingHomeResponse = {
+  stats: {
+    completedArticles: number;
+    averageAccuracy: number;
+    totalReadingTimeText: string;
+    totalXp: number;
+    completedChangeText: string;
+    accuracyChangeText: string;
+    timeChangeText: string;
+    xpChangeText: string;
+  };
+  categories: {
+    id: string;
+    name: string;
+    slug: string;
+    icon: string | null;
+    color: string | null;
+    articleCount: number;
+    difficultyText: string;
+  }[];
+  featuredArticles: {
+    id: string;
+    title: string;
+    slug: string;
+    description: string | null;
+    thumbnail: string | null;
+    categoryName: string;
+    categorySlug: string;
+    level: string;
+    difficultyText: string;
+    readTimeText: string;
+    questionCount: number;
+    xpReward: number;
+    isStarted: boolean;
+    isCompleted: boolean;
+  }[];
+  progress: {
+    percent: number;
+    totalArticles: number;
+    completedArticles: number;
+    learningArticles: number;
+    notStartedArticles: number;
+  };
+  currentLevel: {
+    level: string;
+    title: string;
+    currentXp: number;
+    nextLevelXp: number;
+    percent: number;
+  };
+  streak: {
+    currentStreak: number;
+    week: {
+      label: string;
+      completed: boolean;
+    }[];
+  };
+  suggestions: {
+    id: string;
+    title: string;
+    slug: string;
+    thumbnail: string | null;
+    readTimeText: string;
+    difficultyText: string;
+    xpReward: number;
+  }[];
+};
+
+const categoryIconMap = {
+  "daily-life": BookOpen,
+  education: GraduationCap,
+  science: FlaskConical,
+  technology: Monitor,
+  environment: Leaf,
+  culture: Globe2,
+};
+
+const categoryStyleMap = [
+  {
+    bg: "bg-purple-50",
+    iconBg: "bg-purple-100",
+    color: "text-purple-600",
+  },
+  {
+    bg: "bg-sky-50",
+    iconBg: "bg-sky-100",
+    color: "text-sky-600",
+  },
+  {
+    bg: "bg-emerald-50",
+    iconBg: "bg-emerald-100",
+    color: "text-emerald-600",
+  },
+  {
+    bg: "bg-orange-50",
+    iconBg: "bg-orange-100",
+    color: "text-orange-600",
+  },
+  {
+    bg: "bg-green-50",
+    iconBg: "bg-green-100",
+    color: "text-green-600",
+  },
+  {
+    bg: "bg-violet-50",
+    iconBg: "bg-violet-100",
+    color: "text-violet-600",
+  },
 ];
 
-const questions = [
-  {
-    id: 1,
-    question: "What time does the writer usually wake up?",
-    options: ["6 o'clock", "6:15", "7 o'clock", "7:30"],
-    selected: "6 o'clock",
-  },
-  {
-    id: 2,
-    question: "What does the writer do after waking up?",
-  },
-  {
-    id: 3,
-    question: "What does the writer have for breakfast?",
-  },
-  {
-    id: 4,
-    question: "How does the writer go to school?",
-  },
-];
+const fallbackThumbnail =
+  "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=400&auto=format&fit=crop";
 
-export default function ReadingHomePage() {
+export default function ReadingPage() {
+  const router = useRouter();
+
+  const [data, setData] = useState<ReadingHomeResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const fetchReadingHome = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const res = await api.get<ReadingHomeResponse | { data: ReadingHomeResponse }>(
+        "/reading/home",
+      );
+
+      const payload =
+        "data" in res.data && res.data.data ? res.data.data : res.data;
+
+      setData(payload);
+    } catch (err) {
+      console.error(err);
+      setData(null);
+      setError("Không tải được dữ liệu Reading Home.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchReadingHome();
+  }, [fetchReadingHome]);
+
+  const stats = useMemo(() => {
+    return [
+      {
+        title: data?.stats.completedArticles ?? 0,
+        label: "Bài đã hoàn thành",
+        note: data?.stats.completedChangeText ?? "",
+      },
+      {
+        title: `${data?.stats.averageAccuracy ?? 0}%`,
+        label: "Tỷ lệ đúng trung bình",
+        note: data?.stats.accuracyChangeText ?? "",
+      },
+      {
+        title: data?.stats.totalReadingTimeText ?? "0m",
+        label: "Tổng thời gian học",
+        note: data?.stats.timeChangeText ?? "",
+      },
+      {
+        title: data?.stats.totalXp ?? 0,
+        label: "XP đã nhận",
+        note: data?.stats.xpChangeText ?? "",
+      },
+    ];
+  }, [data]);
+
+  if (loading) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-[#fbfbff]">
+        <div className="rounded-2xl bg-white px-8 py-6 text-center shadow-sm">
+          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-violet-200 border-t-violet-600" />
+          <p className="font-bold text-slate-700">Đang tải Reading Home...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-[#fbfbff]">
+        <div className="rounded-2xl bg-white px-8 py-6 text-center shadow-sm">
+          <p className="mb-4 font-bold text-red-500">
+            {error || "Không có dữ liệu Reading Home."}
+          </p>
+          <button
+            onClick={fetchReadingHome}
+            className="rounded-xl bg-violet-600 px-5 py-2 text-sm font-bold text-white"
+          >
+            Tải lại
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#fbfaff] text-[#16124a]">
-      <div className="flex">
-        {/* Sidebar */}
-        <aside className="fixed left-0 top-0 h-screen w-[260px] border-r border-purple-100 bg-white px-5 py-6">
-          <div className="mb-10 flex items-center gap-3">
-            <div className="text-3xl">🦊</div>
-            <h1 className="text-2xl font-black">
-              Study<span className="text-violet-600">Arena</span>
-            </h1>
+    <div className="min-h-screen bg-[#fbfbff] text-slate-900">
+      <main className="min-h-screen">
+        <header className="sticky top-0 z-20 flex h-[82px] items-center justify-between border-b border-slate-100 bg-white/80 px-8 backdrop-blur">
+          <div className="relative w-[660px]">
+            <Search
+              className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"
+              size={20}
+            />
+            <input
+              placeholder="Tìm bài đọc, chủ đề..."
+              className="h-12 w-full rounded-xl border border-slate-100 bg-slate-50 pl-14 pr-4 text-sm outline-none focus:border-violet-300"
+            />
           </div>
 
-          <nav className="space-y-2">
-            {menu.map((item) => (
-              <div
-                key={item}
-                className={`flex cursor-pointer items-center gap-4 rounded-xl px-4 py-3 text-sm font-bold ${
-                  item === "Đọc hiểu"
-                    ? "bg-violet-100 text-violet-700"
-                    : "text-slate-600 hover:bg-violet-50"
-                }`}
-              >
-                <BookOpen size={18} />
-                {item}
-              </div>
-            ))}
+          <div className="flex items-center gap-6">
+            <TopStat
+              icon={<Flame className="text-red-500" />}
+              value={String(data.streak.currentStreak)}
+              label="Streak"
+            />
+            <TopStat
+              icon={<Star className="text-yellow-500" />}
+              value={String(data.stats.totalXp)}
+              label="XP đọc hiểu"
+            />
+            <TopStat icon={<Gem className="text-cyan-500" />} value="0" label="Xu" />
 
-            <div className="ml-8 mt-2 space-y-2 border-l border-violet-200 pl-4 text-sm font-semibold">
-              <p className="text-slate-500">Luyện đọc</p>
-              <p className="text-slate-500">Đọc theo chủ đề</p>
-              <p className="rounded-lg bg-violet-100 px-3 py-2 text-violet-700">
-                Đọc hiểu
-              </p>
+            <div className="flex gap-3">
+              <IconCircle>
+                <Gift size={18} />
+              </IconCircle>
+              <IconCircle badge>
+                <Bell size={18} />
+              </IconCircle>
             </div>
-          </nav>
 
-          <div className="absolute bottom-6 left-5 right-5 rounded-2xl bg-gradient-to-br from-violet-50 to-purple-100 p-4">
-            <p className="font-black text-violet-700">👑 Nâng cấp Premium</p>
-            <p className="mt-2 text-xs text-slate-600">
-              Học không giới hạn, nhận nhiều đặc quyền hấp dẫn!
-            </p>
-            <button className="mt-4 rounded-xl bg-violet-600 px-4 py-2 text-sm font-bold text-white">
-              Nâng cấp ngay
-            </button>
+            <div className="flex items-center gap-3">
+              <div className="grid h-10 w-10 place-items-center rounded-full bg-sky-100 text-xl">
+                👨🏻‍💻
+              </div>
+              <div>
+                <p className="text-sm font-bold">Người học</p>
+                <p className="text-xs text-slate-400">
+                  {data.currentLevel.title}
+                </p>
+              </div>
+            </div>
           </div>
-        </aside>
+        </header>
 
-        {/* Main */}
-        <main className="ml-[260px] flex-1">
-          {/* Header */}
-          <header className="sticky top-0 z-20 flex h-[88px] items-center justify-between border-b border-purple-100 bg-white/80 px-10 backdrop-blur">
-            <div className="relative w-[520px]">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-violet-400" />
-              <input
-                className="h-14 w-full rounded-2xl border border-purple-100 bg-white pl-12 pr-4 font-semibold outline-none focus:border-violet-400"
-                placeholder="Tìm bài học, từ vựng, ngữ pháp..."
-              />
-            </div>
-
-            <div className="flex items-center gap-8">
-              <Stat icon={<Flame />} value="18" label="Streak" />
-              <Stat icon={<Star />} value="2,450" label="XP hôm nay" />
-              <Stat icon={<Gem />} value="5,230" label="Xu" />
-
-              <Gift className="text-violet-600" />
-              <div className="relative">
-                <Bell className="text-violet-600" />
-                <span className="absolute -right-2 -top-2 rounded-full bg-red-500 px-1.5 text-xs text-white">
-                  3
-                </span>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="grid h-11 w-11 place-items-center rounded-full bg-orange-100 text-xl">
-                  🧑
+        <div className="grid grid-cols-[1fr_450px] gap-7 p-8">
+          <section className="space-y-6">
+            <div className="relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm">
+              <div className="flex items-center gap-6">
+                <div className="grid h-24 w-24 place-items-center rounded-2xl bg-violet-100">
+                  <BookOpen size={52} className="text-violet-600" />
                 </div>
-                <div>
-                  <p className="text-sm font-black">Minh Anh</p>
-                  <p className="text-xs text-slate-500">Level 18</p>
-                </div>
-              </div>
-            </div>
-          </header>
 
-          <div className="grid grid-cols-[1fr_380px] gap-8 px-10 py-8">
-            {/* Content */}
-            <section>
-              <div className="mb-6 text-sm font-semibold text-slate-500">
-                Trang chủ &gt; Đọc hiểu &gt;{" "}
-                <span className="text-slate-800">Luyện đọc hiểu</span>
-              </div>
-
-              <div className="mb-6 flex items-center justify-between">
                 <div>
-                  <h2 className="text-4xl font-black">
-                    Luyện đọc hiểu{" "}
-                    <BookOpen className="inline text-violet-600" />
-                  </h2>
-                  <p className="mt-2 font-semibold text-slate-500">
-                    Đọc đoạn văn và trả lời câu hỏi
+                  <h1 className="text-4xl font-extrabold">Đọc hiểu</h1>
+                  <p className="mt-3 max-w-2xl text-slate-500">
+                    Đọc đa dạng các chủ đề và trả lời câu hỏi để nâng cao kỹ năng
+                    đọc hiểu của bạn.
                   </p>
                 </div>
 
-                <div className="flex items-center gap-4">
-                  <div className="rounded-2xl border border-violet-200 bg-violet-50 px-5 py-4 text-sm font-semibold">
-                    Đọc kỹ đoạn văn <br /> và trả lời câu hỏi nhé!
-                  </div>
-                  <div className="text-7xl">🦊</div>
-                  <button className="flex items-center gap-2 rounded-xl border border-purple-100 bg-white px-5 py-3 font-bold">
-                    Thoát bài <LogOut size={16} className="text-red-500" />
-                  </button>
+                <div className="ml-auto pr-10 text-8xl">🦊</div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 gap-4">
+              {stats.map((item) => (
+                <StatCard
+                  key={item.label}
+                  title={String(item.title)}
+                  label={item.label}
+                  note={item.note}
+                />
+              ))}
+            </div>
+
+            <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+              <div className="mb-5 flex items-center justify-between">
+                <h2 className="text-lg font-extrabold">Danh mục chủ đề</h2>
+                <button
+                  onClick={() => router.push("/reading/categories")}
+                  className="flex items-center gap-1 text-sm font-bold text-violet-600"
+                >
+                  Xem tất cả <ChevronRight size={16} />
+                </button>
+              </div>
+
+              <div className="relative">
+                <button
+                  type="button"
+                  className="absolute -left-4 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-xl bg-white shadow"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+
+                <div className="grid grid-cols-6 gap-4">
+                  {data.categories.map((item, index) => {
+                    const style =
+                      categoryStyleMap[index % categoryStyleMap.length];
+                    const Icon =
+                      categoryIconMap[
+                        item.slug as keyof typeof categoryIconMap
+                      ] || BookOpen;
+
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() =>
+                          router.push(`/reading/categories/${item.slug}`)
+                        }
+                        className={`${style.bg} rounded-2xl p-5 text-center transition hover:-translate-y-1 hover:shadow-md`}
+                      >
+                        <div
+                          className={`mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl ${style.iconBg}`}
+                        >
+                          <Icon className={style.color} size={28} />
+                        </div>
+                        <h3 className="font-extrabold">{item.name}</h3>
+                        <p className="mt-2 text-sm text-slate-500">
+                          {item.articleCount} bài đọc
+                        </p>
+                        <p className="mt-2 text-sm font-semibold text-slate-700">
+                          {item.difficultyText}
+                        </p>
+                      </button>
+                    );
+                  })}
                 </div>
+
+                <button
+                  type="button"
+                  className="absolute -right-4 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-xl bg-white shadow"
+                >
+                  <ChevronRight size={18} />
+                </button>
               </div>
+            </div>
 
-              <div className="mb-6 flex gap-4">
-                <Badge text="Câu 3 / 10" />
-                <Badge text="Dễ" green />
-                <Badge text="Chủ đề: Daily Life" white />
-              </div>
+            <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+              <h2 className="mb-4 text-lg font-extrabold">Bài đọc nổi bật</h2>
 
-              {/* Reading card */}
-              <div className="rounded-2xl border border-purple-100 bg-white p-5 shadow-sm">
-                <h3 className="mb-4 flex items-center gap-2 text-xl font-black">
-                  Đọc đoạn văn
-                  <Volume2 className="rounded-full bg-violet-100 p-1 text-violet-600" />
-                </h3>
-
-                <div className="grid grid-cols-[1fr_230px] gap-5 rounded-2xl border border-purple-100 p-4">
-                  <div>
-                    <h4 className="mb-2 text-lg font-black">
-                      My Morning Routine
-                    </h4>
-                    <p className="leading-8 text-slate-700">
-                      I usually wake up at 6 o'clock every morning. After that,
-                      I do some exercise for about 15 minutes.
-                      <br />
-                      Then I take a shower and have breakfast with my family. I
-                      often have bread, eggs, and a glass of milk.
-                      <br />
-                      After breakfast, I go to school by bike. My school starts
-                      at 7:30.
-                      <br />I think having a good morning routine helps me feel
-                      happy and ready for the day.
-                    </p>
-                  </div>
-
-                  <div className="grid place-items-center rounded-xl bg-orange-50 text-8xl">
-                    🛏️
-                  </div>
-                </div>
-              </div>
-
-              {/* Questions */}
-              <div className="mt-7">
-                <h3 className="mb-4 text-xl font-black">Trả lời câu hỏi</h3>
-
-                <div className="space-y-4">
-                  {questions.map((q) => (
-                    <div
-                      key={q.id}
-                      className={`rounded-xl border bg-white ${
-                        q.selected
-                          ? "border-violet-400 shadow-[0_0_0_3px_rgba(139,92,246,0.12)]"
-                          : "border-purple-100"
+              <div className="mb-4 flex gap-6 border-b border-slate-100">
+                {["Mới nhất", "Phổ biến", "Đề xuất cho bạn"].map(
+                  (tab, index) => (
+                    <button
+                      key={tab}
+                      className={`pb-3 text-sm font-bold ${
+                        index === 0
+                          ? "border-b-2 border-violet-600 text-violet-600"
+                          : "text-slate-500"
                       }`}
                     >
-                      <div className="flex items-center justify-between px-4 py-4 font-black">
-                        <span>
-                          {q.id}. {q.question}
+                      {tab}
+                    </button>
+                  ),
+                )}
+              </div>
+
+              <div className="space-y-4">
+                {data.featuredArticles.map((article) => (
+                  <div
+                    key={article.id}
+                    className="flex items-center gap-5 rounded-2xl border border-slate-100 p-4"
+                  >
+                    <img
+                      src={article.thumbnail || fallbackThumbnail}
+                      alt={article.title}
+                      className="h-24 w-44 rounded-xl object-cover"
+                    />
+
+                    <div className="flex-1">
+                      <div className="mb-2 flex items-center gap-3">
+                        <h3 className="font-extrabold">{article.title}</h3>
+                        <span className="rounded-lg bg-violet-100 px-3 py-1 text-xs font-bold text-violet-600">
+                          {article.categoryName}
                         </span>
-                        {q.selected ? (
-                          <Check className="text-green-500" />
-                        ) : (
-                          <ChevronDown className="text-slate-500" />
-                        )}
                       </div>
 
-                      {q.options && (
-                        <div className="grid grid-cols-2 gap-3 px-4 pb-4">
-                          {q.options.map((option, index) => (
-                            <button
-                              key={option}
-                              className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-left font-bold ${
-                                q.selected === option
-                                  ? "border-violet-500 bg-violet-50 text-violet-700"
-                                  : "border-purple-100 bg-white"
-                              }`}
-                            >
-                              <span
-                                className={`grid h-7 w-7 place-items-center rounded-full text-xs ${
-                                  q.selected === option
-                                    ? "bg-violet-600 text-white"
-                                    : "bg-slate-100 text-slate-500"
-                                }`}
-                              >
-                                {String.fromCharCode(65 + index)}
-                              </span>
-                              {option}
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                      <p className="mb-4 line-clamp-2 text-sm text-slate-500">
+                        {article.description || "Chưa có mô tả cho bài đọc này."}
+                      </p>
+
+                      <div className="flex flex-wrap gap-5 text-sm text-slate-500">
+                        <span>Cấp độ: {article.level}</span>
+                        <span>Độ khó: {article.difficultyText}</span>
+                        <span className="flex items-center gap-1">
+                          <Clock size={15} /> {article.readTimeText}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <ClipboardList size={15} /> {article.questionCount} câu hỏi
+                        </span>
+                        <span className="font-bold text-orange-500">
+                          +{article.xpReward} XP
+                        </span>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
 
-              <div className="mt-10 flex items-center justify-between">
-                <button className="flex items-center gap-2 rounded-xl border border-violet-300 px-6 py-3 font-bold text-violet-700">
-                  <ArrowLeft size={18} /> Câu trước
-                </button>
-
-                <button className="flex items-center gap-2 rounded-xl border border-purple-100 bg-white px-6 py-3 font-bold">
-                  <Bookmark size={18} /> Đánh dấu
-                </button>
-
-                <button className="flex items-center gap-2 rounded-xl bg-violet-600 px-8 py-3 font-bold text-white shadow-lg shadow-violet-200">
-                  Câu tiếp theo <ArrowRight size={18} />
-                </button>
-              </div>
-            </section>
-
-            {/* Right sidebar */}
-            <aside className="space-y-5">
-              <Card title="Tiến độ bài học">
-                <div className="mb-5 h-3 rounded-full bg-violet-100">
-                  <div className="h-full w-[30%] rounded-full bg-violet-600" />
-                </div>
-
-                <div className="grid grid-cols-3 text-center">
-                  <MiniStat icon={<Check />} value="3" label="Đúng" green />
-                  <MiniStat icon={<X />} value="0" label="Sai" red />
-                  <MiniStat value="0" label="Bỏ qua" />
-                </div>
-              </Card>
-
-              <Card title="Thời gian làm bài">
-                <div className="flex items-center gap-4">
-                  <Clock className="text-violet-600" size={42} />
-                  <p className="text-3xl font-black">
-                    07:45{" "}
-                    <span className="text-lg text-slate-500">/ 15:00</span>
-                  </p>
-                </div>
-              </Card>
-
-              <Card title="💡 Mẹo nhỏ">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-semibold leading-6 text-slate-600">
-                    Đọc lướt đoạn văn trước, sau đó đọc kỹ từng câu hỏi và tìm
-                    thông tin quan trọng nhé!
-                  </p>
-                  <div className="text-6xl">🦊</div>
-                </div>
-              </Card>
-
-              <Card title="Tổng kết">
-                <Summary label="Tổng số câu" value="10" />
-                <Summary label="Đã trả lời" value="3" />
-                <Summary label="Còn lại" value="7" />
-                <button className="mt-4 w-full rounded-xl border border-violet-500 py-3 font-black text-violet-700">
-                  Nộp bài
-                </button>
-              </Card>
-
-              <Card title="Từ vựng trong bài">
-                {["routine", "exercise", "ready"].map((word) => (
-                  <div
-                    key={word}
-                    className="mb-3 flex items-center gap-3 rounded-xl bg-violet-50 p-3"
-                  >
-                    <div className="grid h-9 w-9 place-items-center rounded-lg bg-white">
-                      📘
-                    </div>
-                    <div>
-                      <p className="font-black">{word}</p>
-                      <p className="text-xs text-slate-500">từ vựng trong bài</p>
-                    </div>
+                    <button
+                      onClick={() =>
+                        router.push(`/reading/articles/${article.slug}`)
+                      }
+                      className="rounded-xl bg-violet-600 px-6 py-3 text-sm font-bold text-white"
+                    >
+                      {article.isCompleted
+                        ? "Xem lại"
+                        : article.isStarted
+                          ? "Tiếp tục"
+                          : "Bắt đầu"}
+                    </button>
                   </div>
                 ))}
+              </div>
 
-                <button className="mt-2 flex items-center gap-2 rounded-xl bg-violet-50 px-4 py-3 font-bold text-violet-700">
-                  Xem thêm từ mới <ArrowRight size={16} />
+              <button
+                onClick={() => router.push("/reading/articles")}
+                className="mt-5 w-full rounded-xl bg-slate-50 py-3 text-sm font-bold text-slate-700"
+              >
+                Xem tất cả bài đọc ↓
+              </button>
+            </div>
+          </section>
+
+          <aside className="space-y-6">
+            <RightCard title="Tiến độ đọc hiểu">
+              <div className="flex items-center gap-7">
+                <div className="grid h-44 w-44 place-items-center rounded-full border-[12px] border-violet-600">
+                  <div className="text-center">
+                    <p className="text-4xl font-extrabold">
+                      {data.progress.percent}%
+                    </p>
+                    <p className="text-sm text-slate-500">Hoàn thành</p>
+                  </div>
+                </div>
+
+                <div className="space-y-5">
+                  <ProgressItem
+                    value={String(data.progress.completedArticles)}
+                    label="Bài đã hoàn thành"
+                  />
+                  <ProgressItem
+                    value={String(data.progress.learningArticles)}
+                    label="Bài đang học"
+                  />
+                  <ProgressItem
+                    value={String(data.progress.notStartedArticles)}
+                    label="Bài chưa học"
+                  />
+                </div>
+              </div>
+
+              <p className="mt-4 text-center text-sm font-semibold text-slate-500">
+                Tổng: {data.progress.totalArticles} bài đọc
+              </p>
+            </RightCard>
+
+            <RightCard title="Trình độ hiện tại">
+              <div className="rounded-2xl bg-violet-50 p-5">
+                <div className="flex items-center gap-4">
+                  <div className="grid h-14 w-14 place-items-center rounded-xl bg-violet-100">
+                    <ShieldCheck className="text-violet-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold">
+                      {data.currentLevel.title}
+                    </h3>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Bạn đang ở trình độ tốt! Hãy tiếp tục luyện tập để lên cấp
+                      độ cao hơn nhé.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 h-2 rounded-full bg-slate-100">
+                <div
+                  className="h-2 rounded-full bg-violet-600"
+                  style={{ width: `${data.currentLevel.percent}%` }}
+                />
+              </div>
+
+              <p className="mt-3 text-center text-sm text-slate-500">
+                {data.currentLevel.currentXp} / {data.currentLevel.nextLevelXp} XP
+              </p>
+            </RightCard>
+
+            <RightCard title="Chuỗi học tập">
+              <div className="flex items-center gap-4">
+                <div className="grid h-14 w-14 place-items-center rounded-full bg-red-50">
+                  <Flame className="text-red-500" />
+                </div>
+                <div>
+                  <p className="text-lg font-extrabold text-orange-500">
+                    {data.streak.currentStreak} ngày
+                  </p>
+                  <p className="text-sm text-slate-500">Chuỗi hiện tại</p>
+                </div>
+              </div>
+
+              <div className="mt-6 grid grid-cols-7 gap-3 text-center">
+                {data.streak.week.map((day) => (
+                  <div key={day.label}>
+                    <p className="mb-2 text-sm font-bold text-slate-500">
+                      {day.label}
+                    </p>
+                    {day.completed ? (
+                      <CheckCircle2 className="mx-auto text-emerald-500" />
+                    ) : (
+                      <div className="mx-auto h-6 w-6 rounded-full border-2 border-slate-300" />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <p className="mt-5 text-center text-sm text-slate-500">
+                Học liên tục để duy trì chuỗi của bạn!
+              </p>
+            </RightCard>
+
+            <RightCard
+              title="Gợi ý cho bạn"
+              action={
+                <button
+                  onClick={() => router.push("/reading/articles")}
+                  className="text-sm font-bold text-violet-600"
+                >
+                  Xem thêm
                 </button>
-              </Card>
-            </aside>
-          </div>
-        </main>
-      </div>
+              }
+            >
+              <div className="space-y-4">
+                {data.suggestions.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => router.push(`/reading/articles/${item.slug}`)}
+                    className="flex w-full items-center gap-3 text-left"
+                  >
+                    <img
+                      src={item.thumbnail || fallbackThumbnail}
+                      alt={item.title}
+                      className="h-14 w-16 rounded-lg object-cover"
+                    />
+                    <div className="flex-1">
+                      <h4 className="text-sm font-extrabold">{item.title}</h4>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {item.readTimeText} · {item.difficultyText}
+                      </p>
+                    </div>
+                    <span className="text-sm font-bold text-violet-600">
+                      +{item.xpReward} XP
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </RightCard>
+          </aside>
+        </div>
+      </main>
     </div>
   );
 }
 
-function Stat({ icon, value, label }: any) {
+function IconCircle({
+  children,
+  badge,
+}: {
+  children: ReactNode;
+  badge?: boolean;
+}) {
+  return (
+    <div className="relative grid h-10 w-10 place-items-center rounded-full bg-slate-50 text-violet-600">
+      {children}
+      {badge && (
+        <span className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-red-500 text-xs font-bold text-white">
+          2
+        </span>
+      )}
+    </div>
+  );
+}
+
+function TopStat({
+  icon,
+  value,
+  label,
+}: {
+  icon: ReactNode;
+  value: string;
+  label: string;
+}) {
   return (
     <div className="flex items-center gap-2">
-      <div className="text-orange-500">{icon}</div>
+      {icon}
       <div>
-        <p className="font-black">{value}</p>
-        <p className="text-xs font-semibold text-slate-500">{label}</p>
+        <p className="text-sm font-extrabold">{value}</p>
+        <p className="text-xs text-slate-500">{label}</p>
       </div>
     </div>
   );
 }
 
-function Badge({ text, green, white }: any) {
+function StatCard({
+  title,
+  label,
+  note,
+}: {
+  title: string;
+  label: string;
+  note: string;
+}) {
   return (
-    <div
-      className={`rounded-xl px-4 py-3 text-sm font-black ${
-        green
-          ? "bg-green-100 text-green-700"
-          : white
-          ? "border border-purple-100 bg-white"
-          : "bg-violet-100 text-violet-700"
-      }`}
-    >
-      {text}
+    <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+      <div className="flex items-center gap-4">
+        <div className="grid h-14 w-14 place-items-center rounded-full bg-violet-50 text-violet-600">
+          <ClipboardList />
+        </div>
+        <div>
+          <p className="text-2xl font-extrabold">{title}</p>
+          <p className="text-sm font-semibold">{label}</p>
+          <p className="mt-2 text-xs font-semibold text-emerald-500">{note}</p>
+        </div>
+      </div>
     </div>
   );
 }
 
-function Card({ title, children }: any) {
+function RightCard({
+  title,
+  children,
+  action,
+}: {
+  title: string;
+  children: ReactNode;
+  action?: ReactNode;
+}) {
   return (
-    <div className="rounded-2xl border border-purple-100 bg-white p-5 shadow-sm">
-      <h3 className="mb-4 font-black">{title}</h3>
+    <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+      <div className="mb-5 flex items-center justify-between">
+        <h2 className="text-lg font-extrabold">{title}</h2>
+        {action}
+      </div>
       {children}
     </div>
   );
 }
 
-function MiniStat({ icon, value, label, green, red }: any) {
+function ProgressItem({ value, label }: { value: string; label: string }) {
   return (
-    <div>
-      <div
-        className={`mx-auto mb-2 grid h-11 w-11 place-items-center rounded-full ${
-          green ? "bg-green-100 text-green-600" : red ? "bg-red-100 text-red-500" : "bg-violet-100 text-violet-500"
-        }`}
-      >
-        {icon || "×"}
+    <div className="flex items-center gap-4">
+      <div className="grid h-10 w-10 place-items-center rounded-full bg-emerald-50">
+        <CheckCircle2 size={18} className="text-emerald-500" />
       </div>
-      <p className="text-xl font-black">{value}</p>
-      <p className="text-xs font-semibold text-slate-500">{label}</p>
-    </div>
-  );
-}
-
-function Summary({ label, value }: any) {
-  return (
-    <div className="mb-3 flex items-center justify-between text-sm font-bold text-slate-600">
-      <span>{label}</span>
-      <span className="rounded-lg bg-violet-50 px-3 py-1 text-violet-700">
-        {value}
-      </span>
+      <div>
+        <p className="font-extrabold">{value}</p>
+        <p className="text-sm text-slate-500">{label}</p>
+      </div>
     </div>
   );
 }

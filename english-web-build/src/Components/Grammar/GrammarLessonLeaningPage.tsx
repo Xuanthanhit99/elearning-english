@@ -1,4 +1,4 @@
-// app/grammar/lessons/[lessonId]/page.tsx
+// app/grammar/lesson/[lessonId]/page.tsx
 'use client';
 
 import { api } from '@/src/lib/axios';
@@ -105,13 +105,11 @@ type CompleteLessonResponse = {
 };
 
 export default function GrammarLessonLearningPage() {
-  const params = useParams<{ lessonId: string }>();
+  const params = useParams<{ lessonId: string | string[] }>();
   const router = useRouter();
 
-  const lessonId = params?.lessonId;
-  console.log("params", params);
-  console.log("router", router);
-  console.log("lessonId", lessonId);
+  const rawLessonId = params?.lessonId;
+  const lessonId = Array.isArray(rawLessonId) ? rawLessonId[rawLessonId.length - 1] : rawLessonId;
 
   const [activeTab, setActiveTab] = useState<'theory' | 'examples' | 'tips' | 'exercise'>('theory');
   const [lesson, setLesson] = useState<LessonData | null>(null);
@@ -180,7 +178,7 @@ export default function GrammarLessonLearningPage() {
       const nextLessonId = res.data.nextLessonId || lesson.nextLessonId;
 
       if (nextLessonId) {
-        router.push(`/grammar/lessons/${nextLessonId}`);
+        router.push(`/grammar/lesson/${nextLessonId}`);
         return;
       }
 
@@ -196,7 +194,7 @@ export default function GrammarLessonLearningPage() {
 
   function goToLesson(targetLessonId?: string | null) {
     if (!targetLessonId) return;
-    router.push(`/grammar/lessons/${targetLessonId}`);
+    router.push(`/grammar/lesson/${targetLessonId}`);
   }
 
   if (loading) {

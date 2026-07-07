@@ -214,7 +214,9 @@ export default function SkillProgressPage() {
       <section className="mt-6 rounded-3xl border border-[#ebeaf6] bg-white p-6 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-black text-[#101733]">Hoạt động gần đây theo kỹ năng</h2>
-          <span className="text-sm font-black text-[#6d35ff]">Xem tất cả →</span>
+          <Link href="/vocabulary/skills/detailed" className="text-sm font-black text-[#6d35ff]">
+            Xem tất cả →
+          </Link>
         </div>
         <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {data.activities.map((item) => (

@@ -11,7 +11,7 @@ export class ListeningJobService {
     private geminiService: GeminiService,
   ) {}
 
-  @Cron('0 2 * * *')
+  // @Cron('0 2 * * *')
   // @Cron('*/1 * * * *')
   async generateDailyListeningQuestions() {
     this.logger.log('Start daily listening question job');

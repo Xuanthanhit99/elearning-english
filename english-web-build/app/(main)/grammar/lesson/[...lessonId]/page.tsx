@@ -4,10 +4,9 @@ import GrammarLessonLearningPage from "@/src/Components/Grammar/GrammarLessonLea
 export default async function GrammarLessonLeaning({
   params,
 }: {
-  params: Promise<{ slug: string[] }>;
+  params: Promise<{ lessonId: string[] }>;
 }) {
-  const { slug } = await params;
-  console.log("slug", slug);
+  await params;
 
-  return <GrammarLessonLearningPage slug={slug} />;
+  return <GrammarLessonLearningPage />;
 }

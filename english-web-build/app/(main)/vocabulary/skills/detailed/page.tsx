@@ -1,5 +1,5 @@
-import AchievementDetailPage from "@/src/Components/Vocabulary/detailedperformance/DetailedPerformance";
+import SkillActivitiesPage from "@/src/Components/Vocabulary/skills/SkillActivitiesPage";
 
 export default function DetailedPerformance() {
-  return <AchievementDetailPage />;
+  return <SkillActivitiesPage />;
 }

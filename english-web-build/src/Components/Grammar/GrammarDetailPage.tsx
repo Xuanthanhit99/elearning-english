@@ -156,12 +156,12 @@ export default function GrammarDetailPage(props: PageProps) {
   const handleContinue = () => {
     const lessonId = detailGrammar?.overview.currentLessonId;
     if (!lessonId) return;
-    router.push(`/grammar/lessons/${lessonId}`);
+    router.push(`/grammar/lesson/${lessonId}`);
   };
 
   const handleOpenLesson = (lesson: GrammarLesson) => {
     if (lesson.locked) return;
-    router.push(`/grammar/lessons/${lesson.id}`);
+    router.push(`/grammar/lesson/${lesson.id}`);
   };
 
   return (
@@ -564,7 +564,7 @@ export default function GrammarDetailPage(props: PageProps) {
                           key={item.id}
                           title={item.title}
                           percent={`${item.progress}%`}
-                          onClick={() => router.push(`/grammar/${item.id}`)}
+                          onClick={() => router.push(`/grammar/topic/${item.id}`)}
                         />
                       ))
                     ) : (

@@ -10,6 +10,12 @@ import { GrammarLevel } from '@prisma/client';
 export class GrammarService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private keyWhere(key: string) {
+    return {
+      OR: [{ id: key }, { slug: key }],
+    };
+  }
+
   async getDashboard(userId: string, level?: string) {
     const whereTopic: any = {
       isActive: true,
@@ -107,6 +113,229 @@ export class GrammarService {
     return this.getCategoryCards(userId);
   }
 
+  async getCategoryDetail(userId: string, categorySlug: string) {
+    const category = await this.prisma.grammarCategory.findFirst({
+      where: {
+        ...this.keyWhere(categorySlug),
+        isActive: true,
+      },
+      include: {
+        topics: {
+          where: {
+            isActive: true,
+          },
+          orderBy: [{ level: 'asc' }, { order: 'asc' }],
+          include: {
+            lessons: {
+              where: {
+                isActive: true,
+              },
+              orderBy: {
+                order: 'asc',
+              },
+              include: {
+                progress: {
+                  where: {
+                    userId,
+                  },
+                },
+                questions: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!category) {
+      throw new NotFoundException('Grammar category not found');
+    }
+
+    const lessons = category.topics.flatMap((topic) => topic.lessons);
+    const completedLessons = lessons.filter(
+      (lesson) => lesson.progress[0]?.completed,
+    ).length;
+    const totalQuestions = lessons.reduce(
+      (sum, lesson) => sum + lesson.questions.length,
+      0,
+    );
+    const completedTopics = category.topics.filter((topic) => {
+      if (!topic.lessons.length) return false;
+      return topic.lessons.every((lesson) => lesson.progress[0]?.completed);
+    }).length;
+    const progress =
+      lessons.length > 0 ? Math.round((completedLessons / lessons.length) * 100) : 0;
+    const earnedXp = completedLessons * 20;
+
+    const topics = category.topics.map((topic, index) => {
+      const totalLessons = topic.lessons.length;
+      const doneLessons = topic.lessons.filter(
+        (lesson) => lesson.progress[0]?.completed,
+      ).length;
+      const topicProgress =
+        totalLessons > 0 ? Math.round((doneLessons / totalLessons) * 100) : 0;
+      const previousDone =
+        index === 0 ||
+        category.topics
+          .slice(0, index)
+          .every((item) =>
+            item.lessons.length > 0 &&
+            item.lessons.every((lesson) => lesson.progress[0]?.completed),
+          );
+
+      return {
+        id: topic.id,
+        slug: topic.slug,
+        title: topic.title,
+        description: topic.description,
+        level: topic.level,
+        totalLessons,
+        completedLessons: doneLessons,
+        estimatedMinutes: totalLessons * 10,
+        rewardXp: Math.max(60, totalLessons * 20),
+        progress: topicProgress,
+        locked: !previousDone,
+      };
+    });
+
+    const relatedCategories = await this.prisma.grammarCategory.findMany({
+      where: {
+        id: {
+          not: category.id,
+        },
+        isActive: true,
+      },
+      orderBy: {
+        order: 'asc',
+      },
+      take: 3,
+      include: {
+        topics: {
+          where: {
+            isActive: true,
+          },
+          include: {
+            lessons: {
+              where: {
+                isActive: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return {
+      id: category.id,
+      slug: category.slug,
+      title: category.title,
+      description: category.description,
+      icon: category.icon,
+      color: category.color,
+      level: category.topics[0]?.level || 'B1',
+      totalTopics: category.topics.length,
+      completedTopics,
+      totalLessons: lessons.length,
+      completedLessons,
+      totalQuestions,
+      estimatedMinutes: Math.max(30, lessons.length * 10),
+      rewardXp: Math.max(120, lessons.length * 20),
+      earnedXp,
+      progress,
+      topics,
+      roadmap: await this.getCategoryRoadmap(userId, category.id),
+      relatedCategories: relatedCategories.map((item) => ({
+        id: item.id,
+        slug: item.slug,
+        title: item.title,
+        totalLessons: item.topics.reduce(
+          (sum, topic) => sum + topic.lessons.length,
+          0,
+        ),
+      })),
+      tips: [
+        {
+          title: 'Xac dinh dau hieu nhan biet',
+          description:
+            'Ghi nho cac tu khoa thuong gap de chon dung thi nhanh hon.',
+        },
+        {
+          title: 'Phan biet cach dung',
+          description:
+            'So sanh cac cau gan giong nhau de tranh nham lan khi lam bai.',
+        },
+        {
+          title: 'Luyen tap thuong xuyen',
+          description: 'Lam bai ngan moi ngay de giu tien do on dinh.',
+        },
+        {
+          title: 'Ap dung vao thuc te',
+          description: 'Dat cau ve ban than de nho lau hon.',
+        },
+      ],
+    };
+  }
+
+  private async getCategoryRoadmap(userId: string, categoryId: string) {
+    const categories = await this.prisma.grammarCategory.findMany({
+      where: {
+        isActive: true,
+      },
+      orderBy: {
+        order: 'asc',
+      },
+      include: {
+        topics: {
+          where: {
+            isActive: true,
+          },
+          include: {
+            lessons: {
+              where: {
+                isActive: true,
+              },
+              include: {
+                progress: {
+                  where: {
+                    userId,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return categories.map((category, index) => {
+      const lessons = category.topics.flatMap((topic) => topic.lessons);
+      const completed = lessons.filter(
+        (lesson) => lesson.progress[0]?.completed,
+      ).length;
+      const done = lessons.length > 0 && completed === lessons.length;
+      const previousDone =
+        index === 0 ||
+        categories.slice(0, index).every((item) => {
+          const itemLessons = item.topics.flatMap((topic) => topic.lessons);
+          return (
+            itemLessons.length > 0 &&
+            itemLessons.every((lesson) => lesson.progress[0]?.completed)
+          );
+        });
+
+      return {
+        id: category.id,
+        slug: category.slug,
+        title: category.title,
+        current: category.id === categoryId,
+        completed: done,
+        locked: !previousDone && category.id !== categoryId,
+        progress:
+          lessons.length > 0 ? Math.round((completed / lessons.length) * 100) : 0,
+      };
+    });
+  }
+
   async getCategoryCards(userId: string, level?: string) {
     const categories = await this.prisma.grammarCategory.findMany({
       where: {
@@ -148,6 +377,7 @@ export class GrammarService {
 
       return {
         id: category.id,
+        slug: category.slug,
         title: category.title,
         icon: category.icon,
         color: category.color,
@@ -194,6 +424,7 @@ export class GrammarService {
 
       return {
         id: topic.id,
+        slug: topic.slug,
         title: topic.title,
         description: topic.description,
         level: topic.level,
@@ -208,9 +439,9 @@ export class GrammarService {
     });
   }
   async getLessonsByTopic(userId: string, topicId: string) {
-    const topic = await this.prisma.grammarTopic.findUnique({
+    const topic = await this.prisma.grammarTopic.findFirst({
       where: {
-        id: topicId,
+        ...this.keyWhere(topicId),
       },
       include: {
         lessons: {
@@ -246,9 +477,9 @@ export class GrammarService {
   }
 
   async getLessonDetail(userId: string, lessonId: string) {
-    const lesson = await this.prisma.grammarLesson.findUnique({
+    const lesson = await this.prisma.grammarLesson.findFirst({
       where: {
-        id: lessonId,
+        ...this.keyWhere(lessonId),
       },
       include: {
         topic: {
@@ -300,9 +531,22 @@ export class GrammarService {
     lessonId: string,
     answers: { questionId: string; answer: string }[],
   ) {
+    const lesson = await this.prisma.grammarLesson.findFirst({
+      where: {
+        ...this.keyWhere(lessonId),
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!lesson) {
+      throw new NotFoundException('Grammar lesson not found');
+    }
+
     const questions = await this.prisma.grammarQuestion.findMany({
       where: {
-        lessonId,
+        lessonId: lesson.id,
       },
     });
 
@@ -333,11 +577,11 @@ export class GrammarService {
 
     await this.prisma.grammarLessonProgress.upsert({
       where: {
-        userId_lessonId: {
-          userId,
-          lessonId,
+          userId_lessonId: {
+            userId,
+            lessonId: lesson.id,
+          },
         },
-      },
       update: {
         completed: true,
         score,
@@ -345,7 +589,7 @@ export class GrammarService {
       },
       create: {
         userId,
-        lessonId,
+        lessonId: lesson.id,
         completed: true,
         score,
         completedAt: new Date(),
@@ -430,8 +674,10 @@ export class GrammarService {
   }
 
   async getTopicDetail(userId: string, topicId: string) {
-    const topic = await this.prisma.grammarTopic.findUnique({
-      where: { id: topicId },
+    const topic = await this.prisma.grammarTopic.findFirst({
+      where: {
+        ...this.keyWhere(topicId),
+      },
       include: {
         category: true,
         lessons: {
@@ -493,12 +739,14 @@ export class GrammarService {
 
     return {
       id: topic.id,
+      slug: topic.slug,
       title: topic.title,
       description: topic.description,
       level: topic.level,
 
       category: {
         id: topic.category.id,
+        slug: topic.category.slug,
         title: topic.category.title,
         icon: topic.category.icon,
         color: topic.category.color,
@@ -533,6 +781,7 @@ export class GrammarService {
 
         return {
           id: lesson.id,
+          slug: lesson.slug,
           title: lesson.title,
           order: lesson.order,
           duration: `${lesson.duration || 5} phút`,
@@ -692,8 +941,10 @@ export class GrammarService {
   }
 
   async getLessonLearning(userId: string, lessonId: string) {
-    const lesson = await this.prisma.grammarLesson.findUnique({
-      where: { id: lessonId },
+    const lesson = await this.prisma.grammarLesson.findFirst({
+      where: {
+        ...this.keyWhere(lessonId),
+      },
       include: {
         topic: {
           include: {
@@ -812,8 +1063,10 @@ export class GrammarService {
   }
 
   async startLesson(userId: string, lessonId: string) {
-    const lesson = await this.prisma.grammarLesson.findUnique({
-      where: { id: lessonId },
+    const lesson = await this.prisma.grammarLesson.findFirst({
+      where: {
+        ...this.keyWhere(lessonId),
+      },
     });
 
     if (!lesson) {
@@ -822,15 +1075,15 @@ export class GrammarService {
 
     const progress = await this.prisma.grammarLessonProgress.upsert({
       where: {
-        userId_lessonId: {
-          userId,
-          lessonId,
+          userId_lessonId: {
+            userId,
+            lessonId: lesson.id,
+          },
         },
-      },
       update: {},
       create: {
         userId,
-        lessonId,
+        lessonId: lesson.id,
         completed: false,
         score: 0,
       },
@@ -843,8 +1096,10 @@ export class GrammarService {
   }
 
   async completeLesson(userId: string, lessonId: string) {
-    const lesson = await this.prisma.grammarLesson.findUnique({
-      where: { id: lessonId },
+    const lesson = await this.prisma.grammarLesson.findFirst({
+      where: {
+        ...this.keyWhere(lessonId),
+      },
       include: {
         topic: {
           include: {
@@ -863,11 +1118,11 @@ export class GrammarService {
 
     const progress = await this.prisma.grammarLessonProgress.upsert({
       where: {
-        userId_lessonId: {
-          userId,
-          lessonId,
+          userId_lessonId: {
+            userId,
+            lessonId: lesson.id,
+          },
         },
-      },
       update: {
         completed: true,
         score: 100,
@@ -875,7 +1130,7 @@ export class GrammarService {
       },
       create: {
         userId,
-        lessonId,
+        lessonId: lesson.id,
         completed: true,
         score: 100,
         completedAt: new Date(),
@@ -883,7 +1138,7 @@ export class GrammarService {
     });
 
     const lessons = lesson.topic.lessons;
-    const currentIndex = lessons.findIndex((x) => x.id === lessonId);
+    const currentIndex = lessons.findIndex((x) => x.id === lesson.id);
     const nextLessonId = lessons[currentIndex + 1]?.id || null;
 
     return {
@@ -898,8 +1153,10 @@ export class GrammarService {
       throw new BadRequestException('Ghi chú không hợp lệ');
     }
 
-    const lesson = await this.prisma.grammarLesson.findUnique({
-      where: { id: lessonId },
+    const lesson = await this.prisma.grammarLesson.findFirst({
+      where: {
+        ...this.keyWhere(lessonId),
+      },
     });
 
     if (!lesson) {
@@ -908,17 +1165,17 @@ export class GrammarService {
 
     const saved = await this.prisma.grammarLessonNote.upsert({
       where: {
-        userId_lessonId: {
-          userId,
-          lessonId,
+          userId_lessonId: {
+            userId,
+            lessonId: lesson.id,
+          },
         },
-      },
       update: {
         note,
       },
       create: {
         userId,
-        lessonId,
+        lessonId: lesson.id,
         note,
       },
     });

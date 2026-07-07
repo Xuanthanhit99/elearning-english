@@ -29,6 +29,14 @@ export class GrammarController {
     return this.grammarService.getCategories(user.id);
   }
 
+  @Get('categories/:categorySlug/detail')
+  getCategoryDetail(
+    @CurrentUser() user: any,
+    @Param('categorySlug') categorySlug: string,
+  ) {
+    return this.grammarService.getCategoryDetail(user.id, categorySlug);
+  }
+
   @Get('topics')
   getTopics(@CurrentUser() user: any, @Query('level') level?: string) {
     return this.grammarService.getTopics(user.id, level);

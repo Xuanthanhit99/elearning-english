@@ -1347,3 +1347,108 @@ model GrammarLessonNote {
 
   @@unique([userId, lessonId])
 }
+
+enum ReadingLevel {
+  A1
+  A2
+  B1
+  B2
+  C1
+  C2
+}
+
+enum ReadingDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+model ReadingCategory {
+  id          String  @id @default(uuid())
+  name        String
+  slug        String  @unique
+  description String?
+  icon        String?
+  color       String?
+  order       Int     @default(0)
+  isActive    Boolean @default(true)
+  thumbnail   String?
+  articles ReadingArticle[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ReadingArticle {
+  id            String            @id @default(uuid())
+  categoryId    String
+  title         String
+  slug          String            @unique
+  description   String?
+  thumbnail     String?
+  content       String
+  level         String
+  difficulty    ReadingDifficulty @default(EASY)
+  readTime      Int               @default(5)
+  questionCount Int               @default(0)
+  xpReward      Int               @default(10)
+  isPublished   Boolean           @default(true)
+  viewCount     Int               @default(0)
+  order         Int               @default(0)
+  wordCount Int @default(0)
+
+  category ReadingCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  sessions ReadingSession[]
+  vocabularies ReadingVocabulary[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ReadingSession {
+  id          String    @id @default(uuid())
+  userId      String
+  articleId   String
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  spentTime   Int       @default(0)
+  score       Int       @default(0)
+  accuracy    Int       @default(0)
+  earnedXp    Int       @default(0)
+  isCompleted Boolean   @default(false)
+
+  article ReadingArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, articleId])
+}
+
+model UserReadingProgress {
+  id                String       @id @default(uuid())
+  userId            String
+  currentLevel      ReadingLevel @default(A1)
+  totalXp           Int          @default(0)
+  completedArticles Int          @default(0)
+  totalReadingTime  Int          @default(0)
+  averageAccuracy   Int          @default(0)
+  currentStreak     Int          @default(0)
+  longestStreak     Int          @default(0)
+  lastStudyDate     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ReadingVocabulary {
+  id           String @id @default(uuid())
+  articleId    String
+  word         String
+  meaning      String
+  partOfSpeech String?
+  example      String?
+  audioUrl     String?
+
+  article ReadingArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

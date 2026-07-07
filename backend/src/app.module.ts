@@ -42,6 +42,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ListeningModule } from './modules/listening/listening.module';
 import { ListeningJobService } from './modules/listening-job/listening-job.service';
 import { GrammarModule } from './modules/grammar/grammar.module';
+import { ReadingModule } from './modules/reading/reading.module';
 
 @Module({
   imports: [
@@ -85,6 +86,7 @@ import { GrammarModule } from './modules/grammar/grammar.module';
     VocabularyJobModule,
     ListeningModule,
     GrammarModule,
+    ReadingModule,
   ],
   providers: [GeminiService, ListeningJobService],
   controllers: [GeminiController],

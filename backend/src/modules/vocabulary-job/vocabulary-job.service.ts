@@ -90,7 +90,7 @@ export class VocabularyJobService {
     return topics;
   }
 
-  @Cron('0 0 * * 1', { timeZone: 'Asia/Bangkok' })
+  // @Cron('0 0 * * 1', { timeZone: 'Asia/Bangkok' })
   // @Cron('*/1 * * * *')
   async generateWeeklyTopicPools() {
     console.log('Generating weekly topic pools...');

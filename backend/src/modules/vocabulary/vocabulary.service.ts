@@ -3118,6 +3118,422 @@ Rules:
     };
   }
 
+  async getSkillActivities(
+    userId: string,
+    range = '7d',
+    skill = 'all',
+    limit = 20,
+  ) {
+    const safeLimit = Math.min(Math.max(Number(limit) || 20, 1), 80);
+    const days = range === '30d' ? 30 : range === '14d' ? 14 : 7;
+    const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+    startDate.setDate(startDate.getDate() - (days - 1));
+    const endDate = new Date();
+    endDate.setHours(23, 59, 59, 999);
+    const selectedSkill = skill === 'all' ? 'all' : skill;
+    const includeSkill = (key: string) =>
+      selectedSkill === 'all' || selectedSkill === key;
+    const timeAgo = (date?: Date | null) => {
+      if (!date) return '';
+      const diffMs = Date.now() - new Date(date).getTime();
+      const minutes = Math.max(1, Math.floor(diffMs / 60000));
+      if (minutes < 60) return `${minutes} phút trước`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours} giờ trước`;
+      return `${Math.floor(hours / 24)} ngày trước`;
+    };
+    const activityDateWhere = { gte: startDate, lte: endDate };
+
+    const [
+      overview,
+      skillOverview,
+      vocabProgress,
+      weeklyTests,
+      grammarLessons,
+      quizResults,
+      listeningSessions,
+      listeningTimes,
+      completedLessons,
+      speakingResults,
+      pronunciationResults,
+      writingSubmissions,
+    ] = await Promise.all([
+      this.getLearningOverview(userId),
+      this.getSkillProgressOverview(userId),
+      includeSkill('vocabulary')
+        ? this.prisma.userWordProgress.findMany({
+            where: {
+              userId,
+              updatedAt: activityDateWhere,
+              status: { in: ['LEARNING', 'KNOWN', 'MASTERED', 'REVIEW'] },
+            },
+            take: safeLimit,
+            orderBy: { updatedAt: 'desc' },
+            include: {
+              word: {
+                include: {
+                  topic: true,
+                },
+              },
+            },
+          })
+        : Promise.resolve([]),
+      includeSkill('vocabulary')
+        ? this.prisma.weeklyVocabularyTest.findMany({
+            where: {
+              userId,
+              status: { in: ['PASSED', 'FAILED'] },
+              updatedAt: activityDateWhere,
+            },
+            take: safeLimit,
+            orderBy: { updatedAt: 'desc' },
+          })
+        : Promise.resolve([]),
+      includeSkill('grammar')
+        ? this.prisma.grammarLessonProgress.findMany({
+            where: {
+              userId,
+              updatedAt: activityDateWhere,
+            },
+            take: safeLimit,
+            orderBy: { updatedAt: 'desc' },
+            include: {
+              lesson: {
+                include: {
+                  topic: true,
+                },
+              },
+            },
+          })
+        : Promise.resolve([]),
+      includeSkill('grammar')
+        ? this.prisma.quizResult.findMany({
+            where: {
+              userId,
+              createdAt: activityDateWhere,
+            },
+            take: safeLimit,
+            orderBy: { createdAt: 'desc' },
+            include: {
+              lesson: true,
+            },
+          })
+        : Promise.resolve([]),
+      includeSkill('listening')
+        ? this.prisma.listeningSession.findMany({
+            where: {
+              userId,
+              status: 'COMPLETED',
+              completedAt: activityDateWhere,
+            },
+            take: safeLimit,
+            orderBy: { completedAt: 'desc' },
+          })
+        : Promise.resolve([]),
+      this.prisma.listeningSessionAnswer.findMany({
+        where: {
+          answeredAt: activityDateWhere,
+          session: { userId },
+        },
+        select: { timeSpent: true },
+      }),
+      includeSkill('reading')
+        ? this.prisma.lessonProgress.findMany({
+            where: {
+              userId,
+              completed: true,
+              completedAt: activityDateWhere,
+            },
+            take: safeLimit,
+            orderBy: { completedAt: 'desc' },
+            include: {
+              lesson: true,
+            },
+          })
+        : Promise.resolve([]),
+      includeSkill('speaking')
+        ? this.prisma.speakingResult.findMany({
+            where: {
+              userId,
+              createdAt: activityDateWhere,
+            },
+            take: safeLimit,
+            orderBy: { createdAt: 'desc' },
+            include: {
+              lesson: true,
+            },
+          })
+        : Promise.resolve([]),
+      includeSkill('speaking')
+        ? this.prisma.pronunciationResult.findMany({
+            where: {
+              userId,
+              createdAt: activityDateWhere,
+            },
+            take: safeLimit,
+            orderBy: { createdAt: 'desc' },
+            include: {
+              exercise: true,
+            },
+          })
+        : Promise.resolve([]),
+      includeSkill('writing')
+        ? this.prisma.writingSubmission.findMany({
+            where: {
+              userId,
+              createdAt: activityDateWhere,
+              score: { not: null },
+            },
+            take: safeLimit,
+            orderBy: { createdAt: 'desc' },
+          })
+        : Promise.resolve([]),
+    ]);
+
+    const skillMap: Record<
+      string,
+      { label: string; badge: string; icon: string; tone: string; href: string }
+    > = {
+      vocabulary: {
+        label: 'Từ vựng',
+        badge: 'TỪ VỰNG',
+        icon: 'pen',
+        tone: 'emerald',
+        href: '/vocabulary',
+      },
+      grammar: {
+        label: 'Ngữ pháp',
+        badge: 'NGỮ PHÁP',
+        icon: 'book',
+        tone: 'purple',
+        href: '/grammar',
+      },
+      listening: {
+        label: 'Nghe',
+        badge: 'NGHE',
+        icon: 'headphones',
+        tone: 'blue',
+        href: '/listening',
+      },
+      speaking: {
+        label: 'Nói',
+        badge: 'NÓI',
+        icon: 'mic',
+        tone: 'orange',
+        href: '/speaking',
+      },
+      reading: {
+        label: 'Đọc',
+        badge: 'ĐỌC',
+        icon: 'book',
+        tone: 'pink',
+        href: '/reading',
+      },
+      writing: {
+        label: 'Viết',
+        badge: 'VIẾT',
+        icon: 'pen',
+        tone: 'cyan',
+        href: '/writing',
+      },
+    };
+    const makeActivity = (payload: {
+      id: string;
+      skill: keyof typeof skillMap;
+      title: string;
+      subtitle: string;
+      date?: Date | null;
+      xp?: number;
+      coins?: number;
+      percent?: number;
+      href?: string;
+    }) => {
+      const meta = skillMap[payload.skill];
+      return {
+        id: payload.id,
+        skillKey: payload.skill,
+        skill: meta.label,
+        badge: meta.badge,
+        title: payload.title,
+        subtitle: payload.subtitle,
+        time: timeAgo(payload.date),
+        date: payload.date,
+        xp: payload.xp || 0,
+        coins: payload.coins || 0,
+        percent: payload.percent || 0,
+        icon: meta.icon,
+        tone: meta.tone,
+        href: payload.href || meta.href,
+      };
+    };
+
+    const activities = [
+      ...vocabProgress.map((item) =>
+        makeActivity({
+          id: `vocab-${item.id}`,
+          skill: 'vocabulary',
+          title: `Học từ mới: ${item.word?.word || 'Từ vựng'}`,
+          subtitle: item.word?.topic?.name
+            ? `Chủ đề ${item.word.topic.name}`
+            : `Đúng ${item.correctCount}/${item.correctCount + item.wrongCount || 1} lần`,
+          date: item.updatedAt,
+          xp: item.status === 'MASTERED' ? 15 : 10,
+          percent:
+            item.correctCount + item.wrongCount > 0
+              ? Math.round(
+                  (item.correctCount / (item.correctCount + item.wrongCount)) * 100,
+                )
+              : item.status === 'MASTERED'
+                ? 100
+                : 50,
+          href: '/vocabulary',
+        }),
+      ),
+      ...weeklyTests.map((item) =>
+        makeActivity({
+          id: `vocab-test-${item.id}`,
+          skill: 'vocabulary',
+          title: 'Hoàn thành kiểm tra từ vựng',
+          subtitle: `Bạn đạt ${item.score}% sau ${item.attemptCount || 1} lần làm`,
+          date: item.passedAt || item.updatedAt,
+          xp: item.status === 'PASSED' ? 20 : 5,
+          percent: item.score,
+          href: '/vocabulary/test',
+        }),
+      ),
+      ...grammarLessons.map((item) =>
+        makeActivity({
+          id: `grammar-${item.id}`,
+          skill: 'grammar',
+          title: item.completed
+            ? `Hoàn thành bài: ${item.lesson?.topic?.title || item.lesson?.title || 'Ngữ pháp'}`
+            : `Bắt đầu bài: ${item.lesson?.topic?.title || item.lesson?.title || 'Ngữ pháp'}`,
+          subtitle: item.completed
+            ? `Bạn đã hoàn thành với điểm ${item.score}%`
+            : 'Bạn đã bắt đầu bài học này',
+          date: item.completedAt || item.updatedAt,
+          xp: item.completed ? 20 : 0,
+          percent: item.score,
+          href: `/grammar/lesson/${item.lessonId}`,
+        }),
+      ),
+      ...quizResults.map((item) =>
+        makeActivity({
+          id: `grammar-quiz-${item.id}`,
+          skill: 'grammar',
+          title: item.lesson?.title || 'Hoàn thành bài tập ngữ pháp',
+          subtitle: `Bạn trả lời đúng ${item.correct}/${item.total} câu`,
+          date: item.createdAt,
+          xp: 20,
+          percent: item.score,
+          href: '/grammar',
+        }),
+      ),
+      ...listeningSessions.map((item) =>
+        makeActivity({
+          id: `listening-${item.id}`,
+          skill: 'listening',
+          title: `Luyện nghe: ${item.topic || 'Daily Conversation'}`,
+          subtitle: `Bạn đạt ${item.score}% độ chính xác`,
+          date: item.completedAt,
+          xp: item.xpEarned || 0,
+          coins: item.coinsEarned || 0,
+          percent: item.score,
+          href: '/listening',
+        }),
+      ),
+      ...speakingResults.map((item) =>
+        makeActivity({
+          id: `speaking-${item.id}`,
+          skill: 'speaking',
+          title: item.lesson?.title || 'Luyện nói',
+          subtitle: `Điểm phát âm ${item.score || 0}%`,
+          date: item.createdAt,
+          xp: 20,
+          percent: item.score || 0,
+          href: '/speaking',
+        }),
+      ),
+      ...pronunciationResults.map((item) =>
+        makeActivity({
+          id: `pronunciation-${item.id}`,
+          skill: 'speaking',
+          title: item.exercise?.title || 'Luyện phát âm',
+          subtitle: `Điểm phát âm ${item.score}%`,
+          date: item.createdAt,
+          xp: 15,
+          percent: item.score,
+          href: '/pronunciation',
+        }),
+      ),
+      ...completedLessons.map((item) =>
+        makeActivity({
+          id: `reading-${item.id}`,
+          skill: 'reading',
+          title: item.lesson?.title || 'Hoàn thành bài đọc',
+          subtitle: 'Bạn đã hoàn thành bài học',
+          date: item.completedAt,
+          xp: 15,
+          percent: 100,
+          href: '/reading',
+        }),
+      ),
+      ...writingSubmissions.map((item) =>
+        makeActivity({
+          id: `writing-${item.id}`,
+          skill: 'writing',
+          title: `Viết câu: ${item.style || 'Bài viết'}`,
+          subtitle: `Bạn đã gửi bài viết và chờ đánh giá`,
+          date: item.createdAt,
+          xp: 10,
+          percent: item.score || 0,
+          href: '/writing',
+        }),
+      ),
+    ]
+      .filter((item) => item.date)
+      .sort(
+        (a, b) =>
+          new Date(b.date as Date).getTime() - new Date(a.date as Date).getTime(),
+      );
+
+    const totalStudySeconds =
+      listeningTimes.reduce((sum, item) => sum + (item.timeSpent || 0), 0) +
+      (completedLessons as any[]).reduce(
+        (sum, item) => sum + ((item.lesson as any)?.duration || 0) * 60,
+        0,
+      );
+    const studyHours = Math.floor(totalStudySeconds / 3600);
+    const studyMinutes = Math.floor((totalStudySeconds % 3600) / 60);
+    const returnedActivities = activities.slice(0, safeLimit).map(({ date, ...item }) => item);
+
+    return {
+      summary: {
+        totalActivities: activities.length,
+        streakDays: (overview.stats as any)?.streakDays || 0,
+        totalStudyTime: `${studyHours}h ${String(studyMinutes).padStart(2, '0')}m`,
+        rangeLabel: `${days} ngày qua`,
+        activityGrowth: activities.length > 0 ? 12 : 0,
+      },
+      skills: skillOverview.skills.map((item: any) => ({
+        key: item.key,
+        label: item.label,
+        percent: item.percent,
+        status: item.status,
+        icon: item.icon,
+        tone: skillMap[item.key]?.tone || 'purple',
+      })),
+      activities: returnedActivities,
+      hasMore: activities.length > returnedActivities.length,
+      filters: {
+        range,
+        skill: selectedSkill,
+        limit: safeLimit,
+      },
+    };
+  }
+
   async getAchievementOverview(userId: string) {
     const overview = await this.getLearningOverview(userId);
     const today = this.startOfToday();

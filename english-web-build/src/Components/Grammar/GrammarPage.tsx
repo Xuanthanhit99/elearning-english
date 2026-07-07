@@ -20,6 +20,7 @@ import { useEffect, useMemo, useState } from "react";
 
 type GrammarCategory = {
   id: string;
+  slug?: string | null;
   title: string;
   icon?: string | null;
   color?: string | null;
@@ -310,7 +311,10 @@ function CategoryCard({ category, index }: { category: GrammarCategory; index: n
   const Icon = categoryIcons[index % categoryIcons.length];
 
   return (
-    <div className={`rounded-2xl border p-5 ${tone.wrap}`}>
+    <Link
+      href={`/grammar/${category.slug || category.id}`}
+      className={`block rounded-2xl border p-5 transition hover:-translate-y-0.5 hover:shadow-lg ${tone.wrap}`}
+    >
       <div className="flex items-start justify-between">
         <div className={`grid h-16 w-16 place-items-center rounded-2xl bg-white ${tone.icon}`}>
           <Icon size={30} />
@@ -326,7 +330,7 @@ function CategoryCard({ category, index }: { category: GrammarCategory; index: n
       <p className="mt-3 text-sm font-bold text-slate-600">
         {category.completedLessons}/{category.totalLessons} bài học
       </p>
-    </div>
+    </Link>
   );
 }
 

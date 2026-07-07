@@ -48,6 +48,22 @@ export class VocabularyController {
     return this.vocabularyService.getSkillProgressOverview(user.id);
   }
 
+  @Get('overview/skills/activities')
+  @UseGuards(JwtAuthGuard)
+  getSkillActivities(
+    @CurrentUser() user: any,
+    @Query('range') range?: string,
+    @Query('skill') skill?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.vocabularyService.getSkillActivities(
+      user.id,
+      range || '7d',
+      skill || 'all',
+      Number(limit || 20),
+    );
+  }
+
   @Get('overview/achievements')
   @UseGuards(JwtAuthGuard)
   getAchievementOverview(@CurrentUser() user: any) {

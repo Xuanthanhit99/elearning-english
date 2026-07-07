@@ -17,118 +17,165 @@ export class GrammarJobService {
   ) {}
 
   private sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
 
-  @Cron('0 2 * * *')
+  private isRunning = false;
+
+  // @Cron('0 2 * * *')
   // @Cron('*/1 * * * *')
+  // @Cron('*/5 * * * *')
+  // @Cron('*/5 * * * *')
+  // @Cron('0 2 * * *')
   async generateDailyGrammarData() {
+    if (this.isRunning) {
+      this.logger.warn('Grammar job is already running, skip this round');
+      return;
+    }
+
+    this.isRunning = true;
     this.logger.log('Start generate grammar data');
 
-    const categories = await this.seedCategories();
+    try {
+      const categories = await this.seedCategories();
 
-    for (const category of categories.slice(0, 1)) {
-      for (const level of ['A1'] as GrammarLevel[]) {
-        const existingTopicCount = await this.prisma.grammarTopic.count({
+      for (const category of categories.slice(0, 1)) {
+        for (const level of ['A1'] as GrammarLevel[]) {
+          await this.generateCategoryLevel(category, level);
+          await this.sleep(5000);
+        }
+      }
+
+      this.logger.log('Generate grammar data done');
+    } catch (error) {
+      this.logger.error('Grammar job failed');
+      this.logger.error(error);
+    } finally {
+      this.isRunning = false;
+    }
+  }
+
+  private async generateCategoryLevel(
+    category: GrammarCategory,
+    level: GrammarLevel,
+  ) {
+    const existingTopicCount = await this.prisma.grammarTopic.count({
+      where: {
+        categoryId: category.id,
+        level,
+      },
+    });
+
+    if (existingTopicCount >= 10) {
+      return;
+    }
+
+    const topics = await this.safeGeminiCall(() =>
+      this.generateTopicsByGemini({
+        categoryTitle: category.title,
+        level,
+        count: 1,
+      }),
+    );
+
+    await this.sleep(5000);
+
+    for (const topic of topics) {
+      const topicSlug = this.slugify(`${topic.title}-${level}`);
+
+      const savedTopic = await this.prisma.grammarTopic.upsert({
+        where: {
+          slug: topicSlug,
+        },
+        update: {},
+        create: {
+          categoryId: category.id,
+          title: topic.title,
+          slug: topicSlug,
+          description: topic.description,
+          level,
+          order: existingTopicCount + 1,
+        },
+      });
+
+      const lessonCount = await this.prisma.grammarLesson.count({
+        where: {
+          topicId: savedTopic.id,
+        },
+      });
+
+      if (lessonCount > 0) {
+        continue;
+      }
+
+      const lessons = await this.safeGeminiCall(() =>
+        this.generateLessonsByGemini({
+          topicTitle: savedTopic.title,
+          level,
+          count: 1,
+        }),
+      );
+
+      await this.sleep(5000);
+
+      for (let i = 0; i < lessons.length; i++) {
+        const lesson = lessons[i];
+
+        const lessonSlug = this.slugify(`${savedTopic.title}-${lesson.title}`);
+
+        const savedLesson = await this.prisma.grammarLesson.upsert({
           where: {
-            categoryId: category.id,
-            level,
+            slug: lessonSlug,
+          },
+          update: {},
+          create: {
+            topicId: savedTopic.id,
+            title: lesson.title,
+            slug: lessonSlug,
+            content: lesson.content,
+            duration: lesson.duration || 10,
+            order: i + 1,
           },
         });
 
-        if (existingTopicCount >= 10) {
-          continue;
-        }
+        await this.sleep(5000);
 
-        const topics = await this.generateTopicsByGemini({
-          categoryTitle: category.title,
-          level,
-          count: 1,
-        });
+        const questions = await this.safeGeminiCall(() =>
+          this.generateQuestionsByGemini({
+            topicTitle: savedTopic.title,
+            lessonTitle: savedLesson.title,
+            level,
+            count: 3,
+          }),
+        );
 
-        await this.sleep(3000);
-        for (const topic of topics) {
-          const topicSlug = this.slugify(`${topic.title}-${level}`);
+        for (let qIndex = 0; qIndex < questions.length; qIndex++) {
+          const q = questions[qIndex];
 
-          const savedTopic = await this.prisma.grammarTopic.upsert({
-            where: {
-              slug: topicSlug,
-            },
-            update: {},
-            create: {
-              categoryId: category.id,
-              title: topic.title,
-              slug: topicSlug,
-              description: topic.description,
-              level,
-              order: existingTopicCount + 1,
+          await this.prisma.grammarQuestion.create({
+            data: {
+              lessonId: savedLesson.id,
+              question: q.question,
+              options: q.options,
+              correctAnswer: q.correctAnswer,
+              explanation: q.explanation,
+              difficulty: level,
+              order: qIndex + 1,
             },
           });
-
-          const lessonCount = await this.prisma.grammarLesson.count({
-            where: {
-              topicId: savedTopic.id,
-            },
-          });
-
-          if (lessonCount === 0) {
-            const lessons = await this.generateLessonsByGemini({
-              topicTitle: savedTopic.title,
-              level,
-              count: 5,
-            });
-
-            for (let i = 0; i < lessons.length; i++) {
-              const lesson = lessons[i];
-
-              const lessonSlug = this.slugify(
-                `${savedTopic.title}-${lesson.title}`,
-              );
-
-              const savedLesson = await this.prisma.grammarLesson.upsert({
-                where: {
-                  slug: lessonSlug,
-                },
-                update: {},
-                create: {
-                  topicId: savedTopic.id,
-                  title: lesson.title,
-                  slug: lessonSlug,
-                  content: lesson.content,
-                  duration: lesson.duration || 10,
-                  order: i + 1,
-                },
-              });
-
-              const questions = await this.generateQuestionsByGemini({
-                topicTitle: savedTopic.title,
-                lessonTitle: savedLesson.title,
-                level,
-                count: 10,
-              });
-
-              for (let qIndex = 0; qIndex < questions.length; qIndex++) {
-                const q = questions[qIndex];
-
-                await this.prisma.grammarQuestion.create({
-                  data: {
-                    lessonId: savedLesson.id,
-                    question: q.question,
-                    options: q.options,
-                    correctAnswer: q.correctAnswer,
-                    explanation: q.explanation,
-                    difficulty: level,
-                    order: qIndex + 1,
-                  },
-                });
-              }
-            }
-          }
         }
       }
     }
+  }
 
-    this.logger.log('Generate grammar data done');
+  private async safeGeminiCall<T>(callback: () => Promise<T>): Promise<T | []> {
+    try {
+      return await callback();
+    } catch (error) {
+      this.logger.error('Gemini call failed, skip this item');
+      this.logger.error(error);
+      return [];
+    }
   }
 
   private async seedCategories() {
