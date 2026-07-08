@@ -143,6 +143,11 @@ export default function ReadingPage() {
   const [data, setData] = useState<ReadingHomeResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [activeArticleTab, setActiveArticleTab] = useState<
+    "latest" | "popular" | "recommended"
+  >("latest");
+  const [categoryStart, setCategoryStart] = useState(0);
 
   const fetchReadingHome = useCallback(async () => {
     try {
@@ -176,24 +181,126 @@ export default function ReadingPage() {
         title: data?.stats.completedArticles ?? 0,
         label: "Bài đã hoàn thành",
         note: data?.stats.completedChangeText ?? "",
+        href: "/reading/history",
       },
       {
         title: `${data?.stats.averageAccuracy ?? 0}%`,
         label: "Tỷ lệ đúng trung bình",
         note: data?.stats.accuracyChangeText ?? "",
+        href: "/reading/history",
       },
       {
         title: data?.stats.totalReadingTimeText ?? "0m",
         label: "Tổng thời gian học",
         note: data?.stats.timeChangeText ?? "",
+        href: "/reading/history",
       },
       {
         title: data?.stats.totalXp ?? 0,
         label: "XP đã nhận",
         note: data?.stats.xpChangeText ?? "",
+        href: "/reading/history",
       },
     ];
   }, [data]);
+
+  const normalizedSearch = searchKeyword.trim().toLowerCase();
+
+  const filteredCategories = useMemo(() => {
+    if (!data) return [];
+
+    if (!normalizedSearch) return data.categories;
+
+    return data.categories.filter((item) =>
+      [item.name, item.slug, item.difficultyText]
+        .filter(Boolean)
+        .some((value) => value.toLowerCase().includes(normalizedSearch)),
+    );
+  }, [data, normalizedSearch]);
+
+  const visibleCategories = useMemo(() => {
+    return filteredCategories.slice(categoryStart, categoryStart + 6);
+  }, [filteredCategories, categoryStart]);
+
+  const displayedArticles = useMemo(() => {
+    if (!data) return [];
+
+    let articles = [...data.featuredArticles];
+
+    if (activeArticleTab === "popular") {
+      articles = articles.sort(
+        (a, b) =>
+          b.xpReward - a.xpReward ||
+          b.questionCount - a.questionCount ||
+          a.title.localeCompare(b.title),
+      );
+    }
+
+    if (activeArticleTab === "recommended") {
+      const uncompleted = articles.filter((item) => !item.isCompleted);
+      articles = uncompleted.length > 0 ? uncompleted : articles;
+    }
+
+    if (!normalizedSearch) return articles;
+
+    return articles.filter((article) =>
+      [
+        article.title,
+        article.description ?? "",
+        article.categoryName,
+        article.categorySlug,
+        article.level,
+        article.difficultyText,
+      ]
+        .filter(Boolean)
+        .some((value) => value.toLowerCase().includes(normalizedSearch)),
+    );
+  }, [data, activeArticleTab, normalizedSearch]);
+
+  const filteredSuggestions = useMemo(() => {
+    if (!data) return [];
+
+    if (!normalizedSearch) return data.suggestions;
+
+    return data.suggestions.filter((item) =>
+      [item.title, item.slug, item.difficultyText]
+        .filter(Boolean)
+        .some((value) => value.toLowerCase().includes(normalizedSearch)),
+    );
+  }, [data, normalizedSearch]);
+
+  const canPreviousCategory = categoryStart > 0;
+  const canNextCategory = categoryStart + 6 < filteredCategories.length;
+
+  useEffect(() => {
+    setCategoryStart(0);
+  }, [normalizedSearch, data]);
+
+  function goToArticle(slug: string) {
+    router.push(`/reading/articles/${slug}`);
+  }
+
+  function continueReading() {
+    const article =
+      data?.featuredArticles.find((item) => item.isStarted && !item.isCompleted) ??
+      data?.suggestions[0] ??
+      data?.featuredArticles[0];
+
+    if (article) {
+      goToArticle(article.slug);
+    }
+  }
+
+  function handleSearchSubmit() {
+    if (displayedArticles.length > 0) {
+      goToArticle(displayedArticles[0].slug);
+      return;
+    }
+
+    if (filteredCategories.length > 0) {
+      router.push(`/reading/categories/${filteredCategories[0].slug}`);
+    }
+  }
 
   if (loading) {
     return (
@@ -234,9 +341,32 @@ export default function ReadingPage() {
               size={20}
             />
             <input
+              value={searchKeyword}
+              onChange={(event) => setSearchKeyword(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  handleSearchSubmit();
+                }
+              }}
               placeholder="Tìm bài đọc, chủ đề..."
-              className="h-12 w-full rounded-xl border border-slate-100 bg-slate-50 pl-14 pr-4 text-sm outline-none focus:border-violet-300"
+              className="h-12 w-full rounded-xl border border-slate-100 bg-slate-50 pl-14 pr-24 text-sm outline-none focus:border-violet-300"
             />
+            {searchKeyword && (
+              <button
+                type="button"
+                onClick={() => setSearchKeyword("")}
+                className="absolute right-16 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 hover:text-slate-700"
+              >
+                Xóa
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={handleSearchSubmit}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-violet-600 px-3 py-2 text-xs font-bold text-white"
+            >
+              Tìm
+            </button>
           </div>
 
           <div className="flex items-center gap-6">
@@ -253,15 +383,19 @@ export default function ReadingPage() {
             <TopStat icon={<Gem className="text-cyan-500" />} value="0" label="Xu" />
 
             <div className="flex gap-3">
-              <IconCircle>
+              <IconCircle onClick={() => router.push("/rewards")}>
                 <Gift size={18} />
               </IconCircle>
-              <IconCircle badge>
+              <IconCircle badge onClick={() => router.push("/notifications")}>
                 <Bell size={18} />
               </IconCircle>
             </div>
 
-            <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => router.push("/profile")}
+              className="flex items-center gap-3 rounded-xl px-2 py-1 text-left hover:bg-slate-50"
+            >
               <div className="grid h-10 w-10 place-items-center rounded-full bg-sky-100 text-xl">
                 👨🏻‍💻
               </div>
@@ -271,7 +405,7 @@ export default function ReadingPage() {
                   {data.currentLevel.title}
                 </p>
               </div>
-            </div>
+            </button>
           </div>
         </header>
 
@@ -289,6 +423,22 @@ export default function ReadingPage() {
                     Đọc đa dạng các chủ đề và trả lời câu hỏi để nâng cao kỹ năng
                     đọc hiểu của bạn.
                   </p>
+                  <div className="mt-5 flex gap-3">
+                    <button
+                      type="button"
+                      onClick={continueReading}
+                      className="rounded-xl bg-violet-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-violet-100"
+                    >
+                      Tiếp tục học
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => router.push("/reading/categories")}
+                      className="rounded-xl bg-violet-50 px-5 py-3 text-sm font-bold text-violet-600"
+                    >
+                      Chọn chủ đề
+                    </button>
+                  </div>
                 </div>
 
                 <div className="ml-auto pr-10 text-8xl">🦊</div>
@@ -302,6 +452,7 @@ export default function ReadingPage() {
                   title={String(item.title)}
                   label={item.label}
                   note={item.note}
+                  onClick={() => router.push(item.href)}
                 />
               ))}
             </div>
@@ -320,13 +471,15 @@ export default function ReadingPage() {
               <div className="relative">
                 <button
                   type="button"
-                  className="absolute -left-4 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-xl bg-white shadow"
+                  disabled={!canPreviousCategory}
+                  onClick={() => setCategoryStart((value) => Math.max(value - 6, 0))}
+                  className="absolute -left-4 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-xl bg-white shadow disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ChevronLeft size={18} />
                 </button>
 
                 <div className="grid grid-cols-6 gap-4">
-                  {data.categories.map((item, index) => {
+                  {visibleCategories.map((item, index) => {
                     const style =
                       categoryStyleMap[index % categoryStyleMap.length];
                     const Icon =
@@ -359,9 +512,21 @@ export default function ReadingPage() {
                   })}
                 </div>
 
+                {visibleCategories.length === 0 && (
+                  <div className="rounded-2xl bg-slate-50 p-8 text-center text-sm font-bold text-slate-500">
+                    Không tìm thấy chủ đề phù hợp.
+                  </div>
+                )}
+
                 <button
                   type="button"
-                  className="absolute -right-4 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-xl bg-white shadow"
+                  disabled={!canNextCategory}
+                  onClick={() =>
+                    setCategoryStart((value) =>
+                      Math.min(value + 6, Math.max(filteredCategories.length - 6, 0)),
+                    )
+                  }
+                  className="absolute -right-4 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-xl bg-white shadow disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ChevronRight size={18} />
                 </button>
@@ -372,27 +537,37 @@ export default function ReadingPage() {
               <h2 className="mb-4 text-lg font-extrabold">Bài đọc nổi bật</h2>
 
               <div className="mb-4 flex gap-6 border-b border-slate-100">
-                {["Mới nhất", "Phổ biến", "Đề xuất cho bạn"].map(
-                  (tab, index) => (
-                    <button
-                      key={tab}
-                      className={`pb-3 text-sm font-bold ${
-                        index === 0
-                          ? "border-b-2 border-violet-600 text-violet-600"
-                          : "text-slate-500"
-                      }`}
-                    >
-                      {tab}
-                    </button>
-                  ),
-                )}
+                {[
+                  { label: "Mới nhất", value: "latest" as const },
+                  { label: "Phổ biến", value: "popular" as const },
+                  { label: "Đề xuất cho bạn", value: "recommended" as const },
+                ].map((tab) => (
+                  <button
+                    key={tab.value}
+                    type="button"
+                    onClick={() => setActiveArticleTab(tab.value)}
+                    className={`pb-3 text-sm font-bold ${
+                      activeArticleTab === tab.value
+                        ? "border-b-2 border-violet-600 text-violet-600"
+                        : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
 
               <div className="space-y-4">
-                {data.featuredArticles.map((article) => (
+                {displayedArticles.map((article) => (
                   <div
                     key={article.id}
-                    className="flex items-center gap-5 rounded-2xl border border-slate-100 p-4"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => goToArticle(article.slug)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") goToArticle(article.slug);
+                    }}
+                    className="flex cursor-pointer items-center gap-5 rounded-2xl border border-slate-100 p-4 transition hover:border-violet-200 hover:bg-violet-50/20"
                   >
                     <img
                       src={article.thumbnail || fallbackThumbnail}
@@ -428,9 +603,10 @@ export default function ReadingPage() {
                     </div>
 
                     <button
-                      onClick={() =>
-                        router.push(`/reading/articles/${article.slug}`)
-                      }
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        goToArticle(article.slug);
+                      }}
                       className="rounded-xl bg-violet-600 px-6 py-3 text-sm font-bold text-white"
                     >
                       {article.isCompleted
@@ -442,6 +618,12 @@ export default function ReadingPage() {
                   </div>
                 ))}
               </div>
+
+              {displayedArticles.length === 0 && (
+                <div className="rounded-2xl bg-slate-50 p-8 text-center text-sm font-bold text-slate-500">
+                  Không tìm thấy bài đọc phù hợp.
+                </div>
+              )}
 
               <button
                 onClick={() => router.push("/reading/articles")}
@@ -560,7 +742,7 @@ export default function ReadingPage() {
               }
             >
               <div className="space-y-4">
-                {data.suggestions.map((item) => (
+                {filteredSuggestions.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => router.push(`/reading/articles/${item.slug}`)}
@@ -582,6 +764,11 @@ export default function ReadingPage() {
                     </span>
                   </button>
                 ))}
+                {filteredSuggestions.length === 0 && (
+                  <div className="rounded-xl bg-slate-50 p-4 text-center text-sm font-bold text-slate-500">
+                    Không có gợi ý phù hợp.
+                  </div>
+                )}
               </div>
             </RightCard>
           </aside>
@@ -594,19 +781,25 @@ export default function ReadingPage() {
 function IconCircle({
   children,
   badge,
+  onClick,
 }: {
   children: ReactNode;
   badge?: boolean;
+  onClick?: () => void;
 }) {
   return (
-    <div className="relative grid h-10 w-10 place-items-center rounded-full bg-slate-50 text-violet-600">
+    <button
+      type="button"
+      onClick={onClick}
+      className="relative grid h-10 w-10 place-items-center rounded-full bg-slate-50 text-violet-600 transition hover:bg-violet-50"
+    >
       {children}
       {badge && (
         <span className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-red-500 text-xs font-bold text-white">
           2
         </span>
       )}
-    </div>
+    </button>
   );
 }
 
@@ -634,13 +827,19 @@ function StatCard({
   title,
   label,
   note,
+  onClick,
 }: {
   title: string;
   label: string;
   note: string;
+  onClick?: () => void;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full rounded-2xl border border-slate-100 bg-white p-6 text-left shadow-sm transition hover:-translate-y-1 hover:border-violet-200 hover:shadow-md"
+    >
       <div className="flex items-center gap-4">
         <div className="grid h-14 w-14 place-items-center rounded-full bg-violet-50 text-violet-600">
           <ClipboardList />
@@ -651,7 +850,7 @@ function StatCard({
           <p className="mt-2 text-xs font-semibold text-emerald-500">{note}</p>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 

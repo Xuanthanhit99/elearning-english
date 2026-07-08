@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
   BookOpen,
@@ -95,35 +95,35 @@ type ReadingCategoriesResponse = {
 const menuGroups = [
   {
     title: "",
-    items: [{ label: "Trang chủ", icon: Home }],
+    items: [{ label: "Trang chủ", icon: Home, href: "/" }],
   },
   {
     title: "Học tập",
     items: [
-      { label: "Tổng quan", icon: BarChart3 },
-      { label: "Từ vựng", icon: BookText },
-      { label: "Ngữ pháp", icon: Layers },
-      { label: "Nghe", icon: Headphones },
-      { label: "Nói", icon: Mic },
-      { label: "Đọc hiểu", icon: BookOpen, active: true },
-      { label: "Viết", icon: PenTool },
-      { label: "Flashcards", icon: Layers },
+      { label: "Tổng quan", icon: BarChart3, href: "/dashboard" },
+      { label: "Từ vựng", icon: BookText, href: "/vocabulary" },
+      { label: "Ngữ pháp", icon: Layers, href: "/grammar" },
+      { label: "Nghe", icon: Headphones, href: "/listening" },
+      { label: "Nói", icon: Mic, href: "/speaking" },
+      { label: "Đọc hiểu", icon: BookOpen, href: "/reading", active: true },
+      { label: "Viết", icon: PenTool, href: "/writing" },
+      { label: "Flashcards", icon: Layers, href: "/flashcards" },
     ],
   },
   {
     title: "Cộng đồng",
     items: [
-      { label: "Cộng đồng", icon: Users },
-      { label: "Hỏi đáp", icon: HelpCircle },
-      { label: "Thành tích", icon: Trophy },
+      { label: "Cộng đồng", icon: Users, href: "/community" },
+      { label: "Hỏi đáp", icon: HelpCircle, href: "/questions" },
+      { label: "Thành tích", icon: Trophy, href: "/achievements" },
     ],
   },
   {
     title: "Khác",
     items: [
-      { label: "Khoá học", icon: BookText },
-      { label: "Shop", icon: ShoppingBag },
-      { label: "Cài đặt", icon: Settings },
+      { label: "Khoá học", icon: BookText, href: "/courses" },
+      { label: "Shop", icon: ShoppingBag, href: "/shop" },
+      { label: "Cài đặt", icon: Settings, href: "/settings" },
     ],
   },
 ];
@@ -161,8 +161,9 @@ export default function ReadingCategoriesPage() {
   const [sort, setSort] = useState<SortType>("recommended");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchKeyword, setSearchKeyword] = useState("");
 
-  async function fetchCategories() {
+  const fetchCategories = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -191,11 +192,41 @@ export default function ReadingCategoriesPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [difficulty, sort]);
 
   useEffect(() => {
     fetchCategories();
-  }, [difficulty, sort]);
+  }, [fetchCategories]);
+
+  function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const keyword = searchKeyword.trim();
+
+    if (!keyword) {
+      router.push("/reading/articles");
+      return;
+    }
+
+    router.push(`/reading/articles?keyword=${encodeURIComponent(keyword)}`);
+  }
+
+  function resetFilters() {
+    setDifficulty("ALL");
+    setSort("recommended");
+  }
+
+  function handleDifficultyChange(nextDifficulty: DifficultyFilter) {
+    setDifficulty(nextDifficulty);
+  }
+
+  function handleSortChange(nextSort: SortType) {
+    setSort(nextSort);
+  }
+
+  function handleCategoryClick(slug: string) {
+    router.push(`/reading/categories/${slug}`);
+  }
 
   const totalCategoryText = useMemo(() => {
     return data?.summary.totalCategories ?? 0;
@@ -234,12 +265,16 @@ export default function ReadingCategoriesPage() {
     <div className="min-h-screen bg-[#fbfbff] text-slate-900">
       <div className="flex">
         <aside className="fixed left-0 top-0 h-screen w-[260px] border-r border-slate-100 bg-white px-5 py-6">
-          <div className="mb-10 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => router.push("/")}
+            className="mb-10 flex items-center gap-3 text-left"
+          >
             <div className="text-3xl">🦊</div>
             <div className="text-2xl font-extrabold">
               Study<span className="text-violet-600">Arena</span>
             </div>
-          </div>
+          </button>
 
           <nav className="space-y-7">
             {menuGroups.map((group, index) => (
@@ -252,9 +287,11 @@ export default function ReadingCategoriesPage() {
 
                 <div className="space-y-1">
                   {group.items.map((item) => (
-                    <div
+                    <button
                       key={item.label}
-                      className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition ${
+                      type="button"
+                      onClick={() => router.push(item.href)}
+                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition ${
                         item.active
                           ? "bg-violet-100 text-violet-700"
                           : "text-slate-600 hover:bg-slate-50"
@@ -262,7 +299,7 @@ export default function ReadingCategoriesPage() {
                     >
                       <item.icon size={18} />
                       {item.label}
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -277,7 +314,11 @@ export default function ReadingCategoriesPage() {
             <p className="mb-4 text-sm leading-5 text-slate-500">
               Học không giới hạn, nhận nhiều đặc quyền hấp dẫn!
             </p>
-            <button className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-bold text-white">
+            <button
+              type="button"
+              onClick={() => router.push("/premium")}
+              className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-bold text-white"
+            >
               Nâng cấp ngay
             </button>
             <div className="absolute bottom-2 right-3 text-5xl">🦊</div>
@@ -286,44 +327,62 @@ export default function ReadingCategoriesPage() {
 
         <main className="ml-[260px] flex-1">
           <header className="sticky top-0 z-20 flex h-[82px] items-center justify-between border-b border-slate-100 bg-white/80 px-8 backdrop-blur">
-            <div className="relative w-[660px]">
+            <form onSubmit={handleSearchSubmit} className="relative w-[660px]">
               <Search
                 className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"
                 size={20}
               />
               <input
+                value={searchKeyword}
+                onChange={(event) => setSearchKeyword(event.target.value)}
                 placeholder="Tìm bài học, từ vựng, ngữ pháp..."
-                className="h-12 w-full rounded-xl border border-slate-100 bg-slate-50 pl-14 pr-4 text-sm outline-none focus:border-violet-300"
+                className="h-12 w-full rounded-xl border border-slate-100 bg-slate-50 pl-14 pr-12 text-sm outline-none focus:border-violet-300"
               />
-            </div>
+              {searchKeyword && (
+                <button
+                  type="button"
+                  onClick={() => setSearchKeyword("")}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 hover:text-violet-600"
+                >
+                  ×
+                </button>
+              )}
+            </form>
 
             <div className="flex items-center gap-6">
               <TopStat
                 icon={<Flame className="text-red-500" />}
                 value={String(data.streak.currentStreak)}
                 label="Streak"
+                onClick={() => router.push("/dashboard")}
               />
               <TopStat
                 icon={<Star className="text-yellow-500" />}
                 value={String(data.currentLevel.currentXp)}
                 label="XP đọc hiểu"
+                onClick={() => router.push("/reading/articles")}
               />
               <TopStat
                 icon={<Gem className="text-cyan-500" />}
                 value="0"
                 label="Xu"
+                onClick={() => router.push("/shop")}
               />
 
               <div className="flex gap-3">
-                <IconCircle>
+                <IconCircle onClick={() => router.push("/rewards")}>
                   <Gift size={18} />
                 </IconCircle>
-                <IconCircle badge>
+                <IconCircle badge onClick={() => router.push("/notifications")}>
                   <Bell size={18} />
                 </IconCircle>
               </div>
 
-              <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => router.push("/profile")}
+                className="flex items-center gap-3 rounded-xl px-2 py-1 text-left transition hover:bg-slate-50"
+              >
                 <div className="grid h-10 w-10 place-items-center rounded-full bg-sky-100 text-xl">
                   👨🏻‍💻
                 </div>
@@ -331,7 +390,7 @@ export default function ReadingCategoriesPage() {
                   <p className="text-sm font-bold">Minh Anh</p>
                   <p className="text-xs text-slate-400">{data.currentLevel.title}</p>
                 </div>
-              </div>
+              </button>
             </div>
           </header>
 
@@ -343,7 +402,11 @@ export default function ReadingCategoriesPage() {
                 <span className="text-slate-900">Danh sách chủ đề</span>
               </div>
 
-              <div className="flex items-center justify-between rounded-3xl bg-white px-6 py-5">
+              <button
+                type="button"
+                onClick={() => router.push("/reading/articles")}
+                className="flex w-full items-center justify-between rounded-3xl bg-white px-6 py-5 text-left transition hover:shadow-sm"
+              >
                 <div className="flex items-center gap-5">
                   <div className="grid h-20 w-20 place-items-center rounded-2xl bg-violet-100">
                     <BookOpen size={42} className="text-violet-600" />
@@ -357,7 +420,7 @@ export default function ReadingCategoriesPage() {
                 </div>
 
                 <div className="pr-12 text-7xl">📚☕</div>
-              </div>
+              </button>
 
               <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
                 <div className="flex items-center justify-between gap-4">
@@ -365,28 +428,28 @@ export default function ReadingCategoriesPage() {
                     <FilterButton
                       active={difficulty === "ALL"}
                       label={`Tất cả chủ đề (${totalCategoryText})`}
-                      onClick={() => setDifficulty("ALL")}
+                      onClick={() => handleDifficultyChange("ALL")}
                     />
                     <FilterButton
                       active={difficulty === "EASY"}
                       label="Dễ"
-                      onClick={() => setDifficulty("EASY")}
+                      onClick={() => handleDifficultyChange("EASY")}
                     />
                     <FilterButton
                       active={difficulty === "MEDIUM"}
                       label="Trung bình"
-                      onClick={() => setDifficulty("MEDIUM")}
+                      onClick={() => handleDifficultyChange("MEDIUM")}
                     />
                     <FilterButton
                       active={difficulty === "HARD"}
                       label="Khó"
-                      onClick={() => setDifficulty("HARD")}
+                      onClick={() => handleDifficultyChange("HARD")}
                     />
                   </div>
 
                   <select
                     value={sort}
-                    onChange={(e) => setSort(e.target.value as SortType)}
+                    onChange={(e) => handleSortChange(e.target.value as SortType)}
                     className="rounded-xl bg-slate-50 px-5 py-3 text-sm font-bold text-slate-700 outline-none"
                   >
                     <option value="recommended">Sắp xếp: Đề xuất</option>
@@ -408,6 +471,13 @@ export default function ReadingCategoriesPage() {
                   <p className="font-bold text-slate-700">
                     Chưa có chủ đề phù hợp.
                   </p>
+                  <button
+                    type="button"
+                    onClick={resetFilters}
+                    className="mt-4 rounded-xl bg-violet-600 px-5 py-3 text-sm font-bold text-white"
+                  >
+                    Xóa bộ lọc
+                  </button>
                 </div>
               ) : (
                 <div className="grid grid-cols-4 gap-6">
@@ -418,7 +488,7 @@ export default function ReadingCategoriesPage() {
                     return (
                       <button
                         key={item.id}
-                        onClick={() => router.push(`/reading/categories/${item.slug}`)}
+                        onClick={() => handleCategoryClick(item.slug)}
                         className="overflow-hidden rounded-2xl border border-slate-100 bg-white text-left shadow-sm transition hover:-translate-y-1 hover:shadow-md"
                       >
                         <img
@@ -562,7 +632,11 @@ export default function ReadingCategoriesPage() {
               <RightCard
                 title="Gợi ý chủ đề cho bạn"
                 action={
-                  <button className="text-sm font-bold text-violet-600">
+                  <button
+                    type="button"
+                    onClick={() => router.push("/reading/articles")}
+                    className="text-sm font-bold text-violet-600"
+                  >
                     Xem thêm
                   </button>
                 }
@@ -604,6 +678,7 @@ function FilterButton({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className={`rounded-xl px-5 py-3 text-sm font-bold ${
         active
@@ -628,38 +703,45 @@ function SuggestCard({
   onClick?: () => void;
 }) {
   return (
-    <div className="flex items-center gap-4">
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center gap-4 rounded-2xl p-2 text-left transition hover:bg-slate-50"
+    >
       <img src={image} alt={title} className="h-14 w-16 rounded-lg object-cover" />
       <div className="flex-1">
         <h4 className="font-extrabold">{title}</h4>
         <p className="mt-1 text-sm text-slate-500">{desc}</p>
       </div>
-      <button
-        onClick={onClick}
-        className="rounded-xl bg-violet-50 px-4 py-2 text-sm font-bold text-violet-600"
-      >
+      <span className="rounded-xl bg-violet-50 px-4 py-2 text-sm font-bold text-violet-600">
         Khám phá
-      </button>
-    </div>
+      </span>
+    </button>
   );
 }
 
 function IconCircle({
   children,
   badge,
+  onClick,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   badge?: boolean;
+  onClick?: () => void;
 }) {
   return (
-    <div className="relative grid h-10 w-10 place-items-center rounded-full bg-slate-50 text-violet-600">
+    <button
+      type="button"
+      onClick={onClick}
+      className="relative grid h-10 w-10 place-items-center rounded-full bg-slate-50 text-violet-600 transition hover:bg-violet-50"
+    >
       {children}
       {badge && (
         <span className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-red-500 text-xs font-bold text-white">
           2
         </span>
       )}
-    </div>
+    </button>
   );
 }
 
@@ -667,19 +749,25 @@ function TopStat({
   icon,
   value,
   label,
+  onClick,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   value: string;
   label: string;
+  onClick?: () => void;
 }) {
   return (
-    <div className="flex items-center gap-2">
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center gap-2 rounded-xl px-2 py-1 text-left transition hover:bg-slate-50"
+    >
       {icon}
       <div>
         <p className="text-sm font-extrabold">{value}</p>
         <p className="text-xs text-slate-500">{label}</p>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -689,8 +777,8 @@ function RightCard({
   action,
 }: {
   title: string;
-  children: React.ReactNode;
-  action?: React.ReactNode;
+  children: ReactNode;
+  action?: ReactNode;
 }) {
   return (
     <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">

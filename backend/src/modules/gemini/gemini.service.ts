@@ -1,4 +1,5 @@
-// src/gemini/gemini.service.ts
+// src/modules/gemini/gemini.service.ts
+
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
@@ -12,29 +13,84 @@ export class GeminiService {
 
   private extractJson(text: string) {
     const cleaned = text
-      .replace(/```json/g, '')
+      .replace(/```json/gi, '')
       .replace(/```/g, '')
       .trim();
 
-    const match = cleaned.match(/\[[\s\S]*\]/) || cleaned.match(/\{[\s\S]*\}/);
+    const firstObject = cleaned.indexOf('{');
+    const firstArray = cleaned.indexOf('[');
 
-    if (!match) {
+    let start = -1;
+    let end = -1;
+
+    if (firstObject !== -1 && (firstArray === -1 || firstObject < firstArray)) {
+      start = firstObject;
+      end = this.findMatchingBracket(cleaned, start, '{', '}');
+    } else if (firstArray !== -1) {
+      start = firstArray;
+      end = this.findMatchingBracket(cleaned, start, '[', ']');
+    }
+
+    if (start === -1 || end === -1) {
       throw new Error('Gemini did not return valid JSON');
     }
 
-    return JSON.parse(match[0]);
+    const jsonText = cleaned.slice(start, end + 1);
+
+    return JSON.parse(jsonText);
+  }
+
+  private findMatchingBracket(
+    text: string,
+    start: number,
+    open: string,
+    close: string,
+  ) {
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+
+    for (let i = start; i < text.length; i++) {
+      const char = text[i];
+
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+
+      if (char === '\\') {
+        escaped = true;
+        continue;
+      }
+
+      if (char === '"') {
+        inString = !inString;
+        continue;
+      }
+
+      if (inString) continue;
+
+      if (char === open) depth++;
+      if (char === close) depth--;
+
+      if (depth === 0) return i;
+    }
+
+    return -1;
   }
 
   async generateJson(prompt: string) {
-    const models = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'].sort(
-      () => Math.random() - 0.5,
-    );
+    const models = ['gemini-2.5-flash-lite', 'gemini-2.5-flash'];
 
     let lastError: any;
 
     for (const modelName of models) {
       const model = this.genAI.getGenerativeModel({
         model: modelName,
+        generationConfig: {
+          temperature: 0.4,
+          responseMimeType: 'application/json',
+        },
       });
 
       for (let retry = 0; retry < 3; retry++) {
@@ -42,11 +98,12 @@ export class GeminiService {
           const result = await Promise.race([
             model.generateContent(prompt),
             new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Gemini timeout')), 10000),
+              setTimeout(() => reject(new Error('Gemini timeout')), 30000),
             ),
           ]);
 
           const text = (result as any).response.text();
+
           return this.extractJson(text);
         } catch (error: any) {
           lastError = error;
@@ -57,7 +114,7 @@ export class GeminiService {
           );
 
           if (retry < 2) {
-            await this.sleep((retry + 1) * 2000);
+            await this.sleep((retry + 1) * 5000);
           }
         }
       }

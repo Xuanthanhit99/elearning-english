@@ -161,8 +161,7 @@ model User {
   wordHistories UserWordHistory[]
 
   writingSubmissions WritingSubmission[]
-
-  placementTest PlacementTest[]
+  placementTest      PlacementTest[]
 
   petProfile PetProfile?
   petRewards PetReward[]
@@ -1486,4 +1485,103 @@ model ReadingAnswer {
   updatedAt DateTime @updatedAt
 
   @@unique([sessionId, questionId])
+}
+
+enum WritingType {
+  ESSAY
+  EMAIL
+  STORY
+  SENTENCE
+}
+
+enum WritingLevel {
+  A1
+  A2
+  B1
+  B2
+  C1
+}
+
+model WritingTopic {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  description String?
+  imageUrl    String?
+  category    String?
+
+  difficulty  String   @default("BEGINNER")
+  learnerCount Int     @default(0)
+  order        Int     @default(0)
+  isActive     Boolean @default(true)
+
+  lessons  WritingLesson[]
+  progress WritingTopicProgress[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WritingLesson {
+  id          String       @id @default(uuid())
+  topicId     String
+  title       String
+  slug        String       @unique
+  prompt      String
+  description String?
+  minWords    Int          @default(80)
+  maxWords    Int          @default(200)
+  level       WritingLevel
+  type        WritingType
+  order       Int          @default(0)
+  isActive    Boolean      @default(true)
+
+  topic    WritingTopic     @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  sessions WritingSession[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WritingSession {
+  id          String  @id @default(uuid())
+  userId      String
+  lessonId    String
+  content     String? @db.Text
+  wordCount   Int     @default(0)
+  isSubmitted Boolean @default(false)
+
+  overallScore    Int?
+  grammarScore    Int?
+  vocabularyScore Int?
+  coherenceScore  Int?
+  taskScore       Int?
+  feedback        String? @db.Text
+
+  lesson WritingLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  startedAt   DateTime  @default(now())
+  submittedAt DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([lessonId])
+}
+
+model WritingTopicProgress {
+  id              String @id @default(uuid())
+  userId          String
+  topicId         String
+  completedLessons Int   @default(0)
+  totalLessons     Int   @default(0)
+  progressPercent  Int   @default(0)
+
+  topic WritingTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, topicId])
+  @@index([userId])
+  @@index([topicId])
 }

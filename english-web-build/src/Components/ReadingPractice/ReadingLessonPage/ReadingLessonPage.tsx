@@ -123,6 +123,7 @@ type SubmitResult = {
   totalQuestions: number;
   earnedXp: number;
   isCompleted: boolean;
+  resultUrl: string;
 };
 
 const fallbackImage =
@@ -248,22 +249,29 @@ export default function ReadingLessonPage({
   }
 
   async function handleSubmit() {
-    if (!sessionId || submitting) return;
+  if (!sessionId || submitting) return;
 
-    try {
-      setSubmitting(true);
-      setError("");
+  try {
+    setSubmitting(true);
+    setError("");
 
-      const res = await api.post(`/reading/sessions/${sessionId}/submit`);
-      const payload: SubmitResult = res.data?.data ?? res.data;
+    const res = await api.post(
+      `/reading/sessions/${sessionId}/submit`
+    );
 
-      setSubmitResult(payload);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Không thể nộp bài");
-    } finally {
-      setSubmitting(false);
-    }
+    const payload: SubmitResult = res.data?.data ?? res.data;
+
+    router.replace(payload.resultUrl);
+  } catch (err: any) {
+    setError(
+      err?.response?.data?.message ||
+      err?.message ||
+      "Không thể nộp bài"
+    );
+  } finally {
+    setSubmitting(false);
   }
+}
 
   const paragraphs = useMemo(() => {
     if (!data?.article.content) return [];

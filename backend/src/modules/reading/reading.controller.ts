@@ -1,12 +1,22 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ReadingService } from './reading.service';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { GetReadingArticlesQueryDto } from './dto/get-reading-articles.dto';
+import { GetReadingHistoryQueryDto } from './dto/get-reading-history.dto';
 
 @Controller('reading')
 @UseGuards(JwtAuthGuard)
 export class ReadingController {
-  constructor(private readonly readingService: ReadingService) { }
+  constructor(private readonly readingService: ReadingService) {}
 
   @Get('home')
   getHome(@CurrentUser() user: { id: string }) {
@@ -31,6 +41,14 @@ export class ReadingController {
     @Param('slug') slug: string,
   ) {
     return this.readingService.getReadingCategoryDetail(user.id, slug);
+  }
+
+  @Get('articles')
+  getAllArticles(
+    @CurrentUser() user: { id: string },
+    @Query() query: GetReadingArticlesQueryDto,
+  ) {
+    return this.readingService.getAllReadingArticles(user.id, query);
   }
 
   @Get('articles/:slug')
@@ -64,5 +82,21 @@ export class ReadingController {
   @Post('sessions/:sessionId/submit')
   submitSession(@Param('sessionId') sessionId: string) {
     return this.readingService.submitReadingSession(sessionId);
+  }
+
+  @Get('sessions/:sessionId/result')
+  getReadingSessionResult(
+    @CurrentUser() user: { id: string },
+    @Param('sessionId') sessionId: string,
+  ) {
+    return this.readingService.getReadingSessionResult(user.id, sessionId);
+  }
+
+  @Get('history')
+  getReadingHistory(
+    @CurrentUser() user: { id: string },
+    @Query() query: GetReadingHistoryQueryDto,
+  ) {
+    return this.readingService.getReadingHistory(user.id, query);
   }
 }

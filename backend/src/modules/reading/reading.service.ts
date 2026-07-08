@@ -8,6 +8,8 @@ import {
   getCategoryAchievements,
   getFeaturedVocabularyByCategory,
 } from 'src/common/helpers/reading.hepler';
+import { GetReadingArticlesQueryDto } from './dto/get-reading-articles.dto';
+import { GetReadingHistoryQueryDto } from './dto/get-reading-history.dto';
 
 @Injectable()
 export class ReadingService {
@@ -755,7 +757,9 @@ export class ReadingService {
             totalQuestions: article.questions.length,
             progressPercent:
               article.questions.length > 0
-                ? Math.round((session.answers.length / article.questions.length) * 100)
+                ? Math.round(
+                    (session.answers.length / article.questions.length) * 100,
+                  )
                 : 0,
           }
         : null,
@@ -877,7 +881,9 @@ export class ReadingService {
     const correctCount = session.answers.filter((a) => a.isCorrect).length;
 
     const accuracy =
-      totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+      totalQuestions > 0
+        ? Math.round((correctCount / totalQuestions) * 100)
+        : 0;
 
     const score = accuracy;
     const earnedXp = Math.round((session.article.xpReward * accuracy) / 100);
@@ -901,6 +907,7 @@ export class ReadingService {
       totalQuestions,
       earnedXp,
       isCompleted: true,
+      resultUrl: `/reading/sessions/${completed.id}/result`,
     };
   }
 
@@ -920,7 +927,9 @@ export class ReadingService {
     }));
   }
 
-  private formatDifficultyArticleDetail(difficulty: 'EASY' | 'MEDIUM' | 'HARD') {
+  private formatDifficultyArticleDetail(
+    difficulty: 'EASY' | 'MEDIUM' | 'HARD',
+  ) {
     const map = {
       EASY: 'Dễ',
       MEDIUM: 'Trung bình',
@@ -928,5 +937,713 @@ export class ReadingService {
     };
 
     return map[difficulty];
+  }
+
+  async getReadingSessionResult(userId: string, sessionId: string) {
+    const session = await this.prisma.readingSession.findUnique({
+      where: { id: sessionId },
+      include: {
+        article: {
+          include: {
+            category: true,
+            questions: {
+              orderBy: {
+                order: 'asc',
+              },
+              include: {
+                answers: {
+                  where: {
+                    sessionId,
+                  },
+                },
+              },
+            },
+            vocabularies: {
+              take: 12,
+              orderBy: {
+                createdAt: 'asc',
+              },
+            },
+          },
+        },
+        answers: {
+          include: {
+            question: true,
+          },
+        },
+      },
+    });
+
+    if (!session || session.userId !== userId) {
+      throw new NotFoundException('Không tìm thấy phiên làm bài');
+    }
+
+    const totalQuestions = session.article.questions.length;
+    const correctAnswers = session.answers.filter((a) => a.isCorrect).length;
+    const wrongAnswers = Math.max(totalQuestions - correctAnswers, 0);
+    const score =
+      totalQuestions > 0
+        ? Math.round((correctAnswers / totalQuestions) * 100)
+        : 0;
+
+    const answeredCount = session.answers.length;
+
+    const resultQuestions = session.article.questions.map((question, index) => {
+      const answer = question.answers[0];
+
+      return {
+        id: question.id,
+        index: index + 1,
+        question: question.question,
+        options: question.options,
+        selected: answer?.selected ?? null,
+        correctAnswer: question.correctAnswer,
+        isCorrect: answer?.isCorrect ?? false,
+        explanation: question.explanation,
+      };
+    });
+
+    const suggestedArticles = await this.prisma.readingArticle.findMany({
+      where: {
+        isPublished: true,
+        categoryId: session.article.categoryId,
+        id: {
+          not: session.articleId,
+        },
+      },
+      take: 4,
+      orderBy: [
+        {
+          viewCount: 'desc',
+        },
+        {
+          createdAt: 'desc',
+        },
+      ],
+      include: {
+        category: true,
+      },
+    });
+
+    return {
+      summary: {
+        sessionId: session.id,
+        articleId: session.articleId,
+        articleTitle: session.article.title,
+        articleSlug: session.article.slug,
+        categoryName: session.article.category.name,
+        categorySlug: session.article.category.slug,
+        difficultyText: this.formatDifficultyResult(session.article.difficulty),
+        readTimeText: `${session.article.readTime} phút đọc`,
+        wordCountText: `${session.article.wordCount} từ`,
+        xpReward: session.earnedXp || session.article.xpReward,
+        score,
+        accuracy: session.accuracy || score,
+        correctAnswers,
+        wrongAnswers,
+        totalQuestions,
+        answeredCount,
+        spentTime: session.spentTime,
+        spentTimeText: this.formatSecondsResult(session.spentTime),
+        completedAt: session.completedAt,
+        passedText:
+          score >= 85
+            ? 'Tuyệt vời! Bạn đã nắm vững nội dung bài đọc và trả lời rất chính xác.'
+            : score >= 70
+              ? 'Làm tốt! Bạn đã hiểu phần lớn nội dung bài đọc.'
+              : 'Bạn nên xem lại bài đọc và luyện tập thêm để cải thiện kết quả.',
+      },
+
+      comparison: {
+        previousScore: 70,
+        currentScore: score,
+        changePercent: score - 70,
+      },
+
+      skillPerformance: [
+        {
+          name: 'Hiểu ý chính',
+          score: Math.min(score + 5, 100),
+        },
+        {
+          name: 'Từ vựng',
+          score: Math.max(score - 5, 0),
+        },
+        {
+          name: 'Suy luận',
+          score: Math.max(score - 10, 0),
+        },
+        {
+          name: 'Chi tiết',
+          score,
+        },
+        {
+          name: 'Từ vựng theo ngữ cảnh',
+          score: Math.max(score - 15, 0),
+        },
+      ],
+
+      questions: resultQuestions,
+
+      vocabulary: session.article.vocabularies.map((item) => ({
+        id: item.id,
+        word: item.word,
+        partOfSpeech: item.partOfSpeech,
+        meaning: item.meaning,
+        example: item.example,
+        audioUrl: item.audioUrl,
+      })),
+
+      improvementSkills: [
+        {
+          title: 'Từ vựng theo ngữ cảnh',
+          description: 'Làm quen với nhiều từ vựng học thuật hơn.',
+          type: 'VOCABULARY',
+        },
+        {
+          title: 'Suy luận',
+          description: 'Rèn luyện kỹ năng suy luận và hiểu hàm ý.',
+          type: 'INFERENCE',
+        },
+        {
+          title: 'Nhận biết chi tiết',
+          description: 'Chú ý đến các chi tiết cụ thể trong bài.',
+          type: 'DETAIL',
+        },
+      ],
+
+      suggestions: suggestedArticles.map((article) => ({
+        id: article.id,
+        title: article.title,
+        slug: article.slug,
+        thumbnail: article.thumbnail,
+        categoryName: article.category.name,
+        categorySlug: article.category.slug,
+        difficultyText: this.formatDifficultyResult(article.difficulty),
+        readTimeText: `${article.readTime} phút đọc`,
+        xpReward: article.xpReward,
+      })),
+    };
+  }
+
+  private formatDifficultyResult(difficulty: ReadingDifficulty) {
+    const map: Record<ReadingDifficulty, string> = {
+      EASY: 'Dễ',
+      MEDIUM: 'Trung bình',
+      HARD: 'Khó',
+    };
+
+    return map[difficulty];
+  }
+
+  private formatSecondsResult(seconds: number) {
+    if (!seconds || seconds <= 0) return '0s';
+
+    const minutes = Math.floor(seconds / 60);
+    const remainSeconds = seconds % 60;
+
+    if (minutes <= 0) return `${remainSeconds}s`;
+
+    return `${minutes}m ${remainSeconds}s`;
+  }
+
+  async getAllReadingArticles(
+    userId: string,
+    query: GetReadingArticlesQueryDto,
+  ) {
+    const page = Number(query.page || 1);
+    const limit = Number(query.limit || 8);
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      isPublished: true,
+    };
+
+    if (query.keyword) {
+      where.OR = [
+        {
+          title: {
+            contains: query.keyword,
+            mode: 'insensitive',
+          },
+        },
+        {
+          description: {
+            contains: query.keyword,
+            mode: 'insensitive',
+          },
+        },
+      ];
+    }
+
+    if (query.category && query.category !== 'all') {
+      where.category = {
+        slug: query.category,
+      };
+    }
+
+    if (query.difficulty) {
+      where.difficulty = query.difficulty;
+    }
+
+    const orderBy = this.getArticleOrderBy(query.sort);
+
+    const [
+      articlesRaw,
+      totalArticles,
+      categories,
+      completedSessions,
+      learningSessions,
+    ] = await Promise.all([
+      this.prisma.readingArticle.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy,
+        include: {
+          category: true,
+          sessions: {
+            where: {
+              userId,
+            },
+            take: 1,
+          },
+        },
+      }),
+
+      this.prisma.readingArticle.count({
+        where,
+      }),
+
+      this.prisma.readingCategory.findMany({
+        where: {
+          isActive: true,
+        },
+        orderBy: {
+          order: 'asc',
+        },
+        include: {
+          _count: {
+            select: {
+              articles: {
+                where: {
+                  isPublished: true,
+                },
+              },
+            },
+          },
+        },
+      }),
+
+      this.prisma.readingSession.findMany({
+        where: {
+          userId,
+          isCompleted: true,
+        },
+        select: {
+          articleId: true,
+        },
+      }),
+
+      this.prisma.readingSession.findMany({
+        where: {
+          userId,
+          isCompleted: false,
+        },
+        select: {
+          articleId: true,
+        },
+      }),
+    ]);
+
+    const articlesWithStatus = articlesRaw.map((article) => {
+      const session = article.sessions[0];
+
+      let status: 'COMPLETED' | 'LEARNING' | 'NOT_STARTED' = 'NOT_STARTED';
+
+      if (session?.isCompleted) {
+        status = 'COMPLETED';
+      } else if (session) {
+        status = 'LEARNING';
+      }
+
+      const progressPercent = session?.isCompleted ? 100 : session ? 60 : 0;
+
+      return {
+        id: article.id,
+        title: article.title,
+        slug: article.slug,
+        description: article.description,
+        thumbnail: article.thumbnail,
+        categoryName: article.category.name,
+        categorySlug: article.category.slug,
+        difficulty: article.difficulty,
+        difficultyText: this.formatReadingDifficulty(article.difficulty),
+        level: article.level,
+        readTime: article.readTime,
+        readTimeText: `${article.readTime} phút đọc`,
+        wordCount: article.wordCount,
+        wordCountText: `${article.wordCount.toLocaleString('vi-VN')} từ`,
+        questionCount: article.questionCount,
+        xpReward: article.xpReward,
+        status,
+        progressPercent,
+        isLocked: false,
+      };
+    });
+
+    const filteredByStatus =
+      query.status && query.status !== 'ALL'
+        ? articlesWithStatus.filter((item) => item.status === query.status)
+        : articlesWithStatus;
+
+    const totalCompleted = completedSessions.length;
+    const totalLearning = learningSessions.length;
+    const totalAllArticles = await this.prisma.readingArticle.count({
+      where: {
+        isPublished: true,
+      },
+    });
+
+    const totalNotStarted = Math.max(
+      totalAllArticles - totalCompleted - totalLearning,
+      0,
+    );
+
+    const totalPages = Math.ceil(totalArticles / limit);
+
+    return {
+      meta: {
+        page,
+        limit,
+        totalItems: totalArticles,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+
+      summary: {
+        totalArticles: totalAllArticles,
+        completedArticles: totalCompleted,
+        learningArticles: totalLearning,
+        notStartedArticles: totalNotStarted,
+        progressPercent:
+          totalAllArticles > 0
+            ? Math.round((totalCompleted / totalAllArticles) * 100)
+            : 0,
+      },
+
+      filters: {
+        categories: [
+          {
+            label: 'Tất cả',
+            value: 'all',
+            count: totalAllArticles,
+          },
+          ...categories.map((category) => ({
+            label: category.name,
+            value: category.slug,
+            count: category._count.articles,
+          })),
+        ],
+        difficulties: [
+          {
+            label: 'Tất cả',
+            value: 'ALL',
+          },
+          {
+            label: 'Dễ',
+            value: 'EASY',
+          },
+          {
+            label: 'Trung bình',
+            value: 'MEDIUM',
+          },
+          {
+            label: 'Khó',
+            value: 'HARD',
+          },
+        ],
+        statuses: [
+          {
+            label: 'Tất cả',
+            value: 'ALL',
+          },
+          {
+            label: 'Đã hoàn thành',
+            value: 'COMPLETED',
+          },
+          {
+            label: 'Đang đọc',
+            value: 'LEARNING',
+          },
+          {
+            label: 'Chưa đọc',
+            value: 'NOT_STARTED',
+          },
+        ],
+      },
+
+      articles: filteredByStatus,
+
+      achievements: [
+        {
+          id: 'green-reader',
+          title: 'Green Reader',
+          description: 'Hoàn thành 3 bài',
+          unlocked: totalCompleted >= 3,
+        },
+        {
+          id: 'speed-reader',
+          title: 'Speed Reader',
+          description: 'Đọc 10 bài trong tuần',
+          unlocked: totalCompleted >= 10,
+        },
+        {
+          id: 'knowledgeable',
+          title: 'Knowledgeable',
+          description: 'Đọc 20 bài',
+          unlocked: totalCompleted >= 20,
+        },
+      ],
+    };
+  }
+
+  private getArticleOrderBy(sort?: string) {
+    if (sort === 'popular') {
+      return [
+        {
+          viewCount: 'desc' as const,
+        },
+        {
+          createdAt: 'desc' as const,
+        },
+      ];
+    }
+
+    if (sort === 'xp') {
+      return [
+        {
+          xpReward: 'desc' as const,
+        },
+        {
+          createdAt: 'desc' as const,
+        },
+      ];
+    }
+
+    if (sort === 'readTime') {
+      return [
+        {
+          readTime: 'asc' as const,
+        },
+        {
+          createdAt: 'desc' as const,
+        },
+      ];
+    }
+
+    return [
+      {
+        createdAt: 'desc' as const,
+      },
+    ];
+  }
+
+  private formatReadingDifficulty(difficulty: ReadingDifficulty) {
+    const map: Record<ReadingDifficulty, string> = {
+      EASY: 'Dễ',
+      MEDIUM: 'Trung bình',
+      HARD: 'Khó',
+    };
+
+    return map[difficulty];
+  }
+
+  async getReadingHistory(userId: string, query: GetReadingHistoryQueryDto) {
+    const page = Number(query.page || 1);
+    const limit = Number(query.limit || 8);
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      userId,
+    };
+
+    if (query.status === 'COMPLETED') {
+      where.isCompleted = true;
+    }
+
+    if (query.status === 'IN_PROGRESS') {
+      where.isCompleted = false;
+    }
+
+    if (query.timeRange === '7_DAYS') {
+      where.startedAt = {
+        gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+      };
+    }
+
+    if (query.timeRange === '30_DAYS') {
+      where.startedAt = {
+        gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      };
+    }
+
+    const [sessions, total, allSessions] = await Promise.all([
+      this.prisma.readingSession.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: {
+          startedAt: 'desc',
+        },
+        include: {
+          article: {
+            include: {
+              category: true,
+              questions: true,
+            },
+          },
+          answers: true,
+        },
+      }),
+
+      this.prisma.readingSession.count({ where }),
+
+      this.prisma.readingSession.findMany({
+        where: { userId },
+        include: {
+          article: true,
+        },
+      }),
+    ]);
+
+    const completed = allSessions.filter((x) => x.isCompleted).length;
+    const inProgress = allSessions.filter((x) => !x.isCompleted).length;
+    const failed = allSessions.filter(
+      (x) => x.isCompleted && x.score < 50,
+    ).length;
+
+    const totalTime = allSessions.reduce(
+      (sum, item) => sum + item.spentTime,
+      0,
+    );
+
+    const averageAccuracy =
+      completed > 0
+        ? Math.round(
+            allSessions
+              .filter((x) => x.isCompleted)
+              .reduce((sum, x) => sum + x.accuracy, 0) / completed,
+          )
+        : 0;
+
+    const items = sessions.map((session) => {
+      const totalQuestions = session.article.questions.length;
+      const correct = session.answers.filter((x) => x.isCorrect).length;
+
+      let status: 'COMPLETED' | 'IN_PROGRESS' | 'FAILED' = 'IN_PROGRESS';
+
+      if (session.isCompleted && session.score >= 50) {
+        status = 'COMPLETED';
+      }
+
+      if (session.isCompleted && session.score < 50) {
+        status = 'FAILED';
+      }
+
+      return {
+        id: session.id,
+        articleId: session.articleId,
+        articleTitle: session.article.title,
+        articleSlug: session.article.slug,
+        thumbnail: session.article.thumbnail,
+        categoryName: session.article.category.name,
+        categorySlug: session.article.category.slug,
+        difficulty: session.article.difficulty,
+        difficultyText: this.formatDifficultysHistory(
+          session.article.difficulty,
+        ),
+        level: session.article.level,
+        score: session.score,
+        accuracy: session.accuracy,
+        correctAnswers: correct,
+        totalQuestions,
+        status,
+        statusText:
+          status === 'COMPLETED'
+            ? 'Hoàn thành'
+            : status === 'FAILED'
+              ? 'Chưa hoàn thành'
+              : 'Đang làm dở',
+        spentTime: session.spentTime,
+        spentTimeText: this.formatSecondsHistory(session.spentTime),
+        startedAt: session.startedAt,
+        completedAt: session.completedAt,
+      };
+    });
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      meta: {
+        page,
+        limit,
+        totalItems: total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+
+      summary: {
+        total,
+        completed,
+        inProgress,
+        failed,
+        totalTime,
+        totalTimeText: this.formatSecondsHistory(totalTime),
+        averageAccuracy,
+      },
+
+      weeklyTime: [
+        { label: 'T2', minutes: 60 },
+        { label: 'T3', minutes: 120 },
+        { label: 'T4', minutes: 60 },
+        { label: 'T5', minutes: 70 },
+        { label: 'T6', minutes: 90 },
+        { label: 'T7', minutes: 45 },
+        { label: 'CN', minutes: 95 },
+      ],
+
+      performance: {
+        averageAccuracy,
+        high: allSessions.filter((x) => x.accuracy >= 80).length,
+        medium: allSessions.filter((x) => x.accuracy >= 50 && x.accuracy < 80)
+          .length,
+        low: allSessions.filter((x) => x.accuracy < 50).length,
+      },
+
+      items,
+    };
+  }
+
+  private formatDifficultysHistory(difficulty: ReadingDifficulty) {
+    const map: Record<ReadingDifficulty, string> = {
+      EASY: 'Dễ',
+      MEDIUM: 'Trung bình',
+      HARD: 'Khó',
+    };
+
+    return map[difficulty];
+  }
+
+  private formatSecondsHistory(seconds: number) {
+    if (!seconds || seconds <= 0) return '0m';
+
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+
+    if (h <= 0) return `${m}m`;
+    return `${h}h ${m}m`;
   }
 }

@@ -1,6 +1,6 @@
-import WritingPage from "@/src/Components/WritingPage/WritingPage";
+import WritingHomePage from "@/src/Components/WritingPage/WritingHomePage";
 
 
 export default function Writing() {
-  return <WritingPage />;
+  return <WritingHomePage />;
 }
