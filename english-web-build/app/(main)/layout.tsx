@@ -3,6 +3,7 @@
 import Header from "@/src/Components/HomePage/Header";
 import FloatingPetCompanion from "@/src/Components/Pets/FloatingPetCompanion";
 import PetSelectionPrompt from "@/src/Components/Pets/PetSelectionPrompt";
+import MobileStudyNav from "@/src/Components/Layout/MobileStudyNav";
 import StudySidebar from "@/src/Components/Layout/StudySidebar";
 import WelcomeLoginModal from "@/src/Components/WelcomeLoginModal";
 import { api } from "@/src/lib/axios";
@@ -91,6 +92,7 @@ export default function MainLayout({
       {usesCustomDashboardShell ? (
         <div className="single-menu-shell min-h-screen bg-[#fbfbff]">
           <StudySidebar fixed />
+          <MobileStudyNav />
           <div className="single-menu-content min-h-screen xl:pl-[286px]">
             {children}
           </div>

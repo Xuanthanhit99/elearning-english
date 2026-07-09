@@ -56,16 +56,6 @@ export class WritingController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('sessions/:sessionId/save')
-  saveDraft(
-    @Param('sessionId') sessionId: string,
-    @Body() body: { content: string },
-    @Req() req: any,
-  ) {
-    return this.writingService.saveDraft(req.user.id, sessionId, body.content);
-  }
-
-  @UseGuards(JwtAuthGuard)
   @Get('topics')
   getTopics(
     @Req() req: any,
@@ -84,5 +74,75 @@ export class WritingController {
       page: Number(page),
       limit: Number(limit),
     });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('topics/:slug')
+  getTopicDetail(@Param('slug') slug: string, @Req() req: any) {
+    return this.writingService.getTopicDetail(req.user.id, slug);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('topics/:slug/types')
+  getWritingTypes(@Param('slug') slug: string, @Req() req: any) {
+    return this.writingService.getWritingTypes(req.user.id, slug);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('topics/:slug/types/:type/start')
+  startWritingType(
+    @Param('slug') slug: string,
+    @Param('type') type: string,
+    @Req() req: any,
+  ) {
+    return this.writingService.startWritingType(req.user.id, slug, type);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('sessions/:sessionId')
+  getSession(@Param('sessionId') sessionId: string, @Req() req: any) {
+    return this.writingService.getSession(req.user.id, sessionId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('sessions/:sessionId/save')
+  saveDraft(
+    @Param('sessionId') sessionId: string,
+    @Body() body: { content: string; timeSpentSeconds?: number },
+    @Req() req: any,
+  ) {
+    return this.writingService.saveDraft(req.user.id, sessionId, body);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('sessions/:sessionId/review')
+  reviewEssay(
+    @Param('sessionId') sessionId: string,
+    @Body() body: { content: string; timeSpentSeconds?: number },
+    @Req() req: any,
+  ) {
+    return this.writingService.reviewEssay(req.user.id, sessionId, body);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('sessions/:sessionId/submit')
+  submitEssay(
+    @Param('sessionId') sessionId: string,
+    @Body() body: { content: string; timeSpentSeconds?: number },
+    @Req() req: any,
+  ) {
+    return this.writingService.submitEssay(req.user.id, sessionId, body);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('sessions/:sessionId/result')
+  getResult(@Param('sessionId') sessionId: string, @Req() req: any) {
+    return this.writingService.getResult(req.user.id, sessionId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('sessions/:sessionId/retry')
+  retryEssay(@Param('sessionId') sessionId: string, @Req() req: any) {
+    return this.writingService.retryEssay(req.user.id, sessionId);
   }
 }

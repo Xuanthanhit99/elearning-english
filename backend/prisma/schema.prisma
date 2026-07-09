@@ -1492,6 +1492,9 @@ enum WritingType {
   EMAIL
   STORY
   SENTENCE
+  PARAGRAPH
+  IELTS_TASK_1
+  IELTS_TASK_2
 }
 
 enum WritingLevel {
@@ -1514,6 +1517,9 @@ model WritingTopic {
   learnerCount Int     @default(0)
   order        Int     @default(0)
   isActive     Boolean @default(true)
+  levelText   String?
+  about       String? @db.Text
+  tips        String? @db.Text
 
   lessons  WritingLesson[]
   progress WritingTopicProgress[]
@@ -1535,6 +1541,11 @@ model WritingLesson {
   type        WritingType
   order       Int          @default(0)
   isActive    Boolean      @default(true)
+  imageUrl    String?
+  duration    Int @default(20)
+  learnerCount Int @default(0)
+
+  sampleEssay String? @db.Text
 
   topic    WritingTopic     @relation(fields: [topicId], references: [id], onDelete: Cascade)
   sessions WritingSession[]
@@ -1557,6 +1568,8 @@ model WritingSession {
   coherenceScore  Int?
   taskScore       Int?
   feedback        String? @db.Text
+
+  timeSpentSeconds Int @default(0)
 
   lesson WritingLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
