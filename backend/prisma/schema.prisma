@@ -1495,6 +1495,7 @@ enum WritingType {
   PARAGRAPH
   IELTS_TASK_1
   IELTS_TASK_2
+  OPINION
 }
 
 enum WritingLevel {
@@ -1506,20 +1507,20 @@ enum WritingLevel {
 }
 
 model WritingTopic {
-  id          String   @id @default(uuid())
+  id          String  @id @default(uuid())
   title       String
-  slug        String   @unique
+  slug        String  @unique
   description String?
   imageUrl    String?
   category    String?
 
-  difficulty  String   @default("BEGINNER")
+  difficulty   String  @default("BEGINNER")
   learnerCount Int     @default(0)
   order        Int     @default(0)
   isActive     Boolean @default(true)
-  levelText   String?
-  about       String? @db.Text
-  tips        String? @db.Text
+  levelText    String?
+  about        String? @db.Text
+  tips         String? @db.Text
 
   lessons  WritingLesson[]
   progress WritingTopicProgress[]
@@ -1529,21 +1530,21 @@ model WritingTopic {
 }
 
 model WritingLesson {
-  id          String       @id @default(uuid())
-  topicId     String
-  title       String
-  slug        String       @unique
-  prompt      String
-  description String?
-  minWords    Int          @default(80)
-  maxWords    Int          @default(200)
-  level       WritingLevel
-  type        WritingType
-  order       Int          @default(0)
-  isActive    Boolean      @default(true)
-  imageUrl    String?
-  duration    Int @default(20)
-  learnerCount Int @default(0)
+  id           String       @id @default(uuid())
+  topicId      String
+  title        String
+  slug         String       @unique
+  prompt       String
+  description  String?
+  minWords     Int          @default(80)
+  maxWords     Int          @default(200)
+  level        WritingLevel
+  type         WritingType
+  order        Int          @default(0)
+  isActive     Boolean      @default(true)
+  imageUrl     String?
+  duration     Int          @default(20)
+  learnerCount Int          @default(0)
 
   sampleEssay String? @db.Text
 
@@ -1569,6 +1570,18 @@ model WritingSession {
   taskScore       Int?
   feedback        String? @db.Text
 
+  aiResult              Json?
+  corrections           Json?
+  strengths             Json?
+  improvements          Json?
+  vocabularySuggestions Json?
+  suggestedVersion      String? @db.Text
+  learningTips          Json?
+  aiCoachTask           String? @db.Text
+
+  rewriteRequired        Boolean @default(false)
+  nextPracticeSuggestion String? @db.Text
+
   timeSpentSeconds Int @default(0)
 
   lesson WritingLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
@@ -1582,12 +1595,12 @@ model WritingSession {
 }
 
 model WritingTopicProgress {
-  id              String @id @default(uuid())
-  userId          String
-  topicId         String
-  completedLessons Int   @default(0)
-  totalLessons     Int   @default(0)
-  progressPercent  Int   @default(0)
+  id               String @id @default(uuid())
+  userId           String
+  topicId          String
+  completedLessons Int    @default(0)
+  totalLessons     Int    @default(0)
+  progressPercent  Int    @default(0)
 
   topic WritingTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
 

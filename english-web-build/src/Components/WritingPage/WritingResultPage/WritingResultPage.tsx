@@ -56,43 +56,84 @@ type ResultData = {
     description: string;
     type: string;
   }[];
+  corrections: {
+    wrong: string;
+    correct: string;
+    explanation: string;
+    type: string;
+  }[];
+
+  suggestedVersion?: string;
+  learningTips?: string[];
+  aiCoachTask?: string;
+  rewriteRequired?: boolean;
+  nextPracticeSuggestion?: string;
 };
 
-export default function WritingResultPage({
-  sessionId,
-}: {
-  sessionId: string;
-}) {
+export default function WritingResultPage() {
   const router = useRouter();
   const params = useParams();
+  const sessionId = params.sessionId as string;
 
   const [data, setData] = useState<ResultData | null>(null);
   const [tab, setTab] = useState<"ESSAY" | "DETAIL" | "CORRECTIONS" | "SAMPLE">(
     "ESSAY",
   );
-
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [retrying, setRetrying] = useState(false);
   async function loadData() {
-    const res = await api.get(`/writing/sessions/${sessionId}/result`);
-    setData(res.data);
+    try {
+      setLoading(true);
+      setError("");
+
+      const res = await api.get(`/writing/sessions/${sessionId}/result`);
+      setData(res.data);
+    } catch (err) {
+      console.error(err);
+      setError("Không tải được kết quả bài viết.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleRetry() {
-    const res = await api.post(`/writing/sessions/${sessionId}/retry`);
-    router.push(`/writing/sessions/${res.data.sessionId}`);
+    try {
+      setRetrying(true);
+
+      const res = await api.post(`/writing/sessions/${sessionId}/retry`);
+      router.push(`/writing/sessions/${res.data.sessionId}`);
+    } finally {
+      setRetrying(false);
+    }
   }
 
   useEffect(() => {
     loadData();
   }, [sessionId]);
 
-  if (!data) return <div className="p-10">Loading...</div>;
+  if (loading) return <div className="p-10">Loading...</div>;
+
+  if (error) {
+    return (
+      <div className="p-10">
+        <p className="font-semibold text-red-600">{error}</p>
+        <button
+          onClick={loadData}
+          className="mt-4 rounded-xl bg-violet-600 px-5 py-3 font-bold text-white"
+        >
+          Thử lại
+        </button>
+      </div>
+    );
+  }
+
+  if (!data) return <div className="p-10">Không có dữ liệu.</div>;
 
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
       <div className="flex">
-
         <main className="min-h-screen flex-1">
-
           <div className="grid grid-cols-[minmax(0,1fr)_410px] gap-8 px-10 py-8">
             <div>
               <div className="flex items-start justify-between">
@@ -139,12 +180,30 @@ export default function WritingResultPage({
                 </TabButton>
               </div>
 
-              <div className="mt-5 grid grid-cols-[1fr_370px] gap-6">
-                <EssayCard
-                  content={data.session.content}
-                  wordCount={data.session.wordCount}
-                />
-                <DetailedFeedbackCard items={data.detailedFeedback} />
+              <div className="mt-5">
+                {tab === "ESSAY" && (
+                  <div className="grid grid-cols-[1fr_370px] gap-6">
+                    <EssayCard
+                      content={data.session.content}
+                      wordCount={data.session.wordCount}
+                    />
+                    <AICoachCard data={data} />
+                  </div>
+                )}
+
+                {tab === "DETAIL" && (
+                  <DetailedFeedbackCard items={data.detailedFeedback || []} />
+                )}
+
+                {tab === "CORRECTIONS" && (
+                  <CorrectionsCard corrections={data.corrections || []} />
+                )}
+
+                {tab === "SAMPLE" && (
+                  <SampleEssayCard
+                    suggestedVersion={data.suggestedVersion || ""}
+                  />
+                )}
               </div>
 
               <div className="mt-7 flex items-center justify-between">
@@ -159,16 +218,17 @@ export default function WritingResultPage({
 
                 <button
                   onClick={handleRetry}
-                  className="flex h-12 items-center gap-2 rounded-xl bg-violet-600 px-7 font-bold text-white"
+                  disabled={retrying}
+                  className="flex h-12 items-center gap-2 rounded-xl bg-violet-600 px-7 font-bold text-white disabled:opacity-50"
                 >
                   <RefreshCcw className="h-5 w-5" />
-                  Try Another Essay
+                  {retrying ? "Creating..." : "Try Another Essay"}
                 </button>
               </div>
             </div>
 
             <aside className="space-y-6">
-              <ResultSummary data={data} />
+              <ResultSummary data={data} onDownload={() => window.print()} />
               <StrengthsCard
                 strengths={data.strengths}
                 improvements={data.improvements}
@@ -360,7 +420,13 @@ function DetailedFeedbackCard({
   );
 }
 
-function ResultSummary({ data }: { data: ResultData }) {
+function ResultSummary({
+  data,
+  onDownload,
+}: {
+  data: ResultData;
+  onDownload: () => void;
+}) {
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
       <h2 className="text-lg font-extrabold">Your Result</h2>
@@ -385,7 +451,10 @@ function ResultSummary({ data }: { data: ResultData }) {
         <p>📅 Date: {formatDate(data.session.submittedAt)}</p>
       </div>
 
-      <button className="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-violet-500 font-bold text-violet-600">
+      <button
+        onClick={onDownload}
+        className="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-violet-500 font-bold text-violet-600"
+      >
         <Download className="h-4 w-4" />
         Download Report
       </button>
@@ -445,10 +514,14 @@ function VocabularyCard({
         <button className="font-bold text-violet-600">View all</button>
       </div>
 
+      {items.length === 0 && (
+        <p className="mt-5 text-sm text-slate-500">Chưa có gợi ý từ vựng.</p>
+      )}
+
       <div className="mt-5 divide-y divide-slate-100">
-        {items.map((item) => (
+        {items.map((item, index) => (
           <div
-            key={item.original}
+            key={`${item.original}-${index}`}
             className="grid grid-cols-[1fr_30px_1fr] py-3 text-sm"
           >
             <span>{item.original}</span>
@@ -517,4 +590,94 @@ function formatDate(value: string) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function CorrectionsCard({
+  corrections,
+}: {
+  corrections: ResultData["corrections"];
+}) {
+  return (
+    <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+      <h3 className="font-extrabold">Corrections</h3>
+
+      {corrections.length === 0 && (
+        <p className="mt-5 text-sm text-slate-500">Không có lỗi cần sửa.</p>
+      )}
+
+      <div className="mt-5 divide-y divide-slate-100">
+        {corrections.map((item, index) => (
+          <div
+            key={`${item.wrong}-${index}`}
+            className="grid grid-cols-[1fr_30px_1fr_1.5fr_100px] items-center gap-3 py-4 text-sm"
+          >
+            <span className="font-semibold text-red-500 line-through">
+              {item.wrong}
+            </span>
+
+            <span className="text-slate-400">→</span>
+
+            <span className="font-bold text-green-600">{item.correct}</span>
+
+            <span className="leading-6 text-slate-500">{item.explanation}</span>
+
+            <span className="rounded-lg bg-violet-100 px-3 py-1 text-center text-xs font-bold text-violet-600">
+              {item.type}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SampleEssayCard({ suggestedVersion }: { suggestedVersion: string }) {
+  return (
+    <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+      <h3 className="font-extrabold">Improved Version</h3>
+
+      {suggestedVersion ? (
+        <p className="mt-6 whitespace-pre-line text-sm leading-8 text-slate-700">
+          {suggestedVersion}
+        </p>
+      ) : (
+        <p className="mt-5 text-sm text-slate-500">
+          Chưa có bản viết cải thiện từ AI.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function AICoachCard({ data }: { data: ResultData }) {
+  return (
+    <div className="rounded-2xl bg-violet-50 p-6 shadow-sm ring-1 ring-violet-100">
+      <h3 className="font-extrabold text-violet-700">AI Coach</h3>
+
+      <p className="mt-4 text-sm leading-6 text-slate-600">
+        {data.aiCoachTask || "AI chưa có nhiệm vụ luyện lại cho bài này."}
+      </p>
+
+      {data.nextPracticeSuggestion && (
+        <div className="mt-5 rounded-xl bg-white p-4">
+          <p className="text-sm font-bold text-violet-700">
+            Next Practice Suggestion
+          </p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            {data.nextPracticeSuggestion}
+          </p>
+        </div>
+      )}
+
+      {data.learningTips && data.learningTips.length > 0 && (
+        <div className="mt-5 space-y-3">
+          {data.learningTips.map((tip, index) => (
+            <p key={index} className="text-sm text-slate-600">
+              • {tip}
+            </p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }

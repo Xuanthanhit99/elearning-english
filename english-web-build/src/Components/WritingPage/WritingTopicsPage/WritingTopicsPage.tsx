@@ -2,21 +2,15 @@
 
 import { api } from "@/src/lib/axios";
 import {
-  Bell,
   BookOpen,
   ChevronLeft,
   ChevronRight,
-  Crown,
-  Flame,
-  Gift,
   Grid2X2,
   List,
-  PenLine,
   Search,
-  Star,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type Topic = {
   id: string;
@@ -41,45 +35,65 @@ type TopicResponse = {
 
 export default function WritingTopicsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const initialType = searchParams.get("type") || "ALL";
 
   const [data, setData] = useState<TopicResponse | null>(null);
   const [search, setSearch] = useState("");
   const [difficulty, setDifficulty] = useState("ALL");
   const [progress, setProgress] = useState("ALL");
   const [sort, setSort] = useState("popular");
+  const [type, setType] = useState(initialType);
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [viewMode, setViewMode] = useState<"GRID" | "LIST">("GRID");
 
-  async function loadTopics() {
-    const res = await api.get("/writing/topics", {
-      params: {
-        search,
-        difficulty,
-        progress,
-        sort,
-        page,
-        limit: 10,
-      },
-    });
+  async function loadTopics(nextPage = page) {
+    try {
+      setLoading(true);
+      setError("");
 
-    setData(res.data);
+      const res = await api.get("/writing/topics", {
+        params: {
+          search: search.trim() || undefined,
+          difficulty,
+          progress,
+          sort,
+          type: type === "ALL" ? undefined : type,
+          page: nextPage,
+          limit: 10,
+        },
+      });
+
+      setData(res.data);
+    } catch (err) {
+      console.error(err);
+      setError("Không tải được danh sách chủ đề.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
-    loadTopics();
-  }, [difficulty, progress, sort, page]);
+    loadTopics(page);
+  }, [difficulty, progress, sort, type, page]);
 
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setPage(1);
-    loadTopics();
+
+    if (page === 1) {
+      loadTopics(1);
+    } else {
+      setPage(1);
+    }
   }
 
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
       <div className="flex">
-
         <main className="min-h-screen flex-1">
-
           <div className="px-10 py-8">
             <div>
               <h1 className="text-3xl font-extrabold">All Writing Topics</h1>
@@ -116,6 +130,24 @@ export default function WritingTopicsPage() {
               </select>
 
               <select
+                value={type}
+                onChange={(e) => {
+                  setType(e.target.value);
+                  setPage(1);
+                }}
+                className="h-12 w-[190px] rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-600 outline-none"
+              >
+                <option value="ALL">All Types</option>
+                <option value="SENTENCE">Sentence</option>
+                <option value="PARAGRAPH">Paragraph</option>
+                <option value="ESSAY">Essay</option>
+                <option value="EMAIL">Email</option>
+                <option value="STORY">Story</option>
+                <option value="IELTS_TASK_1">IELTS Task 1</option>
+                <option value="IELTS_TASK_2">IELTS Task 2</option>
+              </select>
+
+              <select
                 value={progress}
                 onChange={(e) => {
                   setProgress(e.target.value);
@@ -142,32 +174,66 @@ export default function WritingTopicsPage() {
                 <option value="progress">Sort by: Progress</option>
               </select>
 
-              <button className="grid h-12 w-12 place-items-center rounded-xl border border-violet-400 bg-violet-600 text-white">
+              <button
+                onClick={() => setViewMode("GRID")}
+                className={`grid h-12 w-12 place-items-center rounded-xl border ${
+                  viewMode === "GRID"
+                    ? "border-violet-400 bg-violet-600 text-white"
+                    : "border-slate-200 bg-white text-slate-400"
+                }`}
+              >
                 <Grid2X2 className="h-5 w-5" />
               </button>
 
-              <button className="grid h-12 w-12 place-items-center rounded-xl border border-slate-200 bg-white text-slate-400">
+              <button
+                onClick={() => setViewMode("LIST")}
+                className={`grid h-12 w-12 place-items-center rounded-xl border ${
+                  viewMode === "LIST"
+                    ? "border-violet-400 bg-violet-600 text-white"
+                    : "border-slate-200 bg-white text-slate-400"
+                }`}
+              >
                 <List className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-4">
-              {data?.items.map((topic) => (
-                <TopicCard
-                  key={topic.id}
-                  topic={topic}
-                  onClick={() => router.push(`/writing/topics/${topic.slug}`)}
-                />
-              ))}
-            </div>
+            {loading && <div className="mt-8">Loading...</div>}
 
-            {data && (
-              <Pagination
-                page={data.pagination.page}
-                totalPages={data.pagination.totalPages}
-                onChange={setPage}
-              />
+            {error && (
+              <div className="mt-8 rounded-xl bg-red-50 p-4 text-sm font-semibold text-red-600">
+                {error}
+              </div>
             )}
+
+            {!loading && !error && data?.items.length === 0 && (
+              <div className="mt-8 rounded-xl bg-white p-8 text-center text-slate-500 shadow-sm">
+                Không tìm thấy chủ đề phù hợp.
+              </div>
+            )}
+
+            {!loading && !error && (
+              <div
+                className={
+                  viewMode === "GRID"
+                    ? "mt-6 grid grid-cols-2 gap-4"
+                    : "mt-6 space-y-4"
+                }
+              >
+                {data?.items.map((topic) => (
+                  <TopicCard
+                    key={topic.id}
+                    topic={topic}
+                    onClick={() => router.push(`/writing/topics/${topic.slug}`)}
+                  />
+                ))}
+              </div>
+            )}
+
+            <Pagination
+              page={data && data.pagination.page || 1}
+              totalPages={data && data.pagination.totalPages || 1}
+              onChange={(nextPage) => setPage(nextPage)}
+            />
           </div>
         </main>
       </div>
@@ -315,96 +381,3 @@ function Pagination({
     </div>
   );
 }
-
-const topics = [
-  {
-    title: 'Business',
-    slug: 'business',
-    description: 'Write about work, companies, marketing, finance and other business-related topics.',
-    imageUrl: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40',
-    difficulty: 'INTERMEDIATE',
-    learnerCount: 1200,
-    order: 1,
-  },
-  {
-    title: 'Travel',
-    slug: 'travel',
-    description: 'Describe places, travel experiences, hotels, transportation and more.',
-    imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e',
-    difficulty: 'BEGINNER',
-    learnerCount: 900,
-    order: 2,
-  },
-  {
-    title: 'Education',
-    slug: 'education',
-    description: 'Write about school life, learning, teachers, education systems and future goals.',
-    imageUrl: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f',
-    difficulty: 'INTERMEDIATE',
-    learnerCount: 1100,
-    order: 3,
-  },
-  {
-    title: 'Technology',
-    slug: 'technology',
-    description: 'Explore gadgets, AI, social media, and the impact of technology on our lives.',
-    imageUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475',
-    difficulty: 'INTERMEDIATE',
-    learnerCount: 1800,
-    order: 4,
-  },
-  {
-    title: 'Health',
-    slug: 'health',
-    description: 'Discuss healthy habits, mental health, fitness, and healthcare topics.',
-    imageUrl: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528',
-    difficulty: 'BEGINNER',
-    learnerCount: 950,
-    order: 5,
-  },
-  {
-    title: 'Food',
-    slug: 'food',
-    description: 'Write about cuisine, cooking, restaurants, eating habits and food culture.',
-    imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
-    difficulty: 'BEGINNER',
-    learnerCount: 700,
-    order: 6,
-  },
-  {
-    title: 'Environment',
-    slug: 'environment',
-    description: 'Talk about nature, pollution, climate change, and how to protect our planet.',
-    imageUrl: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee',
-    difficulty: 'INTERMEDIATE',
-    learnerCount: 1300,
-    order: 7,
-  },
-  {
-    title: 'Daily Life',
-    slug: 'daily-life',
-    description: 'Write about routines, hobbies, family, friends and everyday activities.',
-    imageUrl: 'https://images.unsplash.com/photo-1513694203232-719a280e022f',
-    difficulty: 'INTERMEDIATE',
-    learnerCount: 1500,
-    order: 8,
-  },
-  {
-    title: 'Culture',
-    slug: 'culture',
-    description: 'Explore traditions, festivals, customs, and cultural diversity.',
-    imageUrl: 'https://images.unsplash.com/photo-1528181304800-259b08848526',
-    difficulty: 'BEGINNER',
-    learnerCount: 800,
-    order: 9,
-  },
-  {
-    title: 'Opinion',
-    slug: 'opinion',
-    description: 'Express your views on social issues, trends, and controversial topics.',
-    imageUrl: 'https://images.unsplash.com/photo-1557804506-669a67965ba0',
-    difficulty: 'INTERMEDIATE',
-    learnerCount: 1000,
-    order: 10,
-  },
-];

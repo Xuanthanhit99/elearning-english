@@ -26,7 +26,7 @@ export class WritingController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('history')
+  @Get('ai/history')
   getMyWritingHistory(@Req() req: any) {
     return this.writingService.getMyHistory(req.user.id);
   }
@@ -78,8 +78,12 @@ export class WritingController {
 
   @UseGuards(JwtAuthGuard)
   @Get('topics/:slug')
-  getTopicDetail(@Param('slug') slug: string, @Req() req: any) {
-    return this.writingService.getTopicDetail(req.user.id, slug);
+  getTopicDetail(
+    @Param('slug') slug: string,
+    @Query('sort') sort: string,
+    @Req() req: any,
+  ) {
+    return this.writingService.getTopicDetail(req.user.id, slug, sort);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -144,5 +148,54 @@ export class WritingController {
   @Post('sessions/:sessionId/retry')
   retryEssay(@Param('sessionId') sessionId: string, @Req() req: any) {
     return this.writingService.retryEssay(req.user.id, sessionId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('history')
+  getWritingHistory(
+    @Req() req: any,
+    @Query('topic') topic?: string,
+    @Query('type') type?: string,
+    @Query('level') level?: string,
+    @Query('status') status?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+  ) {
+    return this.writingService.getWritingHistory(req.user.id, {
+      topic,
+      type,
+      level,
+      status,
+      from,
+      to,
+      page: Number(page),
+      limit: Number(limit),
+    });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('history/:sessionId')
+  getWritingHistoryDetail(
+    @Param('sessionId') sessionId: string,
+    @Req() req: any,
+  ) {
+    return this.writingService.getWritingHistoryDetail(req.user.id, sessionId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('history/:sessionId/retry')
+  retryFromHistory(@Param('sessionId') sessionId: string, @Req() req: any) {
+    return this.writingService.retryEssay(req.user.id, sessionId);
+  }
+
+  @Post('sessions/:sessionId/rewrite')
+  rewriteEssay(
+    @Param('sessionId') sessionId: string,
+    @Body() body: { content?: string },
+    @Req() req: any,
+  ) {
+    return this.writingService.rewriteEssay(req.user.id, sessionId, body);
   }
 }

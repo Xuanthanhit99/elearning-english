@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { api } from '@/src/lib/axios';
+import { api } from "@/src/lib/axios";
 import {
   Bell,
   BookOpen,
@@ -19,9 +19,9 @@ import {
   Search,
   Star,
   Timer,
-} from 'lucide-react';
-import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+} from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type SessionData = {
   session: {
@@ -61,15 +61,19 @@ type SessionData = {
   }[];
 };
 
-export default function WritingSessionPage({sessionId}: {sessionId: string}) {
+export default function WritingSessionPage() {
   const router = useRouter();
   const params = useParams();
+  const sessionId = params.sessionId as string;
 
   const [data, setData] = useState<SessionData | null>(null);
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState("");
   const [timeSpent, setTimeSpent] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [showSample, setShowSample] = useState(false);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -78,21 +82,63 @@ export default function WritingSessionPage({sessionId}: {sessionId: string}) {
   }, [content]);
 
   async function loadData() {
-    const res = await api.get(`/writing/sessions/${sessionId}`);
-    setData(res.data);
-    setContent(res.data.session.content || '');
-    setTimeSpent(res.data.session.timeSpentSeconds || 0);
+    try {
+      setError("");
+      const res = await api.get(`/writing/sessions/${sessionId}`);
+      setData(res.data);
+      setContent(res.data.session.content || "");
+      setTimeSpent(res.data.session.timeSpentSeconds || 0);
+    } catch (err) {
+      console.error(err);
+      setError("Không tải được phiên luyện viết.");
+    }
   }
 
   async function handleSave() {
     try {
       setSaving(true);
+      setError("");
+
       await api.post(`/writing/sessions/${sessionId}/save`, {
         content,
         timeSpentSeconds: timeSpent,
       });
+    } catch (err) {
+      console.error(err);
+      setError("Không lưu được bài viết.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleSubmit() {
+    if (!content.trim()) {
+      setError("Bạn cần nhập bài viết trước khi nộp.");
+      return;
+    }
+
+    if (data && wordCount < data.lesson.minWords) {
+      setError(`Bài viết cần tối thiểu ${data.lesson.minWords} từ.`);
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setError("");
+
+      const res = await api.post(`/writing/sessions/${sessionId}/submit`, {
+        content,
+        timeSpentSeconds: timeSpent,
+      });
+
+      router.push(
+        res.data.resultUrl || `/writing/sessions/${sessionId}/result`,
+      );
+    } catch (err) {
+      console.error(err);
+      setError("Không thể nộp bài viết lúc này.");
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -114,25 +160,35 @@ export default function WritingSessionPage({sessionId}: {sessionId: string}) {
   }, [sessionId]);
 
   useEffect(() => {
-    if (timerRunning) {
-      timerRef.current = setInterval(() => {
-        setTimeSpent((prev) => prev + 1);
-      }, 1000);
-    }
+    if (!timerRunning) return;
 
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
+    const timer = setInterval(() => {
+      setTimeSpent((prev) => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
   }, [timerRunning]);
 
-  if (!data) return <div className="p-10">Loading...</div>;
+  if (!data && !error) return <div className="p-10">Loading...</div>;
+
+  if (error && !data) {
+    return (
+      <div className="p-10">
+        <p className="font-semibold text-red-600">{error}</p>
+        <button
+          onClick={loadData}
+          className="mt-4 rounded-xl bg-violet-600 px-5 py-3 font-bold text-white"
+        >
+          Thử lại
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
       <div className="flex">
-
         <main className="min-h-screen flex-1">
-
           <div className="grid grid-cols-[minmax(0,1fr)_390px] gap-8 px-10 py-8">
             <div>
               <div className="flex items-start justify-between">
@@ -147,7 +203,9 @@ export default function WritingSessionPage({sessionId}: {sessionId: string}) {
                 </div>
 
                 <button
-                  onClick={() => router.push(`/writing/topics/${data.topic.slug}`)}
+                  onClick={() =>
+                    router.push(`/writing/topics/${data.topic.slug}`)
+                  }
                   className="h-11 rounded-xl border border-violet-500 px-6 text-sm font-bold text-violet-600"
                 >
                   Leave
@@ -156,7 +214,17 @@ export default function WritingSessionPage({sessionId}: {sessionId: string}) {
 
               <StepBar />
 
-              <PromptBox data={data} />
+              {error && (
+                <div className="mt-5 rounded-xl bg-red-50 p-4 text-sm font-semibold text-red-600">
+                  {error}
+                </div>
+              )}
+
+              <PromptBox
+                data={data}
+                showSample={showSample}
+                onToggleSample={() => setShowSample((prev) => !prev)}
+              />
 
               <EditorBox
                 content={content}
@@ -180,14 +248,15 @@ export default function WritingSessionPage({sessionId}: {sessionId: string}) {
                     className="flex h-12 items-center gap-2 rounded-xl border border-slate-300 bg-white px-7 font-bold text-violet-600"
                   >
                     <Save className="h-5 w-5" />
-                    {saving ? 'Saving...' : 'Save Draft'}
+                    {saving ? "Saving..." : "Save Draft"}
                   </button>
 
                   <button
-                    onClick={handleReview}
-                    className="flex h-12 items-center gap-2 rounded-xl bg-violet-600 px-7 font-bold text-white"
+                    onClick={handleSubmit}
+                    disabled={submitting || saving}
+                    className="flex h-12 items-center gap-2 rounded-xl bg-violet-600 px-7 font-bold text-white disabled:opacity-50"
                   >
-                    Review My Essay
+                    {submitting ? "Checking with AI..." : "Submit & Check AI"}
                     <ChevronRight className="h-5 w-5" />
                   </button>
                 </div>
@@ -195,7 +264,12 @@ export default function WritingSessionPage({sessionId}: {sessionId: string}) {
             </div>
 
             <aside className="space-y-6">
-              <ProgressCard data={data} />
+              <ProgressCard
+                data={data}
+                onViewTopic={() =>
+                  router.push(`/writing/topics/${data.topic.slug}`)
+                }
+              />
               <TipsCard tips={data.tips} />
               <TimeTracker
                 timeSpent={timeSpent}
@@ -265,10 +339,10 @@ function LessonTitle({ data }: { data: SessionData }) {
 
 function StepBar() {
   const steps = [
-    { label: 'Prompt', done: true },
-    { label: 'Write', active: true },
-    { label: 'Review' },
-    { label: 'Submit' },
+    { label: "Prompt", done: true },
+    { label: "Write", active: true },
+    { label: "Review" },
+    { label: "Submit" },
   ];
 
   return (
@@ -279,8 +353,8 @@ function StepBar() {
             <div
               className={`grid h-8 w-8 place-items-center rounded-full text-sm font-extrabold ${
                 step.done || step.active
-                  ? 'bg-violet-600 text-white'
-                  : 'bg-slate-100 text-slate-500'
+                  ? "bg-violet-600 text-white"
+                  : "bg-slate-100 text-slate-500"
               }`}
             >
               {step.done ? <Check className="h-5 w-5" /> : index + 1}
@@ -288,7 +362,7 @@ function StepBar() {
 
             <span
               className={`font-extrabold ${
-                step.active || step.done ? 'text-[#09083f]' : 'text-slate-500'
+                step.active || step.done ? "text-[#09083f]" : "text-slate-500"
               }`}
             >
               {step.label}
@@ -304,7 +378,15 @@ function StepBar() {
   );
 }
 
-function PromptBox({ data }: { data: SessionData }) {
+function PromptBox({
+  data,
+  showSample,
+  onToggleSample,
+}: {
+  data: SessionData;
+  showSample: boolean;
+  onToggleSample: () => void;
+}) {
   return (
     <div className="mt-6 rounded-xl border border-violet-100 bg-violet-50 p-7">
       <div className="flex gap-5">
@@ -317,19 +399,25 @@ function PromptBox({ data }: { data: SessionData }) {
             {data.lesson.prompt}
           </p>
 
-          <p className="mt-4 font-extrabold">
-            To what extent do you agree or disagree with this statement?
-          </p>
+          {data.lesson.description && (
+            <p className="mt-3 text-slate-600">{data.lesson.description}</p>
+          )}
 
-          <p className="mt-3 text-slate-600">
-            Give reasons for your answer and include any relevant examples from
-            your own knowledge or experience.
-          </p>
+          {data.lesson.sampleEssay && (
+            <button
+              onClick={onToggleSample}
+              className="mt-6 flex items-center gap-2 font-bold text-violet-600"
+            >
+              <Eye className="h-4 w-4" />
+              {showSample ? "Hide sample essay" : "Show sample essay"}
+            </button>
+          )}
 
-          <button className="mt-6 flex items-center gap-2 font-bold text-violet-600">
-            <Eye className="h-4 w-4" />
-            Show sample essay
-          </button>
+          {showSample && data.lesson.sampleEssay && (
+            <div className="mt-5 rounded-xl bg-white p-5 text-sm leading-7 text-slate-700">
+              {data.lesson.sampleEssay}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -380,7 +468,7 @@ function EditorBox({
             className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm font-bold"
           >
             <Save className="h-4 w-4" />
-            {saving ? 'Saving...' : 'Save'}
+            {saving ? "Saving..." : "Save"}
           </button>
         </div>
       </div>
@@ -400,7 +488,13 @@ function EditorBox({
   );
 }
 
-function ProgressCard({ data }: { data: SessionData }) {
+function ProgressCard({
+  data,
+  onViewTopic,
+}: {
+  data: SessionData;
+  onViewTopic: () => void;
+}) {
   return (
     <div className="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-100">
       <h2 className="text-xl font-extrabold">Your Progress</h2>
@@ -422,12 +516,21 @@ function ProgressCard({ data }: { data: SessionData }) {
             value={`${data.progress.completed} / ${data.progress.totalLessons}`}
             label="Lessons Completed"
           />
-          <ProgressItem value={String(data.progress.inProgress)} label="In Progress" />
-          <ProgressItem value={String(data.progress.notStarted)} label="Not Started" />
+          <ProgressItem
+            value={String(data.progress.inProgress)}
+            label="In Progress"
+          />
+          <ProgressItem
+            value={String(data.progress.notStarted)}
+            label="Not Started"
+          />
         </div>
       </div>
 
-      <button className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-violet-500 font-bold text-violet-600">
+      <button
+        onClick={onViewTopic}
+        className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-violet-500 font-bold text-violet-600"
+      >
         View Topic Details
         <ChevronRight className="h-5 w-5" />
       </button>
@@ -444,7 +547,7 @@ function ProgressItem({ value, label }: { value: string; label: string }) {
   );
 }
 
-function TipsCard({ tips }: { tips: SessionData['tips'] }) {
+function TipsCard({ tips }: { tips: SessionData["tips"] }) {
   return (
     <div className="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-100">
       <h2 className="text-xl font-extrabold">Writing Tips</h2>
@@ -498,7 +601,7 @@ function TimeTracker({
         className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-violet-500 font-bold text-violet-600"
       >
         <Play className="h-5 w-5" />
-        {running ? 'Pause Timer' : 'Start Timer'}
+        {running ? "Pause Timer" : "Start Timer"}
       </button>
     </div>
   );
@@ -509,19 +612,19 @@ function formatTime(seconds: number) {
   const m = Math.floor((seconds % 3600) / 60);
   const s = seconds % 60;
 
-  return [h, m, s].map((x) => String(x).padStart(2, '0')).join(':');
+  return [h, m, s].map((x) => String(x).padStart(2, "0")).join(":");
 }
 
 function formatType(type: string) {
   const map: Record<string, string> = {
-    SENTENCE: 'Sentence Writing',
-    PARAGRAPH: 'Paragraph',
-    ESSAY: 'Essay Writing',
-    EMAIL: 'Email',
-    OPINION: 'Opinion',
-    STORY: 'Story',
-    IELTS_TASK_1: 'IELTS Task 1',
-    IELTS_TASK_2: 'IELTS Task 2',
+    SENTENCE: "Sentence Writing",
+    PARAGRAPH: "Paragraph",
+    ESSAY: "Essay Writing",
+    EMAIL: "Email",
+    OPINION: "Opinion",
+    STORY: "Story",
+    IELTS_TASK_1: "IELTS Task 1",
+    IELTS_TASK_2: "IELTS Task 2",
   };
 
   return map[type] ?? type;

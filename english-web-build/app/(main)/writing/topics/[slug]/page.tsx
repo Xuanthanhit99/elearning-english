@@ -7,5 +7,5 @@ export default async function WritingTopicSlug({
 }) {
   const { slug } = await params;
 
-  return <WritingTopicDetailPage slug={slug} />;
+  return <WritingTopicDetailPage />;
 }

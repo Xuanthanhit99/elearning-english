@@ -157,11 +157,7 @@ Rules:
   }
 
   private async callGemini(prompt: string) {
-    const models = [
-      'gemini-3.1-flash-lite',
-      'gemini-3.5-flash',
-      'gemini-2.5-flash',
-    ];
+    const models = ['gemini-2.5-flash', 'gemini-2.5-flash', 'gemini-2.0-flash'];
 
     for (const modelName of models) {
       try {
@@ -202,24 +198,25 @@ Rules:
   }
 
   async getHome(userId: string) {
-    const [totalSessions, submittedSessions, recentHistory, recommendations] =
-      await Promise.all([
-        this.prisma.writingSession.count({
-          where: { userId },
-        }),
-
-        this.prisma.writingSession.findMany({
-          where: {
-            userId,
-            isSubmitted: true,
-            overallScore: { not: null },
-          },
-        }),
-
-        this.getRecentHistory(userId),
-
-        this.getRecommendations(),
-      ]);
+    const [
+      totalSessions,
+      submittedSessions,
+      recentHistory,
+      recommendations,
+      progress,
+    ] = await Promise.all([
+      this.prisma.writingSession.count({ where: { userId } }),
+      this.prisma.writingSession.findMany({
+        where: {
+          userId,
+          isSubmitted: true,
+          overallScore: { not: null },
+        },
+      }),
+      this.getRecentHistory(userId),
+      this.getRecommendations(),
+      this.getProgress(userId),
+    ]);
 
     const avgScore =
       submittedSessions.length > 0
@@ -240,6 +237,8 @@ Rules:
         essaysWritten: totalSessions,
         avgScore,
         dayStreak: 5,
+        xpToday: 2450,
+        gems: 5230,
       },
       todayPractice: [
         {
@@ -278,6 +277,40 @@ Rules:
           color: 'pink',
         },
       ],
+
+      writingPath: [
+        {
+          key: 'SENTENCE',
+          title: 'Sentence Builder',
+          description: 'Viết câu đơn theo gợi ý hình ảnh hoặc từ khóa.',
+          order: 1,
+        },
+        {
+          key: 'PARAGRAPH',
+          title: 'Paragraph Writing',
+          description: 'Ghép 4–6 câu thành một đoạn văn hoàn chỉnh.',
+          order: 2,
+        },
+        {
+          key: 'ESSAY',
+          title: 'Essay Writing',
+          description: 'Viết bài luận đầy đủ từ 100–250 từ.',
+          order: 3,
+        },
+        {
+          key: 'DAILY_CHALLENGE',
+          title: 'Daily Writing Challenge',
+          description: 'Mỗi ngày một chủ đề ngắn để duy trì streak.',
+          order: 4,
+        },
+        {
+          key: 'AI_COACH',
+          title: 'AI Coach',
+          description: 'AI giải thích lỗi, gợi ý sửa và yêu cầu viết lại.',
+          order: 5,
+        },
+      ],
+
       recommendations,
       recentHistory,
       dailyGoal: {
@@ -285,6 +318,7 @@ Rules:
         current: 10,
         target: 15,
       },
+      progress,
     };
   }
 
@@ -390,6 +424,25 @@ Rules:
       throw new NotFoundException('Không tìm thấy bài viết');
     }
 
+    const existing = await this.prisma.writingSession.findFirst({
+      where: {
+        userId,
+        lessonId,
+        isSubmitted: false,
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+    });
+
+    if (existing) {
+      return {
+        sessionId: existing.id,
+        lessonId,
+        reused: true,
+      };
+    }
+
     const session = await this.prisma.writingSession.create({
       data: {
         userId,
@@ -400,6 +453,7 @@ Rules:
     return {
       sessionId: session.id,
       lessonId,
+      reused: false,
     };
   }
 
@@ -510,13 +564,18 @@ Rules:
     };
   }
 
-  async getTopicDetail(userId: string, slug: string) {
+  async getTopicDetail(userId: string, slug: string, sort = 'DEFAULT') {
     const topic = await this.prisma.writingTopic.findUnique({
       where: { slug },
       include: {
         lessons: {
           where: { isActive: true },
-          orderBy: { order: 'asc' },
+          orderBy:
+            sort === 'NEWEST'
+              ? { createdAt: 'desc' }
+              : sort === 'TITLE'
+                ? { title: 'asc' }
+                : { order: 'asc' },
           include: {
             sessions: {
               where: { userId },
@@ -536,7 +595,7 @@ Rules:
       throw new NotFoundException('Không tìm thấy chủ đề luyện viết');
     }
 
-    const lessons = topic.lessons.map((lesson, index) => {
+    let lessons = topic.lessons.map((lesson, index) => {
       const session = lesson.sessions[0];
 
       const progressPercent = session?.isSubmitted
@@ -566,14 +625,54 @@ Rules:
         status,
         progressPercent,
         sessionId: session?.id ?? null,
+        score: session?.overallScore ?? null,
       };
     });
+
+    if (sort === 'PROGRESS') {
+      lessons = lessons.sort((a, b) => b.progressPercent - a.progressPercent);
+    }
 
     const completed = lessons.filter((x) => x.status === 'COMPLETED').length;
     const inProgress = lessons.filter((x) => x.status === 'IN_PROGRESS').length;
 
     const progressPercent =
       lessons.length > 0 ? Math.round((completed / lessons.length) * 100) : 0;
+
+    const submittedSessions = await this.prisma.writingSession.findMany({
+      where: {
+        userId,
+        lessonId: {
+          in: lessons.map((x) => x.id),
+        },
+        isSubmitted: true,
+        overallScore: { not: null },
+      },
+      select: {
+        overallScore: true,
+      },
+    });
+
+    const averageScore =
+      submittedSessions.length > 0
+        ? Math.round(
+            submittedSessions.reduce(
+              (sum, item) => sum + (item.overallScore ?? 0),
+              0,
+            ) / submittedSessions.length,
+          )
+        : 0;
+
+    const bestScore =
+      submittedSessions.length > 0
+        ? Math.max(...submittedSessions.map((x) => x.overallScore ?? 0))
+        : 0;
+
+    const nextLesson =
+      lessons.find((x) => x.status === 'IN_PROGRESS') ||
+      lessons.find((x) => x.status === 'NOT_STARTED') ||
+      lessons[0] ||
+      null;
 
     return {
       id: topic.id,
@@ -583,15 +682,69 @@ Rules:
       imageUrl: topic.imageUrl,
       difficulty: topic.difficulty,
       levelText: topic.levelText ?? 'B1 - B2 Level',
+
       progress: {
         overall: topic.progress[0]?.progressPercent ?? progressPercent,
         totalLessons: lessons.length,
         completed,
         inProgress,
+        notStarted: lessons.length - completed - inProgress,
       },
+
+      stats: {
+        averageScore,
+        bestScore,
+        totalAttempts: submittedSessions.length,
+        estimatedHours: Math.ceil(
+          lessons.reduce((sum, item) => sum + (item.duration || 20), 0) / 60,
+        ),
+      },
+
+      nextLesson,
+
+      aiRecommendation: nextLesson
+        ? {
+            title: nextLesson.title,
+            reason:
+              nextLesson.status === 'IN_PROGRESS'
+                ? 'Bạn đang học dở bài này, nên tiếp tục để hoàn thành tiến độ.'
+                : 'Đây là bài phù hợp tiếp theo để cải thiện kỹ năng viết của bạn.',
+            estimatedTime: nextLesson.duration,
+            level: nextLesson.level,
+            type: nextLesson.type,
+          }
+        : null,
+
       lessons,
-      about: topic.about ?? '',
-      tips: topic.tips ?? '',
+
+      about: {
+        overview: topic.about || topic.description || '',
+        learningObjectives: [
+          'Viết câu và đoạn văn rõ ràng hơn.',
+          'Sử dụng từ vựng phù hợp với chủ đề.',
+          'Cải thiện cấu trúc bài viết và lập luận.',
+        ],
+        grammarFocus: ['Verb tense', 'Linking words', 'Sentence structure'],
+        commonMistakes: [
+          'Lặp từ quá nhiều.',
+          'Thiếu ví dụ cụ thể.',
+          'Câu quá dài hoặc thiếu dấu câu.',
+        ],
+        recommendedVocabulary: [
+          'impact',
+          'benefit',
+          'challenge',
+          'solution',
+          'improve',
+        ],
+      },
+
+      tips: [
+        'Đọc kỹ đề trước khi viết.',
+        'Lập dàn ý ngắn trước khi bắt đầu.',
+        'Dùng linking words như however, moreover, therefore.',
+        'Kiểm tra grammar và punctuation trước khi nộp.',
+      ],
     };
   }
 
@@ -896,36 +1049,61 @@ Rules:
     body: { content: string; timeSpentSeconds?: number },
   ) {
     const session = await this.prisma.writingSession.findFirst({
-      where: {
-        id: sessionId,
-        userId,
-      },
+      where: { id: sessionId, userId },
+      include: { lesson: true },
     });
 
     if (!session) {
       throw new NotFoundException('Không tìm thấy phiên luyện viết');
     }
 
-    const wordCount = this.countWords(body.content);
+    const content = body.content?.trim();
+
+    if (!content) {
+      throw new BadRequestException('Vui lòng nhập bài viết trước khi nộp');
+    }
+
+    const wordCount = this.countWords(content);
+
+    const ai = await this.analyzeWritingWithAI({
+      text: content,
+      prompt: session.lesson.prompt,
+      type: session.lesson.type,
+      level: session.lesson.level,
+      minWords: session.lesson.minWords,
+      maxWords: session.lesson.maxWords,
+    });
 
     const updated = await this.prisma.writingSession.update({
       where: { id: sessionId },
       data: {
-        content: body.content,
+        content,
         wordCount,
         timeSpentSeconds: body.timeSpentSeconds ?? session.timeSpentSeconds,
         isSubmitted: true,
         submittedAt: new Date(),
 
-        // Tạm thời mock score, sau này thay bằng Gemini/OpenAI
-        overallScore: 85,
-        grammarScore: 82,
-        vocabularyScore: 86,
-        coherenceScore: 84,
-        taskScore: 88,
-        feedback: 'Good structure. Try to add more specific examples.',
+        overallScore: Number(ai.overallScore || 0),
+        taskScore: Number(ai.taskScore || 0),
+        coherenceScore: Number(ai.coherenceScore || 0),
+        vocabularyScore: Number(ai.vocabularyScore || 0),
+        grammarScore: Number(ai.grammarScore || 0),
+        feedback: ai.feedback || '',
+
+        aiResult: ai,
+        corrections: ai.corrections || [],
+        strengths: ai.strengths || [],
+        improvements: ai.improvements || [],
+        vocabularySuggestions: ai.vocabularySuggestions || [],
+        suggestedVersion: ai.suggestedVersion || '',
+        learningTips: ai.learningTips || [],
+        aiCoachTask: ai.aiCoachTask || '',
+        rewriteRequired: Boolean(ai.rewriteRequired),
+        nextPracticeSuggestion: ai.nextPracticeSuggestion || '',
       },
     });
+
+    await this.recalculateTopicProgress(userId, session.lesson.topicId);
 
     return {
       sessionId: updated.id,
@@ -957,7 +1135,7 @@ Rules:
       throw new NotFoundException('Không tìm thấy kết quả bài viết');
     }
 
-    const score = session.overallScore ?? 0;
+    const aiResult: any = session.aiResult || {};
 
     return {
       session: {
@@ -980,55 +1158,23 @@ Rules:
         slug: session.lesson.topic.slug,
       },
       result: {
-        overallScore: score,
-        grade: score >= 85 ? 'Excellent' : score >= 70 ? 'Good' : 'Fair',
-        taskAchievement: session.taskScore ?? 72,
-        coherence: session.coherenceScore ?? 70,
-        lexicalResource: session.vocabularyScore ?? 68,
-        grammar: session.grammarScore ?? 78,
-        feedback:
-          session.feedback ??
-          'You have a clear position and good ideas. Your essay is generally well-organized, but there are some grammar and vocabulary mistakes.',
+        overallScore: session.overallScore ?? 0,
+        grade: aiResult.grade ?? this.getGrade(session.overallScore ?? 0),
+        taskAchievement: session.taskScore ?? 0,
+        coherence: session.coherenceScore ?? 0,
+        lexicalResource: session.vocabularyScore ?? 0,
+        grammar: session.grammarScore ?? 0,
+        feedback: session.feedback ?? '',
       },
-      strengths: [
-        'Clear introduction and conclusion',
-        'Good use of examples',
-        'Logical paragraph structure',
-      ],
-      improvements: [
-        'Use more advanced vocabulary',
-        'Fix grammar and punctuation errors',
-        'Improve sentence variety',
-      ],
-      vocabularySuggestions: [
-        { original: 'do works', suggestion: 'do work' },
-        { original: 'detect diseases', suggestion: 'diagnose diseases' },
-        { original: 'AI is useful', suggestion: 'AI is beneficial' },
-        { original: 'high costs', suggestion: 'expensive costs' },
-        { original: 'use it wisely', suggestion: 'utilize it wisely' },
-      ],
-      detailedFeedback: [
-        {
-          title: 'Content',
-          description: 'Good ideas and relevant examples.',
-          type: 'CONTENT',
-        },
-        {
-          title: 'Organization',
-          description: 'Some transitions could be smoother.',
-          type: 'ORGANIZATION',
-        },
-        {
-          title: 'Vocabulary',
-          description: 'Try to use a wider range of advanced words.',
-          type: 'VOCABULARY',
-        },
-        {
-          title: 'Grammar',
-          description: 'Check articles and prepositions.',
-          type: 'GRAMMAR',
-        },
-      ],
+      strengths: session.strengths || [],
+      improvements: session.improvements || [],
+      corrections: session.corrections || [],
+      vocabularySuggestions: session.vocabularySuggestions || [],
+      suggestedVersion: session.suggestedVersion || '',
+      learningTips: session.learningTips || [],
+      aiCoachTask: session.aiCoachTask || '',
+      rewriteRequired: session.rewriteRequired,
+      nextPracticeSuggestion: session.nextPracticeSuggestion || '',
     };
   }
 
@@ -1053,6 +1199,426 @@ Rules:
 
     return {
       sessionId: newSession.id,
+    };
+  }
+
+  async getWritingHistory(
+    userId: string,
+    query: {
+      topic?: string;
+      type?: string;
+      level?: string;
+      status?: string;
+      from?: string;
+      to?: string;
+      page: number;
+      limit: number;
+    },
+  ) {
+    const page = query.page || 1;
+    const limit = query.limit || 10;
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      userId,
+    };
+
+    if (query.status === 'COMPLETED') {
+      where.isSubmitted = true;
+    }
+
+    if (query.status === 'IN_PROGRESS') {
+      where.isSubmitted = false;
+      where.content = { not: null };
+    }
+
+    if (query.status === 'NOT_STARTED') {
+      where.isSubmitted = false;
+      where.OR = [{ content: null }, { content: '' }];
+    }
+
+    if (query.from || query.to) {
+      where.updatedAt = {};
+
+      if (query.from) {
+        where.updatedAt.gte = new Date(query.from);
+      }
+
+      if (query.to) {
+        where.updatedAt.lte = new Date(query.to);
+      }
+    }
+
+    const lessonWhere: any = {};
+
+    if (query.type && query.type !== 'ALL') {
+      lessonWhere.type = query.type;
+    }
+
+    if (query.level && query.level !== 'ALL') {
+      lessonWhere.level = query.level;
+    }
+
+    if (query.topic && query.topic !== 'ALL') {
+      lessonWhere.topic = {
+        slug: query.topic,
+      };
+    }
+
+    if (Object.keys(lessonWhere).length > 0) {
+      where.lesson = lessonWhere;
+    }
+
+    const [sessions, total, allSessions] = await Promise.all([
+      this.prisma.writingSession.findMany({
+        where,
+        include: {
+          lesson: {
+            include: {
+              topic: true,
+            },
+          },
+        },
+        orderBy: {
+          updatedAt: 'desc',
+        },
+        skip,
+        take: limit,
+      }),
+
+      this.prisma.writingSession.count({ where }),
+
+      this.prisma.writingSession.findMany({
+        where: { userId },
+        select: {
+          isSubmitted: true,
+          overallScore: true,
+          content: true,
+        },
+      }),
+    ]);
+
+    const completed = allSessions.filter((x) => x.isSubmitted).length;
+    const inProgress = allSessions.filter(
+      (x) => !x.isSubmitted && x.content,
+    ).length;
+    const notStarted = allSessions.filter(
+      (x) => !x.isSubmitted && !x.content,
+    ).length;
+
+    const scored = allSessions.filter((x) => x.overallScore !== null);
+    const averageScore =
+      scored.length > 0
+        ? Math.round(
+            scored.reduce((sum, item) => sum + (item.overallScore ?? 0), 0) /
+              scored.length,
+          )
+        : 0;
+
+    return {
+      stats: {
+        totalEssays: allSessions.length,
+        completed,
+        inProgress,
+        notStarted,
+        averageScore,
+        completedPercent:
+          allSessions.length > 0
+            ? Math.round((completed / allSessions.length) * 100)
+            : 0,
+        inProgressPercent:
+          allSessions.length > 0
+            ? Math.round((inProgress / allSessions.length) * 100)
+            : 0,
+        notStartedPercent:
+          allSessions.length > 0
+            ? Math.round((notStarted / allSessions.length) * 100)
+            : 0,
+      },
+      items: sessions.map((session) => {
+        const status = session.isSubmitted
+          ? 'COMPLETED'
+          : session.content
+            ? 'IN_PROGRESS'
+            : 'NOT_STARTED';
+
+        return {
+          id: session.id,
+          title: session.lesson.title,
+          description: session.lesson.description,
+          topic: session.lesson.topic.title,
+          topicSlug: session.lesson.topic.slug,
+          type: session.lesson.type,
+          level: session.lesson.level,
+          score: session.overallScore,
+          status,
+          completedAt: session.submittedAt,
+          updatedAt: session.updatedAt,
+        };
+      }),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async getWritingHistoryDetail(userId: string, sessionId: string) {
+    const session = await this.prisma.writingSession.findFirst({
+      where: {
+        id: sessionId,
+        userId,
+      },
+      include: {
+        lesson: {
+          include: {
+            topic: true,
+          },
+        },
+      },
+    });
+
+    if (!session) {
+      throw new NotFoundException('Không tìm thấy chi tiết lịch sử');
+    }
+
+    const score = session.overallScore ?? 0;
+
+    return {
+      session: {
+        id: session.id,
+        content: session.content ?? '',
+        wordCount: session.wordCount,
+        timeSpentSeconds: session.timeSpentSeconds ?? 0,
+        submittedAt: session.submittedAt,
+        status: session.isSubmitted ? 'COMPLETED' : 'IN_PROGRESS',
+      },
+      lesson: {
+        id: session.lesson.id,
+        title: session.lesson.title,
+        type: session.lesson.type,
+        level: session.lesson.level,
+        maxWords: session.lesson.maxWords,
+      },
+      topic: {
+        id: session.lesson.topic.id,
+        title: session.lesson.topic.title,
+        slug: session.lesson.topic.slug,
+      },
+      score: {
+        overall: score,
+        grade: score >= 85 ? 'Excellent' : score >= 70 ? 'Good' : 'Fair',
+        taskAchievement: session.taskScore ?? 72,
+        coherence: session.coherenceScore ?? 70,
+        lexicalResource: session.vocabularyScore ?? 68,
+        grammar: session.grammarScore ?? 78,
+      },
+      strengths: [
+        'Clear introduction and conclusion',
+        'Good use of examples',
+        'Logical paragraph structure',
+      ],
+      improvements: [
+        'Use more advanced vocabulary',
+        'Fix grammar and punctuation errors',
+        'Improve sentence variety',
+      ],
+      corrections: [
+        {
+          wrong: 'do works',
+          correct: 'do work',
+          explanation: '"Do" is used with the base form of the verb.',
+          type: 'Grammar',
+        },
+        {
+          wrong: 'human errors',
+          correct: 'human error',
+          explanation: '"Error" is uncountable in this context.',
+          type: 'Grammar',
+        },
+        {
+          wrong: 'questions',
+          correct: 'questions',
+          explanation: 'Good word, but try to use more specific vocabulary.',
+          type: 'Vocabulary',
+        },
+        {
+          wrong: 'if we use it wisely',
+          correct: 'if we use it wisely.',
+          explanation: 'Add a period at the end of the sentence.',
+          type: 'Punctuation',
+        },
+      ],
+      progressChart: [
+        { date: 'Apr 10', score: 30 },
+        { date: 'Apr 24', score: 50 },
+        { date: 'May 8', score: 52 },
+        { date: 'May 10', score },
+      ],
+    };
+  }
+
+  private async analyzeWritingWithAI(params: {
+    text: string;
+    prompt: string;
+    type: string;
+    level: string;
+    minWords?: number;
+    maxWords?: number;
+  }) {
+    const prompt = `
+Bạn là AI English Writing Coach cho học viên Việt Nam.
+
+Hãy chấm bài viết tiếng Anh này.
+
+Writing type: ${params.type}
+Level: ${params.level}
+Prompt: ${params.prompt}
+Word target: ${params.minWords || 0} - ${params.maxWords || 0} words
+
+Student writing:
+${params.text}
+
+Return ONLY JSON:
+{
+  "overallScore": 0,
+  "taskScore": 0,
+  "coherenceScore": 0,
+  "vocabularyScore": 0,
+  "grammarScore": 0,
+  "grade": "",
+  "feedback": "",
+  "strengths": [],
+  "improvements": [],
+  "corrections": [
+    {
+      "wrong": "",
+      "correct": "",
+      "explanation": "",
+      "type": ""
+    }
+  ],
+  "vocabularySuggestions": [
+    {
+      "original": "",
+      "suggestion": ""
+    }
+  ],
+  "suggestedVersion": "",
+  "learningTips": [],
+  "aiCoachTask": "",
+  "rewriteRequired": true,
+  "nextPracticeSuggestion": ""
+}
+
+Rules:
+- Feedback, explanation, learningTips viết bằng tiếng Việt.
+- Scores từ 0 đến 100.
+- Maximum 5 corrections.
+- Maximum 5 vocabularySuggestions.
+- aiCoachTask là nhiệm vụ viết lại ngắn để học viên cải thiện bài.
+`;
+
+    return this.callGemini(prompt);
+  }
+
+  private async recalculateTopicProgress(userId: string, topicId: string) {
+    const lessons = await this.prisma.writingLesson.findMany({
+      where: { topicId, isActive: true },
+      select: { id: true },
+    });
+
+    const lessonIds = lessons.map((x) => x.id);
+
+    const completed = await this.prisma.writingSession.count({
+      where: {
+        userId,
+        lessonId: { in: lessonIds },
+        isSubmitted: true,
+      },
+    });
+
+    const total = lessons.length;
+    const progressPercent =
+      total > 0 ? Math.round((completed / total) * 100) : 0;
+
+    await this.prisma.writingTopicProgress.upsert({
+      where: {
+        userId_topicId: {
+          userId,
+          topicId,
+        },
+      },
+      update: {
+        completedLessons: completed,
+        totalLessons: total,
+        progressPercent,
+      },
+      create: {
+        userId,
+        topicId,
+        completedLessons: completed,
+        totalLessons: total,
+        progressPercent,
+      },
+    });
+  }
+
+  private getGrade(score: number) {
+    if (score >= 85) return 'Excellent';
+    if (score >= 75) return 'Very Good';
+    if (score >= 65) return 'Good';
+    if (score >= 50) return 'Fair';
+    return 'Needs Improvement';
+  }
+
+  async rewriteEssay(
+    userId: string,
+    sessionId: string,
+    body: { content?: string },
+  ) {
+    const session = await this.prisma.writingSession.findFirst({
+      where: { id: sessionId, userId },
+      include: { lesson: true },
+    });
+
+    if (!session) {
+      throw new NotFoundException('Không tìm thấy bài viết');
+    }
+
+    const content = body.content?.trim() || session.content || '';
+
+    if (!content) {
+      throw new BadRequestException('Không có nội dung để rewrite');
+    }
+
+    const prompt = `
+Rewrite this English writing to make it clearer, more natural, and suitable for level ${session.lesson.level}.
+
+Original:
+${content}
+
+Return ONLY JSON:
+{
+  "improvedVersion": "",
+  "mainChanges": [],
+  "learningTips": []
+}
+
+Rules:
+- improvedVersion bằng tiếng Anh.
+- mainChanges và learningTips giải thích bằng tiếng Việt.
+`;
+
+    const ai = await this.callGemini(prompt);
+
+    return {
+      sessionId,
+      improvedVersion: ai.improvedVersion || '',
+      mainChanges: ai.mainChanges || [],
+      learningTips: ai.learningTips || [],
     };
   }
 }

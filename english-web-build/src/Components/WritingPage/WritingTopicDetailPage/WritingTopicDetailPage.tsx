@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { api } from '@/src/lib/axios';
+import { api } from "@/src/lib/axios";
 import {
   Bell,
   BookOpen,
@@ -16,11 +16,11 @@ import {
   TrendingUp,
   CheckCircle2,
   Timer,
-} from 'lucide-react';
-import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+} from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-type LessonStatus = 'COMPLETED' | 'IN_PROGRESS' | 'NOT_STARTED';
+type LessonStatus = "COMPLETED" | "IN_PROGRESS" | "NOT_STARTED";
 
 type TopicDetail = {
   id: string;
@@ -30,12 +30,32 @@ type TopicDetail = {
   imageUrl?: string;
   difficulty: string;
   levelText: string;
+
   progress: {
     overall: number;
     totalLessons: number;
     completed: number;
     inProgress: number;
+    notStarted: number;
   };
+
+  stats: {
+    averageScore: number;
+    bestScore: number;
+    totalAttempts: number;
+    estimatedHours: number;
+  };
+
+  aiRecommendation?: {
+    title: string;
+    reason: string;
+    estimatedTime: number;
+    level: string;
+    type: string;
+  } | null;
+
+  nextLesson?: TopicDetail["lessons"][number] | null;
+
   lessons: {
     id: string;
     title: string;
@@ -50,30 +70,57 @@ type TopicDetail = {
     status: LessonStatus;
     progressPercent: number;
     sessionId?: string | null;
+    score?: number | null;
   }[];
-  about?: string;
-  tips?: string;
+
+  about?: {
+    overview: string;
+    learningObjectives: string[];
+    grammarFocus: string[];
+    commonMistakes: string[];
+    recommendedVocabulary: string[];
+  };
+
+  tips?: string[];
 };
 
-export default function WritingTopicDetailPage({ slug }: { slug: string }) {
+export default function WritingTopicDetailPage() {
   const router = useRouter();
   const params = useParams();
 
+  const slug = params.slug as string;
+
   const [data, setData] = useState<TopicDetail | null>(null);
-  const [tab, setTab] = useState<'LESSONS' | 'ABOUT' | 'TIPS'>('LESSONS');
+  const [tab, setTab] = useState<"LESSONS" | "ABOUT" | "TIPS">("LESSONS");
+  const [sort, setSort] = useState("DEFAULT");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   async function loadDetail() {
     try {
-      const res = await api.get(`/writing/topics/${slug}`);
+      setLoading(true);
+      setError("");
+
+      const res = await api.get(`/writing/topics/${slug}`, {
+        params: { sort },
+      });
+
       setData(res.data);
+    } catch (err) {
+      console.error(err);
+      setError("Không tải được chi tiết chủ đề.");
     } finally {
       setLoading(false);
     }
   }
 
-  async function handleStartLesson(lesson: TopicDetail['lessons'][number]) {
-    if (lesson.sessionId && lesson.status === 'IN_PROGRESS') {
+  async function handleStartLesson(lesson: TopicDetail["lessons"][number]) {
+    if (lesson.status === "COMPLETED" && lesson.sessionId) {
+      router.push(`/writing/sessions/${lesson.sessionId}/result`);
+      return;
+    }
+
+    if (lesson.status === "IN_PROGRESS" && lesson.sessionId) {
       router.push(`/writing/sessions/${lesson.sessionId}`);
       return;
     }
@@ -82,59 +129,93 @@ export default function WritingTopicDetailPage({ slug }: { slug: string }) {
     router.push(`/writing/sessions/${res.data.sessionId}`);
   }
 
+  async function handleContinueLearning() {
+    if (!data?.nextLesson) return;
+    await handleStartLesson(data.nextLesson);
+  }
+
   useEffect(() => {
-    loadDetail();
-  }, [slug]);
+    if (slug) loadDetail();
+  }, [slug, sort]);
 
   if (loading) return <div className="p-10">Loading...</div>;
+
+  if (error) {
+    return (
+      <div className="p-10">
+        <p className="font-semibold text-red-600">{error}</p>
+        <button
+          onClick={loadDetail}
+          className="mt-4 rounded-xl bg-violet-600 px-5 py-3 font-bold text-white"
+        >
+          Thử lại
+        </button>
+      </div>
+    );
+  }
+
   if (!data) return <div className="p-10">Không tìm thấy chủ đề.</div>;
 
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
       <div className="flex">
-
         <main className="min-h-screen flex-1">
-
           <div className="px-10 py-8">
             <Breadcrumb title={data.title} />
 
             <div className="mt-7 grid grid-cols-[1fr_490px] gap-8">
               <TopicHero data={data} />
-              <ProgressPanel data={data} />
+
+              <div className="space-y-6">
+                <ProgressPanel
+                  data={data}
+                  onContinue={handleContinueLearning}
+                />
+                <StatsPanel stats={data.stats} />
+                <AIRecommendationCard
+                  recommendation={data.aiRecommendation}
+                  onStart={handleContinueLearning}
+                />
+              </div>
             </div>
 
             <div className="mt-8 flex items-center justify-between border-b border-slate-200">
               <div className="flex gap-8">
                 <TabButton
-                  active={tab === 'LESSONS'}
-                  onClick={() => setTab('LESSONS')}
+                  active={tab === "LESSONS"}
+                  onClick={() => setTab("LESSONS")}
                 >
                   Lessons ({data.lessons.length})
                 </TabButton>
 
                 <TabButton
-                  active={tab === 'ABOUT'}
-                  onClick={() => setTab('ABOUT')}
+                  active={tab === "ABOUT"}
+                  onClick={() => setTab("ABOUT")}
                 >
                   About Topic
                 </TabButton>
 
                 <TabButton
-                  active={tab === 'TIPS'}
-                  onClick={() => setTab('TIPS')}
+                  active={tab === "TIPS"}
+                  onClick={() => setTab("TIPS")}
                 >
                   Tips & Resources
                 </TabButton>
               </div>
 
-              <select className="mb-3 h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold outline-none">
-                <option>Sort by: Default</option>
-                <option>Sort by: Progress</option>
-                <option>Sort by: Newest</option>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+                className="mb-3 h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold outline-none"
+              >
+                <option value="DEFAULT">Sort by: Default</option>
+                <option value="PROGRESS">Sort by: Progress</option>
+                <option value="NEWEST">Sort by: Newest</option>
+                <option value="TITLE">Sort by: Title</option>
               </select>
             </div>
 
-            {tab === 'LESSONS' && (
+            {tab === "LESSONS" && (
               <div className="mt-4 space-y-0">
                 {data.lessons.map((lesson) => (
                   <LessonRow
@@ -146,24 +227,9 @@ export default function WritingTopicDetailPage({ slug }: { slug: string }) {
               </div>
             )}
 
-            {tab === 'ABOUT' && (
-              <div className="mt-5 rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-100">
-                <h2 className="text-xl font-extrabold">About {data.title}</h2>
-                <p className="mt-3 leading-7 text-slate-600">
-                  {data.about || data.description}
-                </p>
-              </div>
-            )}
+            {tab === "ABOUT" && <AboutPanel data={data} />}
 
-            {tab === 'TIPS' && (
-              <div className="mt-5 rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-100">
-                <h2 className="text-xl font-extrabold">Tips & Resources</h2>
-                <p className="mt-3 leading-7 text-slate-600">
-                  {data.tips ||
-                    'Read the prompt carefully, make a short outline, use linking words, and check grammar before submitting.'}
-                </p>
-              </div>
-            )}
+            {tab === "TIPS" && <TipsPanel tips={data.tips || []} />}
           </div>
         </main>
       </div>
@@ -190,7 +256,7 @@ function TopicHero({ data }: { data: TopicDetail }) {
       <div
         className="h-[210px] w-[250px] shrink-0 rounded-2xl bg-cover bg-center shadow-sm"
         style={{
-          backgroundImage: `url(${data.imageUrl || '/images/writing/default-topic.png'})`,
+          backgroundImage: `url(${data.imageUrl || "/images/writing/default-topic.png"})`,
         }}
       />
 
@@ -214,7 +280,13 @@ function TopicHero({ data }: { data: TopicDetail }) {
   );
 }
 
-function ProgressPanel({ data }: { data: TopicDetail }) {
+function ProgressPanel({
+  data,
+  onContinue,
+}: {
+  data: TopicDetail;
+  onContinue: () => void;
+}) {
   return (
     <section className="rounded-3xl bg-white p-7 shadow-sm ring-1 ring-slate-100">
       <h2 className="text-xl font-extrabold">Your Progress</h2>
@@ -223,7 +295,9 @@ function ProgressPanel({ data }: { data: TopicDetail }) {
         <div className="grid h-40 w-40 place-items-center rounded-full bg-violet-100">
           <div className="grid h-28 w-28 place-items-center rounded-full bg-white">
             <div className="text-center">
-              <p className="text-4xl font-extrabold">{data.progress.overall}%</p>
+              <p className="text-4xl font-extrabold">
+                {data.progress.overall}%
+              </p>
               <p className="text-xs font-semibold text-slate-500">Overall</p>
             </div>
           </div>
@@ -251,7 +325,11 @@ function ProgressPanel({ data }: { data: TopicDetail }) {
         </div>
       </div>
 
-      <button className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-violet-600 font-bold text-white">
+      <button
+        onClick={onContinue}
+        disabled={!data.nextLesson}
+        className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-violet-600 font-bold text-white disabled:opacity-50"
+      >
         Continue Learning
         <ChevronRight className="h-5 w-5" />
       </button>
@@ -297,8 +375,8 @@ function TabButton({
       onClick={onClick}
       className={`pb-4 text-sm font-extrabold ${
         active
-          ? 'border-b-2 border-violet-600 text-violet-600'
-          : 'text-slate-500'
+          ? "border-b-2 border-violet-600 text-violet-600"
+          : "text-slate-500"
       }`}
     >
       {children}
@@ -310,9 +388,17 @@ function LessonRow({
   lesson,
   onClick,
 }: {
-  lesson: TopicDetail['lessons'][number];
+  lesson: TopicDetail["lessons"][number];
   onClick: () => void;
 }) {
+  const progressColor =
+    lesson.progressPercent >= 100
+      ? "bg-green-500"
+      : lesson.progressPercent >= 60
+        ? "bg-violet-600"
+        : lesson.progressPercent > 0
+          ? "bg-orange-400"
+          : "bg-slate-300";
   return (
     <button
       onClick={onClick}
@@ -321,7 +407,7 @@ function LessonRow({
       <div
         className="h-[110px] w-[165px] shrink-0 rounded-xl bg-cover bg-center"
         style={{
-          backgroundImage: `url(${lesson.imageUrl || '/images/writing/default-lesson.png'})`,
+          backgroundImage: `url(${lesson.imageUrl || "/images/writing/default-lesson.png"})`,
         }}
       />
 
@@ -361,12 +447,18 @@ function LessonRow({
 
         <div className="mt-4 h-1.5 rounded-full bg-slate-200">
           <div
-            className="h-1.5 rounded-full bg-violet-600"
+            className={`h-1.5 rounded-full ${progressColor}`}
             style={{ width: `${lesson.progressPercent}%` }}
           />
         </div>
       </div>
-
+      <span className="rounded-xl border border-violet-300 px-4 py-2 text-sm font-bold text-violet-600">
+        {lesson.status === "COMPLETED"
+          ? "Review"
+          : lesson.status === "IN_PROGRESS"
+            ? "Continue"
+            : "Start"}
+      </span>
       <ChevronRight className="h-7 w-7 text-slate-400" />
     </button>
   );
@@ -374,19 +466,21 @@ function LessonRow({
 
 function StatusBadge({ status }: { status: LessonStatus }) {
   const config: Record<LessonStatus, string> = {
-    COMPLETED: 'bg-green-100 text-green-600',
-    IN_PROGRESS: 'bg-blue-100 text-blue-600',
-    NOT_STARTED: 'bg-orange-100 text-orange-600',
+    COMPLETED: "bg-green-100 text-green-600",
+    IN_PROGRESS: "bg-blue-100 text-blue-600",
+    NOT_STARTED: "bg-orange-100 text-orange-600",
   };
 
   const label: Record<LessonStatus, string> = {
-    COMPLETED: 'Completed',
-    IN_PROGRESS: 'In Progress',
-    NOT_STARTED: 'Not Started',
+    COMPLETED: "Completed",
+    IN_PROGRESS: "In Progress",
+    NOT_STARTED: "Not Started",
   };
 
   return (
-    <span className={`rounded-lg px-3 py-1 text-xs font-extrabold ${config[status]}`}>
+    <span
+      className={`rounded-lg px-3 py-1 text-xs font-extrabold ${config[status]}`}
+    >
       {label[status]}
     </span>
   );
@@ -394,19 +488,21 @@ function StatusBadge({ status }: { status: LessonStatus }) {
 
 function DifficultyBadge({ difficulty }: { difficulty: string }) {
   const config: Record<string, string> = {
-    BEGINNER: 'bg-green-100 text-green-600',
-    INTERMEDIATE: 'bg-blue-100 text-blue-600',
-    ADVANCED: 'bg-orange-100 text-orange-600',
+    BEGINNER: "bg-green-100 text-green-600",
+    INTERMEDIATE: "bg-blue-100 text-blue-600",
+    ADVANCED: "bg-orange-100 text-orange-600",
   };
 
   const label: Record<string, string> = {
-    BEGINNER: 'Beginner',
-    INTERMEDIATE: 'Intermediate',
-    ADVANCED: 'Advanced',
+    BEGINNER: "Beginner",
+    INTERMEDIATE: "Intermediate",
+    ADVANCED: "Advanced",
   };
 
   return (
-    <span className={`rounded-lg px-3 py-1.5 text-sm font-extrabold ${config[difficulty]}`}>
+    <span
+      className={`rounded-lg px-3 py-1.5 text-sm font-extrabold ${config[difficulty]}`}
+    >
       {label[difficulty] || difficulty}
     </span>
   );
@@ -414,11 +510,127 @@ function DifficultyBadge({ difficulty }: { difficulty: string }) {
 
 function formatType(type: string) {
   const map: Record<string, string> = {
-    ESSAY: 'Essay',
-    EMAIL: 'Email',
-    STORY: 'Story',
-    SENTENCE: 'Sentence',
+    SENTENCE: "Sentence Writing",
+    PARAGRAPH: "Paragraph",
+    ESSAY: "Essay",
+    EMAIL: "Email",
+    STORY: "Story",
+    OPINION: "Opinion",
+    IELTS_TASK_1: "IELTS Task 1",
+    IELTS_TASK_2: "IELTS Task 2",
   };
 
   return map[type] ?? type;
+}
+
+function StatsPanel({ stats }: { stats: TopicDetail["stats"] }) {
+  return (
+    <section className="grid grid-cols-2 gap-4 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+      <StatItem label="Average Score" value={`${stats.averageScore}/100`} />
+      <StatItem label="Best Score" value={`${stats.bestScore}/100`} />
+      <StatItem label="Attempts" value={String(stats.totalAttempts)} />
+      <StatItem label="Estimated" value={`${stats.estimatedHours}h`} />
+    </section>
+  );
+}
+
+function StatItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl bg-violet-50 p-4">
+      <p className="text-xl font-extrabold text-violet-700">{value}</p>
+      <p className="mt-1 text-xs font-semibold text-slate-500">{label}</p>
+    </div>
+  );
+}
+
+function AIRecommendationCard({
+  recommendation,
+  onStart,
+}: {
+  recommendation?: TopicDetail["aiRecommendation"];
+  onStart: () => void;
+}) {
+  if (!recommendation) return null;
+
+  return (
+    <section className="rounded-3xl bg-violet-50 p-6 shadow-sm ring-1 ring-violet-100">
+      <p className="text-lg font-extrabold text-violet-700">
+        AI Recommendation
+      </p>
+
+      <h3 className="mt-4 text-xl font-extrabold">{recommendation.title}</h3>
+
+      <p className="mt-3 text-sm leading-6 text-slate-600">
+        {recommendation.reason}
+      </p>
+
+      <div className="mt-4 flex items-center gap-4 text-xs font-bold text-slate-500">
+        <span>{formatType(recommendation.type)}</span>
+        <span>•</span>
+        <span>{recommendation.level}</span>
+        <span>•</span>
+        <span>{recommendation.estimatedTime} min</span>
+      </div>
+
+      <button
+        onClick={onStart}
+        className="mt-5 h-11 w-full rounded-xl bg-violet-600 font-bold text-white"
+      >
+        Start Recommended Lesson
+      </button>
+    </section>
+  );
+}
+
+function AboutPanel({ data }: { data: TopicDetail }) {
+  const about = data.about;
+
+  return (
+    <div className="mt-5 grid grid-cols-2 gap-5">
+      <InfoBox title="Overview" items={[about?.overview || data.description]} />
+      <InfoBox
+        title="Learning Objectives"
+        items={about?.learningObjectives || []}
+      />
+      <InfoBox title="Grammar Focus" items={about?.grammarFocus || []} />
+      <InfoBox title="Common Mistakes" items={about?.commonMistakes || []} />
+      <InfoBox
+        title="Recommended Vocabulary"
+        items={about?.recommendedVocabulary || []}
+      />
+    </div>
+  );
+}
+
+function InfoBox({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+      <h3 className="font-extrabold">{title}</h3>
+
+      <div className="mt-4 space-y-3">
+        {items.map((item, index) => (
+          <p key={index} className="text-sm leading-6 text-slate-600">
+            • {item}
+          </p>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TipsPanel({ tips }: { tips: string[] }) {
+  return (
+    <div className="mt-5 rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-100">
+      <h2 className="text-xl font-extrabold">Tips & Resources</h2>
+
+      <div className="mt-5 grid grid-cols-2 gap-4">
+        {tips.map((tip, index) => (
+          <div key={index} className="rounded-xl bg-violet-50 p-5">
+            <p className="font-bold text-violet-700">Tip {index + 1}</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">{tip}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }

@@ -28,12 +28,27 @@ type WritingHome = {
     essaysWritten: number;
     avgScore: number;
     dayStreak: number;
+    xpToday?: number;
+    gems?: number;
+  };
+  progress?: {
+    overall: number;
+    excellent: number;
+    good: number;
+    needsImprovement: number;
+    total: number;
   };
   todayPractice: {
     key: string;
     title: string;
     description: string;
     color: string;
+  }[];
+  writingPath?: {
+    key: string;
+    title: string;
+    description: string;
+    order: number;
   }[];
   recommendations: {
     id: string;
@@ -56,6 +71,7 @@ type WritingHome = {
     title: string;
     current: number;
     target: number;
+    continueSessionId?: string | null;
   };
 };
 
@@ -75,14 +91,24 @@ export default function WritingHomePage() {
     }
   }
 
-  async function handleStartWriting(type: string) {
-    if (type === 'PROGRESS') {
-      router.push('/writing/progress');
-      return;
-    }
-
-    router.push(`/writing/topics?type=${type}`);
+async function handleStartWriting(type: string) {
+  if (type === 'PROGRESS') {
+    router.push('/writing/progress');
+    return;
   }
+
+  if (type === 'DAILY_CHALLENGE') {
+    router.push('/writing/daily-challenge');
+    return;
+  }
+
+  if (type === 'AI_COACH') {
+    router.push('/writing/ai-coach');
+    return;
+  }
+
+  router.push(`/writing/topics?type=${type}`);
+}
 
   async function handleStartLesson(lessonId: string) {
     const res = await api.post(`/writing/lessons/${lessonId}/start`);
@@ -101,13 +127,12 @@ export default function WritingHomePage() {
     return <div className="p-10">Không tải được dữ liệu.</div>;
   }
 
-  return (
+return (
   <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
     <div className="flex">
       {/* <Sidebar /> */}
 
       <main className="min-h-screen flex-1">
-        <Header data={data} />
 
         <div className="grid grid-cols-[minmax(0,1fr)_390px] gap-8 px-8 py-7">
           <div className="min-w-0">
@@ -129,6 +154,13 @@ export default function WritingHomePage() {
                 ))}
               </div>
             </section>
+
+            {data.writingPath && data.writingPath.length > 0 && (
+              <WritingPathSection
+                items={data.writingPath}
+                onStart={(key) => handleStartWriting(key)}
+              />
+            )}
 
             <section className="mt-8">
               <div className="flex items-center justify-between">
@@ -160,15 +192,26 @@ export default function WritingHomePage() {
 
             <DailyGoal
               goal={data.dailyGoal}
-              onContinue={() => router.push('/writing/history')}
+              onContinue={() => {
+                if (data.dailyGoal.continueSessionId) {
+                  router.push(`/writing/sessions/${data.dailyGoal.continueSessionId}`);
+                } else {
+                  router.push('/writing/topics');
+                }
+              }}
             />
           </div>
 
           <aside className="space-y-6">
-            <ProgressCard onViewReport={() => router.push('/writing/progress')} />
+            <ProgressCard
+              progress={data.progress}
+              onViewReport={() => router.push('/writing/progress')}
+            />
+
             <HistoryCard
               items={data.recentHistory}
               onViewAll={() => router.push('/writing/history')}
+              onOpenItem={(id) => router.push(`/writing/sessions/${id}/result`)}
             />
           </aside>
         </div>
@@ -486,7 +529,23 @@ function DailyGoal({
   );
 }
 
-function ProgressCard({ onViewReport }: { onViewReport: () => void }) {
+function ProgressCard({
+  progress,
+  onViewReport,
+}: {
+  progress?: WritingHome['progress'];
+  onViewReport: () => void;
+}) {
+  const overall = progress?.overall ?? 0;
+  const total = progress?.total ?? 0;
+
+  const excellent = progress?.excellent ?? 0;
+  const good = progress?.good ?? 0;
+  const needsImprovement = progress?.needsImprovement ?? 0;
+
+  const percent = (value: number) =>
+    total > 0 ? Math.round((value / total) * 100) : 0;
+
   return (
     <div className="rounded-3xl bg-white p-7 shadow-sm ring-1 ring-slate-100">
       <h2 className="text-xl font-extrabold">Writing Progress</h2>
@@ -495,16 +554,28 @@ function ProgressCard({ onViewReport }: { onViewReport: () => void }) {
         <div className="grid h-40 w-40 place-items-center rounded-full bg-violet-100">
           <div className="grid h-28 w-28 place-items-center rounded-full bg-white">
             <div className="text-center">
-              <p className="text-3xl font-extrabold">78%</p>
+              <p className="text-3xl font-extrabold">{overall}%</p>
               <p className="text-xs text-slate-500">Overall</p>
             </div>
           </div>
         </div>
 
         <div className="space-y-5 text-sm">
-          <ProgressLabel color="bg-violet-600" title="Excellent" value="18 (78%)" />
-          <ProgressLabel color="bg-green-500" title="Good" value="4 (17%)" />
-          <ProgressLabel color="bg-yellow-400" title="Needs Improvement" value="1 (5%)" />
+          <ProgressLabel
+            color="bg-violet-600"
+            title="Excellent"
+            value={`${excellent} (${percent(excellent)}%)`}
+          />
+          <ProgressLabel
+            color="bg-green-500"
+            title="Good"
+            value={`${good} (${percent(good)}%)`}
+          />
+          <ProgressLabel
+            color="bg-yellow-400"
+            title="Needs Improvement"
+            value={`${needsImprovement} (${percent(needsImprovement)}%)`}
+          />
         </div>
       </div>
 
@@ -541,9 +612,11 @@ function ProgressLabel({
 function HistoryCard({
   items,
   onViewAll,
+  onOpenItem,
 }: {
   items: WritingHome['recentHistory'];
   onViewAll: () => void;
+  onOpenItem: (id: string) => void;
 }) {
   return (
     <div className="rounded-3xl bg-white p-7 shadow-sm ring-1 ring-slate-100">
@@ -555,10 +628,17 @@ function HistoryCard({
       </div>
 
       <div className="mt-6 space-y-4">
+        {items.length === 0 && (
+          <div className="rounded-xl bg-slate-50 p-5 text-sm text-slate-500">
+            Chưa có lịch sử luyện viết.
+          </div>
+        )}
+
         {items.map((item) => (
-          <div
+          <button
             key={item.id}
-            className="flex cursor-pointer items-center gap-4 border-b border-slate-100 pb-4 last:border-b-0"
+            onClick={() => onOpenItem(item.id)}
+            className="flex w-full cursor-pointer items-center gap-4 border-b border-slate-100 pb-4 text-left last:border-b-0"
           >
             <div className="grid h-11 w-11 place-items-center rounded-xl bg-violet-50">
               <FileText className="h-5 w-5 text-violet-600" />
@@ -576,7 +656,7 @@ function HistoryCard({
             </span>
 
             <ChevronRight className="h-4 w-4 text-slate-400" />
-          </div>
+          </button>
         ))}
       </div>
 
@@ -599,4 +679,48 @@ function formatType(type: string) {
   };
 
   return map[type] ?? type;
+}
+
+function WritingPathSection({
+  items,
+  onStart,
+}: {
+  items: NonNullable<WritingHome['writingPath']>;
+  onStart: (key: string) => void;
+}) {
+  return (
+    <section className="mt-8">
+      <h2 className="text-2xl font-bold">Writing Path</h2>
+      <p className="mt-1 text-sm text-slate-500">
+        Follow the path to improve your writing step by step
+      </p>
+
+      <div className="mt-5 grid grid-cols-5 gap-5">
+        {items
+          .sort((a, b) => a.order - b.order)
+          .map((item) => (
+            <button
+              key={item.key}
+              onClick={() => onStart(item.key)}
+              className="rounded-2xl bg-white p-5 text-left shadow-sm ring-1 ring-slate-100 transition hover:-translate-y-1 hover:shadow-md"
+            >
+              <div className="grid h-12 w-12 place-items-center rounded-full bg-violet-100 text-violet-600">
+                {item.order}
+              </div>
+
+              <h3 className="mt-4 font-extrabold">{item.title}</h3>
+
+              <p className="mt-2 min-h-[72px] text-sm leading-6 text-slate-500">
+                {item.description}
+              </p>
+
+              <div className="mt-4 flex items-center font-bold text-violet-600">
+                Start
+                <ChevronRight className="ml-1 h-4 w-4" />
+              </div>
+            </button>
+          ))}
+      </div>
+    </section>
+  );
 }
