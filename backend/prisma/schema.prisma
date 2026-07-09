@@ -1611,3 +1611,101 @@ model WritingTopicProgress {
   @@index([userId])
   @@index([topicId])
 }
+
+enum SpeakingDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum SpeakingPracticeType {
+  READ_ALOUD
+  REPEAT_AFTER_ME
+  ANSWER_QUESTIONS
+  FREE_TALK
+}
+
+enum SpeakingSessionStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+model SpeakingCategory {
+  id          String  @id @default(uuid())
+  title       String
+  slug        String  @unique
+  description String?
+  icon        String?
+  color       String?
+  order       Int     @default(0)
+  isActive    Boolean @default(true)
+
+  topics SpeakingTopic[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SpeakingTopic {
+  id               String             @id @default(uuid())
+  categoryId       String
+  title            String
+  slug             String             @unique
+  description      String?
+  imageUrl         String?
+  difficulty       SpeakingDifficulty @default(EASY)
+  estimatedMinutes Int                @default(5)
+  order            Int                @default(0)
+  isActive         Boolean            @default(true)
+
+  category SpeakingCategory  @relation(fields: [categoryId], references: [id])
+  lessons  SpeakingLesson[]
+  sessions SpeakingSession[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SpeakingLesson {
+  id               String               @id @default(uuid())
+  topicId          String
+  title            String
+  description      String?
+  type             SpeakingPracticeType
+  prompt           String?
+  expectedText     String?
+  difficulty       SpeakingDifficulty   @default(EASY)
+  estimatedMinutes Int                  @default(5)
+  order            Int                  @default(0)
+  isActive         Boolean              @default(true)
+
+  topic    SpeakingTopic     @relation(fields: [topicId], references: [id])
+  sessions SpeakingSession[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SpeakingSession {
+  id       String                @id @default(uuid())
+  userId   String
+  topicId  String?
+  lessonId String?
+  status   SpeakingSessionStatus @default(IN_PROGRESS)
+
+  overallScore  Int @default(0)
+  pronunciation Int @default(0)
+  fluency       Int @default(0)
+  grammar       Int @default(0)
+  vocabulary    Int @default(0)
+  duration      Int @default(0)
+
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+
+  topic  SpeakingTopic?  @relation(fields: [topicId], references: [id])
+  lesson SpeakingLesson? @relation(fields: [lessonId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
