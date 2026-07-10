@@ -37,7 +37,9 @@ export default function MainLayout({
     pathname.startsWith("/pronunciation") ||
     pathname.startsWith("/placement-test") ||
     pathname.startsWith("/check") ||
-    pathname.startsWith("/check-word");
+    pathname.startsWith("/check-word")||
+    pathname.startsWith("/learning-path") ||
+    pathname.startsWith("/placement/introduction")
   const [showWelcome, setShowWelcome] = useState(false);
   const [showPetPrompt, setShowPetPrompt] = useState(false);
   const [petDaysLeft, setPetDaysLeft] = useState(7);

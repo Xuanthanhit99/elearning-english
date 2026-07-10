@@ -115,6 +115,21 @@ enum DailyVocabularyStatus {
   MISSED
 }
 
+enum PlacementTestStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+enum PlacementQuestionType {
+  MULTIPLE_CHOICE
+  FILL_BLANK
+  LISTENING
+  READING
+  SPEAKING
+  WRITING
+}
+
 model User {
   id       String   @id @default(uuid())
   fullname String
@@ -189,6 +204,9 @@ model User {
 
   missions UserMission[]
 
+  placement   UserPlacement?
+  skillLevels UserSkillLevel[]
+
   createAt                  DateTime                   @default(now())
   updatedAt                 DateTime                   @updatedAt
   userLearningProfile       UserLearningProfile?
@@ -196,6 +214,7 @@ model User {
   userWeeklyVocabularyPlans UserWeeklyVocabularyPlan[]
   weeklyVocabularyTests     WeeklyVocabularyTest[]
   vocabularyNotebookItems   UserVocabularyNotebook[]
+  languageCertificates      UserLanguageCertificate[]
 }
 
 model Course {
@@ -559,28 +578,75 @@ model WritingSubmission {
 }
 
 model PlacementTest {
-  id        String   @id @default(uuid())
-  userId    String?
-  level     String
-  score     Int
-  total     Int
-  correct   Int
-  result    Json
-  answers   Json
-  createdAt DateTime @default(now())
-  mode      ModeType @default(ADAPTIVE)
-  user      User?    @relation(fields: [userId], references: [id])
+  id     String              @id @default(uuid())
+  userId String
+  mode   ModeType            @default(ADAPTIVE)
+  status PlacementTestStatus @default(IN_PROGRESS)
+
+  level   CefrLevel?
+  score   Int        @default(0)
+  total   Int        @default(0)
+  correct Int        @default(0)
+
+  result  Json?
+  answers Json?
+
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user      User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions PlacementTestQuestion[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model PlacementTestQuestion {
+  id         String @id @default(uuid())
+  testId     String
+  questionId String
+  order      Int
+
+  userAnswer String?
+  isCorrect  Boolean?
+  score      Float?
+  aiFeedback Json?
+  answeredAt DateTime?
+
+  isFlagged   Boolean  @default(false)
+  isSkipped   Boolean  @default(false)
+  spentSeconds Int     @default(0)
+
+  test     PlacementTest     @relation(fields: [testId], references: [id], onDelete: Cascade)
+  question PlacementQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([testId, questionId])
+  @@unique([testId, order])
+  @@index([testId])
 }
 
 model PlacementQuestion {
-  id        String   @id @default(uuid())
-  testId    String
-  skill     String
-  question  String
-  options   Json
-  answer    String
-  explain   String?
+  id            String                @id @default(uuid())
+  skill         LearningSkill
+  level         CefrLevel
+  type          PlacementQuestionType
+  question      String
+  options       Json?
+  correctAnswer String?
+  explanation   String?
+  audioUrl      String?
+  passage       String?
+  order         Int                   @default(0)
+  isActive      Boolean               @default(true)
+
+  testQuestions PlacementTestQuestion[]
+
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([skill, level])
 }
 
 model PronunciationExercise {
@@ -1708,4 +1774,123 @@ model SpeakingSession {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum CefrLevel {
+  A1
+  A2
+  B1
+  B2
+  C1
+  C2
+}
+
+enum PlacementMethod {
+  TEST
+  CERTIFICATE
+  MANUAL
+}
+
+enum PlacementStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum LearningSkill {
+  VOCABULARY
+  GRAMMAR
+  LISTENING
+  READING
+  SPEAKING
+  WRITING
+}
+
+enum LanguageCertificateType {
+  IELTS
+  TOEIC
+  TOEFL_IBT
+  CAMBRIDGE
+  CEFR
+  OTHER
+}
+
+enum CertificateVerificationStatus {
+  PENDING
+  PROCESSING
+  VERIFIED
+  REJECTED
+  NEEDS_REVIEW
+}
+
+model UserPlacement {
+  id           String          @id @default(uuid())
+  userId       String          @unique
+  method       PlacementMethod
+  status       PlacementStatus @default(NOT_STARTED)
+  overallLevel CefrLevel?
+  completedAt  DateTime?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skillLevels UserSkillLevel[]
+}
+
+model UserSkillLevel {
+  id          String          @id @default(uuid())
+  userId      String
+  placementId String?
+  skill       LearningSkill
+  level       CefrLevel
+  score       Float?
+  source      PlacementMethod
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  placement UserPlacement? @relation(fields: [placementId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, skill])
+  @@index([userId])
+  @@index([placementId])
+}
+
+model UserLanguageCertificate {
+  id     String                        @id @default(uuid())
+  userId String
+  type   LanguageCertificateType
+  status CertificateVerificationStatus @default(PENDING)
+
+  fileUrl          String
+  originalFileName String?
+  mimeType         String?
+
+  certificateNumber String?
+  candidateName     String?
+  organization      String?
+
+  overallScore   Float?
+  listeningScore Float?
+  readingScore   Float?
+  speakingScore  Float?
+  writingScore   Float?
+
+  mappedOverallLevel CefrLevel?
+  confidence         Float?
+  issuedAt           DateTime?
+  expiresAt          DateTime?
+
+  extractedData       Json?
+  verificationMessage String?
+
+  verifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([type])
 }

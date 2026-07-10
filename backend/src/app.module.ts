@@ -43,6 +43,7 @@ import { ListeningModule } from './modules/listening/listening.module';
 import { ListeningJobService } from './modules/listening-job/listening-job.service';
 import { GrammarModule } from './modules/grammar/grammar.module';
 import { ReadingModule } from './modules/reading/reading.module';
+import { PlacementModule } from './modules/placement/placement.module';
 
 @Module({
   imports: [
@@ -87,6 +88,7 @@ import { ReadingModule } from './modules/reading/reading.module';
     ListeningModule,
     GrammarModule,
     ReadingModule,
+    PlacementModule,
   ],
   providers: [GeminiService, ListeningJobService],
   controllers: [GeminiController],

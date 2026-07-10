@@ -1,0 +1,9 @@
+// Bổ sung các field sau vào model PlacementTestQuestion hiện tại:
+//
+// model PlacementTestQuestion {
+//   ...
+//   isFlagged   Boolean  @default(false)
+//   isSkipped   Boolean  @default(false)
+//   spentSeconds Int     @default(0)
+//   ...
+// }
