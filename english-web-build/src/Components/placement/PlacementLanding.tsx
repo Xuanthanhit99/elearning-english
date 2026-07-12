@@ -54,7 +54,7 @@ export default function PlacementLanding() {
   const [selectedLevel, setSelectedLevel] = useState<CefrLevel>("A1");
   const [savingLevel, setSavingLevel] = useState(false);
   const [actionError, setActionError] = useState("");
-  const [Error, setError] = useState("");
+  const [retakeError, setRetakeError] = useState("");
 
   const [retaking, setRetaking] = useState(false);
 
@@ -63,7 +63,7 @@ export default function PlacementLanding() {
   async function handleRetake(force = false) {
     try {
       setRetaking(true);
-      setError("");
+      setRetakeError("");
 
       const result = await retakePlacement(force);
 
@@ -85,7 +85,7 @@ export default function PlacementLanding() {
         return;
       }
 
-      setError(payload?.message ?? "Không thể tạo bài kiểm tra mới.");
+      setRetakeError(payload?.message ?? "Không thể tạo bài kiểm tra mới.");
     } finally {
       setRetaking(false);
     }

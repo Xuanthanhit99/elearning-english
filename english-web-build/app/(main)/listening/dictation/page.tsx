@@ -1,5 +1,5 @@
-import DictationPage from "@/src/Components/Listening/Dictation/DictationPage";
+import DictationPage from "@/src/Components/Listening/DictationPage";
 
-export default function dictation() {
+export default function ListeningDictationRoute() {
   return <DictationPage />;
 }

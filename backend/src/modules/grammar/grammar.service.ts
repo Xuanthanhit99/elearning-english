@@ -4,11 +4,15 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { GrammarLevel } from '@prisma/client';
+import { GrammarLevel, LearningSkill, MissionV2Action } from '@prisma/client';
+import { MissionV2ProgressService } from '../missions-v2/services/mission-v2-progress.service';
 
 @Injectable()
 export class GrammarService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly missionV2ProgressService: MissionV2ProgressService,
+  ) {}
 
   private keyWhere(key: string) {
     return {
@@ -164,7 +168,9 @@ export class GrammarService {
       return topic.lessons.every((lesson) => lesson.progress[0]?.completed);
     }).length;
     const progress =
-      lessons.length > 0 ? Math.round((completedLessons / lessons.length) * 100) : 0;
+      lessons.length > 0
+        ? Math.round((completedLessons / lessons.length) * 100)
+        : 0;
     const earnedXp = completedLessons * 20;
 
     const topics = category.topics.map((topic, index) => {
@@ -178,9 +184,10 @@ export class GrammarService {
         index === 0 ||
         category.topics
           .slice(0, index)
-          .every((item) =>
-            item.lessons.length > 0 &&
-            item.lessons.every((lesson) => lesson.progress[0]?.completed),
+          .every(
+            (item) =>
+              item.lessons.length > 0 &&
+              item.lessons.every((lesson) => lesson.progress[0]?.completed),
           );
 
       return {
@@ -331,7 +338,9 @@ export class GrammarService {
         completed: done,
         locked: !previousDone && category.id !== categoryId,
         progress:
-          lessons.length > 0 ? Math.round((completed / lessons.length) * 100) : 0,
+          lessons.length > 0
+            ? Math.round((completed / lessons.length) * 100)
+            : 0,
       };
     });
   }
@@ -537,13 +546,22 @@ export class GrammarService {
       },
       select: {
         id: true,
+        progress: {
+          where: {
+            userId,
+          },
+          select: {
+            completed: true,
+          },
+          take: 1,
+        },
       },
     });
 
     if (!lesson) {
       throw new NotFoundException('Grammar lesson not found');
     }
-
+    const wasCompleted = lesson.progress[0]?.completed === true;
     const questions = await this.prisma.grammarQuestion.findMany({
       where: {
         lessonId: lesson.id,
@@ -577,11 +595,11 @@ export class GrammarService {
 
     await this.prisma.grammarLessonProgress.upsert({
       where: {
-          userId_lessonId: {
-            userId,
-            lessonId: lesson.id,
-          },
+        userId_lessonId: {
+          userId,
+          lessonId: lesson.id,
         },
+      },
       update: {
         completed: true,
         score,
@@ -596,11 +614,19 @@ export class GrammarService {
       },
     });
 
+    const missionResult = await this.updateGrammarMissionProgress({
+      userId,
+      lessonId: lesson.id,
+      wasCompleted,
+      includeQuiz: true,
+    });
+
     return {
       score,
       correct,
       total: questions.length,
       results,
+      missionUpdated: missionResult.missionUpdated,
     };
   }
 
@@ -1030,6 +1056,14 @@ export class GrammarService {
         overview: content?.overview || '',
         summary: content?.summary || '',
       },
+      questions: lesson.questions.map((question) => ({
+        id: question.id,
+        question: question.question,
+        options: Array.isArray(question.options)
+          ? (question.options as string[])
+          : [],
+        difficulty: question.difficulty,
+      })),
       lessons: allLessons.map((item, index) => {
         const itemProgress = item.progress[0];
 
@@ -1075,11 +1109,11 @@ export class GrammarService {
 
     const progress = await this.prisma.grammarLessonProgress.upsert({
       where: {
-          userId_lessonId: {
-            userId,
-            lessonId: lesson.id,
-          },
+        userId_lessonId: {
+          userId,
+          lessonId: lesson.id,
         },
+      },
       update: {},
       create: {
         userId,
@@ -1101,11 +1135,24 @@ export class GrammarService {
         ...this.keyWhere(lessonId),
       },
       include: {
+        progress: {
+          where: {
+            userId,
+          },
+          select: {
+            completed: true,
+          },
+          take: 1,
+        },
         topic: {
           include: {
             lessons: {
-              where: { isActive: true },
-              orderBy: { order: 'asc' },
+              where: {
+                isActive: true,
+              },
+              orderBy: {
+                order: 'asc',
+              },
             },
           },
         },
@@ -1116,13 +1163,15 @@ export class GrammarService {
       throw new NotFoundException('Không tìm thấy bài học');
     }
 
+    const wasCompleted = lesson.progress[0]?.completed === true;
+
     const progress = await this.prisma.grammarLessonProgress.upsert({
       where: {
-          userId_lessonId: {
-            userId,
-            lessonId: lesson.id,
-          },
+        userId_lessonId: {
+          userId,
+          lessonId: lesson.id,
         },
+      },
       update: {
         completed: true,
         score: 100,
@@ -1137,14 +1186,23 @@ export class GrammarService {
       },
     });
 
+    const missionResult = await this.updateGrammarMissionProgress({
+      userId,
+      lessonId: lesson.id,
+      wasCompleted,
+      includeQuiz: false,
+    });
+
     const lessons = lesson.topic.lessons;
-    const currentIndex = lessons.findIndex((x) => x.id === lesson.id);
-    const nextLessonId = lessons[currentIndex + 1]?.id || null;
+    const currentIndex = lessons.findIndex((item) => item.id === lesson.id);
+
+    const nextLessonId = lessons[currentIndex + 1]?.id ?? null;
 
     return {
       message: 'Hoàn thành bài học',
       progress,
       nextLessonId,
+      missionUpdated: missionResult.missionUpdated,
     };
   }
 
@@ -1165,11 +1223,11 @@ export class GrammarService {
 
     const saved = await this.prisma.grammarLessonNote.upsert({
       where: {
-          userId_lessonId: {
-            userId,
-            lessonId: lesson.id,
-          },
+        userId_lessonId: {
+          userId,
+          lessonId: lesson.id,
         },
+      },
       update: {
         note,
       },
@@ -1199,5 +1257,55 @@ export class GrammarService {
     };
 
     return map[level] || level;
+  }
+
+  private async updateGrammarMissionProgress(input: {
+    userId: string;
+    lessonId: string;
+    wasCompleted: boolean;
+    includeQuiz?: boolean;
+  }) {
+    /*
+     * Không cộng lại nếu lesson đã hoàn thành trước đó.
+     */
+    if (input.wasCompleted) {
+      return {
+        missionUpdated: false,
+      };
+    }
+
+    await this.missionV2ProgressService.increase({
+      userId: input.userId,
+      action: MissionV2Action.COMPLETE_LESSON,
+      amount: 1,
+      skill: LearningSkill.GRAMMAR,
+      lessonId: input.lessonId,
+    });
+
+    /*
+     * Mission kỹ năng AI ưu tiên.
+     * Mission chỉ match nếu skill ưu tiên là GRAMMAR.
+     */
+    await this.missionV2ProgressService.increase({
+      userId: input.userId,
+      action: MissionV2Action.STUDY_LESSON,
+      amount: 1,
+      skill: LearningSkill.GRAMMAR,
+      lessonId: input.lessonId,
+    });
+
+    if (input.includeQuiz) {
+      await this.missionV2ProgressService.increase({
+        userId: input.userId,
+        action: MissionV2Action.COMPLETE_QUIZ,
+        amount: 1,
+        skill: LearningSkill.GRAMMAR,
+        lessonId: input.lessonId,
+      });
+    }
+
+    return {
+      missionUpdated: true,
+    };
   }
 }

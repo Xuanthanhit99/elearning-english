@@ -92,26 +92,44 @@ const fallbackWeakWords = ["pollution", "recycle", "conserve"];
 const vocabularyEmojiMap: Record<string, string> = {
   airplane: "2708-fe0f",
   apple: "1f34e",
+  bag: "1f45c",
   banana: "1f34c",
   beach: "1f3d6-fe0f",
   bicycle: "1f6b2",
   book: "1f4d6",
+  bottle: "1f37e",
   bread: "1f35e",
   bus: "1f68c",
+  cake: "1f370",
   camera: "1f4f7",
   car: "1f697",
   cat: "1f431",
+  chair: "1fa91",
   city: "1f3d9-fe0f",
   coffee: "2615",
+  conservation: "1f331",
+  conserve: "1f331",
   computer: "1f4bb",
+  doctor: "1f468-200d-2695-fe0f",
   dog: "1f436",
   earth: "1f30d",
+  ecology: "1f331",
+  "eco-friendly": "1f331",
+  ecosystem: "1f333",
+  education: "1f3eb",
+  efficient: "2699-fe0f",
+  electricity: "26a1",
+  emission: "1f32b-fe0f",
+  enduring: "267e-fe0f",
   environment: "1f30d",
+  environmental: "1f331",
   family: "1f46a",
   fire: "1f525",
   flower: "1f33c",
   forest: "1f332",
+  fruit: "1f34e",
   globe: "1f30d",
+  green: "1f331",
   health: "1f3e5",
   hospital: "1f3e5",
   hotel: "1f3e8",
@@ -124,10 +142,15 @@ const vocabularyEmojiMap: Record<string, string> = {
   moon: "1f319",
   music: "1f3b5",
   orange: "1f34a",
+  paper: "1f4c4",
   phone: "1f4f1",
   pizza: "1f355",
+  pollution: "1f3ed",
   plane: "2708-fe0f",
   recycle: "267b-fe0f",
+  recyclable: "267b-fe0f",
+  renewable: "267b-fe0f",
+  reusable: "267b-fe0f",
   rice: "1f35a",
   school: "1f3eb",
   ship: "1f6a2",
@@ -139,12 +162,73 @@ const vocabularyEmojiMap: Record<string, string> = {
   train: "1f686",
   travel: "1f9f3",
   tree: "1f333",
+  viable: "2705",
   water: "1f4a7",
   weather: "2601-fe0f",
 };
 
-const getImageLock = (value: string) =>
-  value.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0) % 1000;
+const escapeSvgText = (value?: string | null) =>
+  (value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+const getVisualTone = (word?: VocabularyWord | null) => {
+  const text = `${word?.word || ""} ${word?.meaningEn || ""} ${
+    word?.meaningVi || ""
+  } ${word?.topic?.name || ""}`.toLowerCase();
+
+  if (/(banana|apple|orange|rice|bread|coffee|food|fruit|eat|drink)/.test(text)) {
+    return { bg: "#f7e79a", fg: "#f59e0b", icon: "fruit" };
+  }
+  if (/(environment|eco|green|recycle|conservation|tree|forest|nature|sustain)/.test(text)) {
+    return { bg: "#dcfce7", fg: "#16a34a", icon: "leaf" };
+  }
+  if (/(technology|computer|phone|internet|screen|software|digital)/.test(text)) {
+    return { bg: "#dbeafe", fg: "#2563eb", icon: "tech" };
+  }
+  if (/(travel|hotel|airport|plane|ship|train|city|bus|car)/.test(text)) {
+    return { bg: "#e0f2fe", fg: "#0284c7", icon: "travel" };
+  }
+  if (/(health|doctor|hospital|medicine|body)/.test(text)) {
+    return { bg: "#ffe4e6", fg: "#e11d48", icon: "health" };
+  }
+  if (/(business|money|work|career|market|invoice)/.test(text)) {
+    return { bg: "#fef3c7", fg: "#d97706", icon: "business" };
+  }
+
+  return { bg: "#efe9ff", fg: "#6d35ff", icon: "word" };
+};
+
+const buildVocabularySvg = (word?: VocabularyWord | null) => {
+  const tone = getVisualTone(word);
+  const label = escapeSvgText(word?.word || "word");
+  const meaning = escapeSvgText(word?.meaningVi || word?.meaningEn || "Vocabulary");
+  const initial = escapeSvgText((word?.word || "V").slice(0, 1).toUpperCase());
+
+  const icons: Record<string, string> = {
+    fruit: `<path d="M206 142c35-34 89-36 123-8-29 51-92 70-136 36 2-10 6-20 13-28Z" fill="${tone.fg}"/><path d="M251 95c-4-20 5-39 26-54 13 25 10 49-8 70" fill="#7c3f12"/><path d="M274 116c48-19 92 2 111 32-47 27-103 20-130-15" fill="#facc15"/>`,
+    leaf: `<path d="M141 206c31-84 104-132 195-122 3 94-50 159-142 172 18-31 48-62 92-89-56 17-96 50-145 39Z" fill="${tone.fg}"/><path d="M145 221c51-43 95-71 151-91" stroke="#065f46" stroke-width="12" stroke-linecap="round"/>`,
+    tech: `<rect x="112" y="98" width="256" height="166" rx="26" fill="${tone.fg}"/><rect x="138" y="125" width="204" height="106" rx="14" fill="#eff6ff"/><path d="M198 294h84M240 264v30" stroke="${tone.fg}" stroke-width="16" stroke-linecap="round"/>`,
+    travel: `<path d="M86 211 394 109l-74 192-76-68-66 58 13-83-105 3Z" fill="${tone.fg}"/><path d="m244 233 150-124" stroke="#075985" stroke-width="12" stroke-linecap="round"/>`,
+    health: `<path d="M240 330S104 249 104 156c0-42 31-74 72-74 26 0 50 14 64 37 14-23 38-37 64-37 41 0 72 32 72 74 0 93-136 174-136 174Z" fill="${tone.fg}"/><path d="M240 142v92M194 188h92" stroke="#fff" stroke-width="22" stroke-linecap="round"/>`,
+    business: `<rect x="116" y="126" width="248" height="174" rx="26" fill="${tone.fg}"/><path d="M188 126v-22c0-20 16-36 36-36h32c20 0 36 16 36 36v22" stroke="#92400e" stroke-width="18" fill="none"/><path d="M116 194h248" stroke="#fef3c7" stroke-width="18"/>`,
+    word: `<circle cx="240" cy="178" r="86" fill="${tone.fg}"/><text x="240" y="209" text-anchor="middle" font-family="Arial, sans-serif" font-size="92" font-weight="900" fill="#fff">${initial}</text>`,
+  };
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360">
+    <rect width="480" height="360" rx="34" fill="${tone.bg}"/>
+    <circle cx="96" cy="72" r="54" fill="#fff" opacity=".35"/>
+    <circle cx="396" cy="292" r="72" fill="#fff" opacity=".28"/>
+    ${icons[tone.icon] || icons.word}
+    <rect x="76" y="286" width="328" height="46" rx="23" fill="#fff" opacity=".82"/>
+    <text x="240" y="316" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="800" fill="#111827">${label}</text>
+    <text x="240" y="344" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#6b7280">${meaning}</text>
+  </svg>`;
+
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+};
 
 const getVocabularyImageUrl = (word?: VocabularyWord | null) => {
   if (!word) return { src: "", mode: "photo" as const };
@@ -160,18 +244,9 @@ const getVocabularyImageUrl = (word?: VocabularyWord | null) => {
     };
   }
 
-  const keyword = (word.word || word.meaningEn || word.meaningVi || "english")
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, ",");
-  const lock = getImageLock(keyword || "english");
-
   return {
-    src: `https://loremflickr.com/640/480/${encodeURIComponent(
-      `${keyword || "english"},object,illustration`,
-    )}?lock=${lock}`,
-    mode: "photo" as const,
+    src: buildVocabularySvg(word),
+    mode: "generated" as const,
   };
 };
 
@@ -205,6 +280,7 @@ export default function VocabularyPage() {
   const [shareOpen, setShareOpen] = useState(false);
   const [shareContent, setShareContent] = useState("");
   const [openModalProgress, setOpenModalProgress] = useState(false);
+  const [studyStartedAt] = useState(() => Date.now());
 
   const isTodayCompleted = Boolean(
     today?.completed || today?.status === "COMPLETED",
@@ -225,6 +301,16 @@ export default function VocabularyPage() {
     : totalWords
     ? Math.round((learnedCount / totalWords) * 100)
     : 0;
+  const confidentCount = dailyWords.filter((item) =>
+    ["KNOWN", "MASTERED"].includes(item.progress?.status || ""),
+  ).length;
+  const accuracyPercent = learnedCount
+    ? Math.round((confidentCount / learnedCount) * 100)
+    : 100;
+  const studyMinutes = Math.max(
+    1,
+    Math.round((Date.now() - studyStartedAt) / 60000),
+  );
 
   const loadVocabulary = async () => {
     setLoading(true);
@@ -470,6 +556,28 @@ export default function VocabularyPage() {
     await loadVocabulary();
   };
 
+  const addExtraWords = async (amount: number) => {
+    if (!today?.id || today.locked) return;
+    const res = await api.post(`/vocabulary/daily/${today.id}/extra`, {
+      amount,
+    });
+    setToday({ ...res.data, completed: false });
+    setDailyWords(res.data?.words || []);
+    setActiveIndex(Math.min(learnedCount, Math.max((res.data?.words?.length || 1) - 1, 0)));
+    setOpenModalProgress(false);
+    setMessage(
+      `Đã mở thêm ${amount} từ. Hãy học vừa sức để nhớ lâu hơn nhé.`,
+    );
+  };
+
+  const submitCompletionReview = async (
+    reviews: Array<{ wordId: string; rating: "AGAIN" | "HARD" | "GOOD" | "EASY" }>,
+  ) => {
+    const res = await api.post("/vocabulary/flashcards/review", { reviews });
+    await loadVocabulary();
+    return res.data;
+  };
+
   const shareWord = async () => {
     if (!currentWord?.id) return;
     const res = await api.post(`/vocabulary/words/${currentWord.id}/share`, {
@@ -619,8 +727,20 @@ export default function VocabularyPage() {
         />
       )}
       <LessonCompletedModal
+        accuracy={accuracyPercent}
+        minutes={studyMinutes}
         open={openModalProgress}
+        wordsLearned={totalWords}
         onClose={() => setOpenModalProgress(false)}
+        onFinish={() => {
+          setOpenModalProgress(false);
+          setMessage(
+            "Bạn đã hoàn thành mục tiêu hôm nay. Ngày mai AI sẽ chọn thêm từ mới.",
+          );
+        }}
+        onLearnExtra={(amount) => void addExtraWords(amount)}
+        onSubmitReview={submitCompletionReview}
+        words={dailyWords.slice(0, totalWords)}
       />
     </>
   );
@@ -2853,13 +2973,67 @@ function Modal({
   );
 }
 
+function buildReviewOptions(
+  words: DailyWordItem[],
+  current: VocabularyWord | undefined,
+  type: "meaning" | "word",
+) {
+  const correct =
+    type === "meaning"
+      ? current?.meaningVi || current?.meaningEn || current?.word || ""
+      : current?.word || "";
+  const distractors = words
+    .map((item) =>
+      type === "meaning"
+        ? item.word.meaningVi || item.word.meaningEn || item.word.word
+        : item.word.word,
+    )
+    .filter((value) => value && value !== correct)
+    .slice(0, 3);
+
+  return [correct, ...distractors]
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b));
+}
+
+function blankReviewWord(example?: string | null, word?: string | null) {
+  if (!example || !word) return `Use "${word || "this word"}" in a sentence.`;
+  const pattern = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+  return example.replace(pattern, "_____");
+}
+
 function LessonCompletedModal({
+  accuracy,
+  minutes,
   open,
   onClose,
+  onFinish,
+  onLearnExtra,
+  onSubmitReview,
+  words,
+  wordsLearned,
 }: {
+  accuracy: number;
+  minutes: number;
   open: boolean;
   onClose: () => void;
+  onFinish: () => void;
+  onLearnExtra: (amount: number) => void;
+  onSubmitReview: (
+    reviews: Array<{ wordId: string; rating: "AGAIN" | "HARD" | "GOOD" | "EASY" }>,
+  ) => Promise<any>;
+  words: DailyWordItem[];
+  wordsLearned: number;
 }) {
+  const [mode, setMode] = useState<"summary" | "review" | "reviewDone" | "explore">("summary");
+  const [reviewIndex, setReviewIndex] = useState(0);
+  const [reviewInput, setReviewInput] = useState("");
+  const [reviewAnswers, setReviewAnswers] = useState<
+    Array<{ wordId: string; rating: "AGAIN" | "HARD" | "GOOD" | "EASY" }>
+  >([]);
+  const [reviewResult, setReviewResult] = useState<any>(null);
+  const [submittingReview, setSubmittingReview] = useState(false);
+
   if (!open) return null;
 
   const CONFETTI = Array.from({ length: 42 }, (_, i) => ({
@@ -2868,6 +3042,209 @@ function LessonCompletedModal({
     rotate: `rotate(${(i * 23) % 90}deg)`,
     color: ["#8b5cf6", "#22c55e", "#f59e0b", "#06b6d4", "#ef4444"][i % 5],
   }));
+
+  const reviewWords = words.filter((item) => item.word?.id).slice(0, 10);
+  const currentReviewItem = reviewWords[reviewIndex];
+  const currentReviewWord = currentReviewItem?.word;
+  const currentReviewMode = reviewIndex % 5;
+  const meaningOptions = buildReviewOptions(reviewWords, currentReviewWord, "meaning");
+  const wordOptions = buildReviewOptions(reviewWords, currentReviewWord, "word");
+
+  const answerReview = async (rating: "AGAIN" | "HARD" | "GOOD" | "EASY") => {
+    if (!currentReviewWord?.id || submittingReview) return;
+
+    const nextAnswers = [
+      ...reviewAnswers.filter((item) => item.wordId !== currentReviewWord.id),
+      { wordId: currentReviewWord.id, rating },
+    ];
+    setReviewAnswers(nextAnswers);
+    setReviewInput("");
+
+    if (reviewIndex + 1 < reviewWords.length) {
+      setReviewIndex((index) => index + 1);
+      return;
+    }
+
+    setSubmittingReview(true);
+    try {
+      const result = await onSubmitReview(nextAnswers);
+      setReviewResult(result);
+      setMode("reviewDone");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  const submitTypedReview = () => {
+    if (!currentReviewWord) return;
+    const expected = (currentReviewWord.word || "").trim().toLowerCase();
+    const actual = reviewInput.trim().toLowerCase();
+    void answerReview(actual === expected ? "GOOD" : "AGAIN");
+  };
+
+  if (mode === "review") {
+    if (!currentReviewWord) return null;
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/55 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-[560px] rounded-[28px] bg-white p-6 shadow-2xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-black text-violet-600">
+                  Ôn tập SRS {reviewIndex + 1}/{reviewWords.length}
+                </p>
+                <h2 className="mt-2 text-2xl font-extrabold text-slate-950">
+                  {["Flashcard", "Chọn nghĩa", "Gõ lại từ", "Nghe và chọn", "Điền từ"][currentReviewMode]}
+                </h2>
+              </div>
+              <button onClick={() => setMode("summary")} className="rounded-full bg-slate-100 p-2">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="mt-6 rounded-2xl bg-violet-50 p-5">
+              {currentReviewMode === 0 && (
+                <>
+                  <p className="text-4xl font-black text-violet-700">{currentReviewWord.word}</p>
+                  <p className="mt-3 text-lg font-bold text-slate-700">
+                    {currentReviewWord.meaningVi || currentReviewWord.meaningEn}
+                  </p>
+                  <p className="mt-3 text-sm font-semibold text-slate-500">
+                    {currentReviewWord.example || "Try using this word in your own sentence."}
+                  </p>
+                </>
+              )}
+
+              {currentReviewMode === 1 && (
+                <>
+                  <p className="text-sm font-bold text-slate-500">Chọn nghĩa đúng của:</p>
+                  <p className="mt-2 text-3xl font-black text-violet-700">{currentReviewWord.word}</p>
+                  <div className="mt-5 grid gap-2">
+                    {meaningOptions.map((option) => (
+                      <button
+                        key={option}
+                        onClick={() =>
+                          void answerReview(
+                            option === (currentReviewWord.meaningVi || currentReviewWord.meaningEn)
+                              ? "GOOD"
+                              : "AGAIN",
+                          )
+                        }
+                        className="rounded-xl border border-violet-100 bg-white px-4 py-3 text-left text-sm font-bold hover:bg-violet-100"
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {currentReviewMode === 2 && (
+                <>
+                  <p className="text-sm font-bold text-slate-500">Gõ lại từ có nghĩa là:</p>
+                  <p className="mt-2 text-xl font-black text-slate-900">
+                    {currentReviewWord.meaningVi || currentReviewWord.meaningEn}
+                  </p>
+                  <input
+                    value={reviewInput}
+                    onChange={(event) => setReviewInput(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") submitTypedReview();
+                    }}
+                    className="mt-5 w-full rounded-xl border border-violet-100 px-4 py-3 font-bold outline-none focus:border-violet-500"
+                    placeholder="Nhập từ tiếng Anh..."
+                  />
+                </>
+              )}
+
+              {currentReviewMode === 3 && (
+                <>
+                  <button
+                    onClick={() => currentReviewWord.audio && new Audio(currentReviewWord.audio).play()}
+                    className="rounded-xl bg-violet-600 px-5 py-3 font-black text-white"
+                  >
+                    Nghe phát âm
+                  </button>
+                  <p className="mt-3 text-sm font-bold text-slate-500">
+                    Không có audio thì hãy chọn từ theo nghĩa: {currentReviewWord.meaningVi || currentReviewWord.meaningEn}
+                  </p>
+                  <div className="mt-5 grid grid-cols-2 gap-2">
+                    {wordOptions.map((option) => (
+                      <button
+                        key={option}
+                        onClick={() => void answerReview(option === currentReviewWord.word ? "GOOD" : "AGAIN")}
+                        className="rounded-xl border border-violet-100 bg-white px-4 py-3 text-sm font-bold hover:bg-violet-100"
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {currentReviewMode === 4 && (
+                <>
+                  <p className="text-sm font-bold text-slate-500">Điền từ còn thiếu:</p>
+                  <p className="mt-2 text-lg font-black text-slate-900">
+                    {blankReviewWord(currentReviewWord.example, currentReviewWord.word)}
+                  </p>
+                  <input
+                    value={reviewInput}
+                    onChange={(event) => setReviewInput(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") submitTypedReview();
+                    }}
+                    className="mt-5 w-full rounded-xl border border-violet-100 px-4 py-3 font-bold outline-none focus:border-violet-500"
+                    placeholder="Nhập từ còn thiếu..."
+                  />
+                </>
+              )}
+            </div>
+
+            {[2, 4].includes(currentReviewMode) ? (
+              <button
+                onClick={submitTypedReview}
+                className="mt-5 w-full rounded-xl bg-violet-600 py-3 font-black text-white"
+              >
+                Kiểm tra
+              </button>
+            ) : currentReviewMode === 0 ? (
+              <div className="mt-5 grid grid-cols-3 gap-2">
+                <button onClick={() => void answerReview("AGAIN")} className="rounded-xl bg-red-50 py-3 font-black text-red-600">
+                  Quên
+                </button>
+                <button onClick={() => void answerReview("HARD")} className="rounded-xl bg-amber-50 py-3 font-black text-amber-600">
+                  Khó nhớ
+                </button>
+                <button onClick={() => void answerReview("GOOD")} className="rounded-xl bg-emerald-50 py-3 font-black text-emerald-600">
+                  Nhớ rồi
+                </button>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      );
+  }
+
+  if (mode === "reviewDone") {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/55 px-4 backdrop-blur-sm">
+        <div className="w-full max-w-[480px] rounded-[28px] bg-white p-7 text-center shadow-2xl">
+          <h2 className="text-3xl font-extrabold text-violet-600">Ôn tập xong!</h2>
+          <p className="mt-3 font-bold text-slate-600">
+            Bạn nhớ đúng {reviewResult?.remembered || 0}/{reviewResult?.total || reviewWords.length} từ.
+            Lịch SRS đã được cập nhật.
+          </p>
+          <button
+            onClick={onFinish}
+            className="mt-6 w-full rounded-xl bg-violet-600 py-3 font-black text-white"
+          >
+            Hoàn thành hôm nay
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/55 backdrop-blur-sm px-4">
@@ -2899,12 +3276,12 @@ function LessonCompletedModal({
         {/* Header */}
         <div className="relative px-8 pt-10 text-center">
           <h2 className="text-3xl font-extrabold leading-tight text-violet-600">
-            🎉 Đã hoàn thành <br /> bài học hôm nay!
+            🎉 Bạn đã hoàn thành <br /> mục tiêu hôm nay!
           </h2>
 
           <p className="mt-3 text-sm text-slate-500">
-            Tuyệt vời! Bạn đã hoàn thành tất cả bài học <br />
-            và từ vựng của ngày hôm nay.
+            Bạn vừa hoàn thành Daily Goal. Giờ hãy chọn bước tiếp theo:
+            ôn lại để nhớ lâu, học thêm vừa sức, hoặc kết thúc hôm nay.
           </p>
 
           <img
@@ -2925,66 +3302,105 @@ function LessonCompletedModal({
             <div className="grid grid-cols-3 gap-3">
               <StatItem
                 icon={<BookOpen size={22} />}
-                value="24"
-                label="Từ vựng đã học"
+                value={String(wordsLearned)}
+                label="Từ mới"
                 color="text-violet-600"
                 bg="bg-violet-100"
               />
 
               <StatItem
                 icon={<Star size={22} />}
-                value="320"
-                label="XP nhận được"
+                value={`${accuracy}%`}
+                label="Độ chính xác"
                 color="text-amber-500"
                 bg="bg-amber-100"
               />
 
               <StatItem
                 icon={<Target size={22} />}
-                value="100%"
-                label="Hoàn thành mục tiêu"
+                value={`${minutes} phút`}
+                label="Thời gian"
                 color="text-emerald-500"
                 bg="bg-emerald-100"
               />
             </div>
           </div>
 
-          {/* Reward */}
+          <div className="mt-4 rounded-2xl border border-amber-100 bg-amber-50 p-4">
+            <p className="text-sm font-black text-amber-800">
+              Khuyến nghị học bền vững
+            </p>
+            <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+              Học quá nhiều từ mới trong một ngày có thể làm giảm khả năng ghi
+              nhớ. PoppyLingo khuyến nghị 10-20 từ/ngày và ưu tiên ôn tập SRS.
+            </p>
+          </div>
+
           <div className="mt-4 flex items-center gap-4 rounded-2xl border border-violet-100 bg-violet-50 p-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm">
               <Gift size={38} className="text-violet-600" />
             </div>
 
             <div>
-              <p className="font-bold text-violet-700">Phần thưởng</p>
-              <p className="text-sm text-slate-600">Bạn đã nhận được 50 xu!</p>
+              <p className="font-bold text-violet-700">Ngày mai học thông minh hơn</p>
+              <p className="text-sm text-slate-600">
+                AI sẽ ưu tiên ôn lại các từ đến hạn trước khi mở từ mới.
+              </p>
 
               <div className="mt-2 inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-bold text-blue-600 shadow-sm">
-                💎 +50
+                SRS: 1 ngày → 3 ngày → 7 ngày → 14 ngày
               </div>
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="mt-5 grid grid-cols-2 gap-3">
+          <div className="mt-5 grid gap-3">
             <button
-              onClick={onClose}
-              className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+              onClick={() => setMode("review")}
+              disabled={!reviewWords.length}
+              className="flex items-center justify-center gap-2 rounded-xl bg-violet-600 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-200 hover:bg-violet-700"
             >
               <RotateCcw size={16} />
-              Ôn lại từ đã học
+              Ôn tập ngay
             </button>
 
+            <div className="grid grid-cols-3 gap-2">
+              {[5, 10, 20].map((amount) => (
+                <button
+                  key={amount}
+                  onClick={() => onLearnExtra(amount)}
+                  className="rounded-xl border border-violet-100 bg-white py-3 text-sm font-bold text-violet-700 hover:bg-violet-50"
+                >
+                  Học thêm {amount}
+                </button>
+              ))}
+            </div>
+
             <button
-              onClick={onClose}
-              className="rounded-xl bg-violet-600 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-200 hover:bg-violet-700"
+              onClick={onFinish}
+              className="rounded-xl border border-slate-200 bg-white py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50"
             >
-              Tiếp tục hành trình →
+              Hoàn thành hôm nay
             </button>
+
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                href="/speaking"
+                className="rounded-xl bg-emerald-50 py-3 text-center text-sm font-bold text-emerald-700 hover:bg-emerald-100"
+              >
+                Đi luyện Speaking
+              </Link>
+              <Link
+                href="/reading"
+                className="rounded-xl bg-sky-50 py-3 text-center text-sm font-bold text-sky-700 hover:bg-sky-100"
+              >
+                Đi luyện Reading
+              </Link>
+            </div>
           </div>
 
           <p className="mt-5 text-center text-xs font-medium text-slate-400">
-            💗 Hẹn gặp bạn ngày mai nhé!
+            Trong thời gian chờ từ mới, bạn có thể luyện Reading, Listening,
+            Speaking hoặc Grammar.
           </p>
         </div>
       </div>

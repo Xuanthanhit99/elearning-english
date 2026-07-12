@@ -1,135 +1,144 @@
+import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { GeminiService } from '../gemini/gemini.service';
 import { Cron } from '@nestjs/schedule';
+import { Queue } from 'bullmq';
+import {
+  LISTENING_GENERATION_JOB,
+  LISTENING_GENERATION_QUEUE,
+} from './listening-job.constants';
+import { ListeningGenerationConfig } from './listening-job.types';
 
 @Injectable()
 export class ListeningJobService {
   private readonly logger = new Logger(ListeningJobService.name);
+
+  private readonly configs: ListeningGenerationConfig[] = [
+    { level: 'A1', topic: 'Daily Life' },
+    { level: 'A2', topic: 'School' },
+    { level: 'B1', topic: 'Environment' },
+    { level: 'B1', topic: 'Technology' },
+  ];
+
   constructor(
-    private prismaService: PrismaService,
-    private geminiService: GeminiService,
+    @InjectQueue(LISTENING_GENERATION_QUEUE)
+    private readonly queue: Queue,
   ) {}
 
-  // @Cron('0 2 * * *')
-  // @Cron('*/1 * * * *')
+  // /**
+  //  * 02:00 mỗi ngày.
+  //  * Khi cần test, có thể tạm đổi thành:
+  //  * @Cron('*/1 * * * *')
+  //  */
+  @Cron('0 2 * * *')
   async generateDailyListeningQuestions() {
-    this.logger.log('Start daily listening question job');
-
-    const configs = [
-      { level: 'A1', topic: 'Daily Life' },
-      { level: 'A2', topic: 'School' },
-      { level: 'B1', topic: 'Environment' },
-      { level: 'B1', topic: 'Technology' },
-    ];
-
     const totalNeed = 100;
     const batchSize = 5;
 
-    let created = 0;
+    this.logger.log(
+      `Queue daily Listening generation: total=${totalNeed}, batch=${batchSize}`,
+    );
 
-    while (created < totalNeed) {
-      for (const config of configs) {
-        if (created >= totalNeed) break;
+    let queued = 0;
+    let configIndex = 0;
 
-        const needCount = Math.min(batchSize, totalNeed - created);
+    while (queued < totalNeed) {
+      const config = this.configs[configIndex % this.configs.length];
+      const count = Math.min(batchSize, totalNeed - queued);
 
-        try {
-          const questions = await this.generateByGemini(
-            config.level,
-            config.topic,
-            needCount,
-          );
+      const jobId = [
+        'listening',
+        'generate',
+        new Date().toISOString().slice(0, 10),
+        config.level,
+        this.slug(config.topic),
+        queued,
+      ].join('-');
 
-          if (!questions.length) {
-            this.logger.warn('Gemini returned empty questions');
-            break;
-          }
-
-          await this.prismaService.listeningQuestion.createMany({
-            data: questions.map((item) => ({
-              level: config.level,
-              topic: config.topic,
-              audioUrl: '',
-              transcript: item.transcript,
-              question: item.question,
-              options: item.options,
-              correctAnswer: item.correctAnswer,
-              explanation: item.explanation || '',
-              duration: item.duration || 60,
-              isActive: true,
-            })),
-            skipDuplicates: true,
-          });
-
-          created += questions.length;
-          this.logger.log(
-            `Created ${created}/${totalNeed} listening questions`,
-          );
-
-          await this.sleep(1500);
-        } catch (error) {
-          this.logger.error('Generate listening batch failed', error);
-          await this.sleep(3000);
-        }
-      }
-    }
-    this.logger.log(`Daily listening job done. Created: ${created}`);
-  }
-
-  private async generateByGemini(level: string, topic: string, count: number) {
-    const prompt = `
-Bạn là hệ thống tạo dữ liệu luyện nghe tiếng Anh.
-
-Hãy tạo ${count} câu hỏi luyện nghe.
-
-Yêu cầu:
-- Level: ${level}
-- Topic: ${topic}
-- Transcript ngắn 3-5 câu tiếng Anh
-- Có question tiếng Anh
-- Có 4 đáp án A, B, C, D
-- correctAnswer chỉ là A/B/C/D
-- explanation bằng tiếng Việt
-- duration là số giây ước lượng
-
-Chỉ trả về JSON array, không markdown.
-
-Format:
-[
-  {
-    "transcript": "...",
-    "question": "...",
-    "options": [
-      { "label": "A", "text": "..." },
-      { "label": "B", "text": "..." },
-      { "label": "C", "text": "..." },
-      { "label": "D", "text": "..." }
-    ],
-    "correctAnswer": "B",
-    "explanation": "...",
-    "duration": 60
-  }
-]
-`;
-
-    const result = await this.geminiService.generateJson(prompt);
-    const data = result as any[];
-
-    if (!Array.isArray(data)) return [];
-
-    return data.filter((item) => {
-      return (
-        item.transcript &&
-        item.question &&
-        Array.isArray(item.options) &&
-        item.options.length === 4 &&
-        ['A', 'B', 'C', 'D'].includes(item.correctAnswer)
+      await this.queue.add(
+        LISTENING_GENERATION_JOB.GENERATE_BATCH,
+        {
+          level: config.level,
+          topic: config.topic,
+          count,
+        },
+        {
+          jobId,
+          attempts: 4,
+          backoff: {
+            type: 'exponential',
+            delay: 5000,
+          },
+          removeOnComplete: {
+            age: 24 * 60 * 60,
+            count: 500,
+          },
+          removeOnFail: {
+            age: 7 * 24 * 60 * 60,
+            count: 1000,
+          },
+        },
       );
-    });
+
+      queued += count;
+      configIndex += 1;
+    }
+
+    this.logger.log(`Queued ${queued} Listening questions.`);
   }
 
-  private sleep(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+  /**
+   * Dùng để chạy tay từ service/controller/admin command nếu cần.
+   */
+  async enqueueGeneration(input?: {
+    totalNeed?: number;
+    batchSize?: number;
+    configs?: ListeningGenerationConfig[];
+  }) {
+    const totalNeed = Math.max(1, input?.totalNeed ?? 20);
+    const batchSize = Math.min(Math.max(1, input?.batchSize ?? 5), 10);
+    const configs = input?.configs?.length ? input.configs : this.configs;
+
+    let queued = 0;
+    let configIndex = 0;
+
+    while (queued < totalNeed) {
+      const config = configs[configIndex % configs.length];
+      const count = Math.min(batchSize, totalNeed - queued);
+
+      await this.queue.add(
+        LISTENING_GENERATION_JOB.GENERATE_BATCH,
+        {
+          level: config.level,
+          topic: config.topic,
+          count,
+        },
+        {
+          attempts: 4,
+          backoff: {
+            type: 'exponential',
+            delay: 5000,
+          },
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      );
+
+      queued += count;
+      configIndex += 1;
+    }
+
+    return {
+      queued,
+      batchSize,
+      configCount: configs.length,
+    };
+  }
+
+  private slug(value: string) {
+    return value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   }
 }

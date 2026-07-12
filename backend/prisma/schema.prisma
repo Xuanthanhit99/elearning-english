@@ -115,6 +115,15 @@ enum DailyVocabularyStatus {
   MISSED
 }
 
+enum AILessonBuilderStatus {
+  OUTLINE_PENDING
+  OUTLINE_COMPLETED
+  CONTENT_PENDING
+  CONTENT_COMPLETED
+  IN_PROGRESS
+  COMPLETED
+}
+
 enum PlacementTestStatus {
   IN_PROGRESS
   COMPLETED
@@ -202,16 +211,16 @@ model User {
 
   pronunciationResult PronunciationResult[]
 
-  missions UserMission[]
-
+  missions                UserMission[]
+  listeningProgress       UserListeningProgress?
   placement               UserPlacement?
   skillLevels             UserSkillLevel[]
   placementProcessingJobs PlacementProcessingJob[]
 
-  currentPlacementTestId String?
-  currentPlacementTest   PlacementTest?  @relation("CurrentPlacementTest", fields: [currentPlacementTestId], references: [id], onDelete: SetNull)
-  placementTests         PlacementTest[] @relation("UserPlacementTests")
-
+  currentPlacementTestId    String?
+  currentPlacementTest      PlacementTest?             @relation("CurrentPlacementTest", fields: [currentPlacementTestId], references: [id], onDelete: SetNull)
+  placementTests            PlacementTest[]            @relation("UserPlacementTests")
+  missionV2Items            UserMissionV2[]            @relation("UserMissionV2Relation")
   createAt                  DateTime                   @default(now())
   updatedAt                 DateTime                   @updatedAt
   userLearningProfile       UserLearningProfile?
@@ -220,6 +229,7 @@ model User {
   weeklyVocabularyTests     WeeklyVocabularyTest[]
   vocabularyNotebookItems   UserVocabularyNotebook[]
   languageCertificates      UserLanguageCertificate[]
+  aiLessonBuilderProjects   AILessonBuilderProject[]
 }
 
 model Course {
@@ -250,8 +260,35 @@ model Course {
 
   page CoursePage?
 
+  aiLessonBuilderProjects AILessonBuilderProject[]
+
   createAt  DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model AILessonBuilderProject {
+  id               String                @id @default(uuid())
+  userId           String
+  courseId         String?
+  goal             String
+  audienceAge      String?
+  level            String?
+  dailyMinutes     Int?
+  totalDays        Int?
+  interests        String[]              @default([])
+  focusSkills      String[]              @default([])
+  outline          Json?
+  generationPrompt String?
+  status           AILessonBuilderStatus @default(OUTLINE_PENDING)
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([courseId])
 }
 
 model Section {
@@ -1254,11 +1291,14 @@ model ListeningQuestion {
   explanation   String?
   duration      Int     @default(0)
   isActive      Boolean @default(true)
+  questionHash  String? @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   answers ListeningSessionAnswer[]
+
+  @@index([level, topic, isActive])
 }
 
 model ListeningSession {
@@ -2203,4 +2243,154 @@ model PlacementRecommendedCourse {
   result PlacementResult @relation(fields: [resultId], references: [id], onDelete: Cascade)
 
   @@index([resultId, order])
+}
+
+enum MissionV2Type {
+  DAILY
+  WEEKLY
+  ACHIEVEMENT
+  EVENT
+}
+
+enum MissionV2Scope {
+  GLOBAL
+  LEARNING_PATH
+  PHASE
+  LESSON
+  SKILL
+}
+
+enum MissionV2Action {
+  STUDY_LESSON
+  COMPLETE_LESSON
+  COMPLETE_QUIZ
+  LEARN_WORD
+  REVIEW_WORD
+  READ_ARTICLE
+  LISTEN_AUDIO
+  COMPLETE_SPEAKING
+  CHECK_WRITING
+  LOGIN
+  EARN_XP
+  STUDY_MINUTES
+}
+
+enum MissionV2Status {
+  ACTIVE
+  COMPLETED
+  CLAIMED
+  EXPIRED
+  CANCELLED
+}
+
+model MissionTemplateV2 {
+  id              String          @id @default(uuid())
+  code            String          @unique
+  title           String
+  description     String
+  type            MissionV2Type
+  scope           MissionV2Scope  @default(GLOBAL)
+  action          MissionV2Action
+  defaultTarget   Int
+  rewardXp        Int             @default(0)
+  rewardCoins     Int             @default(0)
+  rewardFood      Int             @default(0)
+  rewardEnergy    Int             @default(0)
+  rewardHappiness Int             @default(0)
+  skill           LearningSkill?
+  priority        Int             @default(0)
+  isActive        Boolean         @default(true)
+  metadata        Json?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  missions UserMissionV2[]
+
+  @@index([type, isActive])
+  @@index([action, skill])
+}
+
+model UserMissionV2 {
+  id         String          @id @default(uuid())
+  userId     String
+  templateId String
+  periodKey  String
+  status     MissionV2Status @default(ACTIVE)
+
+  title       String
+  description String
+  type        MissionV2Type
+  scope       MissionV2Scope
+  action      MissionV2Action
+  target      Int
+  progress    Int             @default(0)
+
+  rewardXp        Int @default(0)
+  rewardCoins     Int @default(0)
+  rewardFood      Int @default(0)
+  rewardEnergy    Int @default(0)
+  rewardHappiness Int @default(0)
+
+  skill               LearningSkill?
+  placementResultId   String?
+  learningPathPhaseId String?
+  lessonId            String?
+  quizId              String?
+  articleId           String?
+  courseId            String?
+
+  metadata    Json?
+  startsAt    DateTime
+  expiresAt   DateTime?
+  completedAt DateTime?
+  claimedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user     User              @relation("UserMissionV2Relation", fields: [userId], references: [id], onDelete: Cascade)
+  template MissionTemplateV2 @relation(fields: [templateId], references: [id], onDelete: Restrict)
+
+  rewardTransaction MissionRewardTransactionV2?
+
+  @@unique([userId, templateId, periodKey, learningPathPhaseId, lessonId])
+  @@index([userId, periodKey, status])
+  @@index([userId, type, status])
+  @@index([lessonId])
+  @@index([learningPathPhaseId])
+}
+
+model MissionRewardTransactionV2 {
+  id            String   @id @default(uuid())
+  userId        String
+  userMissionId String   @unique
+  xp            Int      @default(0)
+  coins         Int      @default(0)
+  food          Int      @default(0)
+  energy        Int      @default(0)
+  happiness     Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  userMission UserMissionV2 @relation(fields: [userMissionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model UserListeningProgress {
+  id                 String    @id @default(uuid())
+  userId             String    @unique
+  currentLevel       String    @default("A1")
+  totalXp            Int       @default(0)
+  completedSessions  Int       @default(0)
+  totalListeningTime Int       @default(0) // giây
+  averageAccuracy    Int       @default(0)
+  currentStreak      Int       @default(0)
+  longestStreak      Int       @default(0)
+  lastStudyDate      DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([currentLevel])
+  @@index([lastStudyDate])
 }

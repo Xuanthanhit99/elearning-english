@@ -5,7 +5,11 @@
 } from '@nestjs/common';
 import { CreateWordDto } from './dto/create-word.dto';
 import { UpdateLearningProfileDto } from './dto/update-learning-profile.dto';
-import { WordProgressStatus } from '@prisma/client';
+import {
+  LearningSkill,
+  MissionV2Action,
+  WordProgressStatus,
+} from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTopicDto } from './dto/create-topic.dto';
 import { SubmitReviewDto } from './dto/submit-review.dto';
@@ -20,6 +24,7 @@ import {
   pickQuestionType,
 } from 'src/common/helpers/questions.helper';
 import { SubmitReviewSessionDto } from './dto/review-session-answer.dto';
+import { MissionV2ProgressService } from '../missions-v2/services/mission-v2-progress.service';
 
 type GeminiWordItem = {
   word: string;
@@ -39,6 +44,7 @@ export class VocabularyService {
     private prisma: PrismaService,
     private geminiService: GeminiService,
     private vocabularyJobService: VocabularyJobService,
+    private readonly missionV2ProgressService: MissionV2ProgressService,
   ) {}
 
   private isLockedPlan(plan: any): plan is {
@@ -360,12 +366,6 @@ export class VocabularyService {
     const profile = await this.getOrCreateProfile(userId);
     const { weekStart, weekEnd } = this.getWeekRange();
 
-    const lock = await this.checkPreviousWeekTestLock(userId, weekStart);
-
-    if (lock) {
-      return lock;
-    }
-
     const existed = await this.prisma.userWeeklyVocabularyPlan.findUnique({
       where: {
         userId_weekStart: {
@@ -546,7 +546,9 @@ export class VocabularyService {
       );
 
       if (repairedTopics.length < 7) {
-        throw new BadRequestException('Chưa đủ 7 chủ đề khác nhau cho tuần này');
+        throw new BadRequestException(
+          'Chưa đủ 7 chủ đề khác nhau cho tuần này',
+        );
       }
 
       uniqueTopics.splice(0, uniqueTopics.length, ...repairedTopics);
@@ -771,20 +773,43 @@ export class VocabularyService {
       `Không tạo được từ cho topicId=${params.topicId}, level=${params.level}`,
     );
   }
-  async updateWordProgress(
-    userId: string,
-    wordId: string,
-    status: WordProgressStatus,
-  ) {
-    const word = await this.prisma.word.findUnique({
-      where: { id: wordId },
+async updateWordProgress(
+  userId: string,
+  wordId: string,
+  status: WordProgressStatus,
+) {
+  const word = await this.prisma.word.findUnique({
+    where: {
+      id: wordId,
+    },
+    select: {
+      id: true,
+      word: true,
+    },
+  });
+
+  if (!word) {
+    throw new NotFoundException(
+      'Không tìm thấy từ.',
+    );
+  }
+
+  const previousProgress =
+    await this.prisma.userWordProgress.findUnique({
+      where: {
+        userId_wordId: {
+          userId,
+          wordId,
+        },
+      },
+      select: {
+        id: true,
+        status: true,
+      },
     });
 
-    if (!word) {
-      throw new NotFoundException('Không tìm thấy từ');
-    }
-
-    return this.prisma.userWordProgress.upsert({
+  const updatedProgress =
+    await this.prisma.userWordProgress.upsert({
       where: {
         userId_wordId: {
           userId,
@@ -796,35 +821,98 @@ export class VocabularyService {
         seenCount: {
           increment: 1,
         },
-        correctCount: status === 'KNOWN' ? { increment: 1 } : undefined,
-        wrongCount: status === 'REVIEW' ? { increment: 1 } : undefined,
-        interval: status === 'KNOWN' ? 7 : status === 'REVIEW' ? 1 : undefined,
-        learnedAt: status === 'KNOWN' ? new Date() : undefined,
+        correctCount:
+          status === 'KNOWN'
+            ? {
+                increment: 1,
+              }
+            : undefined,
+        wrongCount:
+          status === 'REVIEW'
+            ? {
+                increment: 1,
+              }
+            : undefined,
+        interval:
+          status === 'KNOWN'
+            ? 7
+            : status === 'REVIEW'
+              ? 1
+              : undefined,
+        learnedAt:
+          status === 'KNOWN'
+            ? new Date()
+            : undefined,
         reviewAt:
           status === 'KNOWN'
             ? this.addDays(7)
-            : status === 'REVIEW'
-              ? this.addDays(1)
-              : this.addDays(1),
+            : this.addDays(1),
       },
       create: {
         userId,
         wordId,
         status,
         seenCount: 1,
-        correctCount: status === 'KNOWN' ? 1 : 0,
-        wrongCount: status === 'REVIEW' ? 1 : 0,
-        interval: status === 'KNOWN' ? 7 : status === 'REVIEW' ? 1 : 0,
-        learnedAt: status === 'KNOWN' ? new Date() : null,
+        correctCount:
+          status === 'KNOWN' ? 1 : 0,
+        wrongCount:
+          status === 'REVIEW' ? 1 : 0,
+        interval:
+          status === 'KNOWN'
+            ? 7
+            : status === 'REVIEW'
+              ? 1
+              : 0,
+        learnedAt:
+          status === 'KNOWN'
+            ? new Date()
+            : null,
         reviewAt:
           status === 'KNOWN'
             ? this.addDays(7)
-            : status === 'REVIEW'
-              ? this.addDays(1)
-              : this.addDays(1),
+            : this.addDays(1),
       },
     });
+
+  /*
+   * UserWordProgress của bạn chỉ nhận:
+   * NEW | LEARNING | KNOWN | REVIEW
+   */
+  const countedStatuses: WordProgressStatus[] = [
+    'LEARNING',
+    'KNOWN',
+    'REVIEW',
+  ];
+
+  const wasAlreadyCounted =
+    previousProgress !== null &&
+    countedStatuses.includes(
+      previousProgress.status,
+    );
+
+  const shouldCount =
+    countedStatuses.includes(status);
+
+  /*
+   * Chỉ cộng nhiệm vụ khi từ được học lần đầu.
+   */
+  if (!wasAlreadyCounted && shouldCount) {
+    await this.missionV2ProgressService.increase({
+      userId,
+      action:
+        MissionV2Action.LEARN_WORD,
+      amount: 1,
+      skill:
+        LearningSkill.VOCABULARY,
+    });
   }
+
+  return {
+    ...updatedProgress,
+    missionProgressUpdated:
+      !wasAlreadyCounted && shouldCount,
+  };
+}
 
   getNextReviewDate() {
     const date = new Date();
@@ -938,6 +1026,8 @@ Yêu cầu:
 - KHÔNG trùng với danh sách này: [${existedText}]
 - Thứ tự: Sắp xếp độ khó (difficulty) tăng dần từ 1 đến 5.
 - Nội dung: example ngắn gọn; meaningVi dịch tự nhiên; synonyms/antonyms dạng mảng; phonetic dùng IPA chuẩn (hoặc null).
+- Ưu tiên từ/cụm từ có thể minh họa bằng một hình ảnh rõ ràng, cụ thể. Với từ trừu tượng, example phải gợi ra một tình huống/hình ảnh dễ hiểu.
+- Tránh tạo từ quá rộng hoặc quá mơ hồ nếu có lựa chọn cụ thể hơn trong cùng chủ đề.
 
 Trả về định dạng JSON Array chuẩn theo mẫu:
 [
@@ -1145,7 +1235,10 @@ Trả về định dạng JSON Array chuẩn theo mẫu:
       ],
     };
 
-    const quickBanks: Record<string, Array<[string, string, string, string]>> = {
+    const quickBanks: Record<
+      string,
+      Array<[string, string, string, string]>
+    > = {
       environment: [
         ['environment', 'noun', 'môi trường', 'We protect the environment.'],
         ['recycle', 'verb', 'tái chế', 'I recycle paper.'],
@@ -1207,7 +1300,12 @@ Trả về định dạng JSON Array chuẩn theo mẫu:
         ['clinic', 'noun', 'phòng khám', 'The clinic opens at eight.'],
       ],
       conversation: [
-        ['conversation', 'noun', 'cuộc trò chuyện', 'We had a short conversation.'],
+        [
+          'conversation',
+          'noun',
+          'cuộc trò chuyện',
+          'We had a short conversation.',
+        ],
         ['greet', 'verb', 'chào hỏi', 'She greets her teacher.'],
         ['reply', 'verb', 'trả lời', 'Please reply soon.'],
         ['question', 'noun', 'câu hỏi', 'I have a question.'],
@@ -1222,17 +1320,19 @@ Trả về định dạng JSON Array chuẩn theo mẫu:
 
     const base =
       banks[topic] ||
-      quickBanks[topic]?.map(([word, partOfSpeech, meaningVi, example], index) => ({
-        word,
-        phonetic: undefined,
-        partOfSpeech,
-        meaningVi,
-        meaningEn: meaningVi,
-        example,
-        synonyms: [],
-        antonyms: [],
-        difficulty: Math.min(5, Math.floor(index / 2) + 1),
-      }));
+      quickBanks[topic]?.map(
+        ([word, partOfSpeech, meaningVi, example], index) => ({
+          word,
+          phonetic: undefined,
+          partOfSpeech,
+          meaningVi,
+          meaningEn: meaningVi,
+          example,
+          synonyms: [],
+          antonyms: [],
+          difficulty: Math.min(5, Math.floor(index / 2) + 1),
+        }),
+      );
 
     if (!base) {
       return [];
@@ -1472,18 +1572,36 @@ Trả về định dạng JSON Array chuẩn theo mẫu:
         },
       },
       include: {
-        words: true,
+        words: {
+          select: {
+            wordId: true,
+          },
+        },
       },
     });
 
     if (!day) {
-      throw new NotFoundException('Không tìm thấy bài học');
+      throw new NotFoundException('Không tìm thấy bài học.');
     }
 
+    /*
+     * Chống hoàn thành và cộng mission nhiều lần.
+     */
     if (day.status === 'COMPLETED') {
-      return day;
+      return {
+        ...day,
+        completed: true,
+        alreadyCompleted: true,
+      };
     }
 
+    /*
+     * Bảo đảm tất cả từ trong bài đã có lịch ôn.
+     *
+     * Chú ý: đoạn này không cộng LEARN_WORD.
+     * LEARN_WORD đã được cộng ngay khi người dùng bấm
+     * "Đã biết" hoặc "Cần ôn lại".
+     */
     for (const item of day.words) {
       await this.prisma.userWordProgress.upsert({
         where: {
@@ -1493,10 +1611,6 @@ Trả về định dạng JSON Array chuẩn theo mẫu:
           },
         },
         update: {
-          status: 'LEARNING',
-          seenCount: {
-            increment: 1,
-          },
           reviewAt: this.addDays(1),
         },
         create: {
@@ -1511,10 +1625,91 @@ Trả về định dạng JSON Array chuẩn theo mẫu:
       });
     }
 
+    const completedDay = await this.prisma.userDailyVocabularyPlan.update({
+      where: {
+        id: dayId,
+      },
+      data: {
+        status: 'COMPLETED',
+      },
+      include: {
+        topic: true,
+        words: {
+          include: {
+            word: true,
+          },
+          orderBy: {
+            order: 'asc',
+          },
+        },
+      },
+    });
+
+    /*
+     * Mission "Hoàn thành bài học hôm nay".
+     */
+    await this.missionV2ProgressService.increase({
+      userId,
+      action: MissionV2Action.COMPLETE_LESSON,
+      amount: 1,
+      skill: LearningSkill.VOCABULARY,
+    });
+
+    /*
+     * Mission "Luyện kỹ năng ưu tiên".
+     *
+     * Nếu AI ưu tiên Vocabulary thì mission STUDY_LESSON
+     * có skill VOCABULARY sẽ được tăng.
+     */
+    await this.missionV2ProgressService.increase({
+      userId,
+      action: MissionV2Action.STUDY_LESSON,
+      amount: 1,
+      skill: LearningSkill.VOCABULARY,
+    });
+
+    return {
+      ...completedDay,
+      completed: true,
+      alreadyCompleted: false,
+    };
+  }
+
+  async addExtraDailyVocabulary(userId: string, dayId: string, amount = 5) {
+    const safeAmount = Math.min(20, Math.max(5, Math.floor(amount)));
+    const day = await this.prisma.userDailyVocabularyPlan.findFirst({
+      where: {
+        id: dayId,
+        plan: {
+          userId,
+        },
+      },
+      include: {
+        words: true,
+      },
+    });
+
+    if (!day) {
+      throw new NotFoundException('Không tìm thấy bài học hôm nay.');
+    }
+
+    await this.fillTodayPlanWords(userId, day, day.words.length + safeAmount);
+
     return this.prisma.userDailyVocabularyPlan.update({
       where: { id: dayId },
       data: {
-        status: 'COMPLETED',
+        status: 'AVAILABLE',
+      },
+      include: {
+        topic: true,
+        words: {
+          include: {
+            word: true,
+          },
+          orderBy: {
+            order: 'asc',
+          },
+        },
       },
     });
   }
@@ -1579,33 +1774,66 @@ Trả về định dạng JSON Array chuẩn theo mẫu:
       },
     });
 
-    if (!test && completedDays >= 7) {
+    const learnedWords = await this.getWeeklyLearnedWords(planId);
+    const learnedWordCount = learnedWords.length;
+
+    if (
+      test &&
+      ['AVAILABLE', 'FAILED'].includes(test.status) &&
+      learnedWordCount > test.questions.length
+    ) {
+      await this.prisma.weeklyVocabularyQuestion.deleteMany({
+        where: { testId: test.id },
+      });
+      await this.prisma.weeklyVocabularyTest.delete({
+        where: { id: test.id },
+      });
+      test = null;
+    }
+
+    if (!test && learnedWordCount > 0) {
       test = await this.createWeeklyTest(userId, planId);
     }
 
     if (!test) {
       return {
         status: 'LOCKED',
-        message: `Bạn cần hoàn thành đủ 7 ngày học. Hiện tại: ${completedDays}/7`,
+        message:
+          'Bạn chỉ cần hoàn thành ít nhất một chủ đề/ngày học để mở bài kiểm tra tuần. Bạn vẫn có thể bỏ qua kiểm tra và tiếp tục học từ mới.',
         completedDays,
-        requiredDays: 7,
+        requiredDays: 1,
+        learnedWords: learnedWordCount,
       };
     }
 
     return test;
   }
 
-  async createWeeklyTest(userId: string, planId: string) {
-    const learnedWords = await this.prisma.userDailyVocabularyWord.findMany({
+  async getWeeklyLearnedWords(planId: string) {
+    return this.prisma.userDailyVocabularyWord.findMany({
       where: {
         day: {
           planId,
+          status: 'COMPLETED',
         },
       },
+      distinct: ['wordId'],
       include: {
         word: true,
+        day: {
+          include: {
+            topic: true,
+          },
+        },
+      },
+      orderBy: {
+        order: 'asc',
       },
     });
+  }
+
+  async createWeeklyTest(userId: string, planId: string) {
+    const learnedWords = await this.getWeeklyLearnedWords(planId);
 
     const selectedWords = this.shuffle(learnedWords).slice(0, 20);
 
@@ -1978,6 +2206,13 @@ Trả về định dạng JSON Array chuẩn theo mẫu:
       },
       orderBy: [{ difficulty: 'asc' }, { searchCount: 'asc' }],
       take: 8,
+    });
+
+    await this.missionV2ProgressService.increase({
+      userId,
+      action: MissionV2Action.LEARN_WORD,
+      amount: 1,
+      skill: LearningSkill.VOCABULARY,
     });
 
     return {
@@ -2689,7 +2924,12 @@ Rules:
           percent: memoryRate || 70,
           status: 'Trung bình',
         },
-        { key: 'grammar', label: 'Ngữ pháp', percent: 65, status: 'Trung bình' },
+        {
+          key: 'grammar',
+          label: 'Ngữ pháp',
+          percent: 65,
+          status: 'Trung bình',
+        },
         { key: 'listening', label: 'Nghe', percent: 80, status: 'Khá' },
         { key: 'speaking', label: 'Nói', percent: 60, status: 'Trung bình' },
         { key: 'reading', label: 'Đọc', percent: 75, status: 'Khá' },
@@ -2754,7 +2994,9 @@ Rules:
     );
     const average = (values: number[]) =>
       values.length
-        ? Math.round(values.reduce((sum, value) => sum + value, 0) / values.length)
+        ? Math.round(
+            values.reduce((sum, value) => sum + value, 0) / values.length,
+          )
         : 0;
     const statusFor = (percent: number) =>
       percent >= 80
@@ -2780,7 +3022,11 @@ Rules:
       if (hours < 24) return `${hours} giờ trước`;
       return `${Math.floor(hours / 24)} ngày trước`;
     };
-    const vocabScore = (item: { status: string; correctCount: number; wrongCount: number }) => {
+    const vocabScore = (item: {
+      status: string;
+      correctCount: number;
+      wrongCount: number;
+    }) => {
       const answered = item.correctCount + item.wrongCount;
       if (answered > 0) return Math.round((item.correctCount / answered) * 100);
       if (item.status === 'MASTERED') return 100;
@@ -2824,7 +3070,11 @@ Rules:
       }),
       this.prisma.quizResult.findMany({
         where: { userId },
-        select: { score: true, createdAt: true, lesson: { select: { title: true } } },
+        select: {
+          score: true,
+          createdAt: true,
+          lesson: { select: { title: true } },
+        },
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.listeningSession.findMany({
@@ -2857,12 +3107,20 @@ Rules:
       }),
       this.prisma.speakingResult.findMany({
         where: { userId, score: { not: null } },
-        select: { score: true, createdAt: true, lesson: { select: { title: true } } },
+        select: {
+          score: true,
+          createdAt: true,
+          lesson: { select: { title: true } },
+        },
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.pronunciationResult.findMany({
         where: { userId },
-        select: { score: true, createdAt: true, exercise: { select: { title: true } } },
+        select: {
+          score: true,
+          createdAt: true,
+          exercise: { select: { title: true } },
+        },
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.writingSubmission.findMany({
@@ -2877,7 +3135,9 @@ Rules:
       ...weeklyTests.map((item) => item.score),
       ...quizResults.map((item) => item.score),
     ]);
-    const listeningPercent = average(listeningSessions.map((item) => item.score));
+    const listeningPercent = average(
+      listeningSessions.map((item) => item.score),
+    );
     const speakingPercent = average([
       ...speakingResults.map((item) => item.score || 0),
       ...pronunciationResults.map((item) => item.score),
@@ -2885,7 +3145,9 @@ Rules:
     const readingPercent = totalEnrolledLessons
       ? Math.round((completedLessons.length / totalEnrolledLessons) * 100)
       : 0;
-    const writingPercent = average(writingSubmissions.map((item) => item.score || 0));
+    const writingPercent = average(
+      writingSubmissions.map((item) => item.score || 0),
+    );
 
     const skillRows = [
       {
@@ -2895,7 +3157,10 @@ Rules:
         icon: 'pen',
         trend: trendFrom(
           vocabProgress
-            .filter((item) => item.updatedAt >= weekStart && item.updatedAt <= endOfToday)
+            .filter(
+              (item) =>
+                item.updatedAt >= weekStart && item.updatedAt <= endOfToday,
+            )
             .map((item) => ({ date: item.updatedAt, value: vocabScore(item) })),
         ),
       },
@@ -2909,7 +3174,10 @@ Rules:
             date: item.passedAt || item.updatedAt,
             value: item.score,
           })),
-          ...quizResults.map((item) => ({ date: item.createdAt, value: item.score })),
+          ...quizResults.map((item) => ({
+            date: item.createdAt,
+            value: item.score,
+          })),
         ]),
       },
       {
@@ -2990,7 +3258,8 @@ Rules:
     const studyHours = Math.floor(totalStudySeconds / 3600);
     const studyMinutes = Math.floor((totalStudySeconds % 3600) / 60);
     const xpEarned =
-      (user?.xp || 0) ||
+      user?.xp ||
+      0 ||
       overview.profile.xp +
         listeningSessions.reduce((sum, item) => sum + (item.xpEarned || 0), 0);
 
@@ -3051,7 +3320,11 @@ Rules:
       })),
     ]
       .filter((item) => item.date)
-      .sort((a, b) => new Date(b.date as Date).getTime() - new Date(a.date as Date).getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.date as Date).getTime() -
+          new Date(a.date as Date).getTime(),
+      )
       .slice(0, 4)
       .map(({ date, ...item }) => item);
 
@@ -3382,7 +3655,8 @@ Rules:
           percent:
             item.correctCount + item.wrongCount > 0
               ? Math.round(
-                  (item.correctCount / (item.correctCount + item.wrongCount)) * 100,
+                  (item.correctCount / (item.correctCount + item.wrongCount)) *
+                    100,
                 )
               : item.status === 'MASTERED'
                 ? 100
@@ -3495,7 +3769,8 @@ Rules:
       .filter((item) => item.date)
       .sort(
         (a, b) =>
-          new Date(b.date as Date).getTime() - new Date(a.date as Date).getTime(),
+          new Date(b.date as Date).getTime() -
+          new Date(a.date as Date).getTime(),
       );
 
     const totalStudySeconds =
@@ -3506,7 +3781,9 @@ Rules:
       );
     const studyHours = Math.floor(totalStudySeconds / 3600);
     const studyMinutes = Math.floor((totalStudySeconds % 3600) / 60);
-    const returnedActivities = activities.slice(0, safeLimit).map(({ date, ...item }) => item);
+    const returnedActivities = activities
+      .slice(0, safeLimit)
+      .map(({ date, ...item }) => item);
 
     return {
       summary: {
@@ -3643,7 +3920,11 @@ Rules:
       }),
       this.prisma.petReward.findMany({
         where: { userId },
-        select: { xp: true, createdAt: true, lesson: { select: { title: true } } },
+        select: {
+          xp: true,
+          createdAt: true,
+          lesson: { select: { title: true } },
+        },
         orderBy: { createdAt: 'desc' },
         take: 5,
       }),
@@ -3662,10 +3943,14 @@ Rules:
     const longestStreak = Math.max(streakDays, petProfile?.bestStreak || 0);
     const totalTests = weeklyTests.length + quizResults.length;
     const xpEarned =
-      (user?.xp || 0) ||
+      user?.xp ||
+      0 ||
       overview.profile.xp +
         listeningSessions.reduce((sum, item) => sum + (item.xpEarned || 0), 0) +
-        completedMissions.reduce((sum, item) => sum + (item.mission?.rewardXp || 0), 0);
+        completedMissions.reduce(
+          (sum, item) => sum + (item.mission?.rewardXp || 0),
+          0,
+        );
 
     const recent = [
       streakDays > 0 && {
@@ -3765,7 +4050,9 @@ Rules:
       })),
       ...arenaRewards.map((reward) => ({
         key: `arena-${reward.createdAt.getTime()}`,
-        title: reward.isWinner ? 'Chiến thắng đấu trường' : 'Thi đấu đấu trường',
+        title: reward.isWinner
+          ? 'Chiến thắng đấu trường'
+          : 'Thi đấu đấu trường',
         description: `Điểm đấu trường ${reward.arenaDelta >= 0 ? '+' : ''}${reward.arenaDelta}.`,
         tag: 'Thử thách',
         category: 'challenge',
@@ -3777,7 +4064,10 @@ Rules:
       })),
     ]
       .filter(Boolean)
-      .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .sort(
+        (a: any, b: any) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime(),
+      )
       .slice(0, 20);
 
     const goals = [
@@ -3828,7 +4118,9 @@ Rules:
 
   async getAchievementDetail(userId: string, key: string) {
     const overview = await this.getAchievementOverview(userId);
-    const achievement = (overview.recent as any[]).find((item) => item.key === key);
+    const achievement = (overview.recent as any[]).find(
+      (item) => item.key === key,
+    );
 
     if (!achievement) {
       throw new NotFoundException('Không tìm thấy thành tích này.');
@@ -3868,13 +4160,23 @@ Rules:
           userId,
           status: { in: ['LEARNING', 'REVIEW', 'KNOWN', 'MASTERED'] },
         },
-        select: { id: true, updatedAt: true, word: { select: { word: true, meaningVi: true } } },
+        select: {
+          id: true,
+          updatedAt: true,
+          word: { select: { word: true, meaningVi: true } },
+        },
         orderBy: { updatedAt: 'desc' },
         take: 20,
       }),
       this.prisma.listeningSession.findMany({
         where: { userId, status: 'COMPLETED' },
-        select: { id: true, completedAt: true, topic: true, xpEarned: true, score: true },
+        select: {
+          id: true,
+          completedAt: true,
+          topic: true,
+          xpEarned: true,
+          score: true,
+        },
         orderBy: { completedAt: 'desc' },
         take: 20,
       }),
@@ -3886,7 +4188,12 @@ Rules:
       }),
       this.prisma.quizResult.findMany({
         where: { userId },
-        select: { id: true, score: true, createdAt: true, lesson: { select: { title: true } } },
+        select: {
+          id: true,
+          score: true,
+          createdAt: true,
+          lesson: { select: { title: true } },
+        },
         orderBy: { createdAt: 'desc' },
         take: 20,
       }),
@@ -4037,17 +4344,28 @@ Rules:
             { label: '30 ngày', reward: '+500 XP', required: 30 },
           ]
         : [
-            { label: 'Mốc 1', reward: '+10 XP', required: Math.max(1, Math.ceil(target * 0.25)) },
-            { label: 'Mốc 2', reward: '+30 XP', required: Math.max(2, Math.ceil(target * 0.5)) },
+            {
+              label: 'Mốc 1',
+              reward: '+10 XP',
+              required: Math.max(1, Math.ceil(target * 0.25)),
+            },
+            {
+              label: 'Mốc 2',
+              reward: '+30 XP',
+              required: Math.max(2, Math.ceil(target * 0.5)),
+            },
             { label: 'Mốc 3', reward: '+100 XP', required: target },
           ];
 
-    const progressSteps = Array.from({ length: Math.min(target, 7) }, (_, index) => ({
-      label: `${index + 1} ${key === 'streak' ? 'ngày' : 'mốc'}`,
-      date: index === 0 ? dateText(now) : '',
-      done: current >= index + 1,
-      value: index + 1,
-    }));
+    const progressSteps = Array.from(
+      { length: Math.min(target, 7) },
+      (_, index) => ({
+        label: `${index + 1} ${key === 'streak' ? 'ngày' : 'mốc'}`,
+        date: index === 0 ? dateText(now) : '',
+        done: current >= index + 1,
+        value: index + 1,
+      }),
+    );
 
     return {
       achievement: {
@@ -4074,20 +4392,19 @@ Rules:
         claimed: current >= step.required,
         locked: current < step.required,
       })),
-      activities:
-        (baseActivities as any)[key]?.length
-          ? (baseActivities as any)[key]
-          : [
-              {
-                title: achievement.title,
-                subtitle: achievement.description,
-                time: timeText(now),
-                xp: achievement.xp || 0,
-                icon: achievement.icon,
-                id: key,
-                type: 'achievement',
-              },
-            ],
+      activities: (baseActivities as any)[key]?.length
+        ? (baseActivities as any)[key]
+        : [
+            {
+              title: achievement.title,
+              subtitle: achievement.description,
+              time: timeText(now),
+              xp: achievement.xp || 0,
+              icon: achievement.icon,
+              id: key,
+              type: 'achievement',
+            },
+          ],
       suggestions: [
         {
           title:
@@ -4171,10 +4488,12 @@ Rules:
           },
         },
       });
-      if (!session) throw new NotFoundException('Không tìm thấy hoạt động nghe.');
+      if (!session)
+        throw new NotFoundException('Không tìm thấy hoạt động nghe.');
 
       const answered = session.answer.filter((item) => !item.isSkipped);
-      const correct = session.correct || answered.filter((item) => item.isCorrect).length;
+      const correct =
+        session.correct || answered.filter((item) => item.isCorrect).length;
       const total = session.total || session.answer.length || 1;
       const durationSeconds =
         session.answer.reduce((sum, item) => sum + (item.timeSpent || 0), 0) ||
@@ -4194,8 +4513,11 @@ Rules:
 
       return {
         header: {
-          title: session.topic ? `Luyện nghe chủ đề ${session.topic}` : 'Luyện nghe',
-          subtitle: firstQuestion?.title || `Hoàn thành ${total} câu luyện nghe`,
+          title: session.topic
+            ? `Luyện nghe chủ đề ${session.topic}`
+            : 'Luyện nghe',
+          subtitle:
+            firstQuestion?.title || `Hoàn thành ${total} câu luyện nghe`,
           tag: 'Kỹ năng Nghe',
           icon: 'headphones',
           tone: 'purple',
@@ -4220,7 +4542,9 @@ Rules:
           {
             label: 'Độ khó',
             value: session.level || 'Trung bình',
-            sub: session.level ? `Cấp độ ${session.level}` : 'Theo trình độ hiện tại',
+            sub: session.level
+              ? `Cấp độ ${session.level}`
+              : 'Theo trình độ hiện tại',
             icon: 'zap',
             tone: 'orange',
           },
@@ -4241,7 +4565,12 @@ Rules:
           level: session.level || 'B1',
           topic: session.topic || 'Listening',
           duration: firstQuestion?.duration
-            ? `${Math.floor(firstQuestion.duration / 60).toString().padStart(2, '0')}:${(firstQuestion.duration % 60).toString().padStart(2, '0')}`
+            ? `${Math.floor(firstQuestion.duration / 60)
+                .toString()
+                .padStart(
+                  2,
+                  '0',
+                )}:${(firstQuestion.duration % 60).toString().padStart(2, '0')}`
             : `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`,
           mediaUrl: firstQuestion?.audioUrl || '',
           actionLabel: 'Luyện lại bài học',
@@ -4283,7 +4612,8 @@ Rules:
       const writing = await this.prisma.writingSubmission.findFirst({
         where: { id, userId },
       });
-      if (!writing) throw new NotFoundException('Không tìm thấy hoạt động viết.');
+      if (!writing)
+        throw new NotFoundException('Không tìm thấy hoạt động viết.');
 
       return {
         header: {
@@ -4296,10 +4626,34 @@ Rules:
           xp: 10,
         },
         stats: [
-          { label: 'Điểm số', value: `${writing.score || 0}%`, sub: 'Tổng điểm', icon: 'target', tone: 'purple' },
-          { label: 'Từ vựng', value: `${writing.vocabularyScore || 0}%`, sub: 'Vốn từ', icon: 'book', tone: 'pink' },
-          { label: 'Ngữ pháp', value: `${writing.grammarScore || 0}%`, sub: 'Độ chính xác', icon: 'exercise', tone: 'orange' },
-          { label: 'XP nhận được', value: '+10 XP', sub: 'Đã hoàn thành', icon: 'star', tone: 'blue' },
+          {
+            label: 'Điểm số',
+            value: `${writing.score || 0}%`,
+            sub: 'Tổng điểm',
+            icon: 'target',
+            tone: 'purple',
+          },
+          {
+            label: 'Từ vựng',
+            value: `${writing.vocabularyScore || 0}%`,
+            sub: 'Vốn từ',
+            icon: 'book',
+            tone: 'pink',
+          },
+          {
+            label: 'Ngữ pháp',
+            value: `${writing.grammarScore || 0}%`,
+            sub: 'Độ chính xác',
+            icon: 'exercise',
+            tone: 'orange',
+          },
+          {
+            label: 'XP nhận được',
+            value: '+10 XP',
+            sub: 'Đã hoàn thành',
+            icon: 'star',
+            tone: 'blue',
+          },
         ],
         content: {
           title: writing.style || 'Bài viết của bạn',
@@ -4312,9 +4666,27 @@ Rules:
           actionHref: '/writing',
         },
         timeline: [
-          { time: timeText(writing.createdAt), title: 'Bắt đầu viết', xp: 0, icon: 'play', done: true },
-          { time: timeText(writing.updatedAt), title: 'Nhận góp ý và chấm điểm', xp: 5, icon: 'check', done: true },
-          { time: timeText(writing.updatedAt), title: 'Hoàn thành hoạt động', xp: 10, icon: 'trophy', done: true },
+          {
+            time: timeText(writing.createdAt),
+            title: 'Bắt đầu viết',
+            xp: 0,
+            icon: 'play',
+            done: true,
+          },
+          {
+            time: timeText(writing.updatedAt),
+            title: 'Nhận góp ý và chấm điểm',
+            xp: 5,
+            icon: 'check',
+            done: true,
+          },
+          {
+            time: timeText(writing.updatedAt),
+            title: 'Hoàn thành hoạt động',
+            xp: 10,
+            icon: 'trophy',
+            done: true,
+          },
         ],
         rewards: reward,
         suggestions,
@@ -4326,12 +4698,14 @@ Rules:
         where: { id, userId },
         include: { word: { include: { topic: true } } },
       });
-      if (!progress) throw new NotFoundException('Không tìm thấy hoạt động từ vựng.');
+      if (!progress)
+        throw new NotFoundException('Không tìm thấy hoạt động từ vựng.');
 
       return {
         header: {
           title: `Học từ "${progress.word.word}"`,
-          subtitle: progress.word.meaningVi || progress.word.meaningEn || 'Từ vựng mới',
+          subtitle:
+            progress.word.meaningVi || progress.word.meaningEn || 'Từ vựng mới',
           tag: 'Kỹ năng Từ vựng',
           icon: 'book',
           tone: 'pink',
@@ -4339,14 +4713,41 @@ Rules:
           xp: 5,
         },
         stats: [
-          { label: 'Số lần học', value: String(progress.seenCount), sub: 'Lượt xem', icon: 'book', tone: 'purple' },
-          { label: 'Trả lời đúng', value: String(progress.correctCount), sub: 'Lần', icon: 'check', tone: 'emerald' },
-          { label: 'Cần ôn', value: String(progress.wrongCount), sub: 'Lần quên', icon: 'target', tone: 'orange' },
-          { label: 'XP nhận được', value: '+5 XP', sub: 'Đã học', icon: 'star', tone: 'blue' },
+          {
+            label: 'Số lần học',
+            value: String(progress.seenCount),
+            sub: 'Lượt xem',
+            icon: 'book',
+            tone: 'purple',
+          },
+          {
+            label: 'Trả lời đúng',
+            value: String(progress.correctCount),
+            sub: 'Lần',
+            icon: 'check',
+            tone: 'emerald',
+          },
+          {
+            label: 'Cần ôn',
+            value: String(progress.wrongCount),
+            sub: 'Lần quên',
+            icon: 'target',
+            tone: 'orange',
+          },
+          {
+            label: 'XP nhận được',
+            value: '+5 XP',
+            sub: 'Đã học',
+            icon: 'star',
+            tone: 'blue',
+          },
         ],
         content: {
           title: progress.word.word,
-          description: progress.word.example || progress.word.meaningVi || 'Từ vựng đã học.',
+          description:
+            progress.word.example ||
+            progress.word.meaningVi ||
+            'Từ vựng đã học.',
           level: progress.word.level,
           topic: progress.word.topic?.name || 'Vocabulary',
           duration: '02:00',
@@ -4355,9 +4756,27 @@ Rules:
           actionHref: '/vocabulary/review',
         },
         timeline: [
-          { time: timeText(progress.createdAt), title: 'Bắt đầu học từ', xp: 0, icon: 'play', done: true },
-          { time: timeText(progress.updatedAt), title: 'Cập nhật tiến độ', xp: 5, icon: 'check', done: true },
-          { time: timeText(progress.reviewAt), title: 'Lịch ôn tiếp theo', xp: 0, icon: 'calendar', done: Boolean(progress.reviewAt) },
+          {
+            time: timeText(progress.createdAt),
+            title: 'Bắt đầu học từ',
+            xp: 0,
+            icon: 'play',
+            done: true,
+          },
+          {
+            time: timeText(progress.updatedAt),
+            title: 'Cập nhật tiến độ',
+            xp: 5,
+            icon: 'check',
+            done: true,
+          },
+          {
+            time: timeText(progress.reviewAt),
+            title: 'Lịch ôn tiếp theo',
+            xp: 0,
+            icon: 'calendar',
+            done: Boolean(progress.reviewAt),
+          },
         ],
         rewards: reward,
         suggestions,
@@ -4560,71 +4979,71 @@ Rules:
 
     const [urgent, normal, later, completedToday, allProgress, reviewTopics] =
       await Promise.all([
-      this.prisma.userWordProgress.count({
-        where: {
-          userId,
-          reviewAt: { lte: endOfToday },
-          status: {
-            in: ['LEARNING', 'REVIEW', 'KNOWN'],
-          },
-        },
-      }),
-      this.prisma.userWordProgress.count({
-        where: {
-          userId,
-          status: { in: ['LEARNING', 'REVIEW', 'KNOWN'] },
-          reviewAt: {
-            gt: endOfToday,
-            lte: next7Days,
-          },
-        },
-      }),
-
-      this.prisma.userWordProgress.count({
-        where: {
-          userId,
-          status: { in: ['LEARNING', 'REVIEW', 'KNOWN'] },
-          reviewAt: {
-            gt: next7Days,
-            lte: next30Days,
-          },
-        },
-      }),
-
-      this.prisma.userWordProgress.count({
-        where: {
-          userId,
-          updatedAt: {
-            gte: this.startOfToday(),
-            lte: endOfToday,
-          },
-        },
-      }),
-      this.prisma.userWordProgress.findMany({
-        where: { userId },
-        select: {
-          status: true,
-          updatedAt: true,
-          reviewAt: true,
-          correctCount: true,
-          wrongCount: true,
-        },
-      }),
-      this.prisma.userWordProgress.findMany({
-        where: {
-          userId,
-          status: { in: ['LEARNING', 'REVIEW', 'KNOWN'] },
-        },
-        include: {
-          word: {
-            include: {
-              topic: true,
+        this.prisma.userWordProgress.count({
+          where: {
+            userId,
+            reviewAt: { lte: endOfToday },
+            status: {
+              in: ['LEARNING', 'REVIEW', 'KNOWN'],
             },
           },
-        },
-        take: 200,
-      }),
-    ]);
+        }),
+        this.prisma.userWordProgress.count({
+          where: {
+            userId,
+            status: { in: ['LEARNING', 'REVIEW', 'KNOWN'] },
+            reviewAt: {
+              gt: endOfToday,
+              lte: next7Days,
+            },
+          },
+        }),
+
+        this.prisma.userWordProgress.count({
+          where: {
+            userId,
+            status: { in: ['LEARNING', 'REVIEW', 'KNOWN'] },
+            reviewAt: {
+              gt: next7Days,
+              lte: next30Days,
+            },
+          },
+        }),
+
+        this.prisma.userWordProgress.count({
+          where: {
+            userId,
+            updatedAt: {
+              gte: this.startOfToday(),
+              lte: endOfToday,
+            },
+          },
+        }),
+        this.prisma.userWordProgress.findMany({
+          where: { userId },
+          select: {
+            status: true,
+            updatedAt: true,
+            reviewAt: true,
+            correctCount: true,
+            wrongCount: true,
+          },
+        }),
+        this.prisma.userWordProgress.findMany({
+          where: {
+            userId,
+            status: { in: ['LEARNING', 'REVIEW', 'KNOWN'] },
+          },
+          include: {
+            word: {
+              include: {
+                topic: true,
+              },
+            },
+          },
+          take: 200,
+        }),
+      ]);
 
     const remembered = allProgress.filter((item) =>
       ['KNOWN', 'MASTERED'].includes(item.status),
@@ -4654,7 +5073,8 @@ Rules:
         label: `${String(date.getDate()).padStart(2, '0')}/${String(
           date.getMonth() + 1,
         ).padStart(2, '0')}`,
-        value: correct + wrong ? Math.round((correct / (correct + wrong)) * 100) : 0,
+        value:
+          correct + wrong ? Math.round((correct / (correct + wrong)) * 100) : 0,
       };
     });
 
@@ -4853,6 +5273,9 @@ Rules:
 
   private async fillTodayPlanWords(userId: string, day: any, required: number) {
     const existedIds = day.words.map((x) => x.wordId);
+    const missingCount = Math.max(0, required - existedIds.length);
+
+    if (missingCount === 0) return;
 
     const words = await this.pickWordsForUser({
       userId,
@@ -4861,7 +5284,7 @@ Rules:
 
       level: day.level,
 
-      limit: required,
+      limit: missingCount,
     });
 
     const missing = words.filter((x) => !existedIds.includes(x.id));

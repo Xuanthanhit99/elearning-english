@@ -3,9 +3,10 @@ import { VocabularyController } from './vocabulary.controller';
 import { VocabularyService } from './vocabulary.service';
 import { VocabularyJobModule } from '../vocabulary-job/vocabulary-job.module';
 import { GeminiModule } from '../gemini/gemini.module';
+import { MissionsV2Module } from '../missions-v2/missions-v2.module';
 
 @Module({
-  imports: [GeminiModule, VocabularyJobModule],
+  imports: [GeminiModule, VocabularyJobModule, MissionsV2Module],
   controllers: [VocabularyController],
   providers: [VocabularyService],
   exports: [VocabularyService],

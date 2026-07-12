@@ -92,6 +92,7 @@ export class VocabularyJobService {
 
   // @Cron('0 0 * * 1', { timeZone: 'Asia/Bangkok' })
   // @Cron('*/1 * * * *')
+  // @Cron('*/5 * * * *')
   async generateWeeklyTopicPools() {
     console.log('Generating weekly topic pools...');
     const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -368,6 +369,7 @@ Yêu cầu:
 - example là câu ví dụ ngắn, dễ hiểu.
 - synonyms và antonyms là array, nếu không có thì [].
 - difficulty từ 1 đến 5.
+- Ưu tiên từ/cụm từ có thể minh họa bằng hình ảnh rõ ràng. Nếu là từ trừu tượng, example phải gợi ra tình huống cụ thể.
 - Chỉ trả về JSON array, không markdown.
 
 Format:

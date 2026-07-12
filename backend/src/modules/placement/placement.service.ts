@@ -10,6 +10,7 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PlacementMode } from './dto/placement.types';
 import { PlacementTestService } from './placement-test/placement-test.service';
+import { PlacementSessionService } from './placement-session/placement-session.service';
 
 const ALL_SKILLS: LearningSkill[] = [
   LearningSkill.VOCABULARY,
@@ -75,7 +76,7 @@ const INTRO_STEPS = [
 export class PlacementService {
   constructor(
     private readonly prisma: PrismaService,
-    private placementTestsService: PlacementTestService,
+    private readonly placementSessionService: PlacementSessionService,
   ) {}
 
   /**
@@ -345,10 +346,14 @@ export class PlacementService {
           where: {
             status: PlacementTestStatus.IN_PROGRESS,
           },
-          orderBy: {
-            startedAt: 'desc',
-            createdAt: 'desc',
-          },
+          orderBy: [
+            {
+              startedAt: 'desc',
+            },
+            {
+              createdAt: 'desc',
+            },
+          ],
           take: 1,
           select: {
             id: true,
@@ -477,129 +482,21 @@ export class PlacementService {
     };
   }
 
-  // async startOrResumeTest(
-  //   userId: string,
-  //   mode: PlacementMode = PlacementMode.ADAPTIVE,
-  // ) {
-  //   const userExists = await this.prisma.user.count({
-  //     where: { id: userId },
-  //   });
-
-  //   if (!userExists) {
-  //     throw new NotFoundException('Không tìm thấy người dùng.');
-  //   }
-
-  //   const activeTest = await this.prisma.placementTest.findFirst({
-  //     where: {
-  //       userId,
-  //       status: PlacementTestStatus.IN_PROGRESS,
-  //     },
-  //     orderBy: {
-  //       startedAt: 'desc',
-  //     },
-  //     select: {
-  //       id: true,
-  //       mode: true,
-  //       status: true,
-  //     },
-  //   });
-
-  //   if (activeTest) {
-  //     return {
-  //       sessionId: activeTest.id,
-  //       resumed: true,
-  //       status: activeTest.status,
-  //       mode: activeTest.mode,
-  //       nextUrl: `/placement/test/${activeTest.id}`,
-  //     };
-  //   }
-
-  //   const test = await this.prisma.placementTest.create({
-  //     data: {
-  //       userId,
-  //       mode,
-  //       status: PlacementTestStatus.IN_PROGRESS,
-  //       score: 0,
-  //       total: 0,
-  //       correct: 0,
-  //     },
-  //     select: {
-  //       id: true,
-  //       mode: true,
-  //       status: true,
-  //     },
-  //   });
-
-  //   return {
-  //     sessionId: test.id,
-  //     resumed: false,
-  //     status: test.status,
-  //     mode: test.mode,
-  //     nextUrl: `/placement/test/${test.id}`,
-  //   };
-  // }
+  async startOrResumeTest(
+    userId: string,
+    mode: ModeType = ModeType.ADAPTIVE,
+    level?: CefrLevel,
+  ) {
+    return this.placementSessionService.startOrResume(userId, {
+      mode,
+      level,
+    });
+  }
 
   async startNewRetake(userId: string, mode: ModeType = ModeType.ADAPTIVE) {
-    const userExists = await this.prisma.user.count({
-      where: {
-        id: userId,
-      },
+    return this.placementSessionService.startRetake(userId, {
+      mode,
     });
-
-    if (!userExists) {
-      throw new NotFoundException('Không tìm thấy người dùng.');
-    }
-
-    await this.prisma.placementTest.updateMany({
-      where: {
-        userId,
-        status: PlacementTestStatus.IN_PROGRESS,
-      },
-      data: {
-        status: PlacementTestStatus.ABANDONED,
-      },
-    });
-
-    const test = await this.prisma.placementTest.create({
-      data: {
-        userId,
-        mode,
-        status: PlacementTestStatus.IN_PROGRESS,
-        startedAt: new Date(),
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    try {
-      await this.placementTestsService.prepareTestQuestions(test.id);
-    } catch (error) {
-      await this.prisma.placementTest.update({
-        where: {
-          id: test.id,
-        },
-        data: {
-          status: PlacementTestStatus.ABANDONED,
-        },
-      });
-
-      throw error;
-    }
-
-    await this.prisma.user.update({
-      where: {
-        id: userId,
-      },
-      data: {
-        currentPlacementTestId: test.id,
-      },
-    });
-
-    return {
-      testId: test.id,
-      nextUrl: `/placement/test/${test.id}`,
-    };
   }
 
   private resolveCurrentStep(completedSkills: Set<LearningSkill>) {

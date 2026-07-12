@@ -15,10 +15,37 @@ type TreeItem = {
 
 const learningTree: TreeItem[] = [
   {
+    icon: "sparkles",
+    label: "AI tạo bài học",
+    href: "/lesson-builder",
+    match: (path) => path.startsWith("/lesson-builder"),
+  },
+  {
     icon: "book",
     label: "Tổng quan",
     href: "/vocabulary/overview",
     match: (path) => path === "/vocabulary/overview",
+  },
+  {
+    icon: "target",
+    label: "Xáº¿p trÃ¬nh Ä‘á»™",
+    href: "/placement",
+    match: (path) => path.startsWith("/placement"),
+    children: [
+      {
+        label: "Kiá»ƒm tra trÃ¬nh Ä‘á»™",
+        href: "/placement",
+        match: (path) =>
+          path === "/placement" ||
+          path === "/placement/introduction" ||
+          path.startsWith("/placement/test"),
+      },
+      {
+        label: "Dashboard",
+        href: "/placement/dashboard",
+        match: (path) => path === "/placement/dashboard",
+      },
+    ],
   },
   {
     icon: "book",

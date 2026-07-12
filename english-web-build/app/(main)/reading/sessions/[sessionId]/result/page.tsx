@@ -1,11 +1,17 @@
-import ReadingResultPage from "@/src/Components/ReadingPractice/ReadingResultPage/ReadingResultPage";
+import ReadingResultPage from "@/src/Components/reading/ReadingResultPage";
 
-export default async function ReadingResultHome({
+export default async function ReadingResult({
   params,
 }: {
   params: Promise<{ sessionId: string }>;
 }) {
-  const resolvedParams = await params;
+  const { sessionId } = await params;
 
-  return <ReadingResultPage params={resolvedParams} />;
+  return (
+    <ReadingResultPage
+      params={{
+        sessionId,
+      }}
+    />
+  );
 }

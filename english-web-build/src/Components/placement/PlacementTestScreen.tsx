@@ -141,8 +141,12 @@ export default function PlacementTestScreen({
 
   useEffect(() => {
     if (!data) return;
+    const currentData = data;
 
     function handleKeyDown(event: KeyboardEvent) {
+      const currentQuestion = currentData.currentQuestion;
+      if (!currentQuestion) return;
+
       const target = event.target as HTMLElement;
 
       if (
@@ -158,11 +162,11 @@ export default function PlacementTestScreen({
         "FILL_BLANK",
         "LISTENING",
         "READING",
-      ].includes(data.currentQuestion.type);
+      ].includes(currentQuestion.type);
 
       if (supportsOptions) {
         const key = event.key.toUpperCase();
-        const option = (data.currentQuestion.options ?? []).find(
+        const option = (currentQuestion.options ?? []).find(
           (item) => item.key.toUpperCase() === key,
         );
 
@@ -195,17 +199,24 @@ export default function PlacementTestScreen({
   }, [data]);
 
   async function handleNext() {
-    if (!data || !selectedAnswer || saving) return;
+    if (!data?.currentQuestion || !selectedAnswer || saving) return;
+    const currentQuestion = data.currentQuestion;
 
     try {
       setSaving(true);
       setError("");
 
       const result = await answerPlacementQuestion(sessionId, {
-        questionId: data.currentQuestion.id,
+        questionId: currentQuestion.id,
         answer: selectedAnswer,
         spentSeconds: getQuestionSpentSeconds(),
       });
+
+      if (result.session.isCompleted || !result.currentQuestion) {
+        setRedirecting(true);
+        router.replace(result.nextUrl ?? `/placement/test/${sessionId}/processing`);
+        return;
+      }
 
       setData(result);
       setSelectedAnswer(result.currentQuestion.selectedAnswer);
@@ -220,16 +231,23 @@ export default function PlacementTestScreen({
   }
 
   async function handleSkip() {
-    if (!data || saving) return;
+    if (!data?.currentQuestion || saving) return;
+    const currentQuestion = data.currentQuestion;
 
     try {
       setSaving(true);
       setError("");
 
       const result = await skipPlacementQuestion(sessionId, {
-        questionId: data.currentQuestion.id,
+        questionId: currentQuestion.id,
         spentSeconds: getQuestionSpentSeconds(),
       });
+
+      if (result.session.isCompleted || !result.currentQuestion) {
+        setRedirecting(true);
+        router.replace(result.nextUrl ?? `/placement/test/${sessionId}/processing`);
+        return;
+      }
 
       setData(result);
       setSelectedAnswer(result.currentQuestion.selectedAnswer);
@@ -244,37 +262,40 @@ export default function PlacementTestScreen({
   }
 
   async function handleFlag() {
-    if (!data || flagging) return;
+    if (!data?.currentQuestion || flagging) return;
+    const currentQuestion = data.currentQuestion;
 
     try {
       setFlagging(true);
       setError("");
 
-      const newValue = !data.currentQuestion.isFlagged;
+      const newValue = !currentQuestion.isFlagged;
       await flagPlacementQuestion(sessionId, {
-        questionId: data.currentQuestion.id,
+        questionId: currentQuestion.id,
         isFlagged: newValue,
       });
 
-      setData((current) =>
-        current
-          ? {
-              ...current,
-              currentQuestion: {
-                ...current.currentQuestion,
-                isFlagged: newValue,
-              },
-              questionNavigator: current.questionNavigator.map((item) =>
-                item.id === current.currentQuestion.id
-                  ? { ...item, flagged: newValue }
-                  : item,
-              ),
-              autosave: {
-                savedAt: new Date().toISOString(),
-              },
-            }
-          : current,
-      );
+      setData((current) => {
+        if (!current?.currentQuestion) return current;
+
+        const currentQuestionId = current.currentQuestion.id;
+
+        return {
+          ...current,
+          currentQuestion: {
+            ...current.currentQuestion,
+            isFlagged: newValue,
+          },
+          questionNavigator: current.questionNavigator.map((item) =>
+            item.id === currentQuestionId
+              ? { ...item, flagged: newValue }
+              : item,
+          ),
+          autosave: {
+            savedAt: new Date().toISOString(),
+          },
+        };
+      });
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Không thể đánh dấu câu hỏi.",
@@ -347,15 +368,16 @@ export default function PlacementTestScreen({
     );
   }
 
-  const meta = skillMeta[data.currentQuestion.skill];
+  const currentQuestion = data.currentQuestion;
+  const meta = skillMeta[currentQuestion.skill];
   const sectionProgress =
     currentSection && currentSection.total > 0
       ? Math.round((currentSection.answered / currentSection.total) * 100)
       : 0;
 
-  const isSpeakingQuestion = data.currentQuestion.type === "SPEAKING";
-  const isWritingQuestion = data.currentQuestion.type === "WRITING";
-  const isListeningQuestion = data.currentQuestion.type === "LISTENING";
+  const isSpeakingQuestion = currentQuestion.type === "SPEAKING";
+  const isWritingQuestion = currentQuestion.type === "WRITING";
+  const isListeningQuestion = currentQuestion.type === "LISTENING";
   const isSpecialQuestion = isSpeakingQuestion || isWritingQuestion;
 
   return (
@@ -400,7 +422,7 @@ export default function PlacementTestScreen({
           <div className="mt-3 space-y-2">
             {data.sections.map((section) => {
               const sectionMeta = skillMeta[section.skill];
-              const active = section.skill === data.currentQuestion.skill;
+              const active = section.skill === currentQuestion.skill;
 
               return (
                 <div

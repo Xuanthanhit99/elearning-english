@@ -1,12 +1,15 @@
 import { Module } from '@nestjs/common';
-import { ReadingController } from './reading.controller';
-import { ReadingService } from './reading.service';
-import { ReadingJobService } from './reading-job/reading-job.service';
+import { PrismaModule } from 'src/prisma/prisma.module';
 import { GeminiModule } from '../gemini/gemini.module';
+import { MissionsV2Module } from '../missions-v2/missions-v2.module';
+import { ReadingController } from './reading.controller';
+import { ReadingJobService } from './reading-job/reading-job.service';
+import { ReadingService } from './reading.service';
 
 @Module({
-  imports: [GeminiModule],
+  imports: [PrismaModule, GeminiModule, MissionsV2Module],
   controllers: [ReadingController],
-  providers: [ReadingService, ReadingJobService]
+  providers: [ReadingService, ReadingJobService],
+  exports: [ReadingService],
 })
 export class ReadingModule {}

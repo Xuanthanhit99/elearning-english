@@ -140,7 +140,7 @@ export async function startPlacementTest() {
       mode: 'LEVEL_BASED' | 'ADAPTIVE';
       nextUrl: string;
     }>
-  >('/placement/start', {
+  >('/placement/session/start', {
     mode: 'ADAPTIVE',
   });
 
@@ -175,6 +175,12 @@ export type PlacementTestScreenData = {
     isCompleted: boolean;
   };
 
+  user?: {
+    id: string;
+    name: string;
+    avatar: string | null;
+  };
+
   currentQuestion: {
     id: string;
     testQuestionId: string;
@@ -199,6 +205,27 @@ export type PlacementTestScreenData = {
     isSkipped: boolean;
     adaptiveMessage: string;
   } | null;
+
+  sections: Array<{
+    skill: LearningSkill;
+    total: number;
+    answered: number;
+    status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
+  }>;
+
+  questionNavigator: Array<{
+    id: string;
+    order: number;
+    skill: LearningSkill;
+    answered: boolean;
+    skipped: boolean;
+    flagged: boolean;
+    active: boolean;
+  }>;
+
+  autosave: {
+    savedAt: string;
+  };
 
   nextUrl?: string;
 

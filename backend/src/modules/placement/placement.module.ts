@@ -12,6 +12,7 @@ import { PlacementResponseController } from './placement-response.controller';
 import { PlacementResponseService } from './placement-response.service';
 import { PlacementTtsService } from './placement-tts.service';
 import { PlacementRetakeService } from '../placement-dashboard/placement-retake.service';
+import { PlacementSessionService } from './placement-session/placement-session.service';
 
 @Module({
   imports: [PrismaModule, QuestionBankModule],
@@ -28,6 +29,7 @@ import { PlacementRetakeService } from '../placement-dashboard/placement-retake.
     PlacementResponseService,
     PlacementTtsService,
     PlacementRetakeService,
+    PlacementSessionService,
   ],
   exports: [
     PlacementService,
@@ -36,6 +38,7 @@ import { PlacementRetakeService } from '../placement-dashboard/placement-retake.
     PlacementAiService,
     PlacementTtsService,
     PlacementRetakeService,
+    PlacementSessionService,
   ],
 })
 export class PlacementModule {}

@@ -33,6 +33,7 @@ type WeeklyTest = {
   message?: string;
   completedDays?: number;
   requiredDays?: number;
+  learnedWords?: number;
   totalQuestions?: number;
   score?: number;
   passScore?: number;
@@ -60,7 +61,12 @@ export default function VocabularyTestPage() {
   const [loading, setLoading] = useState(true);
 
   const learnedWords = useMemo(
-    () => weeklyPlan?.days?.reduce((sum, day) => sum + (day.words?.length || 0), 0) || weeklyTest?.completedDays || 42,
+    () =>
+      weeklyTest?.learnedWords ||
+      weeklyPlan?.days
+        ?.filter((day) => day.status === "COMPLETED")
+        .reduce((sum, day) => sum + (day.words?.length || 0), 0) ||
+      0,
     [weeklyPlan, weeklyTest],
   );
   const completedDays = weeklyPlan?.days?.filter((day) => day.status === "COMPLETED").length || weeklyTest?.completedDays || 0;
@@ -307,7 +313,7 @@ function ReadyCard({
           {loading
             ? "Đang tải dữ liệu kiểm tra..."
             : locked
-              ? message || "Bạn cần hoàn thành đủ 7 ngày học để mở bài kiểm tra."
+              ? message || "Hoàn thành ít nhất một chủ đề hoặc một ngày học để mở bài kiểm tra tuần."
               : (
                   <>
                     Bạn đã học <b>{learnedWords} từ vựng</b> trong tuần này. Hãy làm bài kiểm tra để củng cố kiến thức
@@ -381,7 +387,7 @@ function WeeklyExamCard({ onStart, test }: { onStart: () => void; test: WeeklyTe
           <ExamRow icon="users" label="Số lượng câu hỏi" value={`${questionCount} câu`} />
           <ExamRow icon="notebook" label="Hình thức" value="Trắc nghiệm và tự luận" />
           <ExamRow icon="calendar" label="Thời gian" value="20 phút" />
-          <ExamRow icon="book" label="Nội dung" value="Từ vựng đã học trong tuần" />
+          <ExamRow icon="book" label="Nội dung" value="Chỉ gồm từ bạn đã học trong tuần" />
         </div>
         <div className="hidden justify-center text-[#6d35ff] lg:flex">
           <AppIcon name="pen" bare size={140} />
@@ -393,10 +399,10 @@ function WeeklyExamCard({ onStart, test }: { onStart: () => void; test: WeeklyTe
         className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#6d35ff] px-5 py-4 text-sm font-black text-white shadow-lg shadow-violet-200 transition hover:bg-[#5528dc] disabled:cursor-not-allowed disabled:bg-[#bcb3da] disabled:shadow-none"
       >
         <AppIcon name={locked ? "lock" : "play"} bare size={18} />
-        {locked ? "Chưa đủ điều kiện kiểm tra" : "Bắt đầu kiểm tra"}
+        {locked ? "Học xong một phần để mở kiểm tra" : "Bắt đầu kiểm tra"}
       </button>
       <Link href="/vocabulary" className="mt-4 block text-center text-sm font-black text-[#6d35ff]">
-        Xem lại từ vựng đã học
+        Bỏ qua kiểm tra, học từ mới
       </Link>
     </section>
   );

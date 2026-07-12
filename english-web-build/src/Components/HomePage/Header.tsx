@@ -26,6 +26,7 @@ export default function Header() {
     pathname.startsWith("/check") ||
     pathname.startsWith("/dictionary") ||
     pathname.startsWith("/pronunciation") ||
+    pathname.startsWith("/placement") ||
     pathname.startsWith("/placement-test");
 
   useEffect(() => {
@@ -125,7 +126,7 @@ export default function Header() {
                   {
                     icon: "📊",
                     label: "Kiểm tra trình độ",
-                    href: "/placement-test",
+                    href: "/placement",
                   },
                   { icon: "🐱", label: "Thú cưng học tập", href: "/pet" },
                 ].map((item) => (

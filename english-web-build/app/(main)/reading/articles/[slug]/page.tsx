@@ -1,4 +1,4 @@
-import ReadingLessonPage from "@/src/Components/ReadingPractice/ReadingLessonPage/ReadingLessonPage";
+import ReadingLessonPage from "@/src/Components/reading/ReadingLessonPage";
 
 export default async function ReadingLesson({
   params,

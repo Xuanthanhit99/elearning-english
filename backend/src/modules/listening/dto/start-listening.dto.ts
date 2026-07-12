@@ -1,9 +1,9 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class StartListeningDto {
   @IsOptional()
-  @IsString()
+  @IsIn(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'])
   level?: string;
 
   @IsOptional()
@@ -13,6 +13,7 @@ export class StartListeningDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
-  @Min(0)
+  @Min(1)
+  @Max(20)
   limit?: number;
 }

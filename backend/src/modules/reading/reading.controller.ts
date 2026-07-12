@@ -69,6 +69,7 @@ export class ReadingController {
 
   @Post('sessions/:sessionId/answer')
   answerQuestion(
+    @CurrentUser() user: { id: string },
     @Param('sessionId') sessionId: string,
     @Body()
     body: {
@@ -76,12 +77,22 @@ export class ReadingController {
       selected: string;
     },
   ) {
-    return this.readingService.answerReadingQuestion(sessionId, body);
+    return this.readingService.answerReadingQuestion(
+      user.id,
+      sessionId,
+      body,
+    );
   }
 
   @Post('sessions/:sessionId/submit')
-  submitSession(@Param('sessionId') sessionId: string) {
-    return this.readingService.submitReadingSession(sessionId);
+  submitSession(
+    @CurrentUser() user: { id: string },
+    @Param('sessionId') sessionId: string,
+  ) {
+    return this.readingService.submitReadingSession(
+      user.id,
+      sessionId,
+    );
   }
 
   @Get('sessions/:sessionId/result')

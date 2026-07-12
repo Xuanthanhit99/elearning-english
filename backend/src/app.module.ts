@@ -55,6 +55,11 @@ import { PlacementDashboardModule } from './modules/placement-dashboard/placemen
 import { LearningPathService } from './modules/learning-path/learning-path.service';
 import { LearningPathModule } from './modules/learning-path/learning-path.module';
 import { LearningPathAccessModule } from './modules/learning-path-access/learning-path-access.module';
+import { MissionsV2Module } from './modules/missions-v2/missions-v2.module';
+import { LessonBuilderModule } from './modules/lesson-builder/lesson-builder.module';
+import { ListeningJobModule } from './modules/listening-job/listening-job.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -71,6 +76,10 @@ import { LearningPathAccessModule } from './modules/learning-path-access/learnin
           password: configService.get<string>('REDIS_PASSWORD') || undefined,
         },
       }),
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'public'),
+      serveRoot: '/',
     }),
     PrismaModule,
     AuthModule,
@@ -117,10 +126,13 @@ import { LearningPathAccessModule } from './modules/learning-path-access/learnin
     PlacementDashboardModule,
     LearningPathModule,
     LearningPathAccessModule,
+    MissionsV2Module,
+    LessonBuilderModule,
+    ListeningJobModule,
   ],
   providers: [
     GeminiService,
-    ListeningJobService,
+    // ListeningJobService,
     QuestionBankService,
     QuestionGenerationLockService,
     LearningPathService,

@@ -36,11 +36,12 @@ export default function MainLayout({
     pathname.startsWith("/listening") ||
     pathname.startsWith("/dictionary") ||
     pathname.startsWith("/pronunciation") ||
+    pathname.startsWith("/placement") ||
     pathname.startsWith("/placement-test") ||
+    pathname.startsWith("/lesson-builder") ||
     pathname.startsWith("/check") ||
     pathname.startsWith("/check-word")||
-    pathname.startsWith("/learning-path") ||
-    pathname.startsWith("/placement/introduction")
+    pathname.startsWith("/learning-path")
   const [showWelcome, setShowWelcome] = useState(false);
   const [showPetPrompt, setShowPetPrompt] = useState(false);
   const [petDaysLeft, setPetDaysLeft] = useState(7);

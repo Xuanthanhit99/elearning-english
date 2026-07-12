@@ -252,6 +252,20 @@ export class VocabularyController {
     return this.vocabularyService.completeDailyVocabulary(user.id, dayId);
   }
 
+  @Post('daily/:dayId/extra')
+  @UseGuards(JwtAuthGuard)
+  addExtraDailyVocabulary(
+    @CurrentUser() user: any,
+    @Param('dayId') dayId: string,
+    @Body() body: { amount?: number },
+  ) {
+    return this.vocabularyService.addExtraDailyVocabulary(
+      user.id,
+      dayId,
+      body?.amount || 5,
+    );
+  }
+
   @Get('me/history')
   @UseGuards(JwtAuthGuard)
   getHistory(@CurrentUser() user: any) {

@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { MissionAction, MissionType, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
@@ -168,12 +172,19 @@ export class MissionsService {
   }
 
   private buildSummary(missions: any[]) {
-    const daily = missions.filter((mission) => mission.type === MissionType.DAILY);
-    const weekly = missions.filter((mission) => mission.type === MissionType.WEEKLY);
-    const completedDaily = daily.filter((mission) => mission.userProgress.completed);
+    const daily = missions.filter(
+      (mission) => mission.type === MissionType.DAILY,
+    );
+    const weekly = missions.filter(
+      (mission) => mission.type === MissionType.WEEKLY,
+    );
+    const completedDaily = daily.filter(
+      (mission) =>
+        mission.status === 'COMPLETED' || mission.status === 'CLAIMED',
+    );
     const claimable = missions.filter(
       (mission) =>
-        mission.userProgress.completed && !mission.userProgress.claimed,
+        mission.status === 'COMPLETED' || mission.status === 'CLAIMED',
     );
     const claimed = missions.filter((mission) => mission.userProgress.claimed);
     const missionPoints = missions.reduce((sum, mission) => {
@@ -189,8 +200,10 @@ export class MissionsService {
       nextChestPoints: Math.max(0, 200 - missionPoints),
       dailyCompleted: completedDaily.length,
       dailyTotal: daily.length,
-      weeklyCompleted: weekly.filter((mission) => mission.userProgress.completed)
-        .length,
+      weeklyCompleted: weekly.filter(
+        (mission) =>
+          mission.status === 'COMPLETED' || mission.status === 'CLAIMED',
+      ).length,
       weeklyTotal: weekly.length,
       claimableCount: claimable.length,
       claimedCount: claimed.length,
@@ -205,7 +218,8 @@ export class MissionsService {
   private buildSpecialEvent(missions: any[]) {
     const total = missions.reduce((sum, mission) => sum + mission.target, 0);
     const progress = missions.reduce(
-      (sum, mission) => sum + Math.min(mission.userProgress.progress, mission.target),
+      (sum, mission) =>
+        sum + Math.min(mission.userProgress.progress, mission.target),
       0,
     );
 

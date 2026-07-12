@@ -2,12 +2,16 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { LearningSkill, MissionV2Action, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { GeminiService } from '../gemini/gemini.service';
+import { MissionV2ProgressService } from '../missions-v2/services/mission-v2-progress.service';
 import { StartListeningDto } from './dto/start-listening.dto';
 import { SubmitListeningAnswerDto } from './dto/submit-listening-answer.dto';
-import { GeminiService } from '../gemini/gemini.service';
+import { ListeningTtsService } from './listening-tts.service';
 
 type ListeningOption = {
   label: string;
@@ -25,15 +29,177 @@ type GeneratedListeningQuestion = {
 
 @Injectable()
 export class ListeningService {
+  private readonly logger = new Logger(ListeningService.name);
+
   constructor(
-    private prismaService: PrismaService,
-    private geminiService: GeminiService,
+    private readonly prismaService: PrismaService,
+    private readonly geminiService: GeminiService,
+    private readonly missionV2ProgressService: MissionV2ProgressService,
+    private readonly listeningTtsService: ListeningTtsService,
   ) {}
+
+  async getHome(userId: string) {
+    const [progress, inProgress, recentSessions] = await Promise.all([
+      this.prismaService.userListeningProgress.findUnique({
+        where: {
+          userId,
+        },
+      }),
+      this.prismaService.listeningSession.findFirst({
+        where: {
+          userId,
+          status: 'IN_PROGRESS',
+        },
+        orderBy: {
+          startedAt: 'desc',
+        },
+      }),
+      this.prismaService.listeningSession.findMany({
+        where: {
+          userId,
+          status: 'COMPLETED',
+        },
+        orderBy: {
+          completedAt: 'desc',
+        },
+        take: 5,
+      }),
+    ]);
+
+    const recommendedLevel = progress?.currentLevel ?? 'B1';
+
+    return {
+      stats: {
+        completedSessions: progress?.completedSessions ?? 0,
+        averageAccuracy: progress?.averageAccuracy ?? 0,
+        totalListeningTime: progress?.totalListeningTime ?? 0,
+        totalListeningTimeText: this.formatDuration(
+          progress?.totalListeningTime ?? 0,
+        ),
+        totalXp: progress?.totalXp ?? 0,
+      },
+      level: {
+        current: recommendedLevel,
+        title: this.levelTitle(recommendedLevel),
+      },
+      streak: {
+        current: progress?.currentStreak ?? 0,
+        longest: progress?.longestStreak ?? 0,
+      },
+      continueSession: inProgress
+        ? {
+            sessionId: inProgress.id,
+            level: inProgress.level,
+            topic: inProgress.topic,
+            total: inProgress.total,
+            correct: inProgress.correct,
+            wrong: inProgress.wrong,
+            skipped: inProgress.skipped,
+            progressPercent:
+              inProgress.total > 0
+                ? Math.round(
+                    ((inProgress.correct +
+                      inProgress.wrong +
+                      inProgress.skipped) /
+                      inProgress.total) *
+                      100,
+                  )
+                : 0,
+          }
+        : null,
+      dailyRecommendation: {
+        level: recommendedLevel,
+        topic: this.getDailyListeningTopic(recommendedLevel),
+        limit: 10,
+      },
+      recentSessions: recentSessions.map((session) => ({
+        id: session.id,
+        level: session.level,
+        topic: session.topic,
+        score: session.score,
+        total: session.total,
+        correct: session.correct,
+        completedAt: session.completedAt,
+      })),
+    };
+  }
+
+  async getHistory(userId: string, page = 1, limit = 10) {
+    const safePage = Math.max(page, 1);
+    const safeLimit = Math.min(Math.max(limit, 1), 50);
+
+    const where = {
+      userId,
+      status: 'COMPLETED',
+    } satisfies Prisma.ListeningSessionWhereInput;
+
+    const [totalItems, sessions] = await Promise.all([
+      this.prismaService.listeningSession.count({
+        where,
+      }),
+      this.prismaService.listeningSession.findMany({
+        where,
+        orderBy: {
+          completedAt: 'desc',
+        },
+        skip: (safePage - 1) * safeLimit,
+        take: safeLimit,
+      }),
+    ]);
+
+    const totalPages = Math.max(1, Math.ceil(totalItems / safeLimit));
+
+    return {
+      meta: {
+        page: safePage,
+        limit: safeLimit,
+        totalItems,
+        totalPages,
+        hasNextPage: safePage < totalPages,
+        hasPrevPage: safePage > 1,
+      },
+      items: sessions.map((session) => ({
+        id: session.id,
+        level: session.level,
+        topic: session.topic,
+        total: session.total,
+        correct: session.correct,
+        wrong: session.wrong,
+        skipped: session.skipped,
+        score: session.score,
+        xpEarned: session.xpEarned,
+        coinsEarned: session.coinsEarned,
+        startedAt: session.startedAt,
+        completedAt: session.completedAt,
+      })),
+    };
+  }
 
   async startPractice(userId: string, dto: StartListeningDto) {
     const limit = Math.min(Math.max(dto.limit ?? 10, 1), 20);
+
     const level = dto.level ?? 'B1';
     const topic = dto.topic?.trim() || this.getDailyListeningTopic(level);
+
+    /*
+     * Không tạo vô hạn session mới nếu user load lại.
+     */
+    const existing = await this.prismaService.listeningSession.findFirst({
+      where: {
+        userId,
+        level,
+        topic,
+        status: 'IN_PROGRESS',
+      },
+      orderBy: {
+        startedAt: 'desc',
+      },
+    });
+
+    if (existing) {
+      return this.getSessionPayload(userId, existing.id);
+    }
+
     const usedQuestionIds = await this.getUsedQuestionIdsToday(
       userId,
       level,
@@ -88,45 +254,12 @@ export class ListeningService {
       throw new BadRequestException('Không thể tạo dữ liệu luyện nghe.');
     }
 
-    const session = await this.prismaService.listeningSession.create({
-      data: {
-        userId,
-        level,
-        topic,
-        total: questions.length,
-        status: 'IN_PROGRESS',
-      },
-    });
-
-    await this.prismaService.listeningSessionAnswer.createMany({
-      data: questions.map((question) => ({
-        sessionId: session.id,
-        questionId: question.id,
-        selectedAnswer: null,
-        isCorrect: null,
-        isSkipped: false,
-        timeSpent: 0,
-        listenedCount: 0,
-      })),
-      skipDuplicates: true,
-    });
-
-    return {
-      sessionId: session.id,
+    return this.createSessionPayload({
+      userId,
       level,
       topic,
-      totalQuestions: questions.length,
-      currentQuestionIndex: 1,
-      progress: {
-        percent: 0,
-        correct: 0,
-        wrong: 0,
-        skipped: 0,
-      },
-      questions: questions.map((question, index) =>
-        this.toQuestionPayload(question, index + 1),
-      ),
-    };
+      questions,
+    });
   }
 
   async submitAnswer(
@@ -140,31 +273,21 @@ export class ListeningService {
       dto.questionId,
     );
 
-    if (session.status === 'COMPLETED') {
-      throw new ForbiddenException('Bài luyện nghe này đã hoàn thành');
-    }
+    this.assertSessionEditable(session.status);
 
     const selectedAnswer = dto.selectedAnswer.trim().toUpperCase();
+
     const isCorrect =
       selectedAnswer === question.correctAnswer.trim().toUpperCase();
 
-    await this.prismaService.listeningSessionAnswer.upsert({
+    await this.prismaService.listeningSessionAnswer.update({
       where: {
         sessionId_questionId: {
           sessionId,
           questionId: dto.questionId,
         },
       },
-      create: {
-        sessionId,
-        questionId: dto.questionId,
-        selectedAnswer,
-        isCorrect,
-        isSkipped: false,
-        timeSpent: dto.timeSpent,
-        listenedCount: dto.listenedCount,
-      },
-      update: {
+      data: {
         selectedAnswer,
         isCorrect,
         isSkipped: false,
@@ -190,27 +313,28 @@ export class ListeningService {
   async skipQuestion(
     userId: string,
     sessionId: string,
-    body: { questionId: string; timeSpent?: number; listenedCount?: number },
+    body: {
+      questionId: string;
+      timeSpent?: number;
+      listenedCount?: number;
+    },
   ) {
-    await this.getSessionQuestion(userId, sessionId, body.questionId);
+    const { session } = await this.getSessionQuestion(
+      userId,
+      sessionId,
+      body.questionId,
+    );
 
-    await this.prismaService.listeningSessionAnswer.upsert({
+    this.assertSessionEditable(session.status);
+
+    await this.prismaService.listeningSessionAnswer.update({
       where: {
         sessionId_questionId: {
           sessionId,
           questionId: body.questionId,
         },
       },
-      create: {
-        sessionId,
-        questionId: body.questionId,
-        selectedAnswer: null,
-        isCorrect: null,
-        isSkipped: true,
-        timeSpent: body.timeSpent ?? 0,
-        listenedCount: body.listenedCount ?? 0,
-      },
-      update: {
+      data: {
         selectedAnswer: null,
         isCorrect: null,
         isSkipped: true,
@@ -229,87 +353,317 @@ export class ListeningService {
   async flagQuestion(
     userId: string,
     sessionId: string,
-    body: { questionId: string; isFlagged?: boolean },
+    body: {
+      questionId: string;
+      isFlagged?: boolean;
+    },
   ) {
-    await this.getSessionQuestion(userId, sessionId, body.questionId);
+    const { session } = await this.getSessionQuestion(
+      userId,
+      sessionId,
+      body.questionId,
+    );
 
-    const answer = await this.prismaService.listeningSessionAnswer.upsert({
+    /*
+     * Flag có thể thay đổi cả sau khi hoàn thành để user
+     * đánh dấu câu muốn ôn lại.
+     */
+    const answer = await this.prismaService.listeningSessionAnswer.update({
       where: {
         sessionId_questionId: {
           sessionId,
           questionId: body.questionId,
         },
       },
-      create: {
-        sessionId,
-        questionId: body.questionId,
-        isFlagged: body.isFlagged ?? true,
-      },
-      update: {
+      data: {
         isFlagged: body.isFlagged ?? true,
       },
     });
 
     return {
+      sessionId: session.id,
       questionId: body.questionId,
       isFlagged: answer.isFlagged,
     };
   }
 
   async finishSession(userId: string, sessionId: string) {
-    const session = await this.prismaService.listeningSession.findUnique({
-      where: { id: sessionId },
+    const session = await this.getOwnedSession(userId, sessionId);
+
+    if (session.status === 'COMPLETED') {
+      return {
+        ...this.mapCompletedSession(session),
+        alreadyCompleted: true,
+        missionUpdated: false,
+        resultUrl: `/listening/sessions/${session.id}/result`,
+      };
+    }
+
+    const answers = await this.prismaService.listeningSessionAnswer.findMany({
+      where: {
+        sessionId,
+      },
+    });
+
+    const correct = answers.filter((item) => item.isCorrect === true).length;
+
+    const wrong = answers.filter(
+      (item) => item.isCorrect === false && !item.isSkipped,
+    ).length;
+
+    const skipped = answers.filter((item) => item.isSkipped).length;
+
+    const score =
+      session.total > 0 ? Math.round((correct / session.total) * 100) : 0;
+
+    const xpEarned = correct * 3;
+    const coinsEarned = Math.floor(correct / 2);
+
+    const totalTimeSpent = answers.reduce(
+      (sum, answer) => sum + Math.max(answer.timeSpent ?? 0, 0),
+      0,
+    );
+
+    const now = new Date();
+
+    const transactionResult = await this.prismaService.$transaction(
+      async (tx) => {
+        const completion = await tx.listeningSession.updateMany({
+          where: {
+            id: sessionId,
+            userId,
+            status: {
+              not: 'COMPLETED',
+            },
+          },
+          data: {
+            correct,
+            wrong,
+            skipped,
+            score,
+            xpEarned,
+            coinsEarned,
+            status: 'COMPLETED',
+            completedAt: now,
+          },
+        });
+
+        if (completion.count !== 1) {
+          return {
+            completedByThisRequest: false,
+          };
+        }
+
+        const currentProgress = await tx.userListeningProgress.findUnique({
+          where: {
+            userId,
+          },
+        });
+
+        const previousCompleted = currentProgress?.completedSessions ?? 0;
+
+        const nextCompleted = previousCompleted + 1;
+
+        const nextAverage = Math.round(
+          ((currentProgress?.averageAccuracy ?? 0) * previousCompleted +
+            score) /
+            Math.max(nextCompleted, 1),
+        );
+
+        const streak = this.calculateStreak(
+          currentProgress?.lastStudyDate ?? null,
+          currentProgress?.currentStreak ?? 0,
+          currentProgress?.longestStreak ?? 0,
+          now,
+        );
+
+        const nextXp = (currentProgress?.totalXp ?? 0) + xpEarned;
+
+        await tx.userListeningProgress.upsert({
+          where: {
+            userId,
+          },
+          update: {
+            currentLevel: this.resolveLevel(nextXp),
+            totalXp: {
+              increment: xpEarned,
+            },
+            completedSessions: {
+              increment: 1,
+            },
+            totalListeningTime: {
+              increment: totalTimeSpent,
+            },
+            averageAccuracy: nextAverage,
+            currentStreak: streak.currentStreak,
+            longestStreak: streak.longestStreak,
+            lastStudyDate: now,
+          },
+          create: {
+            userId,
+            currentLevel: this.resolveLevel(xpEarned),
+            totalXp: xpEarned,
+            completedSessions: 1,
+            totalListeningTime: totalTimeSpent,
+            averageAccuracy: score,
+            currentStreak: 1,
+            longestStreak: 1,
+            lastStudyDate: now,
+          },
+        });
+
+        /*
+         * Đồng bộ reward vào Pet/Wallet hiện có.
+         * Nếu schema của bạn dùng model khác, đổi riêng block này.
+         */
+        await tx.petProfile.upsert({
+          where: {
+            userId,
+          },
+          update: {
+            xp: {
+              increment: xpEarned,
+            },
+            coins: {
+              increment: coinsEarned,
+            },
+          },
+          create: {
+            userId,
+            petType: 'fox',
+            petName: 'Foxy',
+            isChosen: true,
+            xp: xpEarned,
+            coins: coinsEarned,
+          },
+        });
+
+        return {
+          completedByThisRequest: true,
+        };
+      },
+    );
+
+    if (!transactionResult.completedByThisRequest) {
+      const completed = await this.getOwnedSession(userId, sessionId);
+
+      return {
+        ...this.mapCompletedSession(completed),
+        alreadyCompleted: true,
+        missionUpdated: false,
+        resultUrl: `/listening/sessions/${completed.id}/result`,
+      };
+    }
+
+    const studiedMinutes = Math.max(1, Math.ceil(totalTimeSpent / 60));
+
+    const missionUpdated = await this.updateListeningMissions({
+      userId,
+      sessionId,
+      score,
+      studiedMinutes,
+    });
+
+    const completed = await this.getOwnedSession(userId, sessionId);
+
+    return {
+      ...this.mapCompletedSession(completed),
+      alreadyCompleted: false,
+      missionUpdated,
+      resultUrl: `/listening/sessions/${completed.id}/result`,
+    };
+  }
+
+  async getSessionResult(userId: string, sessionId: string) {
+    const session = await this.prismaService.listeningSession.findFirst({
+      where: {
+        id: sessionId,
+        userId,
+      },
+      include: {
+        answer: {
+          include: {
+            question: true,
+          },
+          orderBy: {
+            answeredAt: 'asc',
+          },
+        },
+      },
     });
 
     if (!session) {
       throw new NotFoundException('Không tìm thấy phiên luyện nghe');
     }
 
-    if (session.userId !== userId) {
-      throw new ForbiddenException('Bạn không có quyền kết thúc phiên này');
+    if (session.status !== 'COMPLETED') {
+      throw new BadRequestException('Phiên luyện nghe chưa hoàn thành');
     }
 
-    const progress = await this.recalculateSession(sessionId);
-    const score =
-      session.total > 0 ? Math.round((progress.correct / session.total) * 100) : 0;
-
-    const updatedSession = await this.prismaService.listeningSession.update({
-      where: { id: sessionId },
-      data: {
-        correct: progress.correct,
-        wrong: progress.wrong,
-        skipped: progress.skipped,
-        score,
-        xpEarned: progress.correct * 3,
-        coinsEarned: Math.floor(progress.correct / 2),
-        status: 'COMPLETED',
-        completedAt: new Date(),
-      },
-    });
+    const totalTimeSpent = session.answer.reduce(
+      (sum, answer) => sum + Math.max(answer.timeSpent ?? 0, 0),
+      0,
+    );
 
     return {
-      sessionId: updatedSession.id,
-      totalQuestions: updatedSession.total,
-      correct: updatedSession.correct,
-      wrong: updatedSession.wrong,
-      skipped: updatedSession.skipped,
-      score: updatedSession.score,
-      xpEarned: updatedSession.xpEarned,
-      coinsEarned: updatedSession.coinsEarned,
-      status: updatedSession.status,
-      completedAt: updatedSession.completedAt,
+      summary: {
+        sessionId: session.id,
+        level: session.level,
+        topic: session.topic,
+        totalQuestions: session.total,
+        correct: session.correct,
+        wrong: session.wrong,
+        skipped: session.skipped,
+        score: session.score,
+        accuracy: session.score,
+        xpEarned: session.xpEarned,
+        coinsEarned: session.coinsEarned,
+        totalTimeSpent,
+        totalTimeText: this.formatDuration(totalTimeSpent),
+        completedAt: session.completedAt,
+      },
+      questions: session.answer.map((answer, index) => ({
+        id: answer.questionId,
+        order: index + 1,
+        question: answer.question.question,
+        options: answer.question.options,
+        audioUrl: answer.question.audioUrl,
+        transcript: answer.question.transcript,
+        selectedAnswer: answer.selectedAnswer,
+        correctAnswer: answer.question.correctAnswer,
+        isCorrect: answer.isCorrect,
+        isSkipped: answer.isSkipped,
+        isFlagged: answer.isFlagged,
+        explanation: answer.question.explanation,
+        listenedCount: answer.listenedCount,
+        timeSpent: answer.timeSpent,
+      })),
+      feedback: this.buildFeedback(
+        session.score,
+        session.correct,
+        session.wrong,
+        session.skipped,
+      ),
     };
   }
 
   async retrySession(userId: string, sessionId: string) {
     const session = await this.getOwnedSession(userId, sessionId);
+
     const answers = await this.prismaService.listeningSessionAnswer.findMany({
-      where: { sessionId },
-      include: { question: true },
-      orderBy: { answeredAt: 'asc' },
+      where: {
+        sessionId,
+      },
+      include: {
+        question: true,
+      },
+      orderBy: {
+        answeredAt: 'asc',
+      },
     });
 
     const questions = answers.map((answer) => answer.question).filter(Boolean);
+
     if (!questions.length) {
       throw new NotFoundException('Không tìm thấy câu hỏi của bài luyện nghe');
     }
@@ -317,7 +671,8 @@ export class ListeningService {
     return this.createSessionPayload({
       userId,
       level: session.level || 'B1',
-      topic: session.topic || this.getDailyListeningTopic(session.level || 'B1'),
+      topic:
+        session.topic || this.getDailyListeningTopic(session.level || 'B1'),
       questions: questions.slice(0, session.total || 10),
     });
   }
@@ -325,14 +680,17 @@ export class ListeningService {
   async rateSession(
     userId: string,
     sessionId: string,
-    body: { rating: number; comment?: string },
+    body: {
+      rating: number;
+      comment?: string;
+    },
   ) {
     const session = await this.getOwnedSession(userId, sessionId);
-    const rating = Math.max(1, Math.min(5, Math.round(Number(body.rating) || 0)));
 
-    if (!rating) {
-      throw new BadRequestException('Vui lòng chọn số sao đánh giá');
-    }
+    const rating = Math.max(
+      1,
+      Math.min(5, Math.round(Number(body.rating) || 0)),
+    );
 
     const ratedAt = new Date();
     const comment = body.comment?.trim() || null;
@@ -355,15 +713,23 @@ export class ListeningService {
 
   async continueSession(userId: string, sessionId: string) {
     const session = await this.getOwnedSession(userId, sessionId);
+
     const level = session.level || 'B1';
     const topic = session.topic || this.getDailyListeningTopic(level);
     const limit = session.total || 10;
 
-    const previousAnswers = await this.prismaService.listeningSessionAnswer.findMany({
-      where: { sessionId },
-      include: { question: true },
-      orderBy: { answeredAt: 'asc' },
-    });
+    const previousAnswers =
+      await this.prismaService.listeningSessionAnswer.findMany({
+        where: {
+          sessionId,
+        },
+        include: {
+          question: true,
+        },
+        orderBy: {
+          answeredAt: 'asc',
+        },
+      });
 
     const wrongQuestions = previousAnswers
       .filter((answer) => answer.isCorrect === false)
@@ -372,7 +738,12 @@ export class ListeningService {
       .slice(0, limit);
 
     const freshNeed = Math.max(0, limit - wrongQuestions.length);
-    const usedQuestionIds = await this.getUsedQuestionIdsToday(userId, level, topic);
+
+    const usedQuestionIds = await this.getUsedQuestionIdsToday(
+      userId,
+      level,
+      topic,
+    );
 
     await this.ensureQuestions({
       level,
@@ -397,54 +768,77 @@ export class ListeningService {
         })
       : [];
 
-    if (freshQuestions.length < freshNeed) {
-      await this.ensureQuestions({
-        level,
-        topic,
-        limit: usedQuestionIds.length + freshNeed + (freshNeed - freshQuestions.length),
-      });
-    }
-
-    const filledFreshQuestions =
-      freshQuestions.length >= freshNeed
-        ? freshQuestions
-        : await this.prismaService.listeningQuestion.findMany({
-            where: {
-              isActive: true,
-              level,
-              topic,
-              id: {
-                notIn: usedQuestionIds,
-              },
-            },
-            take: freshNeed,
-            orderBy: {
-              createdAt: 'desc',
-            },
-          });
-
     return this.createSessionPayload({
       userId,
       level,
       topic,
-      questions: [...wrongQuestions, ...filledFreshQuestions].slice(0, limit),
+      questions: [...wrongQuestions, ...freshQuestions].slice(0, limit),
     });
   }
 
-  private async getOwnedSession(userId: string, sessionId: string) {
-    const session = await this.prismaService.listeningSession.findUnique({
-      where: { id: sessionId },
+  private async getSessionPayload(userId: string, sessionId: string) {
+    const session = await this.prismaService.listeningSession.findFirst({
+      where: {
+        id: sessionId,
+        userId,
+      },
+      include: {
+        answer: {
+          include: {
+            question: true,
+          },
+          orderBy: {
+            question: {
+              createdAt: 'asc',
+            },
+          },
+        },
+      },
     });
 
     if (!session) {
       throw new NotFoundException('Không tìm thấy phiên luyện nghe');
     }
 
-    if (session.userId !== userId) {
-      throw new ForbiddenException('Bạn không có quyền truy cập phiên này');
-    }
-
-    return session;
+    return {
+      sessionId: session.id,
+      level: session.level,
+      topic: session.topic,
+      totalQuestions: session.total,
+      currentQuestionIndex: Math.min(
+        session.correct + session.wrong + session.skipped + 1,
+        session.total,
+      ),
+      progress: {
+        percent:
+          session.total > 0
+            ? Math.round(
+                ((session.correct + session.wrong + session.skipped) /
+                  session.total) *
+                  100,
+              )
+            : 0,
+        correct: session.correct,
+        wrong: session.wrong,
+        skipped: session.skipped,
+      },
+      questions: session.answer.map((answer, index) => ({
+        ...this.toQuestionPayload(answer.question, index + 1),
+        answered: answer.selectedAnswer !== null || answer.isSkipped,
+        selectedAnswer: answer.selectedAnswer,
+        isCorrect: answer.isCorrect,
+        isSkipped: answer.isSkipped,
+        isFlagged: answer.isFlagged,
+        explanation:
+          answer.selectedAnswer !== null || answer.isSkipped
+            ? answer.question.explanation
+            : null,
+        correctAnswer:
+          answer.selectedAnswer !== null || answer.isSkipped
+            ? answer.question.correctAnswer
+            : null,
+      })),
+    };
   }
 
   private async createSessionPayload(params: {
@@ -476,22 +870,289 @@ export class ListeningService {
       skipDuplicates: true,
     });
 
+    return this.getSessionPayload(params.userId, session.id);
+  }
+
+  private async getOwnedSession(userId: string, sessionId: string) {
+    const session = await this.prismaService.listeningSession.findUnique({
+      where: {
+        id: sessionId,
+      },
+    });
+
+    if (!session) {
+      throw new NotFoundException('Không tìm thấy phiên luyện nghe');
+    }
+
+    if (session.userId !== userId) {
+      throw new ForbiddenException('Bạn không có quyền truy cập phiên này');
+    }
+
+    return session;
+  }
+
+  private async getSessionQuestion(
+    userId: string,
+    sessionId: string,
+    questionId: string,
+  ) {
+    const session = await this.getOwnedSession(userId, sessionId);
+
+    const sessionAnswer =
+      await this.prismaService.listeningSessionAnswer.findUnique({
+        where: {
+          sessionId_questionId: {
+            sessionId,
+            questionId,
+          },
+        },
+        include: {
+          question: true,
+        },
+      });
+
+    if (!sessionAnswer?.question) {
+      throw new NotFoundException('Câu hỏi không thuộc phiên luyện nghe này');
+    }
+
+    return {
+      session,
+      question: sessionAnswer.question,
+    };
+  }
+
+  private assertSessionEditable(status: string) {
+    if (status === 'COMPLETED') {
+      throw new ForbiddenException('Bài luyện nghe này đã hoàn thành');
+    }
+  }
+
+  private async recalculateSession(sessionId: string) {
+    const session = await this.prismaService.listeningSession.findUnique({
+      where: {
+        id: sessionId,
+      },
+    });
+
+    if (!session) {
+      throw new NotFoundException('Không tìm thấy phiên luyện nghe');
+    }
+
+    const answers = await this.prismaService.listeningSessionAnswer.findMany({
+      where: {
+        sessionId,
+      },
+    });
+
+    const correct = answers.filter((item) => item.isCorrect === true).length;
+
+    const wrong = answers.filter(
+      (item) => item.isCorrect === false && !item.isSkipped,
+    ).length;
+
+    const skipped = answers.filter((item) => item.isSkipped).length;
+
+    const done = correct + wrong + skipped;
+
+    const percent =
+      session.total > 0 ? Math.round((done / session.total) * 100) : 0;
+
+    await this.prismaService.listeningSession.update({
+      where: {
+        id: sessionId,
+      },
+      data: {
+        correct,
+        wrong,
+        skipped,
+      },
+    });
+
+    return {
+      percent,
+      correct,
+      wrong,
+      skipped,
+    };
+  }
+
+  private async updateListeningMissions(input: {
+    userId: string;
+    sessionId: string;
+    score: number;
+    studiedMinutes: number;
+  }) {
+    try {
+      await this.missionV2ProgressService.increase({
+        userId: input.userId,
+        action: MissionV2Action.LISTEN_AUDIO,
+        amount: 1,
+        skill: LearningSkill.LISTENING,
+      });
+
+      await this.missionV2ProgressService.increase({
+        userId: input.userId,
+        action: MissionV2Action.COMPLETE_LESSON,
+        amount: 1,
+        skill: LearningSkill.LISTENING,
+      });
+
+      await this.missionV2ProgressService.increase({
+        userId: input.userId,
+        action: MissionV2Action.STUDY_LESSON,
+        amount: 1,
+        skill: LearningSkill.LISTENING,
+      });
+
+      if (input.score >= 50) {
+        await this.missionV2ProgressService.increase({
+          userId: input.userId,
+          action: MissionV2Action.COMPLETE_QUIZ,
+          amount: 1,
+          skill: LearningSkill.LISTENING,
+          quizId: input.sessionId,
+        });
+      }
+
+      await this.missionV2ProgressService.increase({
+        userId: input.userId,
+        action: MissionV2Action.STUDY_MINUTES,
+        amount: input.studiedMinutes,
+        studyMinutes: input.studiedMinutes,
+        skill: LearningSkill.LISTENING,
+      });
+
+      return true;
+    } catch (error) {
+      this.logger.error(
+        `Cập nhật Listening Mission thất bại, session=${input.sessionId}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+
+      return false;
+    }
+  }
+
+  private mapCompletedSession(session: any) {
     return {
       sessionId: session.id,
-      level: params.level,
-      topic: params.topic,
-      totalQuestions: params.questions.length,
-      currentQuestionIndex: 1,
-      progress: {
-        percent: 0,
-        correct: 0,
-        wrong: 0,
-        skipped: 0,
-      },
-      questions: params.questions.map((question, index) =>
-        this.toQuestionPayload(question, index + 1),
-      ),
+      totalQuestions: session.total,
+      correct: session.correct,
+      wrong: session.wrong,
+      skipped: session.skipped,
+      score: session.score,
+      xpEarned: session.xpEarned,
+      coinsEarned: session.coinsEarned,
+      status: session.status,
+      completedAt: session.completedAt,
     };
+  }
+
+  private buildFeedback(
+    score: number,
+    correct: number,
+    wrong: number,
+    skipped: number,
+  ) {
+    const strengths: string[] = [];
+    const improvements: string[] = [];
+
+    if (score >= 80) {
+      strengths.push('Bạn nắm ý chính và chi tiết nghe khá tốt.');
+    } else if (score >= 50) {
+      strengths.push('Bạn đã hiểu được phần lớn nội dung chính.');
+      improvements.push('Hãy nghe lại các câu sai và chú ý từ khóa.');
+    } else {
+      improvements.push('Nên nghe từng đoạn ngắn và ghi lại từ khóa chính.');
+    }
+
+    if (skipped > 0) {
+      improvements.push(
+        `Bạn đã bỏ qua ${skipped} câu. Hãy ôn lại các câu này.`,
+      );
+    }
+
+    if (wrong > correct) {
+      improvements.push(
+        'Hãy luyện phân biệt các đáp án có từ khóa gần giống nhau.',
+      );
+    }
+
+    return {
+      strengths,
+      improvements,
+    };
+  }
+
+  private calculateStreak(
+    lastStudyDate: Date | null,
+    currentStreak: number,
+    longestStreak: number,
+    now: Date,
+  ) {
+    if (!lastStudyDate) {
+      return {
+        currentStreak: 1,
+        longestStreak: Math.max(longestStreak, 1),
+      };
+    }
+
+    const last = this.startOfDay(lastStudyDate);
+    const today = this.startOfDay(now);
+
+    const differenceDays = Math.floor(
+      (today.getTime() - last.getTime()) / 86_400_000,
+    );
+
+    const nextCurrent =
+      differenceDays <= 0
+        ? Math.max(currentStreak, 1)
+        : differenceDays === 1
+          ? Math.max(currentStreak, 0) + 1
+          : 1;
+
+    return {
+      currentStreak: nextCurrent,
+      longestStreak: Math.max(longestStreak, nextCurrent),
+    };
+  }
+
+  private startOfDay(date: Date) {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  }
+
+  private resolveLevel(totalXp: number) {
+    if (totalXp >= 2000) return 'C2';
+    if (totalXp >= 1500) return 'C1';
+    if (totalXp >= 1000) return 'B2';
+    if (totalXp >= 600) return 'B1';
+    if (totalXp >= 400) return 'A2';
+    return 'A1';
+  }
+
+  private levelTitle(level: string) {
+    const titles: Record<string, string> = {
+      A1: 'Beginner',
+      A2: 'Elementary',
+      B1: 'Intermediate',
+      B2: 'Upper Intermediate',
+      C1: 'Advanced',
+      C2: 'Proficient',
+    };
+
+    return titles[level] ?? level;
+  }
+
+  private formatDuration(seconds: number) {
+    const minutes = Math.floor(seconds / 60);
+    const remain = seconds % 60;
+
+    if (minutes < 60) {
+      return `${minutes}m ${remain}s`;
+    }
+
+    const hours = Math.floor(minutes / 60);
+    return `${hours}h ${minutes % 60}m`;
   }
 
   private getDailyListeningTopic(level: string) {
@@ -558,8 +1219,10 @@ export class ListeningService {
     };
 
     const topics = topicsByLevel[level] || topicsByLevel.B1;
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
     const dayNumber = Math.floor(today.getTime() / 86_400_000);
 
     return topics[dayNumber % topics.length];
@@ -572,6 +1235,7 @@ export class ListeningService {
   ) {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
+
     const end = new Date(start);
     end.setDate(start.getDate() + 1);
 
@@ -609,7 +1273,11 @@ export class ListeningService {
       },
     });
 
-    if (existed >= params.limit) return;
+    if (existed >= params.limit) {
+      await this.ensureMissingAudio(params.level, params.topic);
+
+      return;
+    }
 
     const generated = await this.generateQuestionsByGemini({
       ...params,
@@ -621,13 +1289,16 @@ export class ListeningService {
         ? generated
         : this.buildFallbackQuestions(params.level, params.topic, params.limit);
 
-    const existedQuestions = await this.prismaService.listeningQuestion.findMany({
-      where: {
-        level: params.level,
-        topic: params.topic,
-      },
-      select: { question: true },
-    });
+    const existedQuestions =
+      await this.prismaService.listeningQuestion.findMany({
+        where: {
+          level: params.level,
+          topic: params.topic,
+        },
+        select: {
+          question: true,
+        },
+      });
 
     const existedSet = new Set(
       existedQuestions.map((item) => item.question.trim().toLowerCase()),
@@ -637,29 +1308,77 @@ export class ListeningService {
       .filter((item) => this.isValidQuestion(item))
       .filter((item) => {
         const key = item.question!.trim().toLowerCase();
-        if (existedSet.has(key)) return false;
+
+        if (existedSet.has(key)) {
+          return false;
+        }
+
         existedSet.add(key);
         return true;
       })
       .slice(0, params.limit - existed);
 
-    if (!valid.length) return;
+    for (const item of valid) {
+      const audioUrl = await this.listeningTtsService.createAudioFromTranscript(
+        item.transcript!,
+      );
 
-    await this.prismaService.listeningQuestion.createMany({
-      data: valid.map((item) => ({
-        level: params.level,
-        topic: params.topic,
-        audioUrl: '',
-        transcript: item.transcript!,
-        question: item.question!,
-        options: item.options!,
-        correctAnswer: item.correctAnswer!,
-        explanation: item.explanation ?? '',
-        duration: item.duration ?? 68,
+      await this.prismaService.listeningQuestion.create({
+        data: {
+          level: params.level,
+          topic: params.topic,
+          audioUrl: audioUrl ?? '',
+          transcript: item.transcript!,
+          question: item.question!,
+          options: item.options!,
+          correctAnswer: item.correctAnswer!,
+          explanation: item.explanation ?? '',
+          duration: item.duration ?? 68,
+          isActive: true,
+        },
+      });
+    }
+  }
+
+  private async ensureMissingAudio(level: string, topic: string) {
+    const questions = await this.prismaService.listeningQuestion.findMany({
+      where: {
+        level,
+        topic,
         isActive: true,
-      })),
-      skipDuplicates: true,
+        OR: [
+          {
+            audioUrl: '',
+          },
+          {
+            audioUrl: '',
+          },
+        ],
+      },
+      take: 10,
     });
+
+    for (const question of questions) {
+      if (!question.transcript) {
+        continue;
+      }
+      const audioUrl = await this.listeningTtsService.createAudioFromTranscript(
+        question.transcript,
+      );
+
+      if (!audioUrl) {
+        continue;
+      }
+
+      await this.prismaService.listeningQuestion.update({
+        where: {
+          id: question.id,
+        },
+        data: {
+          audioUrl,
+        },
+      });
+    }
   }
 
   private async generateQuestionsByGemini(params: {
@@ -699,78 +1418,18 @@ Format:
 
     try {
       const result = await this.geminiService.generateJson(prompt);
-      return Array.isArray(result) ? (result as GeneratedListeningQuestion[]) : [];
+
+      return Array.isArray(result)
+        ? (result as GeneratedListeningQuestion[])
+        : [];
     } catch (error) {
-      console.error('Gemini generate listening error', error);
+      this.logger.error(
+        'Gemini generate listening error',
+        error instanceof Error ? error.stack : String(error),
+      );
+
       return [];
     }
-  }
-
-  private async getSessionQuestion(
-    userId: string,
-    sessionId: string,
-    questionId: string,
-  ) {
-    const session = await this.prismaService.listeningSession.findUnique({
-      where: { id: sessionId },
-    });
-
-    if (!session) {
-      throw new NotFoundException('Không tìm thấy phiên luyện nghe');
-    }
-
-    if (session.userId !== userId) {
-      throw new ForbiddenException('Bạn không có quyền truy cập phiên này');
-    }
-
-    const question = await this.prismaService.listeningQuestion.findUnique({
-      where: { id: questionId },
-    });
-
-    if (!question) {
-      throw new NotFoundException('Không tìm thấy câu hỏi');
-    }
-
-    return { session, question };
-  }
-
-  private async recalculateSession(sessionId: string) {
-    const session = await this.prismaService.listeningSession.findUnique({
-      where: { id: sessionId },
-    });
-
-    if (!session) {
-      throw new NotFoundException('Không tìm thấy phiên luyện nghe');
-    }
-
-    const answers = await this.prismaService.listeningSessionAnswer.findMany({
-      where: { sessionId },
-    });
-
-    const correct = answers.filter((item) => item.isCorrect === true).length;
-    const wrong = answers.filter(
-      (item) => item.isCorrect === false && !item.isSkipped,
-    ).length;
-    const skipped = answers.filter((item) => item.isSkipped).length;
-    const done = correct + wrong + skipped;
-    const percent =
-      session.total > 0 ? Math.round((done / session.total) * 100) : 0;
-
-    await this.prismaService.listeningSession.update({
-      where: { id: sessionId },
-      data: {
-        correct,
-        wrong,
-        skipped,
-      },
-    });
-
-    return {
-      percent,
-      correct,
-      wrong,
-      skipped,
-    };
   }
 
   private toQuestionPayload(question: any, order: number) {
@@ -780,6 +1439,10 @@ Format:
       level: question.level,
       topic: question.topic,
       audioUrl: question.audioUrl,
+      /*
+       * Không trả transcript trước khi answer ở UI production.
+       * Hiện vẫn giữ trong payload để tương thích frontend cũ.
+       */
       transcript: question.transcript,
       duration: question.duration,
       question: question.question,
@@ -812,10 +1475,22 @@ Format:
           'Mia: Our school is starting an environment project this week. Tom: That sounds useful. What will students do? Mia: We will collect plastic bottles and plant small trees behind the library. Tom: Great, I can help after class on Friday.',
         question: 'What is the main idea of the conversation?',
         options: [
-          { label: 'A', text: 'They are planning a mountain trip.' },
-          { label: 'B', text: 'They are discussing ways to protect the environment.' },
-          { label: 'C', text: 'They are buying books for the library.' },
-          { label: 'D', text: 'They are talking about the weather.' },
+          {
+            label: 'A',
+            text: 'They are planning a mountain trip.',
+          },
+          {
+            label: 'B',
+            text: 'They are discussing ways to protect the environment.',
+          },
+          {
+            label: 'C',
+            text: 'They are buying books for the library.',
+          },
+          {
+            label: 'D',
+            text: 'They are talking about the weather.',
+          },
         ],
         correctAnswer: 'B',
         explanation:
@@ -827,14 +1502,25 @@ Format:
           'Ben: I forgot to bring my reusable bottle today. Anna: You can use the water station near the cafeteria. Ben: Good idea. I want to stop buying plastic bottles every day. Anna: Small habits can make a big difference.',
         question: 'What does Ben want to change?',
         options: [
-          { label: 'A', text: 'He wants to buy more snacks.' },
-          { label: 'B', text: 'He wants to stop buying plastic bottles every day.' },
-          { label: 'C', text: 'He wants to move the water station.' },
-          { label: 'D', text: 'He wants to eat lunch earlier.' },
+          {
+            label: 'A',
+            text: 'He wants to buy more snacks.',
+          },
+          {
+            label: 'B',
+            text: 'He wants to stop buying plastic bottles every day.',
+          },
+          {
+            label: 'C',
+            text: 'He wants to move the water station.',
+          },
+          {
+            label: 'D',
+            text: 'He wants to eat lunch earlier.',
+          },
         ],
         correctAnswer: 'B',
-        explanation:
-          'Ben nói rằng cậu ấy muốn ngừng mua chai nhựa mỗi ngày.',
+        explanation: 'Ben nói rằng cậu ấy muốn ngừng mua chai nhựa mỗi ngày.',
         duration: 62,
       },
       {
@@ -842,10 +1528,22 @@ Format:
           'Teacher: Tomorrow we will listen to a short talk about clean energy. Please write down three key words while you listen. Student: Should we understand every word? Teacher: No, focus on the main ideas first, then details.',
         question: 'What does the teacher advise students to do first?',
         options: [
-          { label: 'A', text: 'Focus on the main ideas.' },
-          { label: 'B', text: 'Translate every word.' },
-          { label: 'C', text: 'Draw a picture.' },
-          { label: 'D', text: 'Read the transcript first.' },
+          {
+            label: 'A',
+            text: 'Focus on the main ideas.',
+          },
+          {
+            label: 'B',
+            text: 'Translate every word.',
+          },
+          {
+            label: 'C',
+            text: 'Draw a picture.',
+          },
+          {
+            label: 'D',
+            text: 'Read the transcript first.',
+          },
         ],
         correctAnswer: 'A',
         explanation:
@@ -860,10 +1558,6 @@ Format:
         index < base.length
           ? base[index].question
           : `${base[index % base.length].question} (${index + 1})`,
-    })).map((item) => ({
-      ...item,
-      topic,
-      level,
     }));
   }
 }

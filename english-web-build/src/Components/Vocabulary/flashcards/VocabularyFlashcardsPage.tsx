@@ -33,9 +33,19 @@ type FlashcardSession = {
 const emojiMap: Record<string, string> = {
   banana: "1f34c",
   apple: "1f34e",
+  bread: "1f35e",
+  coffee: "2615",
+  conservation: "1f331",
+  conserve: "1f331",
+  "eco-friendly": "1f331",
   environment: "1f30d",
   earth: "1f30d",
+  ecosystem: "1f333",
+  emission: "1f32b-fe0f",
   recycle: "267b-fe0f",
+  recyclable: "267b-fe0f",
+  renewable: "267b-fe0f",
+  reusable: "267b-fe0f",
   tree: "1f333",
   forest: "1f332",
   water: "1f4a7",
@@ -45,18 +55,49 @@ const emojiMap: Record<string, string> = {
   book: "1f4d6",
 };
 
+const escapeSvg = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+const buildWordSvg = (word: string) => {
+  const clean = word.toLowerCase().trim();
+  const isNature = /(environment|eco|green|recycle|tree|forest|nature|conservation|sustain)/.test(clean);
+  const isFood = /(banana|apple|orange|bread|rice|coffee|food|fruit)/.test(clean);
+  const isTech = /(computer|phone|technology|internet|screen)/.test(clean);
+  const bg = isFood ? "#f7e79a" : isNature ? "#dcfce7" : isTech ? "#dbeafe" : "#efe9ff";
+  const fg = isFood ? "#f59e0b" : isNature ? "#16a34a" : isTech ? "#2563eb" : "#6d35ff";
+  const initial = escapeSvg((word || "V").slice(0, 1).toUpperCase());
+  const label = escapeSvg(word || "Vocabulary");
+  const icon = isNature
+    ? `<path d="M112 148c28-76 94-120 176-111 3 85-45 144-129 156 17-28 44-56 83-81-50 16-87 45-130 36Z" fill="${fg}"/><path d="M116 162c46-39 86-64 136-82" stroke="#065f46" stroke-width="10" stroke-linecap="round"/>`
+    : isFood
+      ? `<path d="M116 136c32-31 80-32 111-7-26 46-83 63-122 32 2-9 5-18 11-25Z" fill="${fg}"/><path d="M159 93c-4-18 5-35 23-49 12 23 9 45-7 64" fill="#7c3f12"/><path d="M181 112c43-17 83 2 100 29-42 25-93 18-117-13" fill="#facc15"/>`
+      : isTech
+        ? `<rect x="84" y="84" width="232" height="150" rx="24" fill="${fg}"/><rect x="110" y="112" width="180" height="86" rx="13" fill="#eff6ff"/><path d="M164 262h72M200 234v28" stroke="${fg}" stroke-width="14" stroke-linecap="round"/>`
+        : `<circle cx="200" cy="142" r="78" fill="${fg}"/><text x="200" y="172" text-anchor="middle" font-family="Arial, sans-serif" font-size="84" font-weight="900" fill="#fff">${initial}</text>`;
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+    <rect width="400" height="300" rx="30" fill="${bg}"/>
+    <circle cx="72" cy="58" r="42" fill="#fff" opacity=".35"/>
+    <circle cx="330" cy="238" r="62" fill="#fff" opacity=".28"/>
+    ${icon}
+    <rect x="64" y="238" width="272" height="38" rx="19" fill="#fff" opacity=".84"/>
+    <text x="200" y="263" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#111827">${label}</text>
+  </svg>`;
+
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+};
+
 const imageForWord = (word: string) => {
   const clean = word.toLowerCase().trim();
   const code = emojiMap[clean];
   if (code) {
     return `https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/${code}.svg`;
   }
-  const lock = clean
-    .split("")
-    .reduce((sum, char) => sum + char.charCodeAt(0), 0);
-  return `https://loremflickr.com/640/480/${encodeURIComponent(
-    `${clean},object,illustration`,
-  )}?lock=${lock}`;
+  return buildWordSvg(word);
 };
 
 export default function VocabularyFlashcardsPage() {

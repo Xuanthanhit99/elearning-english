@@ -1,5 +1,5 @@
-import ReadingPage from "@/src/Components/ReadingPractice/ReadingHomePage";
+import ReadingHomePage from "@/src/Components/reading/ReadingHomePage";
 
 export default function ReadingHome() {
-  return <ReadingPage />;
+  return <ReadingHomePage />;
 }

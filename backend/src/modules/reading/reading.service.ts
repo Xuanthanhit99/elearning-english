@@ -1,7 +1,12 @@
 // src/modules/reading/reading.service.ts
 
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { ReadingDifficulty, ReadingLevel } from '@prisma/client';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  LearningSkill,
+  MissionV2Action,
+  ReadingDifficulty,
+  ReadingLevel,
+} from '@prisma/client';
 import { ReadingHomeResponse } from './dto/reading-home.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
@@ -10,10 +15,16 @@ import {
 } from 'src/common/helpers/reading.hepler';
 import { GetReadingArticlesQueryDto } from './dto/get-reading-articles.dto';
 import { GetReadingHistoryQueryDto } from './dto/get-reading-history.dto';
+import { MissionV2ProgressService } from '../missions-v2/services/mission-v2-progress.service';
 
 @Injectable()
 export class ReadingService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(ReadingService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly missionV2ProgressService: MissionV2ProgressService,
+  ) {}
 
   async getReadingHome(userId: string): Promise<ReadingHomeResponse> {
     const progress = await this.getOrCreateProgress(userId);
@@ -817,18 +828,44 @@ export class ReadingService {
   }
 
   async answerReadingQuestion(
+    userId: string,
     sessionId: string,
     body: {
       questionId: string;
       selected: string;
     },
   ) {
-    const question = await this.prisma.readingQuestion.findUnique({
-      where: { id: body.questionId },
+    const session = await this.prisma.readingSession.findFirst({
+      where: {
+        id: sessionId,
+        userId,
+      },
+      select: {
+        id: true,
+        articleId: true,
+        isCompleted: true,
+      },
+    });
+
+    if (!session) {
+      throw new NotFoundException('Không tìm thấy phiên làm bài');
+    }
+
+    if (session.isCompleted) {
+      throw new NotFoundException('Phiên làm bài đã hoàn thành');
+    }
+
+    const question = await this.prisma.readingQuestion.findFirst({
+      where: {
+        id: body.questionId,
+        articleId: session.articleId,
+      },
     });
 
     if (!question) {
-      throw new NotFoundException('Không tìm thấy câu hỏi');
+      throw new NotFoundException(
+        'Không tìm thấy câu hỏi trong bài đọc này',
+      );
     }
 
     const isCorrect = question.correctAnswer === body.selected;
@@ -860,9 +897,12 @@ export class ReadingService {
     };
   }
 
-  async submitReadingSession(sessionId: string) {
-    const session = await this.prisma.readingSession.findUnique({
-      where: { id: sessionId },
+  async submitReadingSession(userId: string, sessionId: string) {
+    const session = await this.prisma.readingSession.findFirst({
+      where: {
+        id: sessionId,
+        userId,
+      },
       include: {
         article: {
           include: {
@@ -877,8 +917,28 @@ export class ReadingService {
       throw new NotFoundException('Không tìm thấy phiên làm bài');
     }
 
+    /*
+     * Idempotent: frontend gọi lại submit sẽ nhận lại kết quả cũ,
+     * không cộng XP, streak hoặc Mission lần thứ hai.
+     */
+    if (session.isCompleted) {
+      return this.buildSubmitResponse({
+        sessionId: session.id,
+        score: session.score,
+        accuracy: session.accuracy,
+        correctCount: session.answers.filter((answer) => answer.isCorrect)
+          .length,
+        totalQuestions: session.article.questions.length,
+        earnedXp: session.earnedXp,
+        resultUrl: `/reading/sessions/${session.id}/result`,
+        alreadyCompleted: true,
+        missionUpdated: false,
+      });
+    }
+
     const totalQuestions = session.article.questions.length;
-    const correctCount = session.answers.filter((a) => a.isCorrect).length;
+    const correctCount = session.answers.filter((answer) => answer.isCorrect)
+      .length;
 
     const accuracy =
       totalQuestions > 0
@@ -886,29 +946,337 @@ export class ReadingService {
         : 0;
 
     const score = accuracy;
-    const earnedXp = Math.round((session.article.xpReward * accuracy) / 100);
+    const earnedXp = Math.round(
+      (session.article.xpReward * accuracy) / 100,
+    );
 
-    const completed = await this.prisma.readingSession.update({
-      where: { id: sessionId },
-      data: {
-        isCompleted: true,
-        completedAt: new Date(),
-        score,
-        accuracy,
-        earnedXp,
-      },
+    const now = new Date();
+    const calculatedSpentTime = Math.max(
+      session.spentTime ?? 0,
+      Math.floor((now.getTime() - session.startedAt.getTime()) / 1000),
+    );
+
+    const transactionResult = await this.prisma.$transaction(async (tx) => {
+      /*
+       * Chỉ một request được phép chuyển false -> true.
+       * Hai request submit đồng thời sẽ không cộng tiến độ hai lần.
+       */
+      const completion = await tx.readingSession.updateMany({
+        where: {
+          id: session.id,
+          userId,
+          isCompleted: false,
+        },
+        data: {
+          isCompleted: true,
+          completedAt: now,
+          spentTime: calculatedSpentTime,
+          score,
+          accuracy,
+          earnedXp,
+        },
+      });
+
+      if (completion.count !== 1) {
+        return {
+          completedByThisRequest: false,
+        };
+      }
+
+      const currentProgress =
+        await tx.userReadingProgress.findFirst({
+          where: {
+            userId,
+          },
+        });
+
+      const previousCompleted =
+        currentProgress?.completedArticles ?? 0;
+
+      const nextCompleted = previousCompleted + 1;
+
+      const previousAverage =
+        currentProgress?.averageAccuracy ?? 0;
+
+      const nextAverage = Math.round(
+        (previousAverage * previousCompleted + accuracy) /
+          Math.max(nextCompleted, 1),
+      );
+
+      const streak = this.calculateReadingStreak(
+        currentProgress?.lastStudyDate ?? null,
+        currentProgress?.currentStreak ?? 0,
+        currentProgress?.longestStreak ?? 0,
+        now,
+      );
+
+      const nextTotalXp =
+        (currentProgress?.totalXp ?? 0) + earnedXp;
+
+      const nextLevel =
+        this.resolveReadingLevel(nextTotalXp);
+
+      await tx.userReadingProgress.upsert({
+        where: {
+          id: currentProgress?.id ?? '__create_new_progress__',
+        },
+        update: {
+          currentLevel: nextLevel,
+          totalXp: {
+            increment: earnedXp,
+          },
+          completedArticles: {
+            increment: 1,
+          },
+          totalReadingTime: {
+            increment: calculatedSpentTime,
+          },
+          averageAccuracy: nextAverage,
+          currentStreak: streak.currentStreak,
+          longestStreak: streak.longestStreak,
+          lastStudyDate: now,
+        },
+        create: {
+          userId,
+          currentLevel: nextLevel,
+          totalXp: earnedXp,
+          completedArticles: 1,
+          totalReadingTime: calculatedSpentTime,
+          averageAccuracy: accuracy,
+          currentStreak: 1,
+          longestStreak: 1,
+          lastStudyDate: now,
+        },
+      });
+
+      return {
+        completedByThisRequest: true,
+      };
     });
 
-    return {
-      sessionId: completed.id,
+    /*
+     * Request thua race: đọc kết quả đã được request khác lưu,
+     * không phát Mission lại.
+     */
+    if (!transactionResult.completedByThisRequest) {
+      const completed =
+        await this.prisma.readingSession.findFirst({
+          where: {
+            id: session.id,
+            userId,
+          },
+          include: {
+            article: {
+              include: {
+                questions: true,
+              },
+            },
+            answers: true,
+          },
+        });
+
+      if (!completed) {
+        throw new NotFoundException('Không tìm thấy phiên làm bài');
+      }
+
+      return this.buildSubmitResponse({
+        sessionId: completed.id,
+        score: completed.score,
+        accuracy: completed.accuracy,
+        correctCount: completed.answers.filter(
+          (answer) => answer.isCorrect,
+        ).length,
+        totalQuestions: completed.article.questions.length,
+        earnedXp: completed.earnedXp,
+        resultUrl: `/reading/sessions/${completed.id}/result`,
+        alreadyCompleted: true,
+        missionUpdated: false,
+      });
+    }
+
+    const missionUpdated =
+      await this.updateReadingMissionProgress({
+        userId,
+        articleId: session.articleId,
+        passed: score >= 50,
+        spentTimeSeconds: calculatedSpentTime,
+      });
+
+    return this.buildSubmitResponse({
+      sessionId: session.id,
       score,
       accuracy,
       correctCount,
       totalQuestions,
       earnedXp,
+      resultUrl: `/reading/sessions/${session.id}/result`,
+      alreadyCompleted: false,
+      missionUpdated,
+    });
+  }
+
+  private buildSubmitResponse(input: {
+    sessionId: string;
+    score: number;
+    accuracy: number;
+    correctCount: number;
+    totalQuestions: number;
+    earnedXp: number;
+    resultUrl: string;
+    alreadyCompleted: boolean;
+    missionUpdated: boolean;
+  }) {
+    return {
+      sessionId: input.sessionId,
+      score: input.score,
+      accuracy: input.accuracy,
+      correctCount: input.correctCount,
+      totalQuestions: input.totalQuestions,
+      earnedXp: input.earnedXp,
       isCompleted: true,
-      resultUrl: `/reading/sessions/${completed.id}/result`,
+      alreadyCompleted: input.alreadyCompleted,
+      missionUpdated: input.missionUpdated,
+      resultUrl: input.resultUrl,
     };
+  }
+
+  private async updateReadingMissionProgress(input: {
+    userId: string;
+    articleId: string;
+    passed: boolean;
+    spentTimeSeconds: number;
+  }) {
+    try {
+      /*
+       * Một bài đọc hoàn thành.
+       */
+      await this.missionV2ProgressService.increase({
+        userId: input.userId,
+        action: MissionV2Action.READ_ARTICLE,
+        amount: 1,
+        skill: LearningSkill.READING,
+        articleId: input.articleId,
+        lessonId: input.articleId,
+      });
+
+      /*
+       * Mission bài học chung trong Learning Path.
+       */
+      await this.missionV2ProgressService.increase({
+        userId: input.userId,
+        action: MissionV2Action.COMPLETE_LESSON,
+        amount: 1,
+        skill: LearningSkill.READING,
+        articleId: input.articleId,
+        lessonId: input.articleId,
+      });
+
+      /*
+       * Mission kỹ năng AI ưu tiên.
+       */
+      await this.missionV2ProgressService.increase({
+        userId: input.userId,
+        action: MissionV2Action.STUDY_LESSON,
+        amount: 1,
+        skill: LearningSkill.READING,
+        articleId: input.articleId,
+        lessonId: input.articleId,
+      });
+
+      /*
+       * Chỉ tính quiz khi đạt mức pass.
+       */
+      if (input.passed) {
+        await this.missionV2ProgressService.increase({
+          userId: input.userId,
+          action: MissionV2Action.COMPLETE_QUIZ,
+          amount: 1,
+          skill: LearningSkill.READING,
+          quizId: input.articleId,
+          articleId: input.articleId,
+          lessonId: input.articleId,
+        });
+      }
+
+      /*
+       * STUDY_MINUTES dùng phút nguyên, tối thiểu 1 phút.
+       */
+      const studiedMinutes = Math.max(
+        1,
+        Math.ceil(input.spentTimeSeconds / 60),
+      );
+
+      await this.missionV2ProgressService.increase({
+        userId: input.userId,
+        action: MissionV2Action.STUDY_MINUTES,
+        amount: studiedMinutes,
+        studyMinutes: studiedMinutes,
+        skill: LearningSkill.READING,
+        articleId: input.articleId,
+      });
+
+      return true;
+    } catch (error) {
+      /*
+       * Không rollback kết quả học nếu Mission tạm thời lỗi.
+       */
+      this.logger.error(
+        `Update Reading mission failed for article ${input.articleId}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+
+      return false;
+    }
+  }
+
+  private calculateReadingStreak(
+    lastStudyDate: Date | null,
+    currentStreak: number,
+    longestStreak: number,
+    now: Date,
+  ) {
+    if (!lastStudyDate) {
+      return {
+        currentStreak: 1,
+        longestStreak: Math.max(longestStreak, 1),
+      };
+    }
+
+    const last = this.startOfLocalDay(lastStudyDate);
+    const today = this.startOfLocalDay(now);
+    const differenceDays = Math.floor(
+      (today.getTime() - last.getTime()) /
+        (24 * 60 * 60 * 1000),
+    );
+
+    const nextCurrent =
+      differenceDays <= 0
+        ? Math.max(currentStreak, 1)
+        : differenceDays === 1
+          ? Math.max(currentStreak, 0) + 1
+          : 1;
+
+    return {
+      currentStreak: nextCurrent,
+      longestStreak: Math.max(longestStreak, nextCurrent),
+    };
+  }
+
+  private startOfLocalDay(date: Date) {
+    return new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+    );
+  }
+
+  private resolveReadingLevel(totalXp: number): ReadingLevel {
+    if (totalXp >= 2000) return ReadingLevel.C2;
+    if (totalXp >= 1500) return ReadingLevel.C1;
+    if (totalXp >= 1000) return ReadingLevel.B2;
+    if (totalXp >= 600) return ReadingLevel.B1;
+    if (totalXp >= 400) return ReadingLevel.A2;
+    return ReadingLevel.A1;
   }
 
   private async getVocabularyByArticle(articleId: string) {
