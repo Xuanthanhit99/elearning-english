@@ -9,6 +9,7 @@ import {
 } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PlacementMode } from './dto/placement.types';
+import { PlacementTestService } from './placement-test/placement-test.service';
 
 const ALL_SKILLS: LearningSkill[] = [
   LearningSkill.VOCABULARY,
@@ -72,7 +73,10 @@ const INTRO_STEPS = [
 
 @Injectable()
 export class PlacementService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private placementTestsService: PlacementTestService,
+  ) {}
 
   /**
    * Lấy dữ liệu màn hình Placement theo người dùng đăng nhập.
@@ -337,12 +341,13 @@ export class PlacementService {
         id: true,
         fullname: true,
         avatar: true,
-        placementTest: {
+        placementTests: {
           where: {
             status: PlacementTestStatus.IN_PROGRESS,
           },
           orderBy: {
             startedAt: 'desc',
+            createdAt: 'desc',
           },
           take: 1,
           select: {
@@ -375,7 +380,7 @@ export class PlacementService {
       throw new NotFoundException('Không tìm thấy người dùng.');
     }
 
-    const activeTest = user.placementTest[0] ?? null;
+    const activeTest = user.placementTests[0] ?? null;
     const completedSkills = new Set(
       activeTest?.questions
         .filter((item) => item.answeredAt || item.userAnswer)
@@ -472,61 +477,127 @@ export class PlacementService {
     };
   }
 
-  async startOrResumeTest(userId: string, mode : PlacementMode = PlacementMode.ADAPTIVE) {
+  // async startOrResumeTest(
+  //   userId: string,
+  //   mode: PlacementMode = PlacementMode.ADAPTIVE,
+  // ) {
+  //   const userExists = await this.prisma.user.count({
+  //     where: { id: userId },
+  //   });
+
+  //   if (!userExists) {
+  //     throw new NotFoundException('Không tìm thấy người dùng.');
+  //   }
+
+  //   const activeTest = await this.prisma.placementTest.findFirst({
+  //     where: {
+  //       userId,
+  //       status: PlacementTestStatus.IN_PROGRESS,
+  //     },
+  //     orderBy: {
+  //       startedAt: 'desc',
+  //     },
+  //     select: {
+  //       id: true,
+  //       mode: true,
+  //       status: true,
+  //     },
+  //   });
+
+  //   if (activeTest) {
+  //     return {
+  //       sessionId: activeTest.id,
+  //       resumed: true,
+  //       status: activeTest.status,
+  //       mode: activeTest.mode,
+  //       nextUrl: `/placement/test/${activeTest.id}`,
+  //     };
+  //   }
+
+  //   const test = await this.prisma.placementTest.create({
+  //     data: {
+  //       userId,
+  //       mode,
+  //       status: PlacementTestStatus.IN_PROGRESS,
+  //       score: 0,
+  //       total: 0,
+  //       correct: 0,
+  //     },
+  //     select: {
+  //       id: true,
+  //       mode: true,
+  //       status: true,
+  //     },
+  //   });
+
+  //   return {
+  //     sessionId: test.id,
+  //     resumed: false,
+  //     status: test.status,
+  //     mode: test.mode,
+  //     nextUrl: `/placement/test/${test.id}`,
+  //   };
+  // }
+
+  async startNewRetake(userId: string, mode: ModeType = ModeType.ADAPTIVE) {
     const userExists = await this.prisma.user.count({
-      where: { id: userId },
+      where: {
+        id: userId,
+      },
     });
 
     if (!userExists) {
       throw new NotFoundException('Không tìm thấy người dùng.');
     }
 
-    const activeTest = await this.prisma.placementTest.findFirst({
+    await this.prisma.placementTest.updateMany({
       where: {
         userId,
         status: PlacementTestStatus.IN_PROGRESS,
       },
-      orderBy: {
-        startedAt: 'desc',
-      },
-      select: {
-        id: true,
-        mode: true,
-        status: true,
+      data: {
+        status: PlacementTestStatus.ABANDONED,
       },
     });
-
-    if (activeTest) {
-      return {
-        sessionId: activeTest.id,
-        resumed: true,
-        status: activeTest.status,
-        mode: activeTest.mode,
-        nextUrl: `/placement/test/${activeTest.id}`,
-      };
-    }
 
     const test = await this.prisma.placementTest.create({
       data: {
         userId,
         mode,
         status: PlacementTestStatus.IN_PROGRESS,
-        score: 0,
-        total: 0,
-        correct: 0,
+        startedAt: new Date(),
       },
       select: {
         id: true,
-        mode: true,
-        status: true,
+      },
+    });
+
+    try {
+      await this.placementTestsService.prepareTestQuestions(test.id);
+    } catch (error) {
+      await this.prisma.placementTest.update({
+        where: {
+          id: test.id,
+        },
+        data: {
+          status: PlacementTestStatus.ABANDONED,
+        },
+      });
+
+      throw error;
+    }
+
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        currentPlacementTestId: test.id,
       },
     });
 
     return {
-      sessionId: test.id,
-      resumed: false,
-      status: test.status,
-      mode: test.mode,
+      testId: test.id,
       nextUrl: `/placement/test/${test.id}`,
     };
   }
@@ -541,9 +612,6 @@ export class PlacementService {
       LearningSkill.WRITING,
     ];
 
-    return (
-      skills.find((skill) => !completedSkills.has(skill)) ??
-      'RESULT'
-    );
+    return skills.find((skill) => !completedSkills.has(skill)) ?? 'RESULT';
   }
 }

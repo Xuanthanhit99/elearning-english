@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 // import { AppController } from './app.controller';
 // import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { CoursesModule } from './modules/courses/courses.module';
@@ -44,6 +44,17 @@ import { ListeningJobService } from './modules/listening-job/listening-job.servi
 import { GrammarModule } from './modules/grammar/grammar.module';
 import { ReadingModule } from './modules/reading/reading.module';
 import { PlacementModule } from './modules/placement/placement.module';
+import { SpeakingPracticeModule } from './modules/speaking-practice/speaking-practice.module';
+import { QuestionBankService } from './modules/question-bank/question-bank.service';
+import { QuestionGenerationLockService } from './modules/question-bank/question-generation-lock/question-generation-lock.service';
+import { QuestionBankModule } from './modules/question-bank/question-bank.module';
+import { PlacementProcessingModule } from './modules/placement-processing/placement-processing.module';
+import { BullModule } from '@nestjs/bullmq';
+import { PlacementResultModule } from './modules/placement-result/placement-result.module';
+import { PlacementDashboardModule } from './modules/placement-dashboard/placement-dashboard.module';
+import { LearningPathService } from './modules/learning-path/learning-path.service';
+import { LearningPathModule } from './modules/learning-path/learning-path.module';
+import { LearningPathAccessModule } from './modules/learning-path-access/learning-path-access.module';
 
 @Module({
   imports: [
@@ -51,6 +62,16 @@ import { PlacementModule } from './modules/placement/placement.module';
       isGlobal: true,
     }),
     ScheduleModule.forRoot(),
+    BullModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        connection: {
+          host: configService.get<string>('REDIS_HOST', '127.0.0.1'),
+          port: configService.get<number>('REDIS_PORT', 6379),
+          password: configService.get<string>('REDIS_PASSWORD') || undefined,
+        },
+      }),
+    }),
     PrismaModule,
     AuthModule,
     UsersModule,
@@ -89,8 +110,21 @@ import { PlacementModule } from './modules/placement/placement.module';
     GrammarModule,
     ReadingModule,
     PlacementModule,
+    SpeakingPracticeModule,
+    QuestionBankModule,
+    PlacementProcessingModule,
+    PlacementResultModule,
+    PlacementDashboardModule,
+    LearningPathModule,
+    LearningPathAccessModule,
   ],
-  providers: [GeminiService, ListeningJobService],
+  providers: [
+    GeminiService,
+    ListeningJobService,
+    QuestionBankService,
+    QuestionGenerationLockService,
+    LearningPathService,
+  ],
   controllers: [GeminiController],
   // controllers: [AppController],
   // providers: [AppService],

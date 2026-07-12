@@ -40,12 +40,6 @@ export type PlacementHomeData = {
   };
 };
 
-type ApiResponse<T> = {
-  success: boolean;
-  message?: string;
-  data: T;
-};
-
 export async function getPlacementHome(): Promise<PlacementHomeData> {
   const response = await api.get<ApiResponse<PlacementHomeData>>(
     '/placement/home',
@@ -178,12 +172,9 @@ export type PlacementTestScreenData = {
     answeredTotal: number;
     totalQuestions: number;
     progressPercent: number;
+    isCompleted: boolean;
   };
-  user: {
-    id: string;
-    name: string;
-    avatar: string | null;
-  };
+
   currentQuestion: {
     id: string;
     testQuestionId: string;
@@ -207,27 +198,12 @@ export type PlacementTestScreenData = {
     isFlagged: boolean;
     isSkipped: boolean;
     adaptiveMessage: string;
-  };
-  sections: Array<{
-    skill: LearningSkill;
-    total: number;
-    answered: number;
-    status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
-  }>;
-  questionNavigator: Array<{
-    id: string;
-    order: number;
-    skill: LearningSkill;
-    answered: boolean;
-    skipped: boolean;
-    flagged: boolean;
-    active: boolean;
-  }>;
-  autosave: {
-    savedAt: string;
-  };
-};
+  } | null;
 
+  nextUrl?: string;
+
+  // các field còn lại...
+};
 type ApiResponse<T> = {
   success: boolean;
   message?: string;
@@ -251,7 +227,7 @@ export async function answerPlacementQuestion(
   },
 ) {
   const response = await api.post<ApiResponse<PlacementTestScreenData>>(
-    `/placement/tests/${sessionId}/answer`,
+    `/placement-test/${sessionId}/answer`,
     payload,
   );
 
@@ -271,7 +247,7 @@ export async function flagPlacementQuestion(
       isFlagged: boolean;
       savedAt: string;
     }>
-  >(`/placement/tests/${sessionId}/flag`, payload);
+  >(`/placement-test/${sessionId}/flag`, payload);
 
   return response.data.data;
 }
@@ -284,7 +260,7 @@ export async function skipPlacementQuestion(
   },
 ) {
   const response = await api.post<ApiResponse<PlacementTestScreenData>>(
-    `/placement/tests/${sessionId}/skip`,
+    `/placement-test/${sessionId}/skip`,
     payload,
   );
 

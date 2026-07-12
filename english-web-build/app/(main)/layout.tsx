@@ -21,6 +21,7 @@ export default function MainLayout({
   const pathname = usePathname();
   const usesCustomDashboardShell =
     pathname === "/" ||
+    pathname.startsWith("/arena") ||
     pathname.startsWith("/courses") ||
     pathname.startsWith("/flashcards") ||
     pathname.startsWith("/grammar") ||

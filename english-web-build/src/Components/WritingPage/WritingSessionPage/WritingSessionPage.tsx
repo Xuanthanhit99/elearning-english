@@ -185,6 +185,8 @@ export default function WritingSessionPage() {
     );
   }
 
+  if (!data) return <div className="p-10">KhÃ´ng cÃ³ dá»¯ liá»‡u phiÃªn viáº¿t.</div>;
+
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
       <div className="flex">

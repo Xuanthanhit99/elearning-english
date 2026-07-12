@@ -158,8 +158,8 @@ export default function ReadingPage() {
         "/reading/home",
       );
 
-      const payload =
-        "data" in res.data && res.data.data ? res.data.data : res.data;
+      const raw = res.data as ReadingHomeResponse | { data: ReadingHomeResponse };
+      const payload: ReadingHomeResponse = "data" in raw ? raw.data : raw;
 
       setData(payload);
     } catch (err) {

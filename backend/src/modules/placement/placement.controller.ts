@@ -14,6 +14,8 @@ import { PlacementService } from './placement.service';
 import { SelectManualLevelDto } from './dto/select-manual-level.dto';
 import { Request } from 'express';
 import { StartPlacementTestDto } from './dto/start-placement-test.dto';
+import { PlacementRetakeService } from '../placement-dashboard/placement-retake.service';
+import { RetakePlacementDto } from '../placement-dashboard/dto/retake-placement.dto';
 
 type AuthenticatedUser = {
   id: string;
@@ -28,7 +30,7 @@ type AuthenticatedRequest = Request & {
 @Controller('placement')
 @UseGuards(JwtAuthGuard)
 export class PlacementController {
-  constructor(private placementService: PlacementService) {}
+  constructor(private placementService: PlacementService,private retakeService: PlacementRetakeService) {}
 
   @Get('home')
   async getHome(@Req() req: AuthenticatedRequest) {
@@ -40,6 +42,22 @@ export class PlacementController {
     };
   }
 
+
+  @Post('retake')
+  async retake(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: RetakePlacementDto,
+  ) {
+    return {
+      success: true,
+      message:
+        'Đã chuẩn bị bài kiểm tra mới.',
+      data: await this.retakeService.retake(
+        this.getUserId(req),
+        dto.force ?? false,
+      ),
+    };
+  }
   @Post('manual')
   @HttpCode(HttpStatus.OK)
   async selectManualLevel(
@@ -88,7 +106,20 @@ export class PlacementController {
     return {
       success: true,
       message: 'Bài kiểm tra đã sẵn sàng.',
-      data: await this.placementService.startOrResumeTest(userId, dto.mode),
+      data: await this.placementService.startNewRetake(userId, dto.mode),
+    };
+  }
+
+  @Get('retake/status')
+  async getRetakeStatus(
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return {
+      success: true,
+      data:
+        await this.retakeService.getRetakeStatus(
+          this.getUserId(req),
+        ),
     };
   }
 }

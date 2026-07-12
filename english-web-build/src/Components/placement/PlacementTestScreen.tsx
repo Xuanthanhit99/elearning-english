@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   ArrowLeft,
@@ -15,15 +15,13 @@ import {
   Loader2,
   Mic2,
   PencilLine,
-  RefreshCw,
-  ShieldCheck,
   SkipForward,
   Sparkles,
   Trophy,
   Type,
-} from 'lucide-react';
-import Image from 'next/image';
-import { useEffect, useMemo, useRef, useState } from 'react';
+} from "lucide-react";
+import Image from "next/image";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   answerPlacementQuestion,
   flagPlacementQuestion,
@@ -31,41 +29,45 @@ import {
   LearningSkill,
   PlacementTestScreenData,
   skipPlacementQuestion,
-} from '@/src/lib/placement-api';
+} from "@/src/lib/placement-api";
+import PlacementWritingQuestion from "../placement-test/PlacementWritingQuestion";
+import PlacementSpeakingQuestion from "../placement-test/PlacementSpeakingQuestion";
+import PlacementListeningQuestion from "../placement-test/PlacementListeningQuestion";
+import { useRouter } from "next/navigation";
 
 const skillMeta: Record<
   LearningSkill,
   { label: string; icon: React.ReactNode; className: string }
 > = {
   VOCABULARY: {
-    label: 'Vocabulary',
+    label: "Vocabulary",
     icon: <Type className="h-5 w-5" />,
-    className: 'bg-violet-100 text-violet-700',
+    className: "bg-violet-100 text-violet-700",
   },
   GRAMMAR: {
-    label: 'Grammar',
+    label: "Grammar",
     icon: <BookOpen className="h-5 w-5" />,
-    className: 'bg-emerald-100 text-emerald-700',
+    className: "bg-emerald-100 text-emerald-700",
   },
   LISTENING: {
-    label: 'Listening',
+    label: "Listening",
     icon: <Headphones className="h-5 w-5" />,
-    className: 'bg-orange-100 text-orange-700',
+    className: "bg-orange-100 text-orange-700",
   },
   READING: {
-    label: 'Reading',
+    label: "Reading",
     icon: <BookOpen className="h-5 w-5" />,
-    className: 'bg-pink-100 text-pink-700',
+    className: "bg-pink-100 text-pink-700",
   },
   SPEAKING: {
-    label: 'Speaking',
+    label: "Speaking",
     icon: <Mic2 className="h-5 w-5" />,
-    className: 'bg-blue-100 text-blue-700',
+    className: "bg-blue-100 text-blue-700",
   },
   WRITING: {
-    label: 'Writing',
+    label: "Writing",
     icon: <PencilLine className="h-5 w-5" />,
-    className: 'bg-cyan-100 text-cyan-700',
+    className: "bg-cyan-100 text-cyan-700",
   },
 };
 
@@ -79,29 +81,44 @@ export default function PlacementTestScreen({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [flagging, setFlagging] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const questionStartedAt = useRef(Date.now());
-
+  const [redirecting, setRedirecting] = useState(false);
+  const router = useRouter();
   async function loadTest() {
     try {
       setLoading(true);
-      setError('');
+      setError("");
+
       const result = await getPlacementTest(sessionId);
+
+      if (result.session.isCompleted || !result.currentQuestion) {
+        setRedirecting(true);
+        console.log("nextUrl", result.nextUrl);
+        const nextUrl =
+          result.nextUrl ?? `/placement/test/${sessionId}/processing`;
+
+        router.replace(nextUrl);
+        return;
+      }
+
       setData(result);
       setSelectedAnswer(result.currentQuestion.selectedAnswer);
 
       const startedAt = new Date(result.session.startedAt).getTime();
       const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+
       setRemainingSeconds(
         Math.max(result.session.durationSeconds - elapsed, 0),
       );
+
       questionStartedAt.current = Date.now();
     } catch (err) {
+      console.error("Load placement test error:", err);
+
       setError(
-        err instanceof Error
-          ? err.message
-          : 'Không thể tải phiên kiểm tra.',
+        err instanceof Error ? err.message : "Không thể tải phiên kiểm tra.",
       );
     } finally {
       setLoading(false);
@@ -126,33 +143,54 @@ export default function PlacementTestScreen({
     if (!data) return;
 
     function handleKeyDown(event: KeyboardEvent) {
-      const key = event.key.toUpperCase();
-      const option = data.currentQuestion.options.find(
-        (item) => item.key.toUpperCase() === key,
-      );
+      const target = event.target as HTMLElement;
 
-      if (option && !saving) {
-        setSelectedAnswer(option.text);
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
+        return;
       }
 
-      if (event.key === 'ArrowRight' && selectedAnswer && !saving) {
-        void handleNext();
+      const supportsOptions = [
+        "MULTIPLE_CHOICE",
+        "FILL_BLANK",
+        "LISTENING",
+        "READING",
+      ].includes(data.currentQuestion.type);
+
+      if (supportsOptions) {
+        const key = event.key.toUpperCase();
+        const option = (data.currentQuestion.options ?? []).find(
+          (item) => item.key.toUpperCase() === key,
+        );
+
+        if (option && !saving) {
+          setSelectedAnswer(option.text);
+        }
+
+        if (event.key === "ArrowRight" && selectedAnswer && !saving) {
+          void handleNext();
+        }
       }
 
-      if (event.key.toLowerCase() === 'f' && !flagging) {
+      if (event.key.toLowerCase() === "f" && !flagging) {
         void handleFlag();
       }
     }
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [data, selectedAnswer, saving, flagging]);
 
   const currentSection = useMemo(() => {
-    if (!data) return null;
+    if (!data?.currentQuestion) {
+      return null;
+    }
 
     return data.sections.find(
-      (section) => section.skill === data.currentQuestion.skill,
+      (section) => section.skill === data.currentQuestion?.skill,
     );
   }, [data]);
 
@@ -161,7 +199,7 @@ export default function PlacementTestScreen({
 
     try {
       setSaving(true);
-      setError('');
+      setError("");
 
       const result = await answerPlacementQuestion(sessionId, {
         questionId: data.currentQuestion.id,
@@ -174,7 +212,7 @@ export default function PlacementTestScreen({
       questionStartedAt.current = Date.now();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Không thể lưu câu trả lời.',
+        err instanceof Error ? err.message : "Không thể lưu câu trả lời.",
       );
     } finally {
       setSaving(false);
@@ -186,7 +224,7 @@ export default function PlacementTestScreen({
 
     try {
       setSaving(true);
-      setError('');
+      setError("");
 
       const result = await skipPlacementQuestion(sessionId, {
         questionId: data.currentQuestion.id,
@@ -198,7 +236,7 @@ export default function PlacementTestScreen({
       questionStartedAt.current = Date.now();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Không thể bỏ qua câu hỏi.',
+        err instanceof Error ? err.message : "Không thể bỏ qua câu hỏi.",
       );
     } finally {
       setSaving(false);
@@ -210,7 +248,7 @@ export default function PlacementTestScreen({
 
     try {
       setFlagging(true);
-      setError('');
+      setError("");
 
       const newValue = !data.currentQuestion.isFlagged;
       await flagPlacementQuestion(sessionId, {
@@ -239,7 +277,7 @@ export default function PlacementTestScreen({
       );
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Không thể đánh dấu câu hỏi.',
+        err instanceof Error ? err.message : "Không thể đánh dấu câu hỏi.",
       );
     } finally {
       setFlagging(false);
@@ -250,6 +288,20 @@ export default function PlacementTestScreen({
     return Math.max(
       Math.floor((Date.now() - questionStartedAt.current) / 1000),
       0,
+    );
+  }
+
+  if (redirecting) {
+    return (
+      <main className="flex min-h-[70vh] items-center justify-center p-6">
+        <div className="text-center">
+          <Loader2 className="mx-auto h-9 w-9 animate-spin text-violet-600" />
+
+          <p className="mt-4 font-black text-slate-900">
+            Đang chuyển sang màn phân tích kết quả...
+          </p>
+        </div>
+      </main>
     );
   }
 
@@ -277,13 +329,34 @@ export default function PlacementTestScreen({
     );
   }
 
+  if (!data.currentQuestion) {
+    return (
+      <main className="flex min-h-[70vh] items-center justify-center p-6">
+        <div className="rounded-3xl bg-white p-8 text-center shadow-sm">
+          <Loader2 className="mx-auto h-8 w-8 animate-spin text-violet-600" />
+
+          <p className="mt-4 text-lg font-black text-slate-900">
+            Đang hoàn tất bài kiểm tra
+          </p>
+
+          <p className="mt-2 text-sm text-slate-500">
+            Hệ thống đang chuyển sang màn phân tích kết quả.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
   const meta = skillMeta[data.currentQuestion.skill];
   const sectionProgress =
     currentSection && currentSection.total > 0
-      ? Math.round(
-          (currentSection.answered / currentSection.total) * 100,
-        )
+      ? Math.round((currentSection.answered / currentSection.total) * 100)
       : 0;
+
+  const isSpeakingQuestion = data.currentQuestion.type === "SPEAKING";
+  const isWritingQuestion = data.currentQuestion.type === "WRITING";
+  const isListeningQuestion = data.currentQuestion.type === "LISTENING";
+  const isSpecialQuestion = isSpeakingQuestion || isWritingQuestion;
 
   return (
     <main className="min-h-screen bg-[linear-gradient(to_bottom,#faf9ff,#ffffff)] px-4 py-6 sm:px-6">
@@ -294,8 +367,13 @@ export default function PlacementTestScreen({
           </h2>
 
           <div className="mt-6 flex items-center gap-5 border-b border-slate-100 pb-6">
-            <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-[conic-gradient(#7c3aed_var(--progress),#ede9fe_0)] p-2"
-              style={{ '--progress': `${data.session.progressPercent * 3.6}deg` } as React.CSSProperties}
+            <div
+              className="relative flex h-24 w-24 items-center justify-center rounded-full bg-[conic-gradient(#7c3aed_var(--progress),#ede9fe_0)] p-2"
+              style={
+                {
+                  "--progress": `${data.session.progressPercent * 3.6}deg`,
+                } as React.CSSProperties
+              }
             >
               <div className="flex h-full w-full flex-col items-center justify-center rounded-full bg-white">
                 <span className="text-2xl font-black text-slate-950">
@@ -307,7 +385,7 @@ export default function PlacementTestScreen({
 
             <div>
               <p className="font-black text-slate-900">
-                Câu {data.currentQuestion.globalOrder} /{' '}
+                Câu {data.currentQuestion.globalOrder} /{" "}
                 {data.session.totalQuestions}
               </p>
               <p className="mt-2 flex items-center gap-2 text-sm text-slate-500">
@@ -322,14 +400,13 @@ export default function PlacementTestScreen({
           <div className="mt-3 space-y-2">
             {data.sections.map((section) => {
               const sectionMeta = skillMeta[section.skill];
-              const active =
-                section.skill === data.currentQuestion.skill;
+              const active = section.skill === data.currentQuestion.skill;
 
               return (
                 <div
                   key={section.skill}
                   className={`flex items-center justify-between rounded-2xl px-3 py-3 ${
-                    active ? 'bg-violet-50' : ''
+                    active ? "bg-violet-50" : ""
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -353,9 +430,9 @@ export default function PlacementTestScreen({
                   <span className="text-sm text-slate-500">
                     {section.total > 1
                       ? `${section.answered} / ${section.total}`
-                      : section.status === 'COMPLETED'
-                        ? 'Đã xong'
-                        : 'Chưa bắt đầu'}
+                      : section.status === "COMPLETED"
+                        ? "Đã xong"
+                        : "Chưa bắt đầu"}
                   </span>
                 </div>
               );
@@ -408,8 +485,7 @@ export default function PlacementTestScreen({
                 </div>
                 <div>
                   <p className="font-black uppercase text-violet-700">
-                    Phần {SKILL_INDEX[data.currentQuestion.skill]}:{' '}
-                    {meta.label}
+                    Phần {SKILL_INDEX[data.currentQuestion.skill]}: {meta.label}
                   </p>
                 </div>
               </div>
@@ -428,7 +504,7 @@ export default function PlacementTestScreen({
                 />
               </div>
               <span className="text-sm font-bold text-slate-700">
-                {data.currentQuestion.sectionOrder} /{' '}
+                {data.currentQuestion.sectionOrder} /{" "}
                 {data.currentQuestion.sectionTotal}
               </span>
             </div>
@@ -438,7 +514,7 @@ export default function PlacementTestScreen({
             <div className="flex items-center gap-3 text-sm text-violet-800">
               <Bot className="h-5 w-5 shrink-0" />
               <span>
-                <strong>AI gợi ý:</strong>{' '}
+                <strong>AI gợi ý:</strong>{" "}
                 {data.currentQuestion.adaptiveMessage}
               </span>
               <Sparkles className="ml-auto h-5 w-5 text-amber-400" />
@@ -456,66 +532,111 @@ export default function PlacementTestScreen({
               </span>
             </div>
 
-            {data.currentQuestion.passage ? (
-              <div className="mb-5 rounded-2xl bg-slate-50 p-5 leading-7 text-slate-700">
-                {data.currentQuestion.passage}
-              </div>
-            ) : null}
+            {isListeningQuestion ? (
+              data.currentQuestion.audioUrl ? (
+                <PlacementListeningQuestion
+                  key={data.currentQuestion.id}
+                  audioUrl={data.currentQuestion.audioUrl}
+                  prompt={data.currentQuestion.prompt}
+                  options={data.currentQuestion.options ?? []}
+                  selectedAnswer={selectedAnswer}
+                  disabled={saving}
+                  onSelectAnswer={setSelectedAnswer}
+                />
+              ) : (
+                <div className="rounded-2xl border border-red-100 bg-red-50 p-5 text-red-700">
+                  Câu Listening chưa có file audio. Vui lòng tạo audioUrl cho
+                  câu hỏi trước khi đưa vào phiên kiểm tra.
+                </div>
+              )
+            ) : isSpeakingQuestion ? (
+              <PlacementSpeakingQuestion
+                key={data.currentQuestion.id}
+                sessionId={sessionId}
+                questionId={data.currentQuestion.id}
+                prompt={data.currentQuestion.prompt}
+                level={data.currentQuestion.level}
+                onSubmitted={async () => {
+                  await loadTest();
+                }}
+              />
+            ) : isWritingQuestion ? (
+              <PlacementWritingQuestion
+                key={data.currentQuestion.id}
+                sessionId={sessionId}
+                questionId={data.currentQuestion.id}
+                prompt={data.currentQuestion.prompt}
+                level={data.currentQuestion.level}
+                minWords={80}
+                maxWords={120}
+                onSubmitted={async () => {
+                  await loadTest();
+                }}
+              />
+            ) : (
+              <>
+                {data.currentQuestion.passage ? (
+                  <div className="mb-5 rounded-2xl bg-slate-50 p-5 leading-7 text-slate-700">
+                    {data.currentQuestion.passage}
+                  </div>
+                ) : null}
 
-            <h1 className="max-w-3xl text-2xl font-black leading-tight text-slate-950 sm:text-3xl">
-              {data.currentQuestion.prompt}
-            </h1>
+                <h1 className="max-w-3xl text-2xl font-black leading-tight text-slate-950 sm:text-3xl">
+                  {data.currentQuestion.prompt}
+                </h1>
 
-            <div className="mt-7 space-y-3">
-              {data.currentQuestion.options.map((option) => {
-                const active = selectedAnswer === option.text;
+                <div className="mt-7 space-y-3">
+                  {(data.currentQuestion.options ?? []).map((option) => {
+                    const active = selectedAnswer === option.text;
 
-                return (
-                  <button
-                    type="button"
-                    key={option.key}
-                    disabled={saving}
-                    onClick={() => setSelectedAnswer(option.text)}
-                    className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition ${
-                      active
-                        ? 'border-violet-500 bg-violet-50 ring-1 ring-violet-400'
-                        : 'border-slate-200 bg-white hover:border-violet-200 hover:bg-violet-50/30'
-                    }`}
-                  >
-                    <span
-                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
-                        active
-                          ? 'border-violet-600 bg-violet-600 text-white'
-                          : 'border-slate-300'
-                      }`}
-                    >
-                      {active ? <Check className="h-4 w-4" /> : null}
-                    </span>
-
-                    <span
-                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg font-black ${
-                        active
-                          ? 'bg-violet-600 text-white'
-                          : 'bg-violet-50 text-slate-900'
-                      }`}
-                    >
-                      {option.key}
-                    </span>
-
-                    <span>
-                      <span className="block text-lg font-bold text-slate-900">
-                        {option.text}
-                      </span>
-                      {option.translation ? (
-                        <span className="mt-1 block text-sm text-slate-500">
-                          {option.translation}
+                    return (
+                      <button
+                        type="button"
+                        key={option.key}
+                        disabled={saving}
+                        onClick={() => setSelectedAnswer(option.text)}
+                        className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition ${
+                          active
+                            ? "border-violet-500 bg-violet-50 ring-1 ring-violet-400"
+                            : "border-slate-200 bg-white hover:border-violet-200 hover:bg-violet-50/30"
+                        }`}
+                      >
+                        <span
+                          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
+                            active
+                              ? "border-violet-600 bg-violet-600 text-white"
+                              : "border-slate-300"
+                          }`}
+                        >
+                          {active ? <Check className="h-4 w-4" /> : null}
                         </span>
-                      ) : null}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+
+                        <span
+                          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg font-black ${
+                            active
+                              ? "bg-violet-600 text-white"
+                              : "bg-violet-50 text-slate-900"
+                          }`}
+                        >
+                          {option.key}
+                        </span>
+
+                        <span>
+                          <span className="block text-lg font-bold text-slate-900">
+                            {option.text}
+                          </span>
+                          {option.translation ? (
+                            <span className="mt-1 block text-sm text-slate-500">
+                              {option.translation}
+                            </span>
+                          ) : null}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
 
             {error ? (
               <p className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
@@ -525,46 +646,53 @@ export default function PlacementTestScreen({
           </div>
 
           <footer className="border-t border-slate-100 px-6 py-5">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <button
-                type="button"
-                disabled
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 py-3 font-bold text-slate-400"
-              >
-                <ArrowLeft className="h-5 w-5" />
-                Câu trước
-              </button>
+            {!isSpecialQuestion ? (
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 py-3 font-bold text-slate-400"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                  Câu trước
+                </button>
 
-              <span className="text-sm font-bold text-slate-500">
-                {data.currentQuestion.globalOrder} /{' '}
+                <span className="text-sm font-bold text-slate-500">
+                  {data.currentQuestion.globalOrder} /{" "}
+                  {data.session.totalQuestions}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => void handleNext()}
+                  disabled={!selectedAnswer || saving}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-700 to-fuchsia-600 px-7 py-3 font-black text-white shadow-lg shadow-violet-200 transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Đang lưu
+                    </>
+                  ) : (
+                    <>
+                      Câu tiếp theo
+                      <ArrowRight className="h-5 w-5" />
+                    </>
+                  )}
+                </button>
+              </div>
+            ) : (
+              <div className="text-center text-sm font-bold text-slate-500">
+                Câu {data.currentQuestion.globalOrder} /{" "}
                 {data.session.totalQuestions}
-              </span>
-
-              <button
-                type="button"
-                onClick={() => void handleNext()}
-                disabled={!selectedAnswer || saving}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-700 to-fuchsia-600 px-7 py-3 font-black text-white shadow-lg shadow-violet-200 transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    Đang lưu
-                  </>
-                ) : (
-                  <>
-                    Câu tiếp theo
-                    <ArrowRight className="h-5 w-5" />
-                  </>
-                )}
-              </button>
-            </div>
+              </div>
+            )}
 
             <div className="mt-5 flex flex-wrap items-center justify-center gap-5 rounded-xl bg-emerald-50 px-4 py-3 text-sm">
               <span className="inline-flex items-center gap-2 font-semibold text-emerald-700">
                 <Check className="h-4 w-4" />
-                Đã lưu lúc{' '}
-                {new Date(data.autosave.savedAt).toLocaleTimeString('vi-VN')}
+                Đã lưu lúc{" "}
+                {new Date(data.autosave.savedAt).toLocaleTimeString("vi-VN")}
               </span>
               <span className="inline-flex items-center gap-2 text-slate-600">
                 <Cloud className="h-4 w-4" />
@@ -583,10 +711,10 @@ export default function PlacementTestScreen({
                 <p
                   className={`text-3xl font-black ${
                     remainingSeconds <= 30
-                      ? 'text-red-600'
+                      ? "text-red-600"
                       : remainingSeconds <= 120
-                        ? 'text-orange-500'
-                        : 'text-slate-950'
+                        ? "text-orange-500"
+                        : "text-slate-950"
                   }`}
                 >
                   {formatTime(remainingSeconds)}
@@ -625,12 +753,12 @@ export default function PlacementTestScreen({
                   <span
                     className={`flex h-11 w-11 items-center justify-center rounded-full border text-sm font-black ${
                       item.active
-                        ? 'border-violet-600 bg-violet-600 text-white'
+                        ? "border-violet-600 bg-violet-600 text-white"
                         : item.answered
-                          ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                          ? "border-emerald-500 bg-emerald-50 text-emerald-700"
                           : item.skipped
-                            ? 'border-orange-300 bg-orange-50 text-orange-700'
-                            : 'border-slate-200 bg-white text-slate-700'
+                            ? "border-orange-300 bg-orange-50 text-orange-700"
+                            : "border-slate-200 bg-white text-slate-700"
                     }`}
                   >
                     {item.order}
@@ -656,15 +784,15 @@ export default function PlacementTestScreen({
               <Bookmark
                 className={`h-5 w-5 ${
                   data.currentQuestion.isFlagged
-                    ? 'fill-amber-400 text-amber-400'
-                    : 'text-violet-600'
+                    ? "fill-amber-400 text-amber-400"
+                    : "text-violet-600"
                 }`}
               />
               <span>
                 <span className="block font-bold text-slate-900">
                   {data.currentQuestion.isFlagged
-                    ? 'Bỏ đánh dấu'
-                    : 'Đánh dấu câu hỏi'}
+                    ? "Bỏ đánh dấu"
+                    : "Đánh dấu câu hỏi"}
                 </span>
                 <span className="text-sm text-slate-500">
                   Lưu câu hỏi để xem lại
@@ -696,8 +824,13 @@ export default function PlacementTestScreen({
               <div>
                 <p className="font-black text-violet-700">Mẹo nhỏ</p>
                 <p className="mt-1 text-sm leading-6 text-slate-600">
-                  Dùng phím A–D để chọn đáp án, phím F để đánh dấu và mũi tên
-                  phải để chuyển câu.
+                  {isSpeakingQuestion
+                    ? "Ghi âm trong khoảng 30–60 giây, sau đó nghe lại trước khi gửi."
+                    : isWritingQuestion
+                      ? "Viết đủ số từ yêu cầu. Bản nháp được tự động lưu trên thiết bị."
+                      : isListeningQuestion
+                        ? "Nghe kỹ audio trước khi chọn đáp án. Bạn có thể phát lại nếu chưa nghe rõ."
+                        : "Dùng phím A–D để chọn đáp án, phím F để đánh dấu và mũi tên phải để chuyển câu."}
                 </p>
               </div>
             </div>
@@ -721,16 +854,10 @@ function formatTime(seconds: number) {
   const minutes = Math.floor(seconds / 60);
   const rest = seconds % 60;
 
-  return `${String(minutes).padStart(2, '0')}:${String(rest).padStart(2, '0')}`;
+  return `${String(minutes).padStart(2, "0")}:${String(rest).padStart(2, "0")}`;
 }
 
-function LegendDot({
-  className,
-  text,
-}: {
-  className: string;
-  text: string;
-}) {
+function LegendDot({ className, text }: { className: string; text: string }) {
   return (
     <span className="inline-flex items-center gap-2">
       <span className={`h-3 w-3 rounded-full ${className}`} />

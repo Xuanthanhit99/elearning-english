@@ -5,7 +5,7 @@ export default async function WritingSessionIdResult({
 }: {
   params: Promise<{ sessionId: string }>;
 }) {
-  const { sessionId } = await params;
+  await params;
 
-  return <WritingResultPage sessionId={sessionId} />;
+  return <WritingResultPage />;
 }

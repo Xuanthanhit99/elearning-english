@@ -84,12 +84,7 @@ export default function WritingHistoryDetailPage({sessionId} : {sessionId: strin
 
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
-      <div className="flex">
-        <Sidebar />
-
-        <main className="min-h-screen flex-1">
-          <Header />
-
+      <main className="min-h-screen">
           <div className="grid grid-cols-[minmax(0,1fr)_390px] gap-8 px-10 py-8">
             <div>
               <div className="flex items-start justify-between">
@@ -145,8 +140,7 @@ export default function WritingHistoryDetailPage({sessionId} : {sessionId: strin
               <ProgressChart data={data} />
             </aside>
           </div>
-        </main>
-      </div>
+      </main>
     </div>
   );
 }

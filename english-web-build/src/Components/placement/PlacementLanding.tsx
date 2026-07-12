@@ -6,6 +6,7 @@ import {
   PlacementHomeData,
   selectManualLevel,
 } from "@/src/lib/placement-api";
+import { retakePlacement } from "@/src/lib/placement-dashboard-api";
 
 import {
   ArrowRight,
@@ -53,6 +54,42 @@ export default function PlacementLanding() {
   const [selectedLevel, setSelectedLevel] = useState<CefrLevel>("A1");
   const [savingLevel, setSavingLevel] = useState(false);
   const [actionError, setActionError] = useState("");
+  const [Error, setError] = useState("");
+
+  const [retaking, setRetaking] = useState(false);
+
+  const [showRetakeModal, setShowRetakeModal] = useState(false);
+
+  async function handleRetake(force = false) {
+    try {
+      setRetaking(true);
+      setError("");
+
+      const result = await retakePlacement(force);
+
+      router.push(result.nextUrl);
+    } catch (err) {
+      const payload = (
+        err as {
+          response?: {
+            data?: {
+              code?: string;
+              message?: string;
+            };
+          };
+        }
+      ).response?.data;
+
+      if (payload?.code === "PLACEMENT_RETAKE_COOLDOWN") {
+        setShowRetakeModal(true);
+        return;
+      }
+
+      setError(payload?.message ?? "Không thể tạo bài kiểm tra mới.");
+    } finally {
+      setRetaking(false);
+    }
+  }
 
   async function loadData() {
     try {
@@ -256,6 +293,48 @@ export default function PlacementLanding() {
                 setShowLevelModal(true);
               }}
             />
+            <button
+              type="button"
+              disabled={retaking}
+              onClick={() => void handleRetake(false)}
+            >
+              Làm lại bài kiểm tra
+            </button>
+
+            {showRetakeModal ? (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                <div className="w-full max-w-md rounded-3xl bg-white p-7">
+                  <h2 className="text-2xl font-black">Làm lại ngay?</h2>
+
+                  <p className="mt-3 text-slate-600">
+                    Bạn vừa hoàn thành Placement Test. Làm lại quá sớm có thể
+                    chưa phản ánh rõ sự tiến bộ.
+                  </p>
+
+                  <p className="mt-3 text-sm text-slate-500">
+                    Kết quả cũ vẫn được giữ nguyên trong lịch sử.
+                  </p>
+
+                  <div className="mt-6 flex justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowRetakeModal(false)}
+                    >
+                      Quay lại
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={retaking}
+                      onClick={() => void handleRetake(true)}
+                      className="rounded-xl bg-violet-600 px-5 py-3 font-black text-white"
+                    >
+                      Vẫn làm lại
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </section>
 
           <section className="mt-6 grid overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm sm:grid-cols-2 xl:grid-cols-4">

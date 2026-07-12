@@ -4,11 +4,38 @@ import { PlacementService } from './placement.service';
 import { PlacementTestService } from './placement-test/placement-test.service';
 import { PlacementTestController } from './placement-test/placement-test.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
+import { PlacementAiService } from './placement-ai/placement-ai.service';
+import { PlacementQuestionPoolService } from './placement-question-pool/placement-question-pool.service';
+import { QuestionBankModule } from '../question-bank/question-bank.module';
+
+import { PlacementResponseController } from './placement-response.controller';
+import { PlacementResponseService } from './placement-response.service';
+import { PlacementTtsService } from './placement-tts.service';
+import { PlacementRetakeService } from '../placement-dashboard/placement-retake.service';
 
 @Module({
-  imports: [PrismaModule],
-  controllers: [PlacementController, PlacementTestController],
-  providers: [PlacementService, PlacementTestService],
-  exports: [PlacementService, PlacementTestService],
+  imports: [PrismaModule, QuestionBankModule],
+  controllers: [
+    PlacementController,
+    PlacementTestController,
+    PlacementResponseController,
+  ],
+  providers: [
+    PlacementService,
+    PlacementTestService,
+    PlacementAiService,
+    PlacementQuestionPoolService,
+    PlacementResponseService,
+    PlacementTtsService,
+    PlacementRetakeService,
+  ],
+  exports: [
+    PlacementService,
+    PlacementTestService,
+    PlacementQuestionPoolService,
+    PlacementAiService,
+    PlacementTtsService,
+    PlacementRetakeService,
+  ],
 })
 export class PlacementModule {}

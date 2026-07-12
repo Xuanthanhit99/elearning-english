@@ -237,7 +237,7 @@ export default function HomePage() {
 
           <div className="grid gap-4 p-4 lg:p-5 2xl:grid-cols-[minmax(0,1fr)_360px]">
             <div className="min-w-0 space-y-5">
-              <Hero level={level} streak={streak} xpToday={xpToday} rank={rank} />
+              <HeroBanner level={level} streak={streak} xpToday={xpToday} rank={rank} />
               <FeatureGrid />
               <ToolsGrid />
               <CoursesGrid courses={courseCards} />
@@ -278,6 +278,61 @@ function TopPill({ icon, value, label }: { icon: string; value: string | number;
         <span className="block text-[10px] font-bold text-[#69708b]">{label}</span>
       </span>
     </div>
+  );
+}
+
+function HeroBanner({ level, streak, xpToday, rank }: { level: number; streak: number; xpToday: number; rank: number }) {
+  const createRoom = async () => {
+    try {
+      await api.post("/auth/jobs/generate-weekly-pool");
+    } catch (error: any) {
+      console.error(error);
+    }
+  };
+
+  return (
+    <section className="relative overflow-hidden rounded-[24px] border border-[#dbe6ff] bg-white shadow-[0_18px_42px_rgba(82,91,220,0.16)]">
+      <div className="relative aspect-[16/11] bg-[#78c8ff] sm:aspect-[16/7] xl:aspect-[21/8]">
+        <img
+          src="/home-english-adventure-banner.png"
+          alt="Learn English Adventure"
+          className="absolute inset-0 h-full w-full object-cover object-[43%_center] sm:object-center"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#101733]/45" />
+
+        <div className="absolute inset-x-0 bottom-0 z-10 flex flex-wrap items-end justify-between gap-3 p-3 sm:p-5">
+          <div className="contents">
+            <div className="max-w-[260px] rounded-2xl bg-white/90 px-4 py-3 text-[#101733] shadow-[0_16px_34px_rgba(16,23,51,0.18)] backdrop-blur sm:max-w-md sm:px-5 sm:py-4">
+              <p className="text-xs font-black uppercase tracking-wide text-[#6d35ff]">PoppyLingo</p>
+              <h1 className="mt-1 text-lg font-black leading-tight sm:text-2xl">Learn English Adventure</h1>
+              <p className="mt-1 hidden text-sm font-bold leading-5 text-[#69708b] sm:block">
+                Học, chơi và lớn lên cùng từ vựng, ngữ pháp, speaking và AI practice trong một hành trình đầy màu sắc.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2 sm:gap-3">
+              <Link href="/courses" className="rounded-xl bg-[#6d35ff] px-4 py-3 text-xs font-black text-white shadow-lg sm:px-5 sm:text-sm">
+                Bắt đầu học ngay
+              </Link>
+              <Link href="/arena" className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-xs font-black text-[#652cff] shadow-lg sm:px-5 sm:text-sm">
+                <AppIcon name="arena" tone="purple" size={18} bare /> Vào đấu trường
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" onClick={createRoom} className="sr-only">
+        Tạo phòng tuần
+      </button>
+
+      <div className="relative z-10 grid gap-2 bg-white p-3 text-[#101733] sm:grid-cols-2 sm:p-4 xl:grid-cols-4">
+        <HeroStat icon="check" label={`Level ${level}`} value={`${Math.min(3000, xpToday).toLocaleString("vi-VN")} / 3,000 XP`} />
+        <HeroStat icon="fire" label={String(streak)} value="Ngày streak" />
+        <HeroStat icon="star" label={xpToday.toLocaleString("vi-VN")} value="XP hôm nay" />
+        <HeroStat icon="trophy" label={`Top ${rank}`} value="Xếp hạng VN" />
+      </div>
+    </section>
   );
 }
 

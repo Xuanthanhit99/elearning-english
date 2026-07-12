@@ -262,7 +262,7 @@ question: "Choose the best corrected sentence."
         total,
         correct,
         answers,
-        result,
+        // result,
       },
     });
   }
