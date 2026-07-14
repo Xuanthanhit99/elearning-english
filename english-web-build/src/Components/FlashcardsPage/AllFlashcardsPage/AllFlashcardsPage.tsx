@@ -22,7 +22,6 @@ import {
   Volume2,
   X,
 } from "lucide-react";
-import StudySidebar from "@/src/Components/Layout/StudySidebar";
 
 const cards = [
   {
@@ -106,14 +105,11 @@ export default function AllFlashcardsPage() {
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#120b5f]">
       <div className="flex">
-        <StudySidebar fixed />
         <div className="hidden">
           <Sidebar />
         </div>
 
-        <main className="ml-[280px] flex-1">
-          <Header />
-
+        <main className="flex-1">
           <div className="grid grid-cols-[1fr_420px] gap-9 px-9 py-8">
             <section>
               <p className="mb-5 text-sm font-bold text-purple-500">

@@ -78,8 +78,6 @@ export default function SpeakingHistoryPage() {
             <section className="col-span-9">
               <Breadcrumb />
 
-              <Header />
-
               <FilterBar
                 data={data}
                 type={type}

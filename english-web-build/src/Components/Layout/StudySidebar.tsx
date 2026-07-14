@@ -227,6 +227,7 @@ export default function StudySidebar({
       <AppLogo />
       <nav className="mt-9 space-y-1">
         <SidebarLeaf item={{ icon: "home", label: "Trang chủ", href: "/" }} />
+        <SidebarLeaf item={{ icon: "book", label: "Dashboard", href: "/dashboard" }} />
 
         <SectionTitle>Học tập</SectionTitle>
         <div className="relative">

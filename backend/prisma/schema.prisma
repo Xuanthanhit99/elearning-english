@@ -48,15 +48,6 @@ enum ModeType {
   ADAPTIVE
 }
 
-enum CommunityPostType {
-  POST
-  SPEAKING
-  WRITING
-  WORD
-  QUESTION
-  IMAGE
-}
-
 enum CommunityVisibility {
   PUBLIC
   FRIENDS
@@ -139,6 +130,31 @@ enum PlacementQuestionType {
   WRITING
 }
 
+enum CommunityChallengeType {
+  SPEAKING
+  VOCABULARY
+  LISTENING
+  READING
+  WRITING
+  GRAMMAR
+  MIXED
+  OTHER
+}
+
+enum CommunityChallengeAudience {
+  ALL_MEMBERS
+  NEW_MEMBERS
+  A1_A2
+  B1_PLUS
+}
+
+enum CommunityChallengeBadge {
+  BRONZE
+  SILVER
+  GOLD
+  DIAMOND
+}
+
 model User {
   id       String   @id @default(uuid())
   fullname String
@@ -204,8 +220,8 @@ model User {
   arenaQueue        ArenaQueue?
   arenaRoomEvents   ArenaRoomEvent[]
 
-  communityPosts    CommunityPost[]
-  communityComments CommunityComment[]
+  communityPosts    CommunityPost[]    @relation("CommunityPostAuthor")
+  communityComments CommunityComment[] @relation("CommunityCommentAuthor")
   communityLikes    CommunityLike[]
   communitySaves    CommunitySave[]
 
@@ -216,6 +232,33 @@ model User {
   placement               UserPlacement?
   skillLevels             UserSkillLevel[]
   placementProcessingJobs PlacementProcessingJob[]
+  speakingProcessingJobs  SpeakingProcessingJob[]
+  writingProcessingJobs   WritingProcessingJob[]
+
+  communityReactions     CommunityReaction[]     @relation("CommunityReactionUser")
+  communityBookmarks     CommunityBookmark[]     @relation("CommunityBookmarkUser")
+  communityFollowers     CommunityFollow[]       @relation("CommunityFollowing")
+  communityFollowing     CommunityFollow[]       @relation("CommunityFollower")
+  communityNotifications CommunityNotification[] @relation("CommunityNotificationOwner")
+
+  communityOwnedClubs          CommunityClub[]                 @relation("CommunityClubOwner")
+  communityClubMemberships     CommunityClubMember[]           @relation("CommunityClubMembership")
+  communityCreatedChallenges   CommunityChallenge[]            @relation("CommunityChallengeCreator")
+  communityChallengeEntries    CommunityChallengeParticipant[] @relation("CommunityChallengeParticipantUser")
+  communityFriendRequestsSent  CommunityFriendRequest[]        @relation("CommunityFriendRequestSent")
+  communityFriendRequestsIn    CommunityFriendRequest[]        @relation("CommunityFriendRequestReceived")
+  communityFriendshipsA        CommunityFriendship[]           @relation("CommunityFriendshipA")
+  communityFriendshipsB        CommunityFriendship[]           @relation("CommunityFriendshipB")
+  communityConversationLinks   CommunityConversationMember[]   @relation("CommunityConversationMemberUser")
+  communityMessagesSent        CommunityMessage[]              @relation("CommunityMessageSender")
+  communityActivityLogs        CommunityActivityLog[]          @relation("CommunityActivityOwner")
+  communityClubMessages        CommunityClubMessage[]          @relation("CommunityClubMessageSender")
+  communityClubJoinRequests    CommunityClubJoinRequest[]      @relation("CommunityClubJoinRequestUser")
+  communityClubEventsCreated   CommunityClubEvent[]            @relation("CommunityClubEventCreator")
+  communityClubEventEntries    CommunityClubEventAttendee[]    @relation("CommunityClubEventAttendeeUser")
+  communityClubResources       CommunityClubResource[]         @relation("CommunityClubResourceUploader")
+  communityClubInvitesSent     CommunityClubInvite[]           @relation("CommunityClubInviteSender")
+  communityClubInvitesReceived CommunityClubInvite[]           @relation("CommunityClubInviteReceiver")
 
   currentPlacementTestId    String?
   currentPlacementTest      PlacementTest?             @relation("CurrentPlacementTest", fields: [currentPlacementTestId], references: [id], onDelete: SetNull)
@@ -962,55 +1005,6 @@ model ArenaAnswer {
   @@unique([questionId, userId])
 }
 
-model CommunityPost {
-  id         String              @id @default(uuid())
-  userId     String
-  type       CommunityPostType
-  visibility CommunityVisibility @default(PUBLIC)
-
-  title    String?
-  content  String?
-  hashtags String[] @default([])
-
-  audioUrl String?
-  imageUrl String?
-
-  aiScore    Int?
-  grammar    Int?
-  vocabulary Int?
-  natural    Int?
-  accuracy   Int?
-
-  word      String?
-  ipa       String?
-  meaning   String?
-  example   String?
-  memoryTip String?
-
-  allowListen  Boolean @default(false)
-  wantFeedback Boolean @default(false)
-
-  user     User               @relation(fields: [userId], references: [id])
-  comments CommunityComment[]
-  likes    CommunityLike[]
-  saves    CommunitySave[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model CommunityComment {
-  id      String @id @default(uuid())
-  postId  String
-  userId  String
-  content String
-
-  post CommunityPost @relation(fields: [postId], references: [id])
-  user User          @relation(fields: [userId], references: [id])
-
-  createdAt DateTime @default(now())
-}
-
 model CommunityLike {
   id     String @id @default(uuid())
   postId String
@@ -1713,7 +1707,8 @@ model WritingSession {
 
   timeSpentSeconds Int @default(0)
 
-  lesson WritingLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lesson         WritingLesson          @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  processingJobs WritingProcessingJob[]
 
   startedAt   DateTime  @default(now())
   submittedAt DateTime?
@@ -1721,6 +1716,40 @@ model WritingSession {
 
   @@index([userId])
   @@index([lessonId])
+}
+
+model WritingProcessingJob {
+  id        String @id @default(uuid())
+  userId    String
+  sessionId String
+
+  status       String  @default("QUEUED")
+  step         String  @default("SUBMITTED")
+  progress     Int     @default(0)
+  message      String?
+  errorMessage String?
+
+  content          String @db.Text
+  wordCount        Int    @default(0)
+  timeSpentSeconds Int    @default(0)
+
+  mistakes       Json?
+  feedback       String? @db.Text
+  suggestions    Json?
+  nextPractice   Json?
+  missionUpdated Boolean @default(false)
+
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session WritingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([sessionId, createdAt])
+  @@index([status, createdAt])
 }
 
 model WritingTopicProgress {
@@ -1849,6 +1878,8 @@ model SpeakingSession {
   topicId  String?
   lessonId String?
   status   SpeakingSessionStatus @default(IN_PROGRESS)
+
+  processingJobs SpeakingProcessingJob[]
 
   overallScore  Int @default(0)
   pronunciation Int @default(0)
@@ -2004,9 +2035,10 @@ model SpeakingAnswer {
   confidence    Int @default(0)
   overallScore  Int @default(0)
 
-  feedback      String?
-  correctedText String?
-  suggestions   Json?
+  feedback       String?
+  correctedText  String?
+  suggestions    Json?
+  processingJobs SpeakingProcessingJob[]
 
   session SpeakingSession @relation(fields: [sessionId], references: [id])
 
@@ -2393,4 +2425,561 @@ model UserListeningProgress {
 
   @@index([currentLevel])
   @@index([lastStudyDate])
+}
+
+enum CommunityPostType {
+  SHARE
+  QUESTION
+  SPEAKING
+  WRITING
+  IMAGE
+  ACHIEVEMENT
+  POLL
+}
+
+enum CommunityPostVisibility {
+  PUBLIC
+  FOLLOWERS
+  CLUB
+  PRIVATE
+}
+
+enum CommunityPostStatus {
+  PUBLISHED
+  HIDDEN
+  DELETED
+}
+
+enum CommunityReactionType {
+  LIKE
+  USEFUL
+  GREAT
+  HELPFUL
+  INSPIRED
+}
+
+enum CommunityNotificationType {
+  POST_REACTION
+  POST_COMMENT
+  COMMENT_REPLY
+  NEW_FOLLOWER
+  POST_MENTION
+  SYSTEM
+}
+
+model CommunityPost {
+  id             String                  @id @default(uuid())
+  authorId       String
+  clubId         String?
+  type           CommunityPostType
+  visibility     CommunityPostVisibility @default(PUBLIC)
+  status         CommunityPostStatus     @default(PUBLISHED)
+  title          String?
+  content        String                  @db.Text
+  category       String?
+  level          String?
+  language       String                  @default("en")
+  tags           String[]                @default([])
+  media          Json?
+  pollData       Json?
+  isEdited       Boolean                 @default(false)
+  commentsCount  Int                     @default(0)
+  reactionsCount Int                     @default(0)
+  bookmarksCount Int                     @default(0)
+  score          Int                     @default(0)
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  deletedAt      DateTime?
+  club           CommunityClub?          @relation(fields: [clubId], references: [id], onDelete: SetNull)
+
+  author         User                @relation("CommunityPostAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  comments       CommunityComment[]
+  reactions      CommunityReaction[]
+  bookmarks      CommunityBookmark[]
+  communityLikes CommunityLike[]
+  communitySaves CommunitySave[]
+
+  @@index([authorId, createdAt])
+  @@index([status, visibility, createdAt])
+  @@index([type, createdAt])
+  @@index([score, createdAt])
+}
+
+model CommunityComment {
+  id             String    @id @default(uuid())
+  postId         String
+  authorId       String
+  parentId       String?
+  content        String    @db.Text
+  media          Json?
+  isEdited       Boolean   @default(false)
+  reactionsCount Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  post    CommunityPost      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author  User               @relation("CommunityCommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  parent  CommunityComment?  @relation("CommunityCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies CommunityComment[] @relation("CommunityCommentReplies")
+
+  @@index([postId, createdAt])
+  @@index([parentId])
+}
+
+model CommunityReaction {
+  id        String                @id @default(uuid())
+  postId    String
+  userId    String
+  type      CommunityReactionType
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+
+  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User          @relation("CommunityReactionUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId, type])
+}
+
+model CommunityBookmark {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User          @relation("CommunityBookmarkUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId, createdAt])
+}
+
+model CommunityFollow {
+  id          String   @id @default(uuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("CommunityFollower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("CommunityFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followingId, createdAt])
+}
+
+model CommunityNotification {
+  id        String                    @id @default(uuid())
+  userId    String
+  actorId   String?
+  postId    String?
+  commentId String?
+  type      CommunityNotificationType
+  title     String
+  message   String
+  metadata  Json?
+  isRead    Boolean                   @default(false)
+  createdAt DateTime                  @default(now())
+
+  user User @relation("CommunityNotificationOwner", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+}
+
+enum CommunityClubRole {
+  OWNER
+  ADMIN
+  MODERATOR
+  MEMBER
+}
+
+enum CommunityClubPrivacy {
+  PUBLIC
+  PRIVATE
+}
+
+enum CommunityChallengeStatus {
+  DRAFT
+  UPCOMING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum CommunityChallengeParticipantStatus {
+  JOINED
+  COMPLETED
+  LEFT
+}
+
+enum CommunityFriendRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+enum CommunityConversationType {
+  DIRECT
+  GROUP
+}
+
+enum CommunityActivityType {
+  CREATE_POST
+  CREATE_COMMENT
+  RECEIVE_REACTION
+  JOIN_CLUB
+  COMPLETE_CHALLENGE
+  SEND_MESSAGE
+}
+
+model CommunityClub {
+  id           String                     @id @default(uuid())
+  ownerId      String
+  name         String
+  slug         String                     @unique
+  description  String?                    @db.Text
+  coverUrl     String?
+  iconUrl      String?
+  privacy      CommunityClubPrivacy       @default(PUBLIC)
+  category     String?
+  tags         String[]                   @default([])
+  memberCount  Int                        @default(1)
+  postCount    Int                        @default(0)
+  isActive     Boolean                    @default(true)
+  createdAt    DateTime                   @default(now())
+  updatedAt    DateTime                   @updatedAt
+  messages     CommunityClubMessage[]
+  joinRequests CommunityClubJoinRequest[]
+  events       CommunityClubEvent[]
+  resources    CommunityClubResource[]
+  invites      CommunityClubInvite[]
+
+  owner   User                  @relation("CommunityClubOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members CommunityClubMember[]
+  posts   CommunityPost[]
+
+  @@index([ownerId])
+  @@index([privacy, isActive, createdAt])
+  @@index([memberCount])
+}
+
+model CommunityClubMember {
+  id       String            @id @default(uuid())
+  clubId   String
+  userId   String
+  role     CommunityClubRole @default(MEMBER)
+  joinedAt DateTime          @default(now())
+
+  club CommunityClub @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  user User          @relation("CommunityClubMembership", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([clubId, userId])
+  @@index([userId, joinedAt])
+}
+
+model CommunityChallenge {
+  id               String                     @id @default(uuid())
+  creatorId        String
+  clubId           String?
+  title            String
+  description      String                     @db.Text
+  coverUrl         String?
+  status           CommunityChallengeStatus   @default(UPCOMING)
+  target           Int
+  unit             String
+  rewardXp         Int                        @default(0)
+  startsAt         DateTime
+  endsAt           DateTime
+  participantCount Int                        @default(0)
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+  challengeType    CommunityChallengeType     @default(OTHER)
+  audience         CommunityChallengeAudience @default(ALL_MEMBERS)
+  maxParticipants  Int?
+  badge            CommunityChallengeBadge    @default(BRONZE)
+
+  creator      User                            @relation("CommunityChallengeCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  participants CommunityChallengeParticipant[]
+
+  @@index([status, startsAt, endsAt])
+  @@index([clubId])
+}
+
+model CommunityChallengeParticipant {
+  id          String                              @id @default(uuid())
+  challengeId String
+  userId      String
+  progress    Int                                 @default(0)
+  status      CommunityChallengeParticipantStatus @default(JOINED)
+  joinedAt    DateTime                            @default(now())
+  completedAt DateTime?
+
+  challenge CommunityChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user      User               @relation("CommunityChallengeParticipantUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([challengeId, userId])
+  @@index([userId, status])
+}
+
+model CommunityFriendRequest {
+  id          String                       @id @default(uuid())
+  requesterId String
+  addresseeId String
+  status      CommunityFriendRequestStatus @default(PENDING)
+  createdAt   DateTime                     @default(now())
+  updatedAt   DateTime                     @updatedAt
+
+  requester User @relation("CommunityFriendRequestSent", fields: [requesterId], references: [id], onDelete: Cascade)
+  addressee User @relation("CommunityFriendRequestReceived", fields: [addresseeId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, addresseeId])
+  @@index([addresseeId, status, createdAt])
+}
+
+model CommunityFriendship {
+  id        String   @id @default(uuid())
+  userAId   String
+  userBId   String
+  createdAt DateTime @default(now())
+
+  userA User @relation("CommunityFriendshipA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB User @relation("CommunityFriendshipB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  @@unique([userAId, userBId])
+  @@index([userBId])
+}
+
+model CommunityConversation {
+  id            String                    @id @default(uuid())
+  type          CommunityConversationType @default(DIRECT)
+  title         String?
+  avatarUrl     String?
+  lastMessageAt DateTime?
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+
+  members  CommunityConversationMember[]
+  messages CommunityMessage[]
+
+  @@index([lastMessageAt])
+}
+
+model CommunityConversationMember {
+  id             String    @id @default(uuid())
+  conversationId String
+  userId         String
+  lastReadAt     DateTime?
+  joinedAt       DateTime  @default(now())
+
+  conversation CommunityConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User                  @relation("CommunityConversationMemberUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([userId, joinedAt])
+}
+
+model CommunityMessage {
+  id             String    @id @default(uuid())
+  conversationId String
+  senderId       String
+  content        String    @db.Text
+  media          Json?
+  isEdited       Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  conversation CommunityConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User                  @relation("CommunityMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
+
+model CommunityActivityLog {
+  id          String                @id @default(uuid())
+  userId      String
+  type        CommunityActivityType
+  points      Int
+  referenceId String?
+  createdAt   DateTime              @default(now())
+
+  user User @relation("CommunityActivityOwner", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+}
+
+model SpeakingProcessingJob {
+  id        String @id @default(uuid())
+  userId    String
+  sessionId String
+  answerId  String
+
+  status       String  @default("QUEUED")
+  step         String  @default("UPLOAD_COMPLETED")
+  progress     Int     @default(0)
+  message      String?
+  errorMessage String?
+
+  audioPath     String
+  audioMimeType String
+  duration      Int    @default(0)
+
+  mistakes        Json?
+  improvedVersion String?
+  nextPractice    Json?
+  missionUpdated  Boolean @default(false)
+
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session SpeakingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  answer  SpeakingAnswer  @relation(fields: [answerId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([sessionId, createdAt])
+  @@index([status, createdAt])
+}
+
+enum CommunityClubMembershipStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+  BANNED
+}
+
+enum CommunityClubEventStatus {
+  UPCOMING
+  LIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum CommunityClubResourceType {
+  PDF
+  DOCUMENT
+  LINK
+  AUDIO
+  VIDEO
+  IMAGE
+  OTHER
+}
+
+model CommunityClubMessage {
+  id        String    @id @default(uuid())
+  clubId    String
+  senderId  String
+  content   String    @db.Text
+  media     Json?
+  isEdited  Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  club   CommunityClub @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  sender User          @relation("CommunityClubMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([clubId, createdAt])
+}
+
+model CommunityClubJoinRequest {
+  id        String                        @id @default(uuid())
+  clubId    String
+  userId    String
+  status    CommunityClubMembershipStatus @default(PENDING)
+  message   String?
+  createdAt DateTime                      @default(now())
+  updatedAt DateTime                      @updatedAt
+
+  club CommunityClub @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  user User          @relation("CommunityClubJoinRequestUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([clubId, userId])
+  @@index([clubId, status])
+}
+
+model CommunityClubEvent {
+  id            String                   @id @default(uuid())
+  clubId        String
+  creatorId     String
+  title         String
+  description   String?                  @db.Text
+  coverUrl      String?
+  startsAt      DateTime
+  endsAt        DateTime?
+  meetingUrl    String?
+  status        CommunityClubEventStatus @default(UPCOMING)
+  attendeeCount Int                      @default(0)
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+
+  club      CommunityClub                @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  creator   User                         @relation("CommunityClubEventCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  attendees CommunityClubEventAttendee[]
+
+  @@index([clubId, startsAt])
+}
+
+model CommunityClubEventAttendee {
+  id        String   @id @default(uuid())
+  eventId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  event CommunityClubEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User               @relation("CommunityClubEventAttendeeUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+}
+
+model CommunityClubResource {
+  id          String                    @id @default(uuid())
+  clubId      String
+  uploaderId  String
+  title       String
+  description String?
+  type        CommunityClubResourceType
+  url         String
+  fileName    String?
+  mimeType    String?
+  sizeBytes   Int?
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
+
+  club     CommunityClub @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  uploader User          @relation("CommunityClubResourceUploader", fields: [uploaderId], references: [id], onDelete: Cascade)
+
+  @@index([clubId, createdAt])
+}
+
+enum CommunityClubInviteStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  EXPIRED
+}
+
+model CommunityClubInvite {
+  id        String                    @id @default(uuid())
+  clubId    String
+  inviterId String
+  inviteeId String
+  status    CommunityClubInviteStatus @default(PENDING)
+  message   String?
+  createdAt DateTime                  @default(now())
+  updatedAt DateTime                  @updatedAt
+  expiresAt DateTime?
+
+  club    CommunityClub @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  inviter User          @relation("CommunityClubInviteSender", fields: [inviterId], references: [id], onDelete: Cascade)
+  invitee User          @relation("CommunityClubInviteReceiver", fields: [inviteeId], references: [id], onDelete: Cascade)
+
+  @@unique([clubId, inviteeId])
+  @@index([inviteeId, status])
+  @@index([clubId, status])
 }

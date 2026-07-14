@@ -199,12 +199,42 @@ Rules:
 
   async getHome(userId: string) {
     const [
+      user,
+      pet,
+      todayRewards,
       totalSessions,
       submittedSessions,
       recentHistory,
       recommendations,
       progress,
     ] = await Promise.all([
+      this.prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          fullname: true,
+          level: true,
+          xp: true,
+        },
+      }),
+      this.prisma.petProfile.findUnique({
+        where: { userId },
+        select: {
+          streak: true,
+          coins: true,
+        },
+      }),
+      this.prisma.missionRewardTransactionV2.findMany({
+        where: {
+          userId,
+          createdAt: {
+            gte: this.startOfDay(new Date()),
+          },
+        },
+        select: {
+          xp: true,
+          coins: true,
+        },
+      }),
       this.prisma.writingSession.count({ where: { userId } }),
       this.prisma.writingSession.findMany({
         where: {
@@ -230,15 +260,15 @@ Rules:
 
     return {
       user: {
-        name: 'Minh Anh',
-        level: 18,
+        name: user?.fullname ?? 'Bạn học',
+        level: user?.level ?? 1,
       },
       stats: {
         essaysWritten: totalSessions,
         avgScore,
-        dayStreak: 5,
-        xpToday: 2450,
-        gems: 5230,
+        dayStreak: pet?.streak ?? 0,
+        xpToday: todayRewards.reduce((sum, item) => sum + item.xp, 0),
+        gems: pet?.coins ?? todayRewards.reduce((sum, item) => sum + item.coins, 0),
       },
       todayPractice: [
         {
@@ -315,11 +345,56 @@ Rules:
       recentHistory,
       dailyGoal: {
         title: 'Daily Goal: Write for at least 15 minutes',
-        current: 10,
+        current: await this.getTodayWritingMinutes(userId),
         target: 15,
+        continueSessionId: await this.getLatestWritingDraftId(userId),
       },
       progress,
     };
+  }
+
+  private startOfDay(date: Date) {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  }
+
+  private async getTodayWritingMinutes(userId: string) {
+    const sessions = await this.prisma.writingSession.findMany({
+      where: {
+        userId,
+        OR: [
+          { submittedAt: { gte: this.startOfDay(new Date()) } },
+          { updatedAt: { gte: this.startOfDay(new Date()) } },
+        ],
+      },
+      select: {
+        timeSpentSeconds: true,
+      },
+    });
+
+    return Math.round(
+      sessions.reduce((sum, item) => sum + (item.timeSpentSeconds ?? 0), 0) /
+        60,
+    );
+  }
+
+  private async getLatestWritingDraftId(userId: string) {
+    const session = await this.prisma.writingSession.findFirst({
+      where: {
+        userId,
+        isSubmitted: false,
+        content: {
+          not: null,
+        },
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    return session?.id ?? null;
   }
 
   async getProgress(userId: string) {
@@ -411,7 +486,7 @@ Rules:
       type: lesson.type,
       category: lesson.topic.category ?? lesson.topic.title,
       imageUrl: lesson.topic.imageUrl,
-      writers: Math.floor(Math.random() * 1200) + 300,
+      writers: lesson.learnerCount,
     }));
   }
 
@@ -464,6 +539,7 @@ Rules:
       difficulty?: string;
       progress?: string;
       sort?: string;
+      type?: string;
       page: number;
       limit: number;
     },
@@ -486,6 +562,15 @@ Rules:
 
     if (query.difficulty && query.difficulty !== 'ALL') {
       where.difficulty = query.difficulty;
+    }
+
+    if (query.type && query.type !== 'ALL') {
+      where.lessons = {
+        some: {
+          type: query.type,
+          isActive: true,
+        },
+      };
     }
 
     let orderBy: any = { order: 'asc' };
@@ -1136,6 +1221,19 @@ Rules:
     }
 
     const aiResult: any = session.aiResult || {};
+    const corrections = Array.isArray(session.corrections)
+      ? (session.corrections as any[]).map((item) => ({
+          wrong: String(item?.wrong ?? item?.original ?? ''),
+          correct: String(item?.correct ?? item?.corrected ?? ''),
+          explanation: String(item?.explanation ?? ''),
+          type: String(item?.type ?? 'Writing'),
+        }))
+      : [];
+    const suggestions = Array.isArray(aiResult.suggestions)
+      ? aiResult.suggestions.map(String)
+      : Array.isArray(session.improvements)
+        ? (session.improvements as unknown[]).map(String)
+        : [];
 
     return {
       session: {
@@ -1167,14 +1265,39 @@ Rules:
         feedback: session.feedback ?? '',
       },
       strengths: session.strengths || [],
-      improvements: session.improvements || [],
-      corrections: session.corrections || [],
+      improvements: suggestions,
+      detailedFeedback: [
+        {
+          title: 'Task Response',
+          description: `Điểm bám sát đề bài: ${session.taskScore ?? 0}/100`,
+          type: 'TASK_RESPONSE',
+        },
+        {
+          title: 'Coherence',
+          description: `Độ mạch lạc: ${session.coherenceScore ?? 0}/100`,
+          type: 'COHERENCE',
+        },
+        {
+          title: 'Vocabulary',
+          description: `Từ vựng: ${session.vocabularyScore ?? 0}/100`,
+          type: 'VOCABULARY',
+        },
+        {
+          title: 'Grammar',
+          description: `Ngữ pháp: ${session.grammarScore ?? 0}/100`,
+          type: 'GRAMMAR',
+        },
+      ],
+      corrections,
       vocabularySuggestions: session.vocabularySuggestions || [],
       suggestedVersion: session.suggestedVersion || '',
       learningTips: session.learningTips || [],
       aiCoachTask: session.aiCoachTask || '',
       rewriteRequired: session.rewriteRequired,
       nextPracticeSuggestion: session.nextPracticeSuggestion || '',
+      mistakes: aiResult.mistakes || corrections,
+      correctedEssay: aiResult.correctedEssay || session.suggestedVersion || '',
+      nextPractice: aiResult.nextPractice || null,
     };
   }
 
@@ -1385,6 +1508,18 @@ Rules:
     }
 
     const score = session.overallScore ?? 0;
+    const corrections = Array.isArray(session.corrections)
+      ? (session.corrections as any[]).map((item) => ({
+          wrong: String(item?.wrong ?? item?.original ?? ''),
+          correct: String(item?.correct ?? item?.corrected ?? ''),
+          explanation: String(item?.explanation ?? ''),
+          type: String(item?.type ?? 'Writing'),
+        }))
+      : [];
+    const improvements = Array.isArray(session.improvements)
+      ? (session.improvements as unknown[]).map(String)
+      : [];
+    const progressChart = await this.getWritingProgressChart(userId, sessionId);
 
     return {
       session: {
@@ -1415,49 +1550,69 @@ Rules:
         lexicalResource: session.vocabularyScore ?? 68,
         grammar: session.grammarScore ?? 78,
       },
-      strengths: [
-        'Clear introduction and conclusion',
-        'Good use of examples',
-        'Logical paragraph structure',
-      ],
-      improvements: [
-        'Use more advanced vocabulary',
-        'Fix grammar and punctuation errors',
-        'Improve sentence variety',
-      ],
-      corrections: [
-        {
-          wrong: 'do works',
-          correct: 'do work',
-          explanation: '"Do" is used with the base form of the verb.',
-          type: 'Grammar',
-        },
-        {
-          wrong: 'human errors',
-          correct: 'human error',
-          explanation: '"Error" is uncountable in this context.',
-          type: 'Grammar',
-        },
-        {
-          wrong: 'questions',
-          correct: 'questions',
-          explanation: 'Good word, but try to use more specific vocabulary.',
-          type: 'Vocabulary',
-        },
-        {
-          wrong: 'if we use it wisely',
-          correct: 'if we use it wisely.',
-          explanation: 'Add a period at the end of the sentence.',
-          type: 'Punctuation',
-        },
-      ],
-      progressChart: [
-        { date: 'Apr 10', score: 30 },
-        { date: 'Apr 24', score: 50 },
-        { date: 'May 8', score: 52 },
-        { date: 'May 10', score },
-      ],
+      strengths: Array.isArray(session.strengths) ? session.strengths : [],
+      improvements,
+      corrections,
+      progressChart,
     };
+  }
+
+  private async getWritingProgressChart(userId: string, sessionId?: string) {
+    const sessions = await this.prisma.writingSession.findMany({
+      where: {
+        userId,
+        isSubmitted: true,
+        overallScore: {
+          not: null,
+        },
+      },
+      orderBy: {
+        submittedAt: 'asc',
+      },
+      select: {
+        id: true,
+        overallScore: true,
+        submittedAt: true,
+      },
+      take: 12,
+    });
+
+    const chart = sessions
+      .filter((item) => item.submittedAt)
+      .map((item) => ({
+        date: (item.submittedAt as Date).toLocaleDateString('vi-VN', {
+          day: '2-digit',
+          month: '2-digit',
+        }),
+        score: item.overallScore ?? 0,
+      }));
+
+    if (chart.length > 0 || !sessionId) {
+      return chart;
+    }
+
+    const session = await this.prisma.writingSession.findFirst({
+      where: {
+        id: sessionId,
+        userId,
+      },
+      select: {
+        overallScore: true,
+        submittedAt: true,
+      },
+    });
+
+    return session?.submittedAt
+      ? [
+          {
+            date: session.submittedAt.toLocaleDateString('vi-VN', {
+              day: '2-digit',
+              month: '2-digit',
+            }),
+            score: session.overallScore ?? 0,
+          },
+        ]
+      : [];
   }
 
   private async analyzeWritingWithAI(params: {

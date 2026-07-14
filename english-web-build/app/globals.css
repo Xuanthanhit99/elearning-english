@@ -23,6 +23,8 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  min-width: 320px;
+  min-height: 100dvh;
 }
 
 html,
@@ -38,6 +40,22 @@ svg {
   max-width: 100%;
 }
 
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+pre,
+code {
+  overflow-wrap: anywhere;
+}
+
 .single-menu-content {
   min-width: 0;
 }
@@ -48,6 +66,44 @@ svg {
 .single-menu-content div,
 .single-menu-content form {
   min-width: 0;
+}
+
+.single-menu-content img,
+.single-menu-content video,
+.single-menu-content canvas,
+.single-menu-content iframe {
+  max-width: 100%;
+}
+
+.single-menu-content iframe,
+.single-menu-content video {
+  border-radius: inherit;
+}
+
+.single-menu-content table {
+  width: 100%;
+}
+
+.single-menu-content input,
+.single-menu-content textarea,
+.single-menu-content select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.single-menu-content [role="dialog"],
+.single-menu-content [aria-modal="true"] {
+  max-width: calc(100vw - 1.5rem);
+  max-height: 90dvh;
+}
+
+.single-menu-content [class*="aspect-video"] {
+  width: 100%;
+}
+
+.single-menu-content [class*="recharts-responsive-container"],
+.single-menu-content [class*="ResponsiveContainer"] {
+  max-width: 100%;
 }
 
 @media (max-width: 1279px) {
@@ -94,6 +150,18 @@ svg {
   .single-menu-content [class*="w-["],
   .single-menu-content [class*="min-w-["] {
     max-width: 100% !important;
+  }
+
+  .single-menu-content [class*="ml-["],
+  .single-menu-content [class*="mr-["] {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .single-menu-content table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
   }
 
   .single-menu-content [class*="grid-cols-[1fr_"],
@@ -186,6 +254,22 @@ svg {
 
   .single-menu-content [class*="h-["] {
     max-height: none;
+  }
+
+  .single-menu-content [class*="fixed"][class*="inset-0"] {
+    padding: 0.75rem;
+  }
+
+  .single-menu-content [role="dialog"],
+  .single-menu-content [aria-modal="true"] {
+    width: 100%;
+    max-width: calc(100vw - 1rem);
+    max-height: 90dvh;
+    overflow-y: auto;
+  }
+
+  .single-menu-content [class*="overflow-x-auto"] > [class*="flex"] {
+    min-width: max-content;
   }
 
   .single-menu-content [class*="w-[190px]"],

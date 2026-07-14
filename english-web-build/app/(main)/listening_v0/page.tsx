@@ -1,5 +1,5 @@
-import ListeningPage from "@/src/Components/Listening/ListeningPage";
+import ListeningHomePage from "@/src/Components/Listening/ListeningHomePage";
 
 export default function listening() {
-  return <ListeningPage />;
+  return <ListeningHomePage />;
 }

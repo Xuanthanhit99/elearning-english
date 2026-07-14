@@ -154,6 +154,32 @@ export class MissionV2TemplateService {
         skill: LearningSkill.LISTENING,
         priority: 80,
       },
+      {
+        code: 'V2_DAILY_SPEAKING',
+        title: 'Luyện nói hôm nay',
+        description: 'Hoàn thành một bài luyện nói và nhận phản hồi từ AI.',
+        type: MissionV2Type.DAILY,
+        scope: MissionV2Scope.SKILL,
+        action: MissionV2Action.COMPLETE_SPEAKING,
+        defaultTarget: 1,
+        rewardXp: 30,
+        rewardCoins: 50,
+        skill: LearningSkill.SPEAKING,
+        priority: 90,
+      },
+      {
+        code: 'V2_WEEKLY_SPEAKING',
+        title: 'Luyện nói trong tuần',
+        description: 'Hoàn thành ba bài luyện nói trong tuần.',
+        type: MissionV2Type.WEEKLY,
+        scope: MissionV2Scope.SKILL,
+        action: MissionV2Action.COMPLETE_SPEAKING,
+        defaultTarget: 3,
+        rewardXp: 120,
+        rewardCoins: 150,
+        skill: LearningSkill.SPEAKING,
+        priority: 85,
+      },
     ];
 
     for (const template of templates) {

@@ -61,20 +61,31 @@ export default function WritingHistoryPage() {
   const [level, setLevel] = useState('ALL');
   const [status, setStatus] = useState('ALL');
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   async function loadHistory() {
-    const res = await api.get('/writing/history', {
-      params: {
-        topic,
-        type,
-        level,
-        status,
-        page,
-        limit: 7,
-      },
-    });
+    try {
+      setLoading(true);
+      setError('');
+      const res = await api.get('/writing/history', {
+        params: {
+          topic,
+          type,
+          level,
+          status,
+          page,
+          limit: 7,
+        },
+      });
 
-    setData(res.data);
+      setData(res.data);
+    } catch (err) {
+      console.error(err);
+      setError('Không tải được lịch sử Writing.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -95,7 +106,23 @@ export default function WritingHistoryPage() {
     router.push(`/writing/topics/${item.topicSlug}`);
   }
 
-  if (!data) return <div className="p-10">Loading...</div>;
+  if (loading && !data) return <div className="p-10">Loading...</div>;
+
+  if (error && !data) {
+    return (
+      <div className="p-10">
+        <p className="font-semibold text-red-600">{error}</p>
+        <button
+          onClick={loadHistory}
+          className="mt-4 rounded-xl bg-violet-600 px-5 py-3 font-bold text-white"
+        >
+          Thử lại
+        </button>
+      </div>
+    );
+  }
+
+  if (!data) return <div className="p-10">Không có dữ liệu lịch sử.</div>;
 
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
@@ -222,15 +249,24 @@ export default function WritingHistoryPage() {
               <div className="flex gap-4">
                 <button className="flex h-12 items-center gap-3 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold">
                   <Calendar className="h-5 w-5 text-slate-500" />
-                  May 1, 2024 - May 31, 2024
+                  Tất cả thời gian
                 </button>
 
-                <button className="flex h-12 items-center gap-3 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold">
+                <button
+                  onClick={() => window.print()}
+                  className="flex h-12 items-center gap-3 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold"
+                >
                   <Download className="h-5 w-5 text-violet-600" />
                   Export
                 </button>
               </div>
             </div>
+
+            {error && (
+              <div className="mt-6 rounded-xl bg-red-50 p-4 text-sm font-semibold text-red-600">
+                {error}
+              </div>
+            )}
 
             <div className="mt-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
               <div className="grid grid-cols-[2.2fr_1fr_1fr_0.8fr_0.9fr_1.2fr_1.2fr] bg-violet-50 px-6 py-4 text-sm font-extrabold text-slate-600">
@@ -242,6 +278,12 @@ export default function WritingHistoryPage() {
                 <div>Status</div>
                 <div>Completed At</div>
               </div>
+
+              {data.items.length === 0 && (
+                <div className="px-6 py-10 text-center text-sm font-semibold text-slate-500">
+                  Chưa có lịch sử Writing phù hợp.
+                </div>
+              )}
 
               {data.items.map((item) => (
                 <HistoryRow

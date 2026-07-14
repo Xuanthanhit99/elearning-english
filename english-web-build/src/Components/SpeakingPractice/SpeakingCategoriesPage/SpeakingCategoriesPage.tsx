@@ -108,8 +108,6 @@ export default function SpeakingCategoriesPage() {
             <section className="col-span-9">
               <Breadcrumb />
 
-              <Header />
-
               <FilterTabs
                 filters={data.filters}
                 active={level}

@@ -60,6 +60,10 @@ import { LessonBuilderModule } from './modules/lesson-builder/lesson-builder.mod
 import { ListeningJobModule } from './modules/listening-job/listening-job.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { CommunitySocialModule } from './modules/community-social/community-social.module';
+import { CommunityClubModule } from './modules/community-club/community-club.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { CommunityClubPermissionModule } from './modules/community-club/community-club-permission.module';
 
 @Module({
   imports: [
@@ -129,6 +133,10 @@ import { join } from 'path';
     MissionsV2Module,
     LessonBuilderModule,
     ListeningJobModule,
+    CommunitySocialModule,
+    CommunityClubModule,
+    DashboardModule,
+    CommunityClubPermissionModule,
   ],
   providers: [
     GeminiService,

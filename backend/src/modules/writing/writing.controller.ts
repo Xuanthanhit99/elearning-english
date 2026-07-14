@@ -13,11 +13,16 @@ import { WritingService } from './writing.service';
 import { CheckWritingDto } from './dro/check-writing.dto';
 import { OptionalJwtGuard } from 'src/common/guards/optional-jwt.guard';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { WritingProcessingService } from './writing-processing.service';
+import { WritingHistoryService } from './writing-history.service';
 
 @Controller('writing')
 export class WritingController {
-  constructor(private readonly writingService: WritingService) {}
+  constructor(
+    private readonly writingService: WritingService,
+    private readonly writingProcessingService: WritingProcessingService,
+    private readonly writingHistoryService: WritingHistoryService,
+  ) {}
 
   @UseGuards(OptionalJwtGuard)
   @Post('check')
@@ -63,6 +68,7 @@ export class WritingController {
     @Query('difficulty') difficulty?: string,
     @Query('progress') progress?: string,
     @Query('sort') sort?: string,
+    @Query('type') type?: string,
     @Query('page') page = '1',
     @Query('limit') limit = '10',
   ) {
@@ -71,6 +77,7 @@ export class WritingController {
       difficulty,
       progress,
       sort,
+      type,
       page: Number(page),
       limit: Number(limit),
     });
@@ -135,7 +142,18 @@ export class WritingController {
     @Body() body: { content: string; timeSpentSeconds?: number },
     @Req() req: any,
   ) {
-    return this.writingService.submitEssay(req.user.id, sessionId, body);
+    return this.writingProcessingService.submit({
+      userId: req.user.id,
+      sessionId,
+      content: body.content,
+      timeSpentSeconds: body.timeSpentSeconds,
+    });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('sessions/:sessionId/status')
+  getSessionStatus(@Param('sessionId') sessionId: string, @Req() req: any) {
+    return this.writingProcessingService.getStatus(req.user.id, sessionId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -163,7 +181,7 @@ export class WritingController {
     @Query('page') page = '1',
     @Query('limit') limit = '10',
   ) {
-    return this.writingService.getWritingHistory(req.user.id, {
+    return this.writingHistoryService.getHistory(req.user.id, {
       topic,
       type,
       level,
@@ -181,15 +199,25 @@ export class WritingController {
     @Param('sessionId') sessionId: string,
     @Req() req: any,
   ) {
-    return this.writingService.getWritingHistoryDetail(req.user.id, sessionId);
+    return this.writingHistoryService.getDetail(req.user.id, sessionId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('history/:sessionId/retry')
   retryFromHistory(@Param('sessionId') sessionId: string, @Req() req: any) {
-    return this.writingService.retryEssay(req.user.id, sessionId);
+    return this.writingHistoryService.practiceAgain(req.user.id, sessionId);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Post('history/:sessionId/practice-again')
+  practiceAgainFromHistory(
+    @Param('sessionId') sessionId: string,
+    @Req() req: any,
+  ) {
+    return this.writingHistoryService.practiceAgain(req.user.id, sessionId);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post('sessions/:sessionId/rewrite')
   rewriteEssay(
     @Param('sessionId') sessionId: string,

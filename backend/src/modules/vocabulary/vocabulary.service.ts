@@ -8,6 +8,7 @@ import { UpdateLearningProfileDto } from './dto/update-learning-profile.dto';
 import {
   LearningSkill,
   MissionV2Action,
+  Prisma,
   WordProgressStatus,
 } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -773,29 +774,26 @@ export class VocabularyService {
       `Không tạo được từ cho topicId=${params.topicId}, level=${params.level}`,
     );
   }
-async updateWordProgress(
-  userId: string,
-  wordId: string,
-  status: WordProgressStatus,
-) {
-  const word = await this.prisma.word.findUnique({
-    where: {
-      id: wordId,
-    },
-    select: {
-      id: true,
-      word: true,
-    },
-  });
+  async updateWordProgress(
+    userId: string,
+    wordId: string,
+    status: WordProgressStatus,
+  ) {
+    const word = await this.prisma.word.findUnique({
+      where: {
+        id: wordId,
+      },
+      select: {
+        id: true,
+        word: true,
+      },
+    });
 
-  if (!word) {
-    throw new NotFoundException(
-      'Không tìm thấy từ.',
-    );
-  }
+    if (!word) {
+      throw new NotFoundException('Không tìm thấy từ.');
+    }
 
-  const previousProgress =
-    await this.prisma.userWordProgress.findUnique({
+    const previousProgress = await this.prisma.userWordProgress.findUnique({
       where: {
         userId_wordId: {
           userId,
@@ -808,8 +806,7 @@ async updateWordProgress(
       },
     });
 
-  const updatedProgress =
-    await this.prisma.userWordProgress.upsert({
+    const updatedProgress = await this.prisma.userWordProgress.upsert({
       where: {
         userId_wordId: {
           userId,
@@ -833,86 +830,56 @@ async updateWordProgress(
                 increment: 1,
               }
             : undefined,
-        interval:
-          status === 'KNOWN'
-            ? 7
-            : status === 'REVIEW'
-              ? 1
-              : undefined,
-        learnedAt:
-          status === 'KNOWN'
-            ? new Date()
-            : undefined,
-        reviewAt:
-          status === 'KNOWN'
-            ? this.addDays(7)
-            : this.addDays(1),
+        interval: status === 'KNOWN' ? 7 : status === 'REVIEW' ? 1 : undefined,
+        learnedAt: status === 'KNOWN' ? new Date() : undefined,
+        reviewAt: status === 'KNOWN' ? this.addDays(7) : this.addDays(1),
       },
       create: {
         userId,
         wordId,
         status,
         seenCount: 1,
-        correctCount:
-          status === 'KNOWN' ? 1 : 0,
-        wrongCount:
-          status === 'REVIEW' ? 1 : 0,
-        interval:
-          status === 'KNOWN'
-            ? 7
-            : status === 'REVIEW'
-              ? 1
-              : 0,
-        learnedAt:
-          status === 'KNOWN'
-            ? new Date()
-            : null,
-        reviewAt:
-          status === 'KNOWN'
-            ? this.addDays(7)
-            : this.addDays(1),
+        correctCount: status === 'KNOWN' ? 1 : 0,
+        wrongCount: status === 'REVIEW' ? 1 : 0,
+        interval: status === 'KNOWN' ? 7 : status === 'REVIEW' ? 1 : 0,
+        learnedAt: status === 'KNOWN' ? new Date() : null,
+        reviewAt: status === 'KNOWN' ? this.addDays(7) : this.addDays(1),
       },
     });
 
-  /*
-   * UserWordProgress của bạn chỉ nhận:
-   * NEW | LEARNING | KNOWN | REVIEW
-   */
-  const countedStatuses: WordProgressStatus[] = [
-    'LEARNING',
-    'KNOWN',
-    'REVIEW',
-  ];
+    /*
+     * UserWordProgress của bạn chỉ nhận:
+     * NEW | LEARNING | KNOWN | REVIEW
+     */
+    const countedStatuses: WordProgressStatus[] = [
+      'LEARNING',
+      'KNOWN',
+      'REVIEW',
+    ];
 
-  const wasAlreadyCounted =
-    previousProgress !== null &&
-    countedStatuses.includes(
-      previousProgress.status,
-    );
+    const wasAlreadyCounted =
+      previousProgress !== null &&
+      countedStatuses.includes(previousProgress.status);
 
-  const shouldCount =
-    countedStatuses.includes(status);
+    const shouldCount = countedStatuses.includes(status);
 
-  /*
-   * Chỉ cộng nhiệm vụ khi từ được học lần đầu.
-   */
-  if (!wasAlreadyCounted && shouldCount) {
-    await this.missionV2ProgressService.increase({
-      userId,
-      action:
-        MissionV2Action.LEARN_WORD,
-      amount: 1,
-      skill:
-        LearningSkill.VOCABULARY,
-    });
+    /*
+     * Chỉ cộng nhiệm vụ khi từ được học lần đầu.
+     */
+    if (!wasAlreadyCounted && shouldCount) {
+      await this.missionV2ProgressService.increase({
+        userId,
+        action: MissionV2Action.LEARN_WORD,
+        amount: 1,
+        skill: LearningSkill.VOCABULARY,
+      });
+    }
+
+    return {
+      ...updatedProgress,
+      missionProgressUpdated: !wasAlreadyCounted && shouldCount,
+    };
   }
-
-  return {
-    ...updatedProgress,
-    missionProgressUpdated:
-      !wasAlreadyCounted && shouldCount,
-  };
-}
 
   getNextReviewDate() {
     const date = new Date();
@@ -2690,18 +2657,21 @@ Rules:
     const shareText = `${detail.word}: ${detail.meaningVi || detail.meaningEn || ''}`;
     const post = await this.prisma.communityPost.create({
       data: {
-        userId,
-        type: 'WORD',
+        authorId: userId,
+        type: 'SHARE',
         visibility: 'PUBLIC',
-        title: `Từ vựng: ${detail.word}`,
-        content: content || shareText,
-        hashtags: ['Vocabulary', detail.topic?.name || detail.level].filter(
-          Boolean,
-        ),
-        word: detail.word,
-        ipa: detail.phonetic,
-        meaning: detail.meaningVi || detail.meaningEn,
-        example: detail.example,
+        status: 'PUBLISHED',
+        title: `Từ vựng mới: ${detail.word}`,
+        content: [
+          detail.meaningVi,
+          detail.example ? `Ví dụ: ${detail.example}` : null,
+        ]
+          .filter(Boolean)
+          .join('\n\n'),
+        category: 'VOCABULARY',
+        tags: ['vocabulary', detail.level.toLowerCase()],
+        media: Prisma.JsonNull,
+        pollData: Prisma.JsonNull,
       },
     });
 

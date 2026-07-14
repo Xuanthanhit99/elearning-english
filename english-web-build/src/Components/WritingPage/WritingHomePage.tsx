@@ -78,14 +78,18 @@ type WritingHome = {
 export default function WritingHomePage() {
   const [data, setData] = useState<WritingHome | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const router = useRouter();
 
   async function loadData() {
     try {
+      setLoading(true);
+      setError("");
       const res = await api.get('/writing/home');
       setData(res.data);
     } catch (error) {
       console.error(error);
+      setError("Không tải được trang Writing.");
     } finally {
       setLoading(false);
     }
@@ -111,8 +115,14 @@ async function handleStartWriting(type: string) {
 }
 
   async function handleStartLesson(lessonId: string) {
-    const res = await api.post(`/writing/lessons/${lessonId}/start`);
-    router.push(`/writing/sessions/${res.data.sessionId}`);
+    try {
+      setError("");
+      const res = await api.post(`/writing/lessons/${lessonId}/start`);
+      router.push(`/writing/sessions/${res.data.sessionId}`);
+    } catch (error) {
+      console.error(error);
+      setError("Không mở được bài Writing lúc này.");
+    }
   }
 
   useEffect(() => {
@@ -124,7 +134,19 @@ async function handleStartWriting(type: string) {
   }
 
   if (!data) {
-    return <div className="p-10">Không tải được dữ liệu.</div>;
+    return error ? (
+      <div className="p-10">
+        <p className="font-semibold text-red-600">{error}</p>
+        <button
+          onClick={loadData}
+          className="mt-4 rounded-xl bg-violet-600 px-5 py-3 font-bold text-white"
+        >
+          Thử lại
+        </button>
+      </div>
+    ) : (
+      <div className="p-10">Không tải được dữ liệu.</div>
+    );
   }
 
 return (
@@ -137,6 +159,12 @@ return (
         <div className="grid grid-cols-[minmax(0,1fr)_390px] gap-8 px-8 py-7">
           <div className="min-w-0">
             <Hero data={data} />
+
+            {error && (
+              <div className="mt-5 rounded-xl bg-red-50 p-4 text-sm font-semibold text-red-600">
+                {error}
+              </div>
+            )}
 
             <section className="mt-8">
               <h2 className="text-2xl font-bold">Today&apos;s Practice</h2>
@@ -455,12 +483,18 @@ function RecommendationCard({
 }) {
   return (
     <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
-      <div
-        className="h-28 bg-cover bg-center"
-        style={{
-          backgroundImage: `url(${item.imageUrl || 'https://images.unsplash.com/photo-1512820790803-83ca734da794'})`,
-        }}
-      />
+      {item.imageUrl ? (
+        <div
+          className="h-28 bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${item.imageUrl})`,
+          }}
+        />
+      ) : (
+        <div className="flex h-28 items-center justify-center bg-violet-50 text-violet-600">
+          <BookOpen className="h-9 w-9" />
+        </div>
+      )}
 
       <div className="p-4">
         <span className="rounded bg-green-100 px-2 py-1 text-xs font-bold text-green-700">

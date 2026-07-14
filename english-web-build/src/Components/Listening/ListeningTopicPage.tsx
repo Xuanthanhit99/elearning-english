@@ -8,7 +8,6 @@ import {
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/src/lib/axios";
-import StudySidebar from "@/src/Components/Layout/StudySidebar";
 import {
   getApiErrorMessage,
   unwrap,
@@ -71,10 +70,8 @@ export default function ListeningTopicPage() {
 
   return (
     <main className="min-h-screen bg-[#fbfbff] text-[#101733]">
-      <div className="mx-auto flex min-h-screen max-w-[1920px]">
-        <StudySidebar />
-
-        <section className="min-w-0 flex-1 px-5 py-7 lg:px-10">
+      <div className="mx-auto min-h-screen max-w-[1920px]">
+        <section className="min-w-0 px-0 py-2 sm:py-4 lg:px-2">
           <div className="mx-auto max-w-[1300px]">
             <button
               onClick={() => router.push("/listening")}

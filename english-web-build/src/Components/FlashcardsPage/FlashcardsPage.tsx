@@ -19,7 +19,6 @@ import {
   Volume2,
   X,
 } from "lucide-react";
-import StudySidebar from "@/src/Components/Layout/StudySidebar";
 
 const navs = [
   ["Trang chủ", Home],
@@ -45,7 +44,6 @@ export default function FlashcardsPage() {
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#130b5f]">
       <div className="flex">
-        <StudySidebar fixed />
         <aside className="hidden fixed left-0 top-0 h-screen w-[280px] border-r border-purple-100 bg-white px-5 py-6">
           <div className="mb-10 flex items-center gap-3">
             <div className="text-3xl">🦊</div>
@@ -129,7 +127,7 @@ export default function FlashcardsPage() {
           </div>
         </aside>
 
-        <main className="ml-[280px] flex-1">
+        <main className="flex-1">
           <header className="flex h-[92px] items-center justify-between border-b border-purple-100 bg-white px-9">
             <div className="relative w-[520px]">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-400" />

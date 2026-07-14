@@ -1,9 +1,10 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, @next/next/no-img-element */
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "@/src/lib/axios";
-import { useAuthStore } from "@/src/store/authStore";
 import SpiritPetAvatar from "@/src/Components/Pets/SpiritPetAvatar";
 import { AppIcon, LegacyIcon } from "@/src/Components/UI/AppIcon";
 import AppLogo from "@/src/Components/UI/AppLogo";
@@ -62,7 +63,6 @@ const careCards = [
 ];
 
 export default function PetDashboardPage() {
-  const user = useAuthStore((state) => state.user);
   const [pet, setPet] = useState<Pet | null>(null);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
@@ -87,9 +87,6 @@ export default function PetDashboardPage() {
   const level = pet?.level || 12;
   const xp = pet?.xp || 850;
   const xpMax = 1000;
-  const displayName = user?.fullname || "Minh Anh";
-  const avatar = user?.avatar || "/avatar-default.png";
-
   const care = async (action: string, title: string) => {
     try {
       setSaving(true);
@@ -108,10 +105,9 @@ export default function PetDashboardPage() {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f8f7ff] text-[#121735]">
-      <div className="mx-auto flex max-w-[1920px]">
-        <Sidebar onAction={openComingSoon} />
-        <section className="min-w-0 flex-1">
-          <TopBar displayName={displayName} avatar={avatar} level={level} streak={pet?.streak || 18} gems={5230} coins={pet?.coins || 2450} />
+      <div className="mx-auto max-w-[1920px]">
+        {/* legacy page chrome removed */}
+        <section className="min-w-0">
 
           <div className="grid gap-5 p-4 lg:p-5 2xl:grid-cols-[minmax(0,1fr)_440px]">
             <div className="min-w-0 space-y-5">

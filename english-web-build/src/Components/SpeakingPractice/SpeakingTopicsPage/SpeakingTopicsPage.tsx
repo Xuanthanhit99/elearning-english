@@ -64,17 +64,10 @@ export default function SpeakingTopicsPage() {
   return (
     <div className="min-h-screen bg-[#fbfbff] text-[#08083d]">
       <div className="flex">
-        <Sidebar onGoPremium={() => router.push("/premium")} />
         <main className="flex-1">
-          <Topbar
-            onGift={() => router.push("/rewards")}
-            onNotification={() => router.push("/notifications")}
-            onProfile={() => router.push("/profile")}
-          />
           <div className="grid grid-cols-12 gap-8 px-9 py-7">
             <section className="col-span-9">
               <Breadcrumb />
-              <Header />
               <div className="grid grid-cols-5 gap-4">
                 <SearchInput value={search} onChange={setSearch} />
                 <Select

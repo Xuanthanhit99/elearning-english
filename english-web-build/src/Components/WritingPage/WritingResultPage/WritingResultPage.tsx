@@ -100,9 +100,13 @@ export default function WritingResultPage() {
   async function handleRetry() {
     try {
       setRetrying(true);
+      setError("");
 
       const res = await api.post(`/writing/sessions/${sessionId}/retry`);
       router.push(`/writing/sessions/${res.data.sessionId}`);
+    } catch (err) {
+      console.error(err);
+      setError("Không tạo được bài luyện lại lúc này.");
     } finally {
       setRetrying(false);
     }

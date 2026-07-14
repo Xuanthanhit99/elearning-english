@@ -1,7 +1,5 @@
-import CommunityPage from "../../../src/Components/Community/CommunityPage"
+import { CommunityPage } from "@/src/Components/Community/CommunityPage";
 
-const page = () => {
-  return <CommunityPage />
+export default function CommunityRoute() {
+  return <CommunityPage />;
 }
-
-export default page

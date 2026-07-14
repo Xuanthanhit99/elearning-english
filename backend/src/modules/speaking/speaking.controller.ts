@@ -15,6 +15,7 @@ import { GetTopicLessonsDto } from './dto/get-topic-lessons.dto';
 import { GetSpeakingCategoriesDto } from './dto/get-speaking-categories.dto';
 import { SubmitSpeakingAnswerDto } from './dto/submit-speaking-answer.dto';
 import { GetSpeakingHistoryDto } from './dto/get-speaking-history.dto';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Controller('speaking')
 export class SpeakingController {
@@ -233,6 +234,17 @@ export class SpeakingController {
       req.user.id,
       id,
     );
+
+    return {
+      success: true,
+      data,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('practice/:sessionId')
+  async getPractice(@Req() req: any, @Param('sessionId') sessionId: string) {
+    const data = await this.speakingService.getPractice(req.user.id, sessionId);
 
     return {
       success: true,

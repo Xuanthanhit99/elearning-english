@@ -132,7 +132,7 @@ export default function WritingSessionPage() {
       });
 
       router.push(
-        res.data.resultUrl || `/writing/sessions/${sessionId}/result`,
+        res.data.processingUrl || `/writing/sessions/${sessionId}/processing`,
       );
     } catch (err) {
       console.error(err);

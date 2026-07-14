@@ -1,10 +1,11 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-unused-vars, @next/next/no-img-element */
+
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import SpiritPetAvatar from "@/src/Components/Pets/SpiritPetAvatar";
-import { useAuthStore } from "@/src/store/authStore";
 import { AppIcon, LegacyIcon } from "@/src/Components/UI/AppIcon";
 import AppLogo from "@/src/Components/UI/AppLogo";
 import { api } from "@/src/lib/axios";
@@ -139,15 +140,12 @@ const missionIcons: Record<MissionAction, string> = {
 
 export default function MissionsPage() {
   const router = useRouter();
-  const user = useAuthStore((state) => state.user);
   const [message, setMessage] = useState("");
   const [activeTab, setActiveTab] =
     useState<(typeof tabMap)[number]["key"]>("all");
   const [dashboard, setDashboard] = useState<MissionsDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [claimingId, setClaimingId] = useState("");
-  const displayName = user?.fullname || "Minh Anh";
-  const avatar = user?.avatar || "/avatar-default.png";
 
   async function loadMissions() {
     try {
@@ -254,12 +252,11 @@ export default function MissionsPage() {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f8f7ff] text-[#121735]">
-      <div className="mx-auto flex max-w-[1920px]">
-        <Sidebar
+      <div className="mx-auto max-w-[1920px]">
+        {/* legacy page chrome removed
           onAction={() => notify("Gói Premium sẽ được mở ở bước thanh toán.")}
-        />
-        <section className="min-w-0 flex-1">
-          <TopBar displayName={displayName} avatar={avatar} />
+        */}
+        <section className="min-w-0">
           <div className="grid gap-5 p-4 lg:p-5 2xl:grid-cols-[minmax(0,1fr)_420px]">
             <div className="min-w-0 space-y-5">
               <header>

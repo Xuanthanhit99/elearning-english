@@ -15,7 +15,6 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/src/lib/axios";
-import StudySidebar from "@/src/Components/Layout/StudySidebar";
 import type {
   ApiEnvelope,
   ListeningHomeResponse,
@@ -136,10 +135,8 @@ export default function ListeningHomePage() {
 
   return (
     <main className="min-h-screen bg-[#fbfbff] text-[#101733]">
-      <div className="mx-auto flex min-h-screen max-w-[1920px]">
-        <StudySidebar />
-
-        <section className="min-w-0 flex-1 px-5 py-7 lg:px-10">
+      <div className="mx-auto min-h-screen max-w-[1920px]">
+        <section className="min-w-0 px-0 py-2 sm:py-4 lg:px-2">
           <div className="mx-auto max-w-[1500px]">
             <section className="overflow-hidden rounded-3xl bg-gradient-to-r from-violet-700 to-indigo-600 p-7 text-white shadow-xl shadow-violet-200">
               <div className="grid gap-7 md:grid-cols-[1fr_340px] md:items-center">

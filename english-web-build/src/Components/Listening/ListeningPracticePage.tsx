@@ -20,7 +20,6 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/src/lib/axios";
-import StudySidebar from "@/src/Components/Layout/StudySidebar";
 import type {
   ApiEnvelope,
   ListeningFinishResult,
@@ -396,10 +395,8 @@ export default function ListeningPracticePage({
         onEnded={() => setIsPlaying(false)}
       />
 
-      <div className="mx-auto flex min-h-screen max-w-[1920px]">
-        <StudySidebar />
-
-        <section className="min-w-0 flex-1 px-5 py-7 lg:px-10">
+      <div className="mx-auto min-h-screen max-w-[1920px]">
+        <section className="min-w-0 px-0 py-2 sm:py-4 lg:px-2">
           <div className="mx-auto max-w-[1450px]">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
               <button

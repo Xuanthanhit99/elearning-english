@@ -6,17 +6,14 @@ import {
   Headphones,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import StudySidebar from "@/src/Components/Layout/StudySidebar";
 
 export default function DictationPage() {
   const router = useRouter();
 
   return (
     <main className="min-h-screen bg-[#fbfbff] text-[#101733]">
-      <div className="mx-auto flex min-h-screen max-w-[1920px]">
-        <StudySidebar />
-
-        <section className="min-w-0 flex-1 px-5 py-7 lg:px-10">
+      <div className="mx-auto min-h-screen max-w-[1920px]">
+        <section className="min-w-0 px-0 py-2 sm:py-4 lg:px-2">
           <div className="mx-auto max-w-[1000px]">
             <button
               onClick={() => router.push("/listening")}

@@ -13,7 +13,7 @@ import {
   RefreshCcw,
   TriangleAlert,
 } from 'lucide-react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 type HistoryDetail = {
@@ -61,26 +61,62 @@ type HistoryDetail = {
 
 export default function WritingHistoryDetailPage({sessionId} : {sessionId: string}) {
   const router = useRouter();
-  const params = useParams();
 
   const [data, setData] = useState<HistoryDetail | null>(null);
   const [tab, setTab] = useState('OVERVIEW');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [retrying, setRetrying] = useState(false);
 
   async function loadData() {
-    const res = await api.get(`/writing/history/${sessionId}`);
-    setData(res.data);
+    try {
+      setLoading(true);
+      setError('');
+      const res = await api.get(`/writing/history/${sessionId}`);
+      setData(res.data);
+    } catch (err) {
+      console.error(err);
+      setError('Không tải được chi tiết lịch sử Writing.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleRetry() {
-    const res = await api.post(`/writing/history/${sessionId}/retry`);
-    router.push(`/writing/sessions/${res.data.sessionId}`);
+    try {
+      setRetrying(true);
+      setError('');
+      const res = await api.post(`/writing/history/${sessionId}/practice-again`);
+      router.push(`/writing/sessions/${res.data.sessionId}`);
+    } catch (err) {
+      console.error(err);
+      setError('Không tạo được bài luyện lại lúc này.');
+    } finally {
+      setRetrying(false);
+    }
   }
 
   useEffect(() => {
     loadData();
   }, [sessionId]);
 
-  if (!data) return <div className="p-10">Loading...</div>;
+  if (loading) return <div className="p-10">Loading...</div>;
+
+  if (error && !data) {
+    return (
+      <div className="p-10">
+        <p className="font-semibold text-red-600">{error}</p>
+        <button
+          onClick={loadData}
+          className="mt-4 rounded-xl bg-violet-600 px-5 py-3 font-bold text-white"
+        >
+          Thử lại
+        </button>
+      </div>
+    );
+  }
+
+  if (!data) return <div className="p-10">Không có dữ liệu lịch sử.</div>;
 
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
@@ -109,6 +145,12 @@ export default function WritingHistoryDetailPage({sessionId} : {sessionId: strin
 
               <Tabs tab={tab} setTab={setTab} />
 
+              {error && (
+                <div className="mt-5 rounded-xl bg-red-50 p-4 text-sm font-semibold text-red-600">
+                  {error}
+                </div>
+              )}
+
               <div className="mt-6 grid grid-cols-[1fr_310px] gap-5">
                 <EssayCard data={data} />
                 <ScoreCard data={data} />
@@ -121,13 +163,17 @@ export default function WritingHistoryDetailPage({sessionId} : {sessionId: strin
               <div className="mt-6 flex justify-center gap-5">
                 <button
                   onClick={handleRetry}
-                  className="flex h-12 items-center gap-2 rounded-xl border border-violet-500 px-8 font-bold text-violet-600"
+                  disabled={retrying}
+                  className="flex h-12 items-center gap-2 rounded-xl border border-violet-500 px-8 font-bold text-violet-600 disabled:opacity-50"
                 >
                   <RefreshCcw className="h-5 w-5" />
-                  Try Another Essay
+                  {retrying ? 'Creating...' : 'Try Another Essay'}
                 </button>
 
-                <button className="flex h-12 items-center gap-2 rounded-xl border border-violet-500 px-8 font-bold text-violet-600">
+                <button
+                  onClick={() => window.print()}
+                  className="flex h-12 items-center gap-2 rounded-xl border border-violet-500 px-8 font-bold text-violet-600"
+                >
                   <Download className="h-5 w-5" />
                   Download Report
                 </button>
@@ -230,10 +276,7 @@ function EssayCard({ data }: { data: HistoryDetail }) {
 }
 
 function renderHighlightedEssay(content: string) {
-  const fallback =
-    'Artificial intelligence (AI) has many advantages in our daily life. First, AI can help people save time and do works more quickly. For example, AI assistants like Siri or Google Assistant can answer questions instantly.\n\nSecond, AI can improve accuracy. In hospitals, AI can help doctors detect diseases earlier and reduce human errors. Moreover, AI is useful in education. Students can learn at their own pace with AI-powered apps.\n\nHowever, AI also has some disadvantages such as job loss and high costs. In conclusion, AI brings more benefits than drawbacks if we use it wisely.';
-
-  return fallback || content;
+  return content || 'Bài viết này chưa có nội dung được lưu.';
 }
 
 function ScoreCard({ data }: { data: HistoryDetail }) {
@@ -335,7 +378,6 @@ function QuickSummary({ data }: { data: HistoryDetail }) {
 
       <div className="mt-6 space-y-5 text-sm">
         <SummaryRow label="Overall Score" value={`${data.score.overall}/100`} />
-        <SummaryRow label="Percentile" value="Top 38% of learners" />
         <SummaryRow label="Time Spent" value={formatTime(data.session.timeSpentSeconds)} />
         <SummaryRow label="Words Used" value={`${data.session.wordCount}`} />
         <SummaryRow label="Completed At" value={formatDate(data.session.submittedAt)} />
@@ -387,6 +429,12 @@ function ProgressChart({ data }: { data: HistoryDetail }) {
       <h2 className="text-lg font-extrabold">Writing Progress</h2>
 
       <div className="mt-6 flex h-36 items-end gap-6 border-b border-slate-200">
+        {data.progressChart.length === 0 && (
+          <div className="flex h-full flex-1 items-center justify-center text-sm font-semibold text-slate-500">
+            Chưa có đủ dữ liệu tiến độ.
+          </div>
+        )}
+
         {data.progressChart.map((item) => (
           <div key={item.date} className="flex flex-1 flex-col items-center">
             <div
