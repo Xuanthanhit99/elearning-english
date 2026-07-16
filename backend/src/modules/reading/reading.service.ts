@@ -16,6 +16,7 @@ import {
 import { GetReadingArticlesQueryDto } from './dto/get-reading-articles.dto';
 import { GetReadingHistoryQueryDto } from './dto/get-reading-history.dto';
 import { MissionV2ProgressService } from '../missions-v2/services/mission-v2-progress.service';
+import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
 
 @Injectable()
 export class ReadingService {
@@ -24,6 +25,7 @@ export class ReadingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly missionV2ProgressService: MissionV2ProgressService,
+    private readonly learningXp: LearningXpPublisher,
   ) {}
 
   async getReadingHome(userId: string): Promise<ReadingHomeResponse> {
@@ -863,9 +865,7 @@ export class ReadingService {
     });
 
     if (!question) {
-      throw new NotFoundException(
-        'Không tìm thấy câu hỏi trong bài đọc này',
-      );
+      throw new NotFoundException('Không tìm thấy câu hỏi trong bài đọc này');
     }
 
     const isCorrect = question.correctAnswer === body.selected;
@@ -937,8 +937,9 @@ export class ReadingService {
     }
 
     const totalQuestions = session.article.questions.length;
-    const correctCount = session.answers.filter((answer) => answer.isCorrect)
-      .length;
+    const correctCount = session.answers.filter(
+      (answer) => answer.isCorrect,
+    ).length;
 
     const accuracy =
       totalQuestions > 0
@@ -946,9 +947,7 @@ export class ReadingService {
         : 0;
 
     const score = accuracy;
-    const earnedXp = Math.round(
-      (session.article.xpReward * accuracy) / 100,
-    );
+    const earnedXp = Math.round((session.article.xpReward * accuracy) / 100);
 
     const now = new Date();
     const calculatedSpentTime = Math.max(
@@ -983,20 +982,17 @@ export class ReadingService {
         };
       }
 
-      const currentProgress =
-        await tx.userReadingProgress.findFirst({
-          where: {
-            userId,
-          },
-        });
+      const currentProgress = await tx.userReadingProgress.findFirst({
+        where: {
+          userId,
+        },
+      });
 
-      const previousCompleted =
-        currentProgress?.completedArticles ?? 0;
+      const previousCompleted = currentProgress?.completedArticles ?? 0;
 
       const nextCompleted = previousCompleted + 1;
 
-      const previousAverage =
-        currentProgress?.averageAccuracy ?? 0;
+      const previousAverage = currentProgress?.averageAccuracy ?? 0;
 
       const nextAverage = Math.round(
         (previousAverage * previousCompleted + accuracy) /
@@ -1010,11 +1006,9 @@ export class ReadingService {
         now,
       );
 
-      const nextTotalXp =
-        (currentProgress?.totalXp ?? 0) + earnedXp;
+      const nextTotalXp = (currentProgress?.totalXp ?? 0) + earnedXp;
 
-      const nextLevel =
-        this.resolveReadingLevel(nextTotalXp);
+      const nextLevel = this.resolveReadingLevel(nextTotalXp);
 
       await tx.userReadingProgress.upsert({
         where: {
@@ -1059,21 +1053,20 @@ export class ReadingService {
      * không phát Mission lại.
      */
     if (!transactionResult.completedByThisRequest) {
-      const completed =
-        await this.prisma.readingSession.findFirst({
-          where: {
-            id: session.id,
-            userId,
-          },
-          include: {
-            article: {
-              include: {
-                questions: true,
-              },
+      const completed = await this.prisma.readingSession.findFirst({
+        where: {
+          id: session.id,
+          userId,
+        },
+        include: {
+          article: {
+            include: {
+              questions: true,
             },
-            answers: true,
           },
-        });
+          answers: true,
+        },
+      });
 
       if (!completed) {
         throw new NotFoundException('Không tìm thấy phiên làm bài');
@@ -1083,9 +1076,8 @@ export class ReadingService {
         sessionId: completed.id,
         score: completed.score,
         accuracy: completed.accuracy,
-        correctCount: completed.answers.filter(
-          (answer) => answer.isCorrect,
-        ).length,
+        correctCount: completed.answers.filter((answer) => answer.isCorrect)
+          .length,
         totalQuestions: completed.article.questions.length,
         earnedXp: completed.earnedXp,
         resultUrl: `/reading/sessions/${completed.id}/result`,
@@ -1094,13 +1086,46 @@ export class ReadingService {
       });
     }
 
-    const missionUpdated =
-      await this.updateReadingMissionProgress({
+    const missionUpdated = await this.updateReadingMissionProgress({
+      userId,
+      articleId: session.articleId,
+      passed: score >= 50,
+      spentTimeSeconds: calculatedSpentTime,
+    });
+
+    try {
+      await this.learningXp.publish({
+        activity: 'READING_COMPLETED',
+
         userId,
-        articleId: session.articleId,
-        passed: score >= 50,
-        spentTimeSeconds: calculatedSpentTime,
+
+        sourceId: session.id,
+
+        score,
+
+        completionRate: accuracy,
+
+        metadata: {
+          sessionId: session.id,
+          articleId: session.articleId,
+          articleTitle: session.article.title,
+          categoryId: session.article.categoryId,
+
+          totalQuestions,
+          correctAnswers: correctCount,
+
+          accuracy,
+          earnedXp,
+
+          spentTimeSeconds: calculatedSpentTime,
+        },
       });
+    } catch (error) {
+      this.logger.error(
+        `Reading XP publish failed: ${session.id}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+    }
 
     return this.buildSubmitResponse({
       sessionId: session.id,
@@ -1245,8 +1270,7 @@ export class ReadingService {
     const last = this.startOfLocalDay(lastStudyDate);
     const today = this.startOfLocalDay(now);
     const differenceDays = Math.floor(
-      (today.getTime() - last.getTime()) /
-        (24 * 60 * 60 * 1000),
+      (today.getTime() - last.getTime()) / (24 * 60 * 60 * 1000),
     );
 
     const nextCurrent =
@@ -1263,11 +1287,7 @@ export class ReadingService {
   }
 
   private startOfLocalDay(date: Date) {
-    return new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-    );
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   }
 
   private resolveReadingLevel(totalXp: number): ReadingLevel {

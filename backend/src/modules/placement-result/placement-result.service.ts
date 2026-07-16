@@ -13,12 +13,14 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { randomUUID } from 'crypto';
 import { PlacementResultAiService } from './placement-result-ai/placement-result-ai.service';
+import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
 
 @Injectable()
 export class PlacementResultService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly aiService: PlacementResultAiService,
+    private readonly learningXp: LearningXpPublisher,
   ) {}
 
   async ensureGenerated(userId: string, testId: string) {
@@ -153,6 +155,29 @@ export class PlacementResultService {
           processedSeconds,
         },
       });
+      try {
+        await this.learningXp.publish({
+          activity: 'PLACEMENT_COMPLETED',
+
+          userId,
+
+          sourceId: test.id,
+
+          score: result.overallScore,
+
+          completionRate: 100,
+
+          metadata: {
+            placementResultId: result.id,
+            placementTestId: test.id,
+            overallLevel: result.overallLevel,
+            overallScore: result.overallScore,
+            processedSeconds,
+          },
+        });
+      } catch (error) {
+        console.error(`Placement XP publish failed: ${test.id}`, error);
+      }
 
       await tx.placementResultSkill.deleteMany({
         where: { resultId: result.id },

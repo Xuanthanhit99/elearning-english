@@ -22,12 +22,16 @@ import {
   EvaluateSpeakingDto,
   TranscribeSpeakingDto,
 } from '../speaking-practice/dto/speaking-practice.dto';
+import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
 
 @Injectable()
 export class SpeakingService {
   private readonly model;
 
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly learningXp: LearningXpPublisher,
+  ) {
     if (!process.env.GEMINI_API_KEY) {
       throw new Error('Missing GEMINI_API_KEY');
     }
@@ -1291,6 +1295,28 @@ Format:
       },
     });
 
+    await this.learningXp.publish({
+      activity: 'SPEAKING_COMPLETED',
+
+      userId,
+
+      sourceId: session.id,
+
+      score: overallScore,
+
+      completionRate: 100,
+
+      metadata: {
+        lessonId: session.lessonId,
+        topicId: session.topicId,
+        pronunciation: pronunciation,
+        fluency: fluency,
+        grammar: grammar,
+        vocabulary: vocabulary,
+        confidence: confidence,
+      },
+    });
+
     return updatedSession;
   }
 
@@ -2267,9 +2293,8 @@ Format:
     };
   }
 
-async getPractice(userId: string, sessionId: string) {
-  const session =
-    await this.prisma.speakingSession.findFirst({
+  async getPractice(userId: string, sessionId: string) {
+    const session = await this.prisma.speakingSession.findFirst({
       where: {
         id: sessionId,
         userId,
@@ -2286,126 +2311,112 @@ async getPractice(userId: string, sessionId: string) {
       },
     });
 
-  if (!session) {
-    throw new NotFoundException(
-      'Không tìm thấy phiên luyện nói',
-    );
+    if (!session) {
+      throw new NotFoundException('Không tìm thấy phiên luyện nói');
+    }
+
+    if (!session.lesson) {
+      throw new BadRequestException(
+        'Phiên luyện nói chưa được gắn với bài học',
+      );
+    }
+
+    if (!session.topic) {
+      throw new BadRequestException('Phiên luyện nói chưa được gắn với chủ đề');
+    }
+
+    const lesson = session.lesson;
+    const topic = session.topic;
+    const latestAnswer = session.answers[0] ?? null;
+
+    return {
+      session: {
+        id: session.id,
+        status: session.status,
+        durationSeconds: session.duration ?? 0,
+      },
+
+      lesson: {
+        id: lesson.id,
+        title: lesson.title,
+        description: lesson.description,
+        prompt: lesson.prompt,
+        expectedText: lesson.expectedText,
+        estimatedMinutes: lesson.estimatedMinutes,
+        type: lesson.type,
+        level: lesson.level,
+        icon: lesson.icon,
+      },
+
+      topic: {
+        id: topic.id,
+        title: topic.title,
+        slug: topic.slug,
+      },
+
+      latestAnswer: latestAnswer
+        ? {
+            id: latestAnswer.id,
+            transcript: latestAnswer.transcript,
+            audioUrl: latestAnswer.audioUrl,
+            overallScore: latestAnswer.overallScore,
+            feedback: latestAnswer.feedback,
+          }
+        : null,
+
+      steps: [
+        {
+          order: 1,
+          title: 'Đọc yêu cầu',
+          description: 'Hiểu câu hỏi và chuẩn bị nội dung muốn nói.',
+        },
+        {
+          order: 2,
+          title: 'Ghi âm',
+          description: 'Nói rõ ràng, tự nhiên và giữ microphone ổn định.',
+        },
+        {
+          order: 3,
+          title: 'Nhận phản hồi AI',
+          description: 'AI phân tích phát âm, độ trôi chảy và ngữ pháp.',
+        },
+      ],
+
+      focusSkills: [
+        {
+          title: 'Pronunciation',
+          description: 'Phát âm rõ ràng và chính xác.',
+          icon: '🎙️',
+        },
+        {
+          title: 'Fluency',
+          description: 'Nói tự nhiên và hạn chế ngập ngừng.',
+          icon: '🔊',
+        },
+        {
+          title: 'Grammar',
+          description: 'Sử dụng cấu trúc câu chính xác.',
+          icon: 'Aa',
+        },
+      ],
+
+      tips: [
+        {
+          title: 'Giữ khoảng cách phù hợp',
+          description: 'Đặt microphone cách miệng khoảng 15–20 cm.',
+          icon: '🎤',
+        },
+        {
+          title: 'Nói thành câu hoàn chỉnh',
+          description: 'Không chỉ trả lời bằng một hoặc hai từ.',
+          icon: '💬',
+        },
+        {
+          title: 'Không đọc quá nhanh',
+          description: 'Giữ tốc độ vừa phải để hệ thống nhận diện chính xác.',
+          icon: '⏱️',
+        },
+      ],
+    };
   }
-
-  if (!session.lesson) {
-    throw new BadRequestException(
-      'Phiên luyện nói chưa được gắn với bài học',
-    );
-  }
-
-  if (!session.topic) {
-    throw new BadRequestException(
-      'Phiên luyện nói chưa được gắn với chủ đề',
-    );
-  }
-
-  const lesson = session.lesson;
-  const topic = session.topic;
-  const latestAnswer = session.answers[0] ?? null;
-
-  return {
-    session: {
-      id: session.id,
-      status: session.status,
-      durationSeconds: session.duration ?? 0,
-    },
-
-    lesson: {
-      id: lesson.id,
-      title: lesson.title,
-      description: lesson.description,
-      prompt: lesson.prompt,
-      expectedText: lesson.expectedText,
-      estimatedMinutes: lesson.estimatedMinutes,
-      type: lesson.type,
-      level: lesson.level,
-      icon: lesson.icon,
-    },
-
-    topic: {
-      id: topic.id,
-      title: topic.title,
-      slug: topic.slug,
-    },
-
-    latestAnswer: latestAnswer
-      ? {
-          id: latestAnswer.id,
-          transcript: latestAnswer.transcript,
-          audioUrl: latestAnswer.audioUrl,
-          overallScore:
-            latestAnswer.overallScore,
-          feedback: latestAnswer.feedback,
-        }
-      : null,
-
-    steps: [
-      {
-        order: 1,
-        title: 'Đọc yêu cầu',
-        description:
-          'Hiểu câu hỏi và chuẩn bị nội dung muốn nói.',
-      },
-      {
-        order: 2,
-        title: 'Ghi âm',
-        description:
-          'Nói rõ ràng, tự nhiên và giữ microphone ổn định.',
-      },
-      {
-        order: 3,
-        title: 'Nhận phản hồi AI',
-        description:
-          'AI phân tích phát âm, độ trôi chảy và ngữ pháp.',
-      },
-    ],
-
-    focusSkills: [
-      {
-        title: 'Pronunciation',
-        description:
-          'Phát âm rõ ràng và chính xác.',
-        icon: '🎙️',
-      },
-      {
-        title: 'Fluency',
-        description:
-          'Nói tự nhiên và hạn chế ngập ngừng.',
-        icon: '🔊',
-      },
-      {
-        title: 'Grammar',
-        description:
-          'Sử dụng cấu trúc câu chính xác.',
-        icon: 'Aa',
-      },
-    ],
-
-    tips: [
-      {
-        title: 'Giữ khoảng cách phù hợp',
-        description:
-          'Đặt microphone cách miệng khoảng 15–20 cm.',
-        icon: '🎤',
-      },
-      {
-        title: 'Nói thành câu hoàn chỉnh',
-        description:
-          'Không chỉ trả lời bằng một hoặc hai từ.',
-        icon: '💬',
-      },
-      {
-        title: 'Không đọc quá nhanh',
-        description:
-          'Giữ tốc độ vừa phải để hệ thống nhận diện chính xác.',
-        icon: '⏱️',
-      },
-    ],
-  };
-}
 }

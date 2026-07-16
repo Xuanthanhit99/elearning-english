@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { MissionV2Status } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { NotificationsService } from '../../notifications/notifications.service';
 import { MissionV2ProgressEvent } from '../types/mission-v2-event.types';
 import { MissionV2GeneratorService } from './mission-v2-generator.service';
 
@@ -9,6 +10,7 @@ export class MissionV2ProgressService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly generator: MissionV2GeneratorService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async increase(event: MissionV2ProgressEvent) {
@@ -49,7 +51,7 @@ export class MissionV2ProgressService {
 
       const completed = progress >= mission.target;
 
-      await this.prisma.userMissionV2.update({
+      const updated = await this.prisma.userMissionV2.update({
         where: {
           id: mission.id,
         },
@@ -61,6 +63,16 @@ export class MissionV2ProgressService {
           completedAt: completed ? new Date() : null,
         },
       });
+
+      if (completed && mission.status !== MissionV2Status.COMPLETED) {
+        await this.notifications.createOncePerDay({
+          userId: event.userId,
+          type: 'MISSION',
+          title: 'Nhiệm vụ đã hoàn thành',
+          message: `Bạn đã hoàn thành nhiệm vụ "${updated.title}". Nhận thưởng ngay nhé.`,
+          href: '/missions',
+        });
+      }
 
       updatedCount++;
     }

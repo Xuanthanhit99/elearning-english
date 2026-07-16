@@ -25,6 +25,11 @@ type GoalItem = {
   icon: AppIconName;
   current: number;
   target: number;
+  progressPercent?: number;
+  locked?: boolean;
+  unlocked?: boolean;
+  claimable?: boolean;
+  claimed?: boolean;
 };
 
 type AchievementData = {
@@ -253,19 +258,34 @@ function SummaryBox({
 }
 
 function GoalProgress({ goal }: { goal: GoalItem }) {
-  const percent = goal.target ? Math.min(100, Math.round((goal.current / goal.target) * 100)) : 0;
+  const percent = goal.progressPercent ?? (goal.target ? Math.min(100, Math.round((goal.current / goal.target) * 100)) : 0);
+  const statusLabel = goal.claimed
+    ? "Đã nhận"
+    : goal.claimable || goal.unlocked
+      ? "Có thể nhận"
+      : "Đang khóa";
   return (
     <div className="grid grid-cols-[64px_1fr] gap-4">
-      <AppIcon name={goal.icon} tone="purple" className="h-16 w-16 rounded-full" size={28} />
+      <AppIcon
+        name={goal.locked ? "lock" : goal.icon}
+        tone={goal.locked ? "slate" : "purple"}
+        className={`h-16 w-16 rounded-full ${goal.unlocked ? "animate-pulse" : ""}`}
+        size={28}
+      />
       <div>
         <div className="flex items-start justify-between gap-4">
           <div>
             <h3 className="font-black text-[#101733]">{goal.title}</h3>
             <p className="mt-1 text-sm font-bold text-[#69708b]">{goal.subtitle}</p>
           </div>
-          <span className="text-sm font-black text-[#6d35ff]">
-            {goal.current}/{goal.target}
-          </span>
+          <div className="text-right">
+            <span className="text-sm font-black text-[#6d35ff]">
+              {goal.current}/{goal.target}
+            </span>
+            <p className={`mt-1 text-[11px] font-black ${goal.locked ? "text-[#8b91aa]" : "text-emerald-600"}`}>
+              {statusLabel}
+            </p>
+          </div>
         </div>
         <div className="mt-3 h-2 rounded-full bg-[#e7e3f6]">
           <div className="h-2 rounded-full bg-[#6d35ff]" style={{ width: `${percent}%` }} />

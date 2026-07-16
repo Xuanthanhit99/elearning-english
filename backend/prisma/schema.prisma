@@ -260,6 +260,19 @@ model User {
   communityClubInvitesSent     CommunityClubInvite[]           @relation("CommunityClubInviteSender")
   communityClubInvitesReceived CommunityClubInvite[]           @relation("CommunityClubInviteReceiver")
 
+  settings             UserSettings?
+  deviceSessions       UserDeviceSession[]
+  learningDnaSnapshots LearningDnaSnapshot[]
+
+  xpProfile               UserXpProfile?
+  xpTransactions          XpTransaction[]
+  leaderboardEntries      LeaderboardEntry[]
+  leaderboardRewards      UserLeaderboardReward[]
+  leaderboardHistory      LeaderboardHistory[]
+  leaderboardActivities   LeaderboardActivity[]
+  createdChallenges       SocialChallenge[]            @relation("SocialChallengeCreator")
+  challengeParticipations SocialChallengeParticipant[]
+
   currentPlacementTestId    String?
   currentPlacementTest      PlacementTest?             @relation("CurrentPlacementTest", fields: [currentPlacementTestId], references: [id], onDelete: SetNull)
   placementTests            PlacementTest[]            @relation("UserPlacementTests")
@@ -2982,4 +2995,533 @@ model CommunityClubInvite {
   @@unique([clubId, inviteeId])
   @@index([inviteeId, status])
   @@index([clubId, status])
+}
+
+enum LeaderboardPeriodType {
+  WEEKLY
+  MONTHLY
+  SEASON
+  ALL_TIME
+}
+
+enum LeaderboardScopeType {
+  GLOBAL
+  FRIENDS
+  CLUB
+  SKILL
+}
+
+enum LeaderboardSeasonStatus {
+  UPCOMING
+  ACTIVE
+  CALCULATING
+  COMPLETED
+  CANCELLED
+}
+
+enum LeagueTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+  DIAMOND
+  MASTER
+  LEGEND
+}
+
+enum LeaderboardZone {
+  PROMOTION
+  SAFE
+  RELEGATION
+}
+
+enum XpSourceType {
+  VOCABULARY
+  SPEAKING
+  WRITING
+  LISTENING
+  READING
+  GRAMMAR
+  LESSON
+  QUIZ
+  MISSION
+  STREAK
+  PLACEMENT
+  COMMUNITY
+  CLUB_EVENT
+  REALTIME_ROOM
+  ARENA
+  ADMIN_ADJUSTMENT
+}
+
+enum LeaderboardRewardStatus {
+  AVAILABLE
+  CLAIMED
+  EXPIRED
+  REVOKED
+}
+
+model UserXpProfile {
+  id              String     @id @default(uuid())
+  userId          String     @unique
+  totalXp         Int        @default(0)
+  currentLevel    Int        @default(1)
+  currentLeague   LeagueTier @default(BRONZE)
+  currentStreak   Int        @default(0)
+  longestStreak   Int        @default(0)
+  optedOut        Boolean    @default(false)
+  showOnline      Boolean    @default(true)
+  showStreak      Boolean    @default(true)
+  useNickname     Boolean    @default(false)
+  leaderboardName String?
+  lastXpEarnedAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  transactions XpTransaction[]
+  entries      LeaderboardEntry[]
+  rewards      UserLeaderboardReward[]
+  histories    LeaderboardHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([totalXp])
+  @@index([currentLeague])
+}
+
+model XpTransaction {
+  id             String         @id @default(uuid())
+  userId         String
+  xpProfileId    String
+  sourceType     XpSourceType
+  sourceId       String?
+  skill          LearningSkill?
+  baseXp         Int
+  bonusXp        Int            @default(0)
+  finalXp        Int
+  reason         String?
+  idempotencyKey String         @unique
+  metadata       Json?
+  reversedAt     DateTime?
+  reversalReason String?
+  earnedAt       DateTime       @default(now())
+
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  xpProfile UserXpProfile @relation(fields: [xpProfileId], references: [id], onDelete: Cascade)
+
+  @@index([userId, earnedAt])
+  @@index([sourceType, sourceId])
+  @@index([skill, earnedAt])
+}
+
+model LeaderboardSeason {
+  id         String                  @id @default(uuid())
+  name       String
+  periodType LeaderboardPeriodType
+  startsAt   DateTime
+  endsAt     DateTime
+  status     LeaderboardSeasonStatus @default(UPCOMING)
+  isActive   Boolean                 @default(false)
+  metadata   Json?
+
+  groups      LeaderboardGroup[]
+  rewards     LeaderboardReward[]
+  userRewards UserLeaderboardReward[]
+  histories   LeaderboardHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, startsAt, endsAt])
+  @@index([periodType, status])
+}
+
+model LeaderboardGroup {
+  id          String               @id @default(uuid())
+  seasonId    String
+  scope       LeaderboardScopeType @default(GLOBAL)
+  league      LeagueTier
+  groupNumber Int
+  maxMembers  Int                  @default(30)
+  clubId      String?
+  skill       LearningSkill?
+
+  season  LeaderboardSeason  @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  entries LeaderboardEntry[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([seasonId, scope, league, groupNumber, clubId, skill])
+  @@index([seasonId, league])
+  @@index([clubId])
+  @@index([skill])
+}
+
+model LeaderboardEntry {
+  id           String          @id @default(uuid())
+  groupId      String
+  userId       String
+  xpProfileId  String
+  periodXp     Int             @default(0)
+  rank         Int?
+  previousRank Int?
+  zone         LeaderboardZone @default(SAFE)
+  promoted     Boolean         @default(false)
+  relegated    Boolean         @default(false)
+  joinedAt     DateTime        @default(now())
+  lastXpAt     DateTime?
+
+  group     LeaderboardGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  xpProfile UserXpProfile    @relation(fields: [xpProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId, periodXp])
+  @@index([userId])
+}
+
+model LeaderboardReward {
+  id          String      @id @default(uuid())
+  seasonId    String?
+  league      LeagueTier?
+  minRank     Int
+  maxRank     Int
+  rewardType  String
+  rewardValue Json
+  title       String
+  description String?
+  isActive    Boolean     @default(true)
+
+  season      LeaderboardSeason?      @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  userRewards UserLeaderboardReward[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserLeaderboardReward {
+  id          String                  @id @default(uuid())
+  userId      String
+  xpProfileId String
+  rewardId    String
+  seasonId    String?
+  status      LeaderboardRewardStatus @default(AVAILABLE)
+  claimedAt   DateTime?
+  expiresAt   DateTime?
+  payload     Json?
+
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  xpProfile UserXpProfile      @relation(fields: [xpProfileId], references: [id], onDelete: Cascade)
+  reward    LeaderboardReward  @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+  season    LeaderboardSeason? @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, rewardId, seasonId])
+  @@index([userId, status])
+}
+
+model LeaderboardHistory {
+  id          String     @id @default(uuid())
+  userId      String
+  xpProfileId String
+  seasonId    String
+  league      LeagueTier
+  finalRank   Int
+  periodXp    Int
+  promoted    Boolean    @default(false)
+  relegated   Boolean    @default(false)
+
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  xpProfile UserXpProfile     @relation(fields: [xpProfileId], references: [id], onDelete: Cascade)
+  season    LeaderboardSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, seasonId])
+  @@index([userId, createdAt])
+}
+
+enum LeaderboardActivityType {
+  XP_EARNED
+  LESSON_COMPLETED
+  SPEAKING_COMPLETED
+  WRITING_COMPLETED
+  VOCABULARY_COMPLETED
+  MISSION_COMPLETED
+  STREAK_REACHED
+  LEVEL_UP
+  LEAGUE_PROMOTED
+  ACHIEVEMENT_UNLOCKED
+  CLUB_JOINED
+  CHALLENGE_CREATED
+  CHALLENGE_COMPLETED
+}
+
+enum SocialChallengeType {
+  FRIEND
+  CLUB
+}
+
+enum SocialChallengeMetric {
+  XP
+  LESSONS
+  SPEAKING
+  WRITING
+  VOCABULARY
+  STREAK
+  MISSIONS
+}
+
+enum SocialChallengeStatus {
+  UPCOMING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum SocialChallengeParticipantStatus {
+  INVITED
+  ACCEPTED
+  DECLINED
+  COMPLETED
+}
+
+model LeaderboardActivity {
+  id          String                  @id @default(uuid())
+  userId      String
+  clubId      String?
+  type        LeaderboardActivityType
+  title       String
+  description String?
+  xp          Int?
+  sourceId    String?
+  metadata    Json?
+  isPublic    Boolean                 @default(true)
+  createdAt   DateTime                @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([clubId, createdAt])
+}
+
+model SocialChallenge {
+  id          String                @id @default(uuid())
+  creatorId   String
+  clubId      String?
+  type        SocialChallengeType
+  metric      SocialChallengeMetric
+  title       String
+  description String?
+  targetValue Int
+  startsAt    DateTime
+  endsAt      DateTime
+  status      SocialChallengeStatus @default(UPCOMING)
+  rewardXp    Int                   @default(0)
+
+  creator      User                         @relation("SocialChallengeCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  participants SocialChallengeParticipant[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clubId, status])
+  @@index([creatorId, status])
+}
+
+model SocialChallengeParticipant {
+  id          String                           @id @default(uuid())
+  challengeId String
+  userId      String
+  progress    Int                              @default(0)
+  status      SocialChallengeParticipantStatus @default(INVITED)
+  acceptedAt  DateTime?
+  completedAt DateTime?
+
+  challenge SocialChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([challengeId, userId])
+  @@index([userId, status])
+}
+
+enum ThemeMode {
+  LIGHT
+  DARK
+  SYSTEM
+}
+
+enum LearningGoal {
+  IELTS
+  TOEIC
+  SPEAKING
+  DAILY_ENGLISH
+  BUSINESS_ENGLISH
+  TRAVEL
+  KIDS
+  GRAMMAR
+  VOCABULARY
+}
+
+enum EnglishLevel {
+  A1
+  A2
+  B1
+  B2
+  C1
+  C2
+}
+
+enum ChallengeMode {
+  EASY
+  NORMAL
+  HARD
+  EXPERT
+}
+
+enum AiPersonality {
+  TEACHER
+  COACH
+  FRIEND
+  STRICT_MENTOR
+}
+
+enum CorrectionMode {
+  MAJOR_ONLY
+  CORRECT_EVERYTHING
+  EXPLAIN_GRAMMAR
+  NATIVE_EXPRESSION
+}
+
+enum TranslationMode {
+  ALWAYS
+  ON_REQUEST
+  NEVER
+}
+
+enum EnglishAccent {
+  AMERICAN
+  BRITISH
+  AUSTRALIAN
+  CANADIAN
+}
+
+enum MessagePermission {
+  EVERYONE
+  FRIENDS
+  NOBODY
+}
+
+model UserSettings {
+  id     String @id @default(uuid())
+  userId String @unique
+
+  learningGoal      LearningGoal  @default(DAILY_ENGLISH)
+  dailyStudyMinutes Int           @default(20)
+  preferredSkills   String[]      @default(["SPEAKING", "VOCABULARY"])
+  currentLevel      EnglishLevel  @default(A1)
+  autoDetectLevel   Boolean       @default(true)
+  challengeMode     ChallengeMode @default(NORMAL)
+
+  aiTeacher         String          @default("Emily")
+  aiPersonality     AiPersonality   @default(COACH)
+  conversationSpeed Float           @default(1)
+  correctionMode    CorrectionMode  @default(EXPLAIN_GRAMMAR)
+  translationMode   TranslationMode @default(ON_REQUEST)
+
+  speechProvider  String        @default("GOOGLE")
+  micSensitivity  Int           @default(60)
+  autoStopSeconds Int?
+  playbackSpeed   Float         @default(1)
+  accent          EnglishAccent @default(AMERICAN)
+  captionsEnabled Boolean       @default(true)
+
+  dailyReminderEnabled    Boolean @default(true)
+  dailyReminderTime       String  @default("19:00")
+  missionReminder         Boolean @default(true)
+  friendActivity          Boolean @default(false)
+  clubNotification        Boolean @default(true)
+  leaderboardNotification Boolean @default(true)
+  aiFeedbackNotification  Boolean @default(true)
+  emailNotification       Boolean @default(false)
+  pushNotification        Boolean @default(true)
+
+  publicProfile       Boolean @default(true)
+  showStreak          Boolean @default(true)
+  showAchievements    Boolean @default(true)
+  allowFriendRequests Boolean @default(true)
+  allowClubInvites    Boolean @default(true)
+  showOnlineStatus    Boolean @default(true)
+  showLastSeen        Boolean @default(true)
+
+  communityNickname String?
+  messagePermission MessagePermission @default(FRIENDS)
+  autoJoinVoiceRoom Boolean           @default(false)
+
+  theme                 ThemeMode @default(SYSTEM)
+  primaryColor          String    @default("VIOLET")
+  fontScale             Float     @default(1)
+  compactMode           Boolean   @default(false)
+  animationsEnabled     Boolean   @default(true)
+  reduceMotion          Boolean   @default(false)
+  highContrast          Boolean   @default(false)
+  keyboardNavigation    Boolean   @default(true)
+  screenReaderOptimized Boolean   @default(false)
+
+  focusMode          Boolean  @default(false)
+  energyMode         Boolean  @default(true)
+  learningDnaEnabled Boolean  @default(true)
+  adaptiveDashboard  Boolean  @default(true)
+  autoSchedule       Boolean  @default(false)
+  weeklyTargetDays   Int      @default(5)
+  restDays           String[] @default([])
+  preferredStudyTime String   @default("19:00")
+
+  twoFactorEnabled    Boolean @default(false)
+  dataPersonalization Boolean @default(true)
+  analyticsConsent    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserDeviceSession {
+  id             String    @id @default(uuid())
+  userId         String
+  deviceName     String
+  browser        String?
+  os             String?
+  ipAddress      String?
+  lastActiveAt   DateTime  @default(now())
+  current        Boolean   @default(false)
+  refreshTokenId String?   @unique
+  revokedAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+}
+
+model LearningDnaSnapshot {
+  id                String   @id @default(uuid())
+  userId            String
+  strongestSkill    String?
+  weakestSkill      String?
+  bestStudyHour     Int?
+  averageSessionMin Int?
+  retentionScore    Float?
+  consistencyScore  Float?
+  recommendedFocus  String[]
+  generatedAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, generatedAt])
 }

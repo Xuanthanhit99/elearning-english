@@ -12,6 +12,7 @@ import { MissionV2ProgressService } from '../missions-v2/services/mission-v2-pro
 import { StartListeningDto } from './dto/start-listening.dto';
 import { SubmitListeningAnswerDto } from './dto/submit-listening-answer.dto';
 import { ListeningTtsService } from './listening-tts.service';
+import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
 
 type ListeningOption = {
   label: string;
@@ -36,6 +37,7 @@ export class ListeningService {
     private readonly geminiService: GeminiService,
     private readonly missionV2ProgressService: MissionV2ProgressService,
     private readonly listeningTtsService: ListeningTtsService,
+    private readonly learningXp: LearningXpPublisher,
   ) {}
 
   async getHome(userId: string) {
@@ -565,6 +567,32 @@ export class ListeningService {
     });
 
     const completed = await this.getOwnedSession(userId, sessionId);
+
+    try {
+      await this.learningXp.publish({
+        activity: 'LISTENING_COMPLETED',
+        userId,
+        sourceId: completed.id,
+        score: completed.score,
+        completionRate: completed.score,
+        metadata: {
+          sessionId: completed.id,
+          topic: completed.topic,
+          level: completed.level,
+          totalQuestions: completed.total,
+          correctAnswers: completed.correct,
+          wrongAnswers: completed.wrong,
+          skippedAnswers: completed.skipped,
+          xpEarned: completed.xpEarned,
+          coinsEarned: completed.coinsEarned,
+        },
+      });
+    } catch (error) {
+      this.logger.error(
+        `Listening XP publish failed: ${completed.id}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+    }
 
     return {
       ...this.mapCompletedSession(completed),

@@ -3,8 +3,10 @@ import { SpeakingPracticeController } from './speaking-practice.controller';
 import { SpeakingPracticeService } from './speaking-practice.service';
 import { SpeakingService } from '../speaking/speaking.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { LearningXpModule } from '../learning-xp/learning-xp.module';
 
 @Module({
+  imports: [LearningXpModule],
   controllers: [SpeakingPracticeController],
   providers: [SpeakingPracticeService, SpeakingService, PrismaService],
   exports: [SpeakingPracticeService],

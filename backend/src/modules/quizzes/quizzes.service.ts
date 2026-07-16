@@ -7,10 +7,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { SubmitQuizDto } from './dto/submit-quiz.dto';
 import { UserRole } from '@prisma/client';
+import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
 
 @Injectable()
 export class QuizzesService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private readonly learningXp: LearningXpPublisher,
+  ) {}
 
   async createQuiz(lessonId: string, user: any, dto: CreateQuizDto) {
     const lesson = await this.prismaService.lesson.findUnique({
@@ -116,7 +120,7 @@ export class QuizzesService {
       };
     }
 
-    await this.prismaService.quizResult.create({
+    const quizResult = await this.prismaService.quizResult.create({
       data: {
         userId,
         lessonId: firstQuiz.lessonId,
@@ -127,10 +131,42 @@ export class QuizzesService {
       },
     });
 
+    const previousResult = await this.prismaService.quizResult.findFirst({
+      where: {
+        userId,
+        lessonId: firstQuiz.lessonId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!previousResult) {
+      try {
+        await this.learningXp.publish({
+          activity: 'QUIZ_COMPLETED',
+          userId,
+          sourceId: firstQuiz.lessonId,
+          score,
+          completionRate: 100,
+          metadata: {
+            quizResultId: quizResult.id,
+            lessonId: firstQuiz.lessonId,
+            courseId: firstQuiz.lesson.section.courseId,
+            totalQuestions: total,
+            correctAnswers: correct,
+          },
+        });
+      } catch (error) {
+        console.error(`Quiz XP publish failed: ${quizResult.id}`, error);
+      }
+    }
+
     return {
       total,
       correct,
       score,
+      quizResultId: quizResult.id,
     };
   }
 

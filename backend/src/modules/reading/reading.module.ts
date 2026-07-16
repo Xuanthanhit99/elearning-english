@@ -5,9 +5,10 @@ import { MissionsV2Module } from '../missions-v2/missions-v2.module';
 import { ReadingController } from './reading.controller';
 import { ReadingJobService } from './reading-job/reading-job.service';
 import { ReadingService } from './reading.service';
+import { LearningXpModule } from '../learning-xp/learning-xp.module';
 
 @Module({
-  imports: [PrismaModule, GeminiModule, MissionsV2Module],
+  imports: [PrismaModule, GeminiModule, MissionsV2Module, LearningXpModule],
   controllers: [ReadingController],
   providers: [ReadingService, ReadingJobService],
   exports: [ReadingService],

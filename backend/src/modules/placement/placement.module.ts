@@ -13,9 +13,10 @@ import { PlacementResponseService } from './placement-response.service';
 import { PlacementTtsService } from './placement-tts.service';
 import { PlacementRetakeService } from '../placement-dashboard/placement-retake.service';
 import { PlacementSessionService } from './placement-session/placement-session.service';
+import { LearningXpModule } from '../learning-xp/learning-xp.module';
 
 @Module({
-  imports: [PrismaModule, QuestionBankModule],
+  imports: [PrismaModule, QuestionBankModule, LearningXpModule],
   controllers: [
     PlacementController,
     PlacementTestController,

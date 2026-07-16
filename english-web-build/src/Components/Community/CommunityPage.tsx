@@ -26,6 +26,7 @@ import { CommunityClubsView } from './CommunityClubsView';
 import { CommunityFriendsView } from './CommunityFriendsView';
 import { CommunityLeaderboardView } from './CommunityLeaderboardView';
 import { CommunityMessagesView } from './CommunityMessagesView';
+import SocialLeaderboardPanel from '../leaderboard/SocialLeaderboardPanel';
 
 type CommunityView =
   | 'HOME'
@@ -214,9 +215,9 @@ export function CommunityPage() {
       return <CommunityChallengesView />;
     }
 
-    if (view === 'LEADERBOARD') {
-      return <CommunityLeaderboardView />;
-    }
+   {view === 'LEADERBOARD' && (
+  <SocialLeaderboardPanel />
+)}
 
     if (view === 'MESSAGES') {
       return (

@@ -6,6 +6,7 @@ import { PlacementProcessingProcessor } from './placement-processing.processor';
 import { PlacementProcessingService } from './placement-processing.service';
 import { PlacementModule } from '../placement/placement.module';
 import { PlacementResultModule } from '../placement-result/placement-result.module';
+import { LearningXpModule } from '../learning-xp/learning-xp.module';
 
 export const PLACEMENT_PROCESSING_QUEUE = 'placement-processing';
 
@@ -17,6 +18,7 @@ export const PLACEMENT_PROCESSING_QUEUE = 'placement-processing';
     BullModule.registerQueue({
       name: 'placement-processing',
     }),
+    LearningXpModule
   ],
   controllers: [PlacementProcessingController],
   providers: [PlacementProcessingService, PlacementProcessingProcessor],

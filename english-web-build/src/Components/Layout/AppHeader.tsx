@@ -3,6 +3,8 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { api } from "@/src/lib/axios";
+import NotificationDrawer from "@/src/Components/Notifications/NotificationDrawer";
+import { getUnreadNotificationCount } from "@/src/lib/notifications-api";
 import { useAuthStore } from "@/src/store/authStore";
 import {
   Bell,
@@ -42,6 +44,8 @@ export default function AppHeader({
   const setUser = useAuthStore((state) => state.setUser);
   const profileRef = useRef<HTMLDivElement | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   const displayUser = user as
     | (typeof user & {
@@ -72,6 +76,26 @@ export default function AppHeader({
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadUnread() {
+      try {
+        const count = await getUnreadNotificationCount();
+        if (active) setUnreadNotifications(count);
+      } catch {
+        if (active) setUnreadNotifications(0);
+      }
+    }
+
+    void loadUnread();
+    const timer = window.setInterval(loadUnread, 30000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
   }, []);
 
   async function handleLogout() {
@@ -133,12 +157,15 @@ export default function AppHeader({
         <button
           type="button"
           aria-label="Thông báo"
-          className="relative hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-violet-600 sm:inline-flex"
+          onClick={() => setNotificationsOpen(true)}
+          className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-violet-600"
         >
           <Bell size={19} />
-          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-black text-white">
-            2
-          </span>
+          {unreadNotifications > 0 && (
+            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-black text-white">
+              {unreadNotifications > 99 ? "99+" : unreadNotifications}
+            </span>
+          )}
         </button>
 
         <div ref={profileRef} className="relative shrink-0">
@@ -199,6 +226,11 @@ export default function AppHeader({
           )}
         </div>
       </div>
+      <NotificationDrawer
+        open={notificationsOpen}
+        onClose={() => setNotificationsOpen(false)}
+        onUnreadChange={setUnreadNotifications}
+      />
     </header>
   );
 }

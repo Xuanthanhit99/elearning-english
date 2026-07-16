@@ -6,12 +6,14 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GrammarLevel, LearningSkill, MissionV2Action } from '@prisma/client';
 import { MissionV2ProgressService } from '../missions-v2/services/mission-v2-progress.service';
+import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
 
 @Injectable()
 export class GrammarService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly missionV2ProgressService: MissionV2ProgressService,
+    private readonly learningXp: LearningXpPublisher,
   ) {}
 
   private keyWhere(key: string) {
@@ -620,6 +622,21 @@ export class GrammarService {
       wasCompleted,
       includeQuiz: true,
     });
+
+    if (!wasCompleted) {
+      await this.learningXp.publish({
+        activity: 'GRAMMAR_COMPLETED',
+        userId,
+        sourceId: lesson.id,
+        score,
+        completionRate: 100,
+        metadata: {
+          lessonId: lesson.id,
+          totalQuestions: questions.length,
+          correctAnswers: correct,
+        },
+      });
+    }
 
     return {
       score,

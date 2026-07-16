@@ -8,6 +8,8 @@ import { UpdateLearningProfileDto } from './dto/update-learning-profile.dto';
 import {
   LearningSkill,
   MissionV2Action,
+  MissionV2Status,
+  PlacementResultStatus,
   Prisma,
   WordProgressStatus,
 } from '@prisma/client';
@@ -26,6 +28,7 @@ import {
 } from 'src/common/helpers/questions.helper';
 import { SubmitReviewSessionDto } from './dto/review-session-answer.dto';
 import { MissionV2ProgressService } from '../missions-v2/services/mission-v2-progress.service';
+import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
 
 type GeminiWordItem = {
   word: string;
@@ -46,6 +49,7 @@ export class VocabularyService {
     private geminiService: GeminiService,
     private vocabularyJobService: VocabularyJobService,
     private readonly missionV2ProgressService: MissionV2ProgressService,
+    private readonly learningXp: LearningXpPublisher,
   ) {}
 
   private isLockedPlan(plan: any): plan is {
@@ -1633,6 +1637,19 @@ Trả về định dạng JSON Array chuẩn theo mẫu:
       action: MissionV2Action.STUDY_LESSON,
       amount: 1,
       skill: LearningSkill.VOCABULARY,
+    });
+
+    await this.learningXp.publish({
+      activity: 'VOCABULARY_COMPLETED',
+      userId,
+      sourceId: completedDay.id,
+      completionRate: 100,
+      metadata: {
+        dayId: completedDay.id,
+        planId: completedDay.planId,
+        topicId: completedDay.topicId,
+        learnedWords: completedDay.words.length,
+      },
     });
 
     return {
@@ -3814,10 +3831,21 @@ Rules:
       completedMissionsThisWeek,
       petRewards,
       arenaRewards,
+      grammarCompleted,
+      grammarToday,
+      readingSessions,
+      readingToday,
+      speakingSessions,
+      speakingToday,
+      writingSessions,
+      writingSessionsToday,
+      completedMissionsV2,
+      completedMissionsV2ThisWeek,
+      latestPlacementResult,
     ] = await Promise.all([
       this.prisma.user.findUnique({
         where: { id: userId },
-        select: { xp: true },
+        select: { xp: true, level: true },
       }),
       this.prisma.petProfile.findUnique({
         where: { userId },
@@ -3903,6 +3931,96 @@ Rules:
         select: { isWinner: true, arenaDelta: true, createdAt: true },
         orderBy: { createdAt: 'desc' },
         take: 5,
+      }),
+      this.prisma.grammarLessonProgress.findMany({
+        where: { userId, completed: true },
+        select: {
+          score: true,
+          completedAt: true,
+          lesson: { select: { title: true } },
+        },
+        orderBy: { completedAt: 'desc' },
+      }),
+      this.prisma.grammarLessonProgress.count({
+        where: {
+          userId,
+          completed: true,
+          completedAt: { gte: today, lte: endOfToday },
+        },
+      }),
+      this.prisma.readingSession.findMany({
+        where: { userId, isCompleted: true },
+        select: {
+          id: true,
+          completedAt: true,
+          earnedXp: true,
+          score: true,
+          accuracy: true,
+          article: { select: { title: true } },
+        },
+        orderBy: { completedAt: 'desc' },
+      }),
+      this.prisma.readingSession.count({
+        where: {
+          userId,
+          isCompleted: true,
+          completedAt: { gte: today, lte: endOfToday },
+        },
+      }),
+      this.prisma.speakingSession.findMany({
+        where: { userId, status: 'COMPLETED' },
+        select: {
+          id: true,
+          overallScore: true,
+          finishedAt: true,
+          lesson: { select: { title: true } },
+          topic: { select: { title: true } },
+        },
+        orderBy: { finishedAt: 'desc' },
+      }),
+      this.prisma.speakingSession.count({
+        where: {
+          userId,
+          status: 'COMPLETED',
+          finishedAt: { gte: today, lte: endOfToday },
+        },
+      }),
+      this.prisma.writingSession.findMany({
+        where: { userId, isSubmitted: true },
+        select: {
+          id: true,
+          overallScore: true,
+          submittedAt: true,
+          lesson: { select: { title: true } },
+        },
+        orderBy: { submittedAt: 'desc' },
+      }),
+      this.prisma.writingSession.count({
+        where: {
+          userId,
+          isSubmitted: true,
+          submittedAt: { gte: today, lte: endOfToday },
+        },
+      }),
+      this.prisma.userMissionV2.findMany({
+        where: {
+          userId,
+          status: { in: [MissionV2Status.COMPLETED, MissionV2Status.CLAIMED] },
+        },
+        orderBy: { completedAt: 'desc' },
+      }),
+      this.prisma.userMissionV2.findMany({
+        where: {
+          userId,
+          status: { in: [MissionV2Status.COMPLETED, MissionV2Status.CLAIMED] },
+          completedAt: { gte: weekStart, lte: endOfToday },
+        },
+        orderBy: { completedAt: 'desc' },
+      }),
+      this.prisma.placementResult.findFirst({
+        where: { userId, status: PlacementResultStatus.READY },
+        include: { phases: true },
+        orderBy: { generatedAt: 'desc' },
       }),
     ]);
 
@@ -3991,6 +4109,54 @@ Rules:
         dateLabel: 'Hôm nay',
         date: writingSubmissions[0]?.createdAt || today,
       },
+      grammarToday > 0 && {
+        key: 'grammar-today',
+        title: 'Ngữ pháp chắc tay',
+        description: `Hoàn thành ${grammarToday} bài ngữ pháp trong ngày.`,
+        tag: 'Kỹ năng Ngữ pháp',
+        category: 'learning',
+        icon: 'exercise',
+        tone: 'purple',
+        xp: grammarToday * 10,
+        dateLabel: 'Hôm nay',
+        date: grammarCompleted[0]?.completedAt || today,
+      },
+      readingToday > 0 && {
+        key: 'reading-today',
+        title: 'Đọc hiểu đều đặn',
+        description: `Hoàn thành ${readingToday} bài đọc trong ngày.`,
+        tag: 'Kỹ năng Đọc',
+        category: 'learning',
+        icon: 'book',
+        tone: 'emerald',
+        xp: readingToday * 10,
+        dateLabel: 'Hôm nay',
+        date: readingSessions[0]?.completedAt || today,
+      },
+      speakingToday > 0 && {
+        key: 'speaking-today',
+        title: 'Nói tự tin',
+        description: `Hoàn thành ${speakingToday} bài luyện nói trong ngày.`,
+        tag: 'Kỹ năng Nói',
+        category: 'learning',
+        icon: 'mic',
+        tone: 'orange',
+        xp: speakingToday * 10,
+        dateLabel: 'Hôm nay',
+        date: speakingSessions[0]?.finishedAt || today,
+      },
+      writingSessionsToday > 0 && {
+        key: 'writing-session-today',
+        title: 'Bài viết AI',
+        description: `Gửi ${writingSessionsToday} bài Writing để AI đánh giá trong ngày.`,
+        tag: 'Kỹ năng Viết',
+        category: 'learning',
+        icon: 'pen',
+        tone: 'blue',
+        xp: writingSessionsToday * 15,
+        dateLabel: 'Hôm nay',
+        date: writingSessions[0]?.submittedAt || today,
+      },
       completedMissionsThisWeek.length > 0 && {
         key: 'weekly-challenges',
         title: 'Thử thách tuần',
@@ -4005,6 +4171,66 @@ Rules:
         ),
         dateLabel: timeAgo(completedMissionsThisWeek[0]?.completedAt),
         date: completedMissionsThisWeek[0]?.completedAt || today,
+      },
+      completedMissionsV2ThisWeek.length > 0 && {
+        key: 'mission-v2-week',
+        title: 'Nhiệm vụ PoppyLingo',
+        description: `Hoàn thành ${completedMissionsV2ThisWeek.length} nhiệm vụ mới trong tuần.`,
+        tag: 'Mission V2',
+        category: 'challenge',
+        icon: 'target',
+        tone: 'purple',
+        xp: completedMissionsV2ThisWeek.reduce(
+          (sum, item) => sum + (item.rewardXp || 0),
+          0,
+        ),
+        dateLabel: timeAgo(completedMissionsV2ThisWeek[0]?.completedAt),
+        date: completedMissionsV2ThisWeek[0]?.completedAt || today,
+      },
+      latestPlacementResult && {
+        key: 'learning-path',
+        title: 'Lộ trình cá nhân',
+        description: `Lộ trình học đạt ${
+          latestPlacementResult.phases.length
+            ? Math.round(
+                latestPlacementResult.phases.reduce(
+                  (sum, phase) => sum + phase.progress,
+                  0,
+                ) / latestPlacementResult.phases.length,
+              )
+            : 0
+        }% tiến độ.`,
+        tag: 'Learning Path',
+        category: 'system',
+        icon: 'sparkles',
+        tone: 'purple',
+        xp: Math.round(latestPlacementResult.overallScore),
+        dateLabel: timeAgo(latestPlacementResult.generatedAt),
+        date: latestPlacementResult.generatedAt,
+      },
+      (user?.xp || 0) > 0 && {
+        key: 'xp-total',
+        title: 'Thợ săn XP',
+        description: `Tích lũy ${user?.xp || 0} XP trong quá trình học.`,
+        tag: 'XP',
+        category: 'system',
+        icon: 'zap',
+        tone: 'yellow',
+        xp: user?.xp || 0,
+        dateLabel: 'Tổng tích lũy',
+        date: today,
+      },
+      (user?.level || 1) > 1 && {
+        key: 'level-up',
+        title: `Level ${user?.level}`,
+        description: `Bạn đã đạt cấp độ ${user?.level}.`,
+        tag: 'Level',
+        category: 'system',
+        icon: 'star',
+        tone: 'yellow',
+        xp: (user?.level || 1) * 25,
+        dateLabel: 'Đã mở khóa',
+        date: today,
       },
       ...petRewards.map((reward) => ({
         key: `pet-${reward.createdAt.getTime()}`,
@@ -4065,18 +4291,78 @@ Rules:
         current: Math.min(listeningSessions.length, 50),
         target: 50,
       },
+      {
+        key: 'grammar-20',
+        title: 'Bậc thầy ngữ pháp',
+        subtitle: 'Hoàn thành 20 bài ngữ pháp',
+        icon: 'exercise',
+        current: Math.min(grammarCompleted.length, 20),
+        target: 20,
+      },
+      {
+        key: 'reading-20',
+        title: 'Đọc hiểu bền bỉ',
+        subtitle: 'Hoàn thành 20 bài đọc',
+        icon: 'book',
+        current: Math.min(readingSessions.length, 20),
+        target: 20,
+      },
+      {
+        key: 'speaking-20',
+        title: 'Nói tự tin',
+        subtitle: 'Hoàn thành 20 bài nói',
+        icon: 'mic',
+        current: Math.min(speakingSessions.length, 20),
+        target: 20,
+      },
+      {
+        key: 'writing-20',
+        title: 'Viết đều đặn',
+        subtitle: 'Gửi 20 bài Writing',
+        icon: 'pen',
+        current: Math.min(
+          writingSessions.length + writingSubmissions.length,
+          20,
+        ),
+        target: 20,
+      },
+      {
+        key: 'mission-v2-30',
+        title: 'Chinh phục nhiệm vụ',
+        subtitle: 'Hoàn thành 30 Mission V2',
+        icon: 'target',
+        current: Math.min(completedMissionsV2.length, 30),
+        target: 30,
+      },
     ];
+
+    const goalsWithState = goals.map((goal) => {
+      const progressPercent = goal.target
+        ? Math.min(100, Math.round((goal.current / goal.target) * 100))
+        : 0;
+      const unlocked = goal.current >= goal.target;
+
+      return {
+        ...goal,
+        progressPercent,
+        locked: !unlocked,
+        unlocked,
+        claimable: unlocked,
+        claimed: unlocked,
+      };
+    });
 
     return {
       user: overview.user,
       summary: {
         totalAchievements: recent.length,
         xpEarned,
-        completedChallenges: completedMissions.length + totalTests,
+        completedChallenges:
+          completedMissions.length + completedMissionsV2.length + totalTests,
         longestStreak,
       },
       recent,
-      goals,
+      goals: goalsWithState,
       categories: [
         { key: 'all', label: 'Tất cả' },
         { key: 'learning', label: 'Học tập' },

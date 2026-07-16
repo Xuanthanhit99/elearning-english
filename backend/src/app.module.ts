@@ -40,7 +40,6 @@ import { VocabularyModule } from './modules/vocabulary/vocabulary.module';
 import { VocabularyJobModule } from './modules/vocabulary-job/vocabulary-job.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ListeningModule } from './modules/listening/listening.module';
-import { ListeningJobService } from './modules/listening-job/listening-job.service';
 import { GrammarModule } from './modules/grammar/grammar.module';
 import { ReadingModule } from './modules/reading/reading.module';
 import { PlacementModule } from './modules/placement/placement.module';
@@ -64,6 +63,10 @@ import { CommunitySocialModule } from './modules/community-social/community-soci
 import { CommunityClubModule } from './modules/community-club/community-club.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { CommunityClubPermissionModule } from './modules/community-club/community-club-permission.module';
+import { LeaderboardModule } from './modules/leaderboard/leaderboard.module';
+import { LearningXpModule } from './modules/learning-xp/learning-xp.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { SettingsModule } from './modules/settings/settings.module';
 
 @Module({
   imports: [
@@ -85,6 +88,14 @@ import { CommunityClubPermissionModule } from './modules/community-club/communit
       rootPath: join(process.cwd(), 'public'),
       serveRoot: '/',
     }),
+    EventEmitterModule.forRoot({
+      wildcard: false,
+      delimiter: '.',
+      maxListeners: 50,
+      verboseMemoryLeak: true,
+      ignoreErrors: false,
+    }),
+    LearningXpModule,
     PrismaModule,
     AuthModule,
     UsersModule,
@@ -137,6 +148,8 @@ import { CommunityClubPermissionModule } from './modules/community-club/communit
     CommunityClubModule,
     DashboardModule,
     CommunityClubPermissionModule,
+    LeaderboardModule,
+    SettingsModule,
   ],
   providers: [
     GeminiService,

@@ -12,6 +12,13 @@ import type {
   ClubRole,
 } from '@/src/types/community-club';
 
+const CLUB_ROLE_LABEL = {
+  OWNER: 'Chủ câu lạc bộ',
+  ADMIN: 'Quản trị viên',
+  MODERATOR: 'Điều hành viên',
+  MEMBER: 'Thành viên',
+};
+
 export function CommunityClubMembers({
   clubId,
   myRole,

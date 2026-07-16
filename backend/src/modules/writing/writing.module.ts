@@ -13,6 +13,7 @@ import { WritingProcessingService } from './writing-processing.service';
 import { WritingProcessor } from './writing.processor';
 import { WritingSessionService } from './writing-session.service';
 import { WritingHistoryService } from './writing-history.service';
+import { LearningXpModule } from '../learning-xp/learning-xp.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { WritingHistoryService } from './writing-history.service';
     BullModule.registerQueue({
       name: WRITING_PROCESSING_QUEUE,
     }),
+    LearningXpModule
   ],
   controllers: [WritingController],
   providers: [

@@ -1,8 +1,4 @@
-import {
-  OnWorkerEvent,
-  Processor,
-  WorkerHost,
-} from '@nestjs/bullmq';
+import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import {
   CefrLevel,
@@ -19,6 +15,7 @@ import {
 } from './writing-processing.constants';
 import { WritingAiEvaluationService } from './writing-ai-evaluation.service';
 import { WritingProcessingQueueData } from './writing-processing.types';
+import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
 
 @Processor(WRITING_PROCESSING_QUEUE, {
   concurrency: 2,
@@ -30,6 +27,7 @@ export class WritingProcessor extends WorkerHost {
     private readonly prisma: PrismaService,
     private readonly ai: WritingAiEvaluationService,
     private readonly missionProgress: MissionV2ProgressService,
+    private readonly learningXp: LearningXpPublisher,
   ) {
     super();
   }
@@ -50,10 +48,9 @@ export class WritingProcessor extends WorkerHost {
         startedAt: new Date(),
       });
 
-      const processingJob =
-        await this.prisma.writingProcessingJob.findUnique({
-          where: { id: processingJobId },
-        });
+      const processingJob = await this.prisma.writingProcessingJob.findUnique({
+        where: { id: processingJobId },
+      });
 
       if (!processingJob) {
         throw new Error('WritingProcessingJob not found');
@@ -206,6 +203,26 @@ export class WritingProcessor extends WorkerHost {
         completedAt: new Date(),
       });
 
+      await this.learningXp.publish({
+        activity: 'WRITING_COMPLETED',
+        userId,
+        sourceId: session.id,
+        score: evaluation.overallScore,
+        completionRate: 100,
+        metadata: {
+          sessionId: session.id,
+          lessonId: session.lessonId,
+          topicId: session.lesson.topicId,
+          wordCount: processingJob.wordCount,
+          timeSpentSeconds: processingJob.timeSpentSeconds,
+          taskScore: evaluation.taskResponse,
+          coherenceScore: evaluation.coherence,
+          vocabularyScore: evaluation.vocabulary,
+          grammarScore: evaluation.grammar,
+          rewriteRequired: evaluation.overallScore < 70,
+        },
+      });
+
       return {
         sessionId,
         overallScore: evaluation.overallScore,
@@ -215,8 +232,7 @@ export class WritingProcessor extends WorkerHost {
       await this.updateJob(processingJobId, {
         status: 'FAILED',
         step: 'FAILED',
-        errorMessage:
-          error instanceof Error ? error.message : String(error),
+        errorMessage: error instanceof Error ? error.message : String(error),
         message: 'Không thể chấm bài Writing lúc này.',
       });
 
