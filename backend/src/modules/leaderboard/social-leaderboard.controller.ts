@@ -1,7 +1,9 @@
-import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { SocialLeaderboardService } from './social-leaderboard.service';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 
 @Controller('leaderboards/social')
+@UseGuards(JwtAuthGuard)
 export class SocialLeaderboardController {
   constructor(private readonly service: SocialLeaderboardService) {}
 

@@ -1,5 +1,16 @@
-import LeaderboardPage from "@/src/Components/leaderboard/LeaderboardPage";
+import { LeaderboardPageClient } from "@/src/Components/leaderboard/LeaderboardPageClient";
+import { LeaderboardShell } from "@/src/Components/leaderboard/LeaderboardShell";
 
-export default function Page() {
-  return <LeaderboardPage />;
+
+/*
+ * Thay hai giá trị dưới bằng auth/session hiện tại của dự án.
+ * Ví dụ đọc từ server session hoặc cookie.
+ */
+export default async function LeaderboardPage() {
+
+  return (
+    <LeaderboardShell>
+      <LeaderboardPageClient/>
+    </LeaderboardShell>
+  );
 }

@@ -1,44 +1,21 @@
 'use client';
 
-import {
-  useEffect,
-  useRef,
-} from 'react';
-import {
-  connectLeaderboardSocket,
-} from '@/lib/leaderboard-realtime';
-
-type GroupUpdate = {
-  userId: string;
-  periodXp: number;
-  rank?: number;
-};
+import { useEffect } from 'react';
+import { getLeaderboardSocket } from '../lib/leaderboard-socket';
+import { WeeklyResultPayload } from '../types/leaderboard';
 
 export function useLeaderboardRealtime(input: {
-  userId: string;
-  groupId?: string;
-  onGroupUpdated?: (
-    payload: GroupUpdate,
-  ) => void;
+  groupId?: string | null;
+  onLeaderboardUpdated?: () => void;
   onWeeklyResult?: (
-    payload: unknown,
+    result: WeeklyResultPayload,
   ) => void;
-  onSeasonStarted?: (
-    payload: unknown,
-  ) => void;
+  onRewardAvailable?: () => void;
+  onSeasonStarted?: () => void;
 }) {
-  const handlers = useRef(input);
-  handlers.current = input;
-
   useEffect(() => {
-    if (!input.userId) {
-      return;
-    }
-
     const socket =
-      connectLeaderboardSocket(
-        input.userId,
-      );
+      getLeaderboardSocket();
 
     if (input.groupId) {
       socket.emit(
@@ -49,35 +26,33 @@ export function useLeaderboardRealtime(input: {
       );
     }
 
-    const onGroup = (
-      payload: GroupUpdate,
-    ) => {
-      handlers.current
-        .onGroupUpdated?.(payload);
-    };
+    const onUpdated = () =>
+      input.onLeaderboardUpdated?.();
 
     const onWeekly = (
-      payload: unknown,
-    ) => {
-      handlers.current
-        .onWeeklyResult?.(payload);
-    };
+      payload: WeeklyResultPayload,
+    ) =>
+      input.onWeeklyResult?.(payload);
 
-    const onSeason = (
-      payload: unknown,
-    ) => {
-      handlers.current
-        .onSeasonStarted?.(payload);
-    };
+    const onReward = () =>
+      input.onRewardAvailable?.();
+
+    const onSeason = () =>
+      input.onSeasonStarted?.();
 
     socket.on(
       'leaderboard:group-updated',
-      onGroup,
+      onUpdated,
     );
 
     socket.on(
       'leaderboard:weekly-result',
       onWeekly,
+    );
+
+    socket.on(
+      'leaderboard:reward-available',
+      onReward,
     );
 
     socket.on(
@@ -97,7 +72,7 @@ export function useLeaderboardRealtime(input: {
 
       socket.off(
         'leaderboard:group-updated',
-        onGroup,
+        onUpdated,
       );
 
       socket.off(
@@ -106,12 +81,20 @@ export function useLeaderboardRealtime(input: {
       );
 
       socket.off(
+        'leaderboard:reward-available',
+        onReward,
+      );
+
+      socket.off(
         'leaderboard:season-started',
         onSeason,
       );
     };
   }, [
-    input.userId,
     input.groupId,
+    input.onLeaderboardUpdated,
+    input.onWeeklyResult,
+    input.onRewardAvailable,
+    input.onSeasonStarted,
   ]);
 }

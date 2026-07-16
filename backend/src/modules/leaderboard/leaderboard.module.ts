@@ -21,6 +21,14 @@ import { LeaderboardWeeklyCloseProcessor } from './backgrount-job/leaderboard-we
 import { LeaderboardWeeklyCloseScheduler } from './backgrount-job/leaderboard-weekly-close.scheduler';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { LeaderboardRewardSeedService } from './backgrount-job/leaderboard-reward-seed.service';
+import { LeaderboardMaintenanceController } from './admin/leaderboard-maintenance.controller';
+import { LeaderboardBootstrapService } from './bootstrap/leaderboard-bootstrap.service';
+import { LeaderboardMaintenanceScheduler } from './bootstrap/leaderboard-maintenance.scheduler';
+import { LeaderboardRewardController } from './rewards/leaderboard-reward.controller';
+import { LeaderboardRewardService } from './rewards/leaderboard-reward.service';
+import { LeaderboardSocketAuthService } from './socket/leaderboard-socket-auth.service';
+import { JwtModule } from '@nestjs/jwt';
+import { LeaderboardCookieAuthService } from './socket/leaderboard-cookie-auth.service';
 
 @Module({
   imports: [
@@ -32,6 +40,8 @@ import { LeaderboardRewardSeedService } from './backgrount-job/leaderboard-rewar
       name: LEADERBOARD_WEEKLY_CLOSE_QUEUE,
     }),
     NotificationsModule,
+    PrismaModule,
+    JwtModule
   ],
 
   controllers: [
@@ -39,6 +49,8 @@ import { LeaderboardRewardSeedService } from './backgrount-job/leaderboard-rewar
     LeaderboardAdminController,
     SocialLeaderboardController,
     LeaderboardPhase3AdminController,
+    LeaderboardRewardController,
+    LeaderboardMaintenanceController,
   ],
 
   providers: [
@@ -65,6 +77,12 @@ import { LeaderboardRewardSeedService } from './backgrount-job/leaderboard-rewar
     LeaderboardWeeklyCloseScheduler,
     LeaderboardGateway,
     LeaderboardRewardSeedService,
+    LeaderboardRewardService,
+    LeaderboardBootstrapService,
+    LeaderboardMaintenanceScheduler,
+    LeaderboardSocketAuthService,
+    LeaderboardRealtimeGateway,
+    LeaderboardCookieAuthService,
   ],
 
   exports: [
@@ -74,6 +92,9 @@ import { LeaderboardRewardSeedService } from './backgrount-job/leaderboard-rewar
     LEADERBOARD_REDIS,
     LeaderboardRealtimeGateway,
     LeaderboardWeeklyCloseService,
+    LeaderboardRewardService,
+    LeaderboardBootstrapService,
+    LeaderboardRealtimeGateway,
   ],
 })
 export class LeaderboardModule {}

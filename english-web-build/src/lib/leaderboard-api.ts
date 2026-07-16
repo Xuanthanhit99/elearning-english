@@ -51,3 +51,70 @@ export async function getMyLeaderboardClubs() {
     await api.get('/leaderboards/my-clubs'),
   );
 }
+
+export async function getGlobalLeaderboard() {
+  const { data } =
+    await api.get<LeaderboardResponse>(
+      'community/leaderboard',
+    );
+
+  return data;
+}
+
+// export async function getFriendsLeaderboard() {
+//   const { data } =
+//     await api.get<LeaderboardResponse>(
+//       '/leaderboard/social/friends',
+//     );
+
+//   return data;
+// }
+
+// export async function getClubLeaderboard(
+//   clubId: string,
+// ) {
+//   const { data } =
+//     await api.get<LeaderboardResponse>(
+//       `/leaderboard/social/clubs/${clubId}`,
+//     );
+
+//   return data;
+// }
+
+// export async function getMyLeaderboardClubs() {
+//   const { data } =
+//     await api.get<ClubSummary[]>(
+//       '/leaderboard/social/clubs',
+//     );
+
+//   return data;
+// }
+
+export async function getRewardList() {
+  const { data } =
+    await api.get(
+      '/leaderboard/rewards',
+    );
+
+  return data;
+}
+
+export async function claimReward(
+  rewardId: string,
+) {
+  const { data } =
+    await api.post(
+      `/leaderboard/rewards/${rewardId}/claim`,
+    );
+
+  return data;
+}
+
+// export async function getLeaderboardHistory() {
+//   const { data } =
+//     await api.get(
+//       '/leaderboard/history',
+//     );
+
+//   return data;
+// }

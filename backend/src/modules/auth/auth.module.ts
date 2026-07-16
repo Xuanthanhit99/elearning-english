@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
@@ -11,6 +11,7 @@ import { UploadService } from '../upload/upload.service';
 import { VocabularyModule } from '../vocabulary/vocabulary.module';
 import { VocabularyJobModule } from '../vocabulary-job/vocabulary-job.module';
 
+@Global()
 @Module({
   imports: [
     JwtModule.register({
@@ -34,5 +35,6 @@ import { VocabularyJobModule } from '../vocabulary-job/vocabulary-job.module';
     FacebookStrategy,
     UploadService,
   ],
+  exports: [JwtModule]
 })
 export class AuthModule {}

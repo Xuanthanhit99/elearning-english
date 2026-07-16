@@ -1,3 +1,8 @@
+export type LeaderboardScope =
+  | 'GLOBAL'
+  | 'FRIENDS'
+  | 'CLUB';
+
 export type LeagueTier =
   | 'BRONZE'
   | 'SILVER'
@@ -7,51 +12,60 @@ export type LeagueTier =
   | 'MASTER'
   | 'LEGEND';
 
-export type LeaderboardZone = 'PROMOTION' | 'SAFE' | 'RELEGATION';
-export type LeaderboardTab = 'weekly' | 'monthly' | 'friends' | 'club' | 'skill';
+export type LeaderboardZone =
+  | 'PROMOTION'
+  | 'SAFE'
+  | 'RELEGATION';
 
-export interface LeaderboardUser {
-  id: string;
-  displayName?: string;
-  fullname?: string;
-  username?: string | null;
-  avatarUrl?: string | null;
-  avatar?: string | null;
-  level: number;
-  cefrLevel?: string | null;
-  englishLevel?: string | null;
-  streak?: number | null;
-}
-
-export interface LeaderboardEntry {
+export type LeaderboardEntry = {
   rank: number;
   previousRank?: number | null;
   periodXp: number;
   zone?: LeaderboardZone;
-  user: LeaderboardUser | null;
-}
+  promoted?: boolean;
+  relegated?: boolean;
+  isCurrentUser: boolean;
+  user: {
+    id: string;
+    displayName: string;
+    username?: string | null;
+    avatarUrl?: string | null;
+    level?: number | null;
+    streak?: number | null;
+    learnedToday?: boolean;
+  };
+};
 
-export interface LeaderboardResponse {
+export type LeaderboardResponse = {
+  scope: LeaderboardScope;
   period: {
-    id?: string;
-    name?: string;
-    type?: string;
+    seasonId?: string | null;
+    name?: string | null;
     startsAt: string;
     endsAt: string;
-  } | null;
-  groupId?: string;
-  league?: LeagueTier | null;
-  config?: {
-    groupSize: number;
-    promotionCount: number;
-    relegationCount: number;
+    league?: LeagueTier | null;
+    groupId?: string | null;
   };
-  currentUser: {
-    rank: number | null;
-    periodXp: number;
-    xpToNextRank?: number;
-    zone?: LeaderboardZone | null;
-  } | LeaderboardEntry | null;
+  currentUser: LeaderboardEntry | null;
   entries: LeaderboardEntry[];
   message?: string;
-}
+};
+
+export type WeeklyResultPayload = {
+  seasonId: string;
+  rank: number;
+  periodXp: number;
+  league: LeagueTier;
+  nextLeague: LeagueTier;
+  promoted: boolean;
+  relegated: boolean;
+  zone: LeaderboardZone;
+};
+
+export type ClubSummary = {
+  id: string;
+  name: string;
+  iconUrl?: string | null;
+  coverUrl?: string | null;
+  memberCount: number;
+};
