@@ -42,6 +42,70 @@ export class CommunityGateway
     if (body?.postId) client.leave(`post:${body.postId}`);
   }
 
+  @SubscribeMessage('community:join-conversation')
+  joinConversation(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() body: { conversationId: string },
+  ) {
+    if (body?.conversationId) {
+      void client.join(`conversation:${body.conversationId}`);
+    }
+
+    return { joined: true };
+  }
+
+  @SubscribeMessage('community:leave-conversation')
+  leaveConversation(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() body: { conversationId: string },
+  ) {
+    if (body?.conversationId) {
+      void client.leave(`conversation:${body.conversationId}`);
+    }
+
+    return { left: true };
+  }
+
+  @SubscribeMessage('community:club-join-room')
+  joinClubRoom(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() body: { clubId: string },
+  ) {
+    if (body?.clubId) {
+      void client.join(`club:${body.clubId}`);
+    }
+
+    return { joined: true };
+  }
+
+  @SubscribeMessage('community:club-leave-room')
+  leaveClubRoom(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() body: { clubId: string },
+  ) {
+    if (body?.clubId) {
+      void client.leave(`club:${body.clubId}`);
+    }
+
+    return { left: true };
+  }
+
+  @SubscribeMessage('community:club-typing')
+  clubTyping(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    body: {
+      clubId: string;
+      userId: string;
+      fullname: string;
+      typing: boolean;
+    },
+  ) {
+    if (body?.clubId) {
+      client.to(`club:${body.clubId}`).emit('community:club-typing', body);
+    }
+  }
+
   emitPostCreated(post: unknown) {
     this.server.emit('community:post-created', post);
   }
@@ -68,5 +132,25 @@ export class CommunityGateway
     this.server
       .to(`user:${userId}`)
       .emit('community:notification', notification);
+  }
+
+  emitUser(userId: string, event: string, payload: unknown) {
+    this.server.to(`user:${userId}`).emit(event, payload);
+  }
+
+  emitConversation(conversationId: string, event: string, payload: unknown) {
+    this.server.to(`conversation:${conversationId}`).emit(event, payload);
+  }
+
+  emitClubMessage(clubId: string, message: unknown) {
+    this.server
+      .to(`club:${clubId}`)
+      .emit('community:club-message-created', message);
+  }
+
+  emitClubMemberUpdated(clubId: string, payload: unknown) {
+    this.server
+      .to(`club:${clubId}`)
+      .emit('community:club-member-updated', payload);
   }
 }

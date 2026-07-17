@@ -8,19 +8,25 @@ import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
 import bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { StringValue } from 'ms';
 import * as ExcelJS from 'exceljs';
 import * as nodemailer from 'nodemailer';
+import { randomUUID } from 'crypto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UploadService } from '../upload/upload.service';
 import { Prisma } from '@prisma/client';
+import { AuthSessionService } from './auth-session.service';
+
+const REFRESH_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
     private uploadService: UploadService,
+    private authSessionService: AuthSessionService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -57,7 +63,7 @@ export class AuthService {
     };
   }
 
-  async login(dto: LoginDto, res: Response) {
+  async login(dto: LoginDto, req: Request, res: Response) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -82,20 +88,32 @@ export class AuthService {
       ? 30 * 24 * 60 * 60 * 1000
       : 24 * 60 * 60 * 1000;
 
+    const jti = randomUUID();
+
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: process.env.JWT_ACCESS_SECRET,
       expiresIn: (process.env.JWT_ACCESS_EXPIRES_IN || '15m') as StringValue,
     });
-    const refreshToken = await this.jwtService.signAsync(payload, {
-      secret: process.env.JWT_REFRESH_SECRET,
-      expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as StringValue,
+    const refreshToken = await this.jwtService.signAsync(
+      { ...payload, jti },
+      {
+        secret: process.env.JWT_REFRESH_SECRET,
+        expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as StringValue,
+      },
+    );
+
+    await this.authSessionService.createSession({
+      userId: user.id,
+      jti,
+      userAgent: req.headers?.['user-agent'],
+      ipAddress: req.ip ?? req.socket?.remoteAddress ?? null,
     });
 
     res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: REFRESH_COOKIE_MAX_AGE_MS,
     });
 
     res.cookie('access_token', accessToken, {
@@ -130,76 +148,132 @@ export class AuthService {
       throw new UnauthorizedException('Không có refresh token');
     }
 
+    let payload: { sub: string; email: string; role: string; jti?: string };
     try {
-      const payload = await this.jwtService.verifyAsync(refreshToken, {
+      payload = await this.jwtService.verifyAsync(refreshToken, {
         secret: process.env.JWT_REFRESH_SECRET,
       });
-
-      const dbUser = await this.prisma.user.findUnique({
-        where: { id: payload.sub },
-        select: {
-          id: true,
-          fullname: true,
-          email: true,
-          role: true,
-          status: true,
-          avatar: true,
-        },
-      });
-
-      if (!dbUser) {
-        throw new UnauthorizedException('Người dùng không tồn tại');
-      }
-
-      const accessToken = await this.jwtService.signAsync(
-        {
-          sub: dbUser.id,
-          email: dbUser.email,
-          role: dbUser.role,
-        },
-        {
-          secret: process.env.JWT_ACCESS_SECRET,
-          expiresIn: (process.env.JWT_ACCESS_EXPIRES_IN ||
-            '15m') as StringValue,
-        },
-      );
-
-      res.cookie('access_token', accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 15 * 60 * 1000,
-      });
-
-      res.cookie('logged_in', 'true', {
-        httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 15 * 60 * 1000,
-      });
-
-      return {
-        success: true,
-        message: 'Refresh token thành công',
-        data: {
-          user: {
-            id: dbUser.id,
-            fullName: dbUser.fullname,
-            email: dbUser.email,
-            role: dbUser.role,
-            status: dbUser.status,
-            avatar: dbUser.avatar,
-          },
-        },
-      };
     } catch {
       throw new UnauthorizedException('Refresh token không hợp lệ');
     }
+
+    if (!payload.jti) {
+      // Legacy token issued before session tracking existed — reject so the
+      // user has to log in again and get a properly tracked session.
+      throw new UnauthorizedException('Refresh token không hợp lệ');
+    }
+
+    const dbUser = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: {
+        id: true,
+        fullname: true,
+        email: true,
+        role: true,
+        status: true,
+        avatar: true,
+      },
+    });
+
+    if (!dbUser) {
+      throw new UnauthorizedException('Người dùng không tồn tại');
+    }
+
+    const newJti = randomUUID();
+    const rotated = await this.authSessionService.rotate(payload.jti, newJti);
+
+    if (!rotated) {
+      throw new UnauthorizedException(
+        'Phiên đăng nhập đã bị thu hồi, vui lòng đăng nhập lại',
+      );
+    }
+
+    const accessToken = await this.jwtService.signAsync(
+      {
+        sub: dbUser.id,
+        email: dbUser.email,
+        role: dbUser.role,
+      },
+      {
+        secret: process.env.JWT_ACCESS_SECRET,
+        expiresIn: (process.env.JWT_ACCESS_EXPIRES_IN ||
+          '15m') as StringValue,
+      },
+    );
+
+    const newRefreshToken = await this.jwtService.signAsync(
+      {
+        sub: dbUser.id,
+        email: dbUser.email,
+        role: dbUser.role,
+        jti: newJti,
+      },
+      {
+        secret: process.env.JWT_REFRESH_SECRET,
+        expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as StringValue,
+      },
+    );
+
+    res.cookie('access_token', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie('refresh_token', newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: REFRESH_COOKIE_MAX_AGE_MS,
+    });
+
+    res.cookie('logged_in', 'true', {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 15 * 60 * 1000,
+    });
+
+    return {
+      success: true,
+      message: 'Refresh token thành công',
+      data: {
+        user: {
+          id: dbUser.id,
+          fullName: dbUser.fullname,
+          email: dbUser.email,
+          role: dbUser.role,
+          status: dbUser.status,
+          avatar: dbUser.avatar,
+        },
+      },
+    };
   }
 
-  async logout(res: Response) {
+  async logout(refreshToken: string | undefined, res: Response) {
+    if (refreshToken) {
+      try {
+        const payload = await this.jwtService.verifyAsync<{
+          sub: string;
+          jti?: string;
+        }>(refreshToken, { secret: process.env.JWT_REFRESH_SECRET });
+
+        if (payload?.jti) {
+          await this.authSessionService.invalidateByJti(payload.jti);
+          await this.prisma.userDeviceSession.updateMany({
+            where: { userId: payload.sub, refreshTokenId: payload.jti },
+            data: { revokedAt: new Date() },
+          });
+        }
+      } catch {
+        // Token already invalid/expired — nothing left to revoke.
+      }
+    }
+
     res.clearCookie('refresh_token');
     res.clearCookie('access_token');
     res.clearCookie('logged_in');
@@ -208,13 +282,16 @@ export class AuthService {
     };
   }
 
-  async socialLogin(profile: {
-    provider: string;
-    providerId: string;
-    email?: string;
-    fullname?: string;
-    avatar?: string;
-  }) {
+  async socialLogin(
+    profile: {
+      provider: string;
+      providerId: string;
+      email?: string;
+      fullname?: string;
+      avatar?: string;
+    },
+    req?: Request,
+  ) {
     if (!profile.email) {
       throw new BadRequestException('Không lấy được email từ tài khoản');
     }
@@ -252,6 +329,8 @@ export class AuthService {
       });
     }
 
+    const jti = randomUUID();
+
     const accessToken = await this.jwtService.signAsync(
       {
         sub: dbUser.id,
@@ -268,12 +347,20 @@ export class AuthService {
         sub: dbUser.id,
         email: dbUser.email,
         role: dbUser.role,
+        jti,
       },
       {
         secret: process.env.JWT_REFRESH_SECRET,
         expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as StringValue,
       },
     );
+
+    await this.authSessionService.createSession({
+      userId: dbUser.id,
+      jti,
+      userAgent: req?.headers?.['user-agent'],
+      ipAddress: req?.ip ?? req?.socket?.remoteAddress ?? null,
+    });
 
     return { accessToken, dbUser, refreshToken };
   }

@@ -6,37 +6,25 @@ function unwrap<T>(data: unknown): T {
 }
 
 export async function getClubManagement(clubId: string) {
-  const { data } = await api.get(
-    `/community/clubs/${clubId}/management`,
-  );
+  const { data } = await api.get(`/community/clubs/${clubId}/management`);
   return unwrap<any>(data);
 }
 
-export async function requestJoinClub(
-  clubId: string,
-  message?: string,
-) {
-  const { data } = await api.post(
-    `/community/clubs/${clubId}/join-request`,
-    { message },
-  );
+export async function requestJoinClub(clubId: string, message?: string) {
+  const { data } = await api.post(`/community/clubs/${clubId}/join-request`, {
+    message,
+  });
   return unwrap(data);
 }
 
-export async function approveClubJoinRequest(
-  clubId: string,
-  requestId: string,
-) {
+export async function approveClubJoinRequest(clubId: string, requestId: string) {
   const { data } = await api.patch(
     `/community/clubs/${clubId}/join-requests/${requestId}/approve`,
   );
   return unwrap(data);
 }
 
-export async function rejectClubJoinRequest(
-  clubId: string,
-  requestId: string,
-) {
+export async function rejectClubJoinRequest(clubId: string, requestId: string) {
   const { data } = await api.patch(
     `/community/clubs/${clubId}/join-requests/${requestId}/reject`,
   );
@@ -48,10 +36,10 @@ export async function inviteClubMember(
   inviteeUserId: string,
   message?: string,
 ) {
-  const { data } = await api.post(
-    `/community/clubs/${clubId}/invites`,
-    { inviteeUserId, message },
-  );
+  const { data } = await api.post(`/community/clubs/${clubId}/invites`, {
+    inviteeUserId,
+    message,
+  });
   return unwrap(data);
 }
 
@@ -78,10 +66,7 @@ export async function updateClubMemberRole(
   return unwrap(data);
 }
 
-export async function kickClubMember(
-  clubId: string,
-  memberId: string,
-) {
+export async function kickClubMember(clubId: string, memberId: string) {
   const { data } = await api.delete(
     `/community/clubs/${clubId}/members/${memberId}/kick`,
   );
@@ -89,15 +74,11 @@ export async function kickClubMember(
 }
 
 export async function leaveClubSafely(clubId: string) {
-  const { data } = await api.delete(
-    `/community/clubs/${clubId}/leave-safe`,
-  );
+  const { data } = await api.delete(`/community/clubs/${clubId}/leave-safe`);
   return unwrap(data);
 }
 
 export async function deleteClubSafely(clubId: string) {
-  const { data } = await api.delete(
-    `/community/clubs/${clubId}/delete-safe`,
-  );
+  const { data } = await api.delete(`/community/clubs/${clubId}/delete-safe`);
   return unwrap(data);
 }

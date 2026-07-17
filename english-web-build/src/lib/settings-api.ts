@@ -1,36 +1,104 @@
 import { api } from './axios';
 import { DeviceSession, Settings } from './settings-types';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+
+const WRITABLE_SETTINGS_FIELDS = [
+  'learningGoal',
+  'dailyStudyMinutes',
+  'preferredSkills',
+  'currentLevel',
+  'autoDetectLevel',
+  'challengeMode',
+  'aiTeacher',
+  'aiPersonality',
+  'conversationSpeed',
+  'correctionMode',
+  'translationMode',
+  'speechProvider',
+  'micSensitivity',
+  'autoStopSeconds',
+  'playbackSpeed',
+  'accent',
+  'captionsEnabled',
+  'dailyReminderEnabled',
+  'dailyReminderTime',
+  'missionReminder',
+  'friendActivity',
+  'clubNotification',
+  'leaderboardNotification',
+  'aiFeedbackNotification',
+  'emailNotification',
+  'pushNotification',
+  'publicProfile',
+  'showStreak',
+  'showAchievements',
+  'allowFriendRequests',
+  'allowClubInvites',
+  'showOnlineStatus',
+  'showLastSeen',
+  'communityNickname',
+  'messagePermission',
+  'autoJoinVoiceRoom',
+  'theme',
+  'language',
+  'primaryColor',
+  'fontScale',
+  'compactMode',
+  'animationsEnabled',
+  'reduceMotion',
+  'highContrast',
+  'keyboardNavigation',
+  'screenReaderOptimized',
+  'focusMode',
+  'energyMode',
+  'learningDnaEnabled',
+  'adaptiveDashboard',
+  'autoSchedule',
+  'weeklyTargetDays',
+  'restDays',
+  'preferredStudyTime',
+  'timezone',
+  'dataPersonalization',
+  'analyticsConsent',
+] as const satisfies Array<keyof Settings>;
+
+function unwrap<T>(response: { data?: { data?: T } | T }): T {
+  const value = response.data as { data?: T } | T | undefined;
+  return ((value as { data?: T })?.data ?? value) as T;
+}
+
+function toWritableSettings(payload: Partial<Settings>): Partial<Settings> {
+  const writable: Partial<Settings> = {};
+
+  for (const field of WRITABLE_SETTINGS_FIELDS) {
+    if (payload[field] !== undefined) {
+      writable[field] = payload[field] as never;
+    }
+  }
+
+  return writable;
+}
+
 export const settingsApi = {
-  get: () => api<Settings>('/settings'),
+  get: async () => unwrap<Settings>(await api.get('/settings')),
 
-  update: (payload: Partial<Settings>) =>
-    api<Settings>('/settings', {
-      method: 'PATCH',
-      body: JSON.stringify(payload),
-    }),
+  update: async (payload: Partial<Settings>) =>
+    unwrap<Settings>(await api.patch('/settings', toWritableSettings(payload))),
 
-  resetSection: (section: string) =>
-    api<Settings>('/settings/reset-section', {
-      method: 'POST',
-      body: JSON.stringify({ section }),
-    }),
+  resetSection: async (section: string) =>
+    unwrap<Settings>(await api.post('/settings/reset-section', { section })),
 
-  getDevices: () =>
-    api<DeviceSession[]>('/settings/devices'),
+  getDevices: async () => unwrap<DeviceSession[]>(await api.get('/settings/devices')),
 
-  revokeDevice: (id: string) =>
-    api(`/settings/devices/${id}`, {
-      method: 'DELETE',
-    }),
+  revokeDevice: async (id: string) =>
+    unwrap(await api.delete(`/settings/devices/${id}`)),
 
-  revokeOtherDevices: () =>
-    api('/settings/devices', {
-      method: 'DELETE',
-    }),
+  revokeOtherDevices: async () =>
+    unwrap(await api.delete('/settings/devices')),
 
-  getLearningDna: () =>
-    api<{
+  getLearningDna: async () =>
+    unwrap<{
       enabled: boolean;
       snapshot: null | {
         strongestSkill?: string;
@@ -40,7 +108,25 @@ export const settingsApi = {
         consistencyScore?: number;
         recommendedFocus: string[];
       };
-    }>('/settings/learning-dna'),
+    }>(await api.get('/settings/learning-dna')),
 
-  exportUrl: `${process.env.NEXT_PUBLIC_API_URL}/settings/export`,
+  exportUrl: `${API_BASE_URL}/settings/export`,
+};
+
+export const twoFactorApi = {
+  setup: async () =>
+    unwrap<{ qrCodeDataUrl: string; manualEntryKey: string }>(
+      await api.post('/auth/2fa/setup'),
+    ),
+
+  confirm: async (otp: string) =>
+    unwrap<{ recoveryCodes: string[] }>(
+      await api.post('/auth/2fa/confirm', { otp }),
+    ),
+
+  disable: async (payload: {
+    password?: string;
+    otp?: string;
+    recoveryCode?: string;
+  }) => unwrap<{ success: boolean }>(await api.post('/auth/2fa/disable', payload)),
 };

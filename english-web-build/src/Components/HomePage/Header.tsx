@@ -175,7 +175,7 @@ export default function Header() {
               <details className="group relative">
                 <summary className="flex cursor-pointer list-none items-center gap-2 rounded-full bg-[#1f2a44] px-3 py-2 text-white">
                   <Image
-                    src={user.avatar || "/avatar-default.png"}
+                    src={user.avatar || "/cat-home.jpg"}
                     alt={user.fullname || "User"}
                     width={38}
                     height={38}
@@ -194,7 +194,7 @@ export default function Header() {
                 <div className="absolute right-0 top-14 z-50 w-72 rounded-[24px] border border-[#ead8c2] bg-white p-3 shadow-[0_24px_70px_rgba(31,42,68,0.14)]">
                   <div className="mb-2 flex items-center gap-3 rounded-2xl bg-[#fff4e8] p-3">
                     <Image
-                      src={user.avatar || "/avatar-default.png"}
+                      src={user.avatar || "/cat-home.jpg"}
                       alt={user.fullname || "User"}
                       width={44}
                       height={44}

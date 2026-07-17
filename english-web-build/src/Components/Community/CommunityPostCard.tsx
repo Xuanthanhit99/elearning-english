@@ -146,7 +146,7 @@ export function CommunityPostCard({
         <header className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 gap-3">
             <img
-              src={post.author.avatar || "/avatar-placeholder.png"}
+              src={post.author.avatar || "/cat-home.jpg"}
               alt={authorName(post)}
               className="h-12 w-12 shrink-0 rounded-full border-2 border-white object-cover shadow-sm ring-1 ring-slate-300"
             />

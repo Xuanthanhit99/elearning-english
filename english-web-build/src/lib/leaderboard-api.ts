@@ -48,47 +48,13 @@ export async function getMyLeaderboardClubs() {
       memberCount: number;
     }>
   >(
-    await api.get('/leaderboards/my-clubs'),
+    await api.get('/leaderboards/social/my-clubs'),
   );
 }
 
 export async function getGlobalLeaderboard() {
-  const { data } =
-    await api.get<LeaderboardResponse>(
-      'community/leaderboard',
-    );
-
-  return data;
+  return getWeeklyLeaderboard();
 }
-
-// export async function getFriendsLeaderboard() {
-//   const { data } =
-//     await api.get<LeaderboardResponse>(
-//       '/leaderboard/social/friends',
-//     );
-
-//   return data;
-// }
-
-// export async function getClubLeaderboard(
-//   clubId: string,
-// ) {
-//   const { data } =
-//     await api.get<LeaderboardResponse>(
-//       `/leaderboard/social/clubs/${clubId}`,
-//     );
-
-//   return data;
-// }
-
-// export async function getMyLeaderboardClubs() {
-//   const { data } =
-//     await api.get<ClubSummary[]>(
-//       '/leaderboard/social/clubs',
-//     );
-
-//   return data;
-// }
 
 export async function getRewardList() {
   const { data } =
@@ -110,11 +76,3 @@ export async function claimReward(
   return data;
 }
 
-// export async function getLeaderboardHistory() {
-//   const { data } =
-//     await api.get(
-//       '/leaderboard/history',
-//     );
-
-//   return data;
-// }

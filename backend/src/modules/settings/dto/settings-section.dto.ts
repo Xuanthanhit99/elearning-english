@@ -12,8 +12,7 @@ export const SETTINGS_SECTIONS = [
   'advanced',
 ] as const;
 
-export type SettingsSection =
-  (typeof SETTINGS_SECTIONS)[number];
+export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
 
 export class ResetSettingsSectionDto {
   @IsIn(SETTINGS_SECTIONS)

@@ -54,7 +54,7 @@ function avatarOf(entry: LeaderboardEntry) {
   return entry.user?.avatarUrl ?? entry.user?.avatar ?? null;
 }
 
-function timeRemaining(end?: string) {
+function timeRemaining(end?: string | null) {
   if (!end) return "Chưa có mùa đang hoạt động";
   const ms = Math.max(0, new Date(end).getTime() - Date.now());
   const days = Math.floor(ms / 86400000);

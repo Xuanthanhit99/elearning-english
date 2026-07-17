@@ -47,7 +47,7 @@ export type CommunityClubItem = {
   memberCount: number;
   postCount: number;
   joined: boolean;
-  myRole?: 'OWNER'| 'MANAGER' | 'ADMIN' | 'MODERATOR' | 'MEMBER' | null;
+  myRole?: 'OWNER' | 'ADMIN' | 'MODERATOR' | 'MEMBER' | null;
   owner: CommunityUserCard;
 };
 

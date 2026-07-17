@@ -15,6 +15,8 @@ import {
   Prisma,
 } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { SettingsQueryService } from '../settings/settings-query.service';
 import {
   CreateCommunityChallengeDto,
   CreateCommunityClubDto,
@@ -22,6 +24,7 @@ import {
   UpdateChallengeProgressDto,
 } from './dto/community-social.dto';
 import { CommunitySocialGateway } from './community-social.gateway';
+import { applyCommunityDisplayNames } from '../community/community-display-name.util';
 
 const USER_CARD_SELECT = {
   id: true,
@@ -31,6 +34,11 @@ const USER_CARD_SELECT = {
   level: true,
   xp: true,
   englishLevel: true,
+  settings: {
+    select: {
+      communityNickname: true,
+    },
+  },
 } satisfies Prisma.UserSelect;
 
 @Injectable()
@@ -38,6 +46,8 @@ export class CommunitySocialService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly gateway: CommunitySocialGateway,
+    private readonly notifications: NotificationsService,
+    private readonly settingsQuery: SettingsQueryService,
   ) {}
 
   async getPostComments(postId: string) {
@@ -48,7 +58,7 @@ export class CommunitySocialService {
 
     if (!post) throw new NotFoundException('Không tìm thấy bài viết');
 
-    return this.prisma.communityComment.findMany({
+    const comments = await this.prisma.communityComment.findMany({
       where: {
         postId,
         parentId: null,
@@ -69,6 +79,8 @@ export class CommunitySocialService {
         },
       },
     });
+
+    return applyCommunityDisplayNames(comments);
   }
 
   async searchUsers(currentUserId: string, q: string, limit = 20) {
@@ -111,7 +123,7 @@ export class CommunitySocialService {
       }),
     ]);
 
-    return users.map((user) => {
+    return applyCommunityDisplayNames(users).map((user) => {
       const isFriend = friendships.some(
         (item) =>
           (item.userAId === currentUserId && item.userBId === user.id) ||
@@ -151,13 +163,15 @@ export class CommunitySocialService {
       },
     });
 
-    return friendships.map((item) =>
-      item.userAId === userId ? item.userB : item.userA,
+    return applyCommunityDisplayNames(
+      friendships.map((item) =>
+        item.userAId === userId ? item.userB : item.userA,
+      ),
     );
   }
 
   async getFriendRequests(userId: string) {
-    return this.prisma.communityFriendRequest.findMany({
+    const requests = await this.prisma.communityFriendRequest.findMany({
       where: {
         addresseeId: userId,
         status: 'PENDING',
@@ -167,11 +181,20 @@ export class CommunitySocialService {
         requester: { select: USER_CARD_SELECT },
       },
     });
+
+    return applyCommunityDisplayNames(requests);
   }
 
   async sendFriendRequest(requesterId: string, addresseeId: string) {
     if (requesterId === addresseeId) {
       throw new BadRequestException('Không thể kết bạn với chính mình');
+    }
+
+    const addresseeCommunitySettings =
+      await this.settingsQuery.getCommunitySettings(addresseeId);
+
+    if (!addresseeCommunitySettings.allowFriendRequests) {
+      throw new ForbiddenException('Người dùng này không nhận lời mời kết bạn');
     }
 
     const existingFriendship = await this.prisma.communityFriendship.findFirst({
@@ -215,7 +238,14 @@ export class CommunitySocialService {
     });
 
     this.gateway.emitUser(addresseeId, 'community:friend-request', request);
-    return request;
+    await this.notifications.createFromPayload({
+      userId: addresseeId,
+      type: 'COMMUNITY',
+      title: 'Loi moi ket ban',
+      message: 'Ban co mot loi moi ket ban moi trong cong dong.',
+      href: '/community',
+    });
+    return applyCommunityDisplayNames(request);
   }
 
   async acceptFriendRequest(userId: string, requestId: string) {
@@ -250,6 +280,13 @@ export class CommunitySocialService {
 
     this.gateway.emitUser(request.requesterId, 'community:friend-accepted', {
       userId,
+    });
+    await this.notifications.createFromPayload({
+      userId: request.requesterId,
+      type: 'COMMUNITY',
+      title: 'Da chap nhan ket ban',
+      message: 'Loi moi ket ban cua ban da duoc chap nhan.',
+      href: '/community',
     });
 
     return { accepted: true };
@@ -316,7 +353,7 @@ export class CommunitySocialService {
       },
     });
 
-    return clubs.map((club) => ({
+    return applyCommunityDisplayNames(clubs).map((club) => ({
       ...club,
       joined: Array.isArray(club.members) && club.members.length > 0,
       myRole:
@@ -374,7 +411,7 @@ export class CommunitySocialService {
         },
       });
 
-      return created;
+      return applyCommunityDisplayNames(created);
     });
 
     return { ...club, joined: true, myRole: 'OWNER' };
@@ -487,7 +524,7 @@ export class CommunitySocialService {
       },
     });
 
-    return challenges.map((challenge) => ({
+    return applyCommunityDisplayNames(challenges).map((challenge) => ({
       ...challenge,
       joined:
         Array.isArray(challenge.participants) &&
@@ -512,7 +549,7 @@ export class CommunitySocialService {
     const now = new Date();
     const status = startsAt <= now && endsAt > now ? 'ACTIVE' : 'UPCOMING';
 
-    return this.prisma.communityChallenge.create({
+    const challenge = await this.prisma.communityChallenge.create({
       data: {
         creatorId: userId,
         clubId: dto.clubId || null,
@@ -534,6 +571,8 @@ export class CommunitySocialService {
         creator: { select: USER_CARD_SELECT },
       },
     });
+
+    return applyCommunityDisplayNames(challenge);
   }
 
   async joinChallenge(userId: string, challengeId: string) {
@@ -651,7 +690,7 @@ export class CommunitySocialService {
     return grouped.map((item, index) => ({
       rank: index + 1,
       points: item._sum.points ?? 0,
-      user: userMap.get(item.userId),
+      user: applyCommunityDisplayNames(userMap.get(item.userId)),
     }));
   }
 
@@ -684,12 +723,14 @@ export class CommunitySocialService {
       },
     });
 
-    return links.map((link) => ({
-      ...link.conversation,
-      members: link.conversation.members.map((member) => member.user),
-      lastMessage: link.conversation.messages[0] ?? null,
-      lastReadAt: link.lastReadAt,
-    }));
+    return applyCommunityDisplayNames(
+      links.map((link) => ({
+        ...link.conversation,
+        members: link.conversation.members.map((member) => member.user),
+        lastMessage: link.conversation.messages[0] ?? null,
+        lastReadAt: link.lastReadAt,
+      })),
+    );
   }
 
   async openDirectConversation(userId: string, otherUserId: string) {
@@ -728,6 +769,33 @@ export class CommunitySocialService {
       });
     }
 
+    // A conversation that doesn't exist yet must respect the recipient's
+    // messagePermission before we let a brand-new DM start.
+    const recipientSettings =
+      await this.settingsQuery.getCommunitySettings(otherUserId);
+
+    if (recipientSettings.messagePermission === 'NOBODY') {
+      throw new ForbiddenException('Người dùng này không nhận tin nhắn');
+    }
+
+    if (recipientSettings.messagePermission === 'FRIENDS') {
+      const areFriends = await this.prisma.communityFriendship.findFirst({
+        where: {
+          OR: [
+            { userAId: userId, userBId: otherUserId },
+            { userAId: otherUserId, userBId: userId },
+          ],
+        },
+        select: { id: true },
+      });
+
+      if (!areFriends) {
+        throw new ForbiddenException(
+          'Người dùng này chỉ nhận tin nhắn từ bạn bè',
+        );
+      }
+    }
+
     return this.prisma.communityConversation.create({
       data: {
         type: 'DIRECT',
@@ -757,10 +825,10 @@ export class CommunitySocialService {
     const hasMore = messages.length > 50;
     if (hasMore) messages.pop();
 
-    return {
+    return applyCommunityDisplayNames({
       items: messages.reverse(),
       nextCursor: hasMore ? (messages[0]?.id ?? null) : null,
-    };
+    });
   }
 
   async sendMessage(
@@ -802,13 +870,35 @@ export class CommunitySocialService {
       return created;
     });
 
+    const mapped = applyCommunityDisplayNames(message);
+
     this.gateway.emitConversation(
       conversationId,
       'community:message-created',
-      message,
+      mapped,
     );
 
-    return message;
+    const recipients = await this.prisma.communityConversationMember.findMany({
+      where: {
+        conversationId,
+        userId: { not: userId },
+      },
+      select: { userId: true },
+    });
+
+    await Promise.all(
+      recipients.map((recipient) =>
+        this.notifications.createFromPayload({
+          userId: recipient.userId,
+          type: 'COMMUNITY',
+          title: 'Tin nhan cong dong moi',
+          message: 'Ban co tin nhan moi trong cong dong.',
+          href: '/community',
+        }),
+      ),
+    );
+
+    return mapped;
   }
 
   private async assertConversationMember(

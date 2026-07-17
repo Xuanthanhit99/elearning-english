@@ -1,11 +1,15 @@
-import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
-import { XpSourceType } from '@prisma/client';
+import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { UserRole, XpSourceType } from '@prisma/client';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AdminAdjustXpDto } from './dto/admin-adjust-xp.dto';
 import { XpService } from './xp.service';
-import { SocialLeaderboardService } from './social-leaderboard.service';
 
 @Controller('admin/leaderboards')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.ADMIN)
 export class LeaderboardAdminController {
   constructor(
     private readonly prisma: PrismaService,

@@ -52,7 +52,7 @@ type WeeklyPlan = {
 export default function VocabularyTestPage() {
   const user = useAuthStore((state) => state.user);
   const displayName = user?.fullname || "Minh Anh";
-  const avatar = user?.avatar || "/avatar-default.png";
+  const avatar = user?.avatar || "/cat-home.jpg";
   const [weeklyTest, setWeeklyTest] = useState<WeeklyTest | null>(null);
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyPlan | null>(null);
   const [reviewTotal, setReviewTotal] = useState(0);

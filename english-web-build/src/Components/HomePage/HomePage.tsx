@@ -7,6 +7,8 @@ import { useAuthStore } from "@/src/store/authStore";
 import SpiritPetAvatar from "@/src/Components/Pets/SpiritPetAvatar";
 import { AppIcon, LegacyIcon } from "@/src/Components/UI/AppIcon";
 import AppLogo from "@/src/Components/UI/AppLogo";
+import { useTranslation } from "@/src/hooks/useTranslation";
+import { Dictionary } from "@/src/i18n/types";
 
 type Course = {
   id?: string;
@@ -44,59 +46,63 @@ const fallbackCourses: Course[] = [
   { title: "TOEIC 700+", description: "Chiến lược đạt 700+", level: "TOEIC", price: 599000 },
 ];
 
-const sidebarItems = [
-  { icon: "⌂", label: "Tổng quan", href: "/" },
-  { icon: "▰", label: "Học tập", href: "/courses" },
-  { icon: "⚔", label: "Đấu trường", href: "/arena" },
-  { icon: "🤖", label: "AI Tutor", href: "/check-writing", badge: "AI" },
-  { icon: "▣", label: "Kiểm tra miễn phí", href: "/check-word", badge: "FREE" },
-  { icon: "◇", label: "Thư viện", href: "/courses" },
-  { icon: "●", label: "Cộng đồng", href: "/community" },
-  { icon: "▣", label: "Khóa học", href: "/courses" },
-  { icon: "◈", label: "Shop", href: "/pet" },
-];
+function buildSidebarItems(home: Dictionary["home"]) {
+  return [
+    { icon: "⌂", label: home.navHome, href: "/" },
+    { icon: "▰", label: home.navLearn, href: "/courses" },
+    { icon: "⚔", label: home.navArena, href: "/arena" },
+    { icon: "🤖", label: home.navAiTutor, href: "/check-writing", badge: "AI" },
+    { icon: "▣", label: home.sidebarFreeCheck, href: "/check-word", badge: "FREE" },
+    { icon: "◇", label: home.navLibrary, href: "/courses" },
+    { icon: "●", label: home.navCommunity, href: "/community" },
+    { icon: "▣", label: home.sidebarCourses, href: "/courses" },
+    { icon: "◈", label: home.navShop, href: "/pet" },
+  ];
+}
 
-const personalSidebarItems = [
-  { icon: "●", label: "Hồ sơ của tôi", href: "/profile" },
-  { icon: "🏆", label: "Thành tích", href: "/profile" },
-  { icon: "🐾", label: "Bạn bè", href: "/community" },
-  { icon: "⚙", label: "Cài đặt", href: "/profile" },
-  { icon: "◐", label: "Đổi chủ đề", href: "/profile" },
-];
+function buildPersonalSidebarItems(home: Dictionary["home"]) {
+  return [
+    { icon: "●", label: home.sidebarProfile, href: "/profile" },
+    { icon: "🏆", label: home.sidebarAchievements, href: "/profile" },
+    { icon: "🐾", label: home.sidebarFriends, href: "/community" },
+    { icon: "⚙", label: home.sidebarSettings, href: "/profile" },
+    { icon: "◐", label: home.sidebarChangeTheme, href: "/profile" },
+  ];
+}
 
-const topNav = [
-  { label: "Trang chủ", href: "/" },
-  { label: "Học tập", href: "/courses" },
-  { label: "Đấu trường", href: "/arena" },
-  { label: "AI Tutor", href: "/check-writing" },
-  { label: "Thư viện", href: "/courses" },
-  { label: "Cộng đồng", href: "/community" },
-  { label: "Shop", href: "/pet" },
-];
+function buildFeatures(home: Dictionary["home"]) {
+  const hrefs = ["/vocabulary", "/courses", "/pronunciation", "/check-writing", "/arena", "/check-writing"];
+  const icons = ["📖", "🎧", "🎙", "📝", "⚔", "🤖"];
+  return home.features.map((item, index) => ({
+    icon: icons[index],
+    title: item.title,
+    desc: item.desc,
+    href: hrefs[index],
+  }));
+}
 
-const features = [
-  { icon: "📖", title: "Từ vựng", desc: "Học từ mới mỗi ngày", href: "/vocabulary" },
-  { icon: "🎧", title: "Nghe", desc: "Luyện nghe chủ động", href: "/courses" },
-  { icon: "🎙", title: "Nói", desc: "Luyện nói với AI", href: "/pronunciation" },
-  { icon: "📝", title: "Ngữ pháp", desc: "Nắm vững ngữ pháp", href: "/check-writing" },
-  { icon: "⚔", title: "Đấu trường", desc: "Thi đấu 1vs1", href: "/arena" },
-  { icon: "🤖", title: "AI Tutor", desc: "Trò chuyện với AI", href: "/check-writing" },
-];
-
-const tools = [
-  { icon: "🔤", title: "Kiểm tra từ vựng", desc: "Kiểm tra vốn từ của bạn", href: "/check-word" },
-  { icon: "📄", title: "Kiểm tra văn bản", desc: "Ném ra ngữ pháp, lỗi chính tả", href: "/check-writing" },
-  { icon: "🔁", title: "Dịch nhanh", desc: "Dịch đoạn văn, câu nhanh chóng", href: "/check-word" },
-  { icon: "🧾", title: "Tạo Flashcard", desc: "Tạo thẻ học từ vựng", href: "/check-word" },
-];
+function buildTools(home: Dictionary["home"]) {
+  const hrefs = ["/check-word", "/check-writing", "/check-word", "/check-word"];
+  const icons = ["🔤", "📄", "🔁", "🧾"];
+  return home.tools.map((item, index) => ({
+    icon: icons[index],
+    title: item.title,
+    desc: item.desc,
+    href: hrefs[index],
+  }));
+}
 
 export default function HomePage() {
+  const { t, dict } = useTranslation();
+  const home = dict.home;
   const user = useAuthStore((state) => state.user);
   const [courses, setCourses] = useState<Course[]>(fallbackCourses);
   const [arenaProfile, setArenaProfile] = useState<ArenaProfile | null>(null);
   const [pet, setPet] = useState<PetProfile | null>(null);
   const [novaOpen, setNovaOpen] = useState(false);
-  const [activeSidebar, setActiveSidebar] = useState("Tổng quan");
+  const sidebarItems = useMemo(() => buildSidebarItems(home), [home]);
+  const personalSidebarItems = useMemo(() => buildPersonalSidebarItems(home), [home]);
+  const [activeSidebar, setActiveSidebar] = useState(sidebarItems[0].label);
   const isLoggedIn = Boolean(user);
 
   useEffect(() => {
@@ -124,7 +130,7 @@ export default function HomePage() {
   }, []);
 
 
-  const displayName = user?.fullname || "Bạn mới";
+  const displayName = user?.fullname || t("header.defaultUser");
   const level = pet?.level || arenaProfile?.level || 18;
   const xpToday = arenaProfile?.arenaPoint || pet?.xp || 2450;
   const streak = arenaProfile?.winStreak || 18;
@@ -152,7 +158,7 @@ export default function HomePage() {
 
           {isLoggedIn && (
             <nav className="mt-6 space-y-1">
-              <p className="px-3 text-[10px] font-black uppercase tracking-wide text-[#8b91aa]">Cá nhân</p>
+              <p className="px-3 text-[10px] font-black uppercase tracking-wide text-[#8b91aa]">{home.personalLabel}</p>
               {personalSidebarItems.map((item) => (
                 <SidebarLink
                   key={item.label}
@@ -166,19 +172,19 @@ export default function HomePage() {
 
           <section className="mt-5 rounded-2xl bg-[#f4f0ff] p-3.5">
             <div className="text-xl">👑</div>
-            <h3 className="mt-1.5 text-sm font-black text-[#652cff]">Nâng cấp Premium</h3>
-            {["Học không giới hạn", "Tính năng AI nâng cao", "Phần thưởng đặc biệt"].map((item) => (
+            <h3 className="mt-1.5 text-sm font-black text-[#652cff]">{home.premiumTitle}</h3>
+            {home.premiumFeatures.map((item) => (
               <p key={item} className="mt-2 text-[11px] font-bold text-[#555d78]">✓ {item}</p>
             ))}
-            <button className="mt-3 w-full rounded-xl bg-[#6d35ff] px-3 py-2.5 text-xs font-black text-white shadow-[0_12px_24px_rgba(109,53,255,0.24)]">Nâng cấp ngay</button>
+            <button className="mt-3 w-full rounded-xl bg-[#6d35ff] px-3 py-2.5 text-xs font-black text-white shadow-[0_12px_24px_rgba(109,53,255,0.24)]">{home.premiumCta}</button>
           </section>
 
           <section className="mt-4 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#ececf7]">
             <div className="flex items-center gap-2.5">
               <SpiritPetAvatar petType={petType} level={level} size="sm" showLevelBadge={false} />
               <div className="min-w-0">
-                <h3 className="text-xs font-black">Cùng Foxy</h3>
-                <p className="mt-0.5 text-[10px] font-bold leading-4 text-[#69708b]">Học mỗi ngày!</p>
+                <h3 className="text-xs font-black">{home.foxyTitle}</h3>
+                <p className="mt-0.5 text-[10px] font-bold leading-4 text-[#69708b]">{home.foxySubtitle}</p>
                 <div className="mt-2 flex items-center gap-2">
                   <div className="h-1.5 w-20 rounded-full bg-[#e4e6f2]">
                     <div className="h-1.5 w-2/3 rounded-full bg-[#6d35ff]" />
@@ -191,7 +197,7 @@ export default function HomePage() {
         </aside>
 
         <section className="min-w-0 flex-1">
-          <header className="sticky top-0 z-40 border-b border-[#e7e8f3] bg-white/90 px-4 py-2.5 backdrop-blur">
+          {/* <header className="sticky top-0 z-40 border-b border-[#e7e8f3] bg-white/90 px-4 py-2.5 backdrop-blur">
             <div className="flex items-center gap-3">
               <div className="2xl:hidden">
                 <Brand compact />
@@ -220,7 +226,7 @@ export default function HomePage() {
                 )}
                 {isLoggedIn ? (
                   <Link href="/profile" className="hidden items-center gap-2 rounded-2xl px-2 py-1.5 transition hover:bg-[#f5f2ff] sm:flex">
-                    <img src={user?.avatar || "/avatar-default.png"} alt={displayName} className="h-9 w-9 rounded-full object-cover" />
+                    <img src={user?.avatar || "/cat-home.jpg"} alt={displayName} className="h-9 w-9 rounded-full object-cover" />
                     <div className="hidden leading-tight sm:block">
                       <p className="text-[13px] font-black">{displayName}</p>
                       <p className="text-[11px] font-bold text-[#69708b]">Level {level}</p>
@@ -233,7 +239,7 @@ export default function HomePage() {
                 )}
               </div>
             </div>
-          </header>
+          </header> */}
 
           <div className="grid gap-4 p-4 lg:p-5 2xl:grid-cols-[minmax(0,1fr)_360px]">
             <div className="min-w-0 space-y-5">
@@ -282,6 +288,8 @@ function TopPill({ icon, value, label }: { icon: string; value: string | number;
 }
 
 function HeroBanner({ level, streak, xpToday, rank }: { level: number; streak: number; xpToday: number; rank: number }) {
+  const { dict } = useTranslation();
+  const home = dict.home;
   const createRoom = async () => {
     try {
       await api.post("/auth/jobs/generate-weekly-pool");
@@ -304,18 +312,18 @@ function HeroBanner({ level, streak, xpToday, rank }: { level: number; streak: n
           <div className="contents">
             <div className="max-w-[260px] rounded-2xl bg-white/90 px-4 py-3 text-[#101733] shadow-[0_16px_34px_rgba(16,23,51,0.18)] backdrop-blur sm:max-w-md sm:px-5 sm:py-4">
               <p className="text-xs font-black uppercase tracking-wide text-[#6d35ff]">PoppyLingo</p>
-              <h1 className="mt-1 text-lg font-black leading-tight sm:text-2xl">Learn English Adventure</h1>
+              <h1 className="mt-1 text-lg font-black leading-tight sm:text-2xl">{home.heroBrandLine}</h1>
               <p className="mt-1 hidden text-sm font-bold leading-5 text-[#69708b] sm:block">
-                Học, chơi và lớn lên cùng từ vựng, ngữ pháp, speaking và AI practice trong một hành trình đầy màu sắc.
+                {home.heroSubtitle}
               </p>
             </div>
 
             <div className="flex flex-wrap gap-2 sm:gap-3">
               <Link href="/courses" className="rounded-xl bg-[#6d35ff] px-4 py-3 text-xs font-black text-white shadow-lg sm:px-5 sm:text-sm">
-                Bắt đầu học ngay
+                {home.heroCtaStart}
               </Link>
               <Link href="/arena" className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-xs font-black text-[#652cff] shadow-lg sm:px-5 sm:text-sm">
-                <AppIcon name="arena" tone="purple" size={18} bare /> Vào đấu trường
+                <AppIcon name="arena" tone="purple" size={18} bare /> {home.heroCtaArena}
               </Link>
             </div>
           </div>
@@ -323,14 +331,14 @@ function HeroBanner({ level, streak, xpToday, rank }: { level: number; streak: n
       </div>
 
       <button type="button" onClick={createRoom} className="sr-only">
-        Tạo phòng tuần
+        {home.heroCreateRoom}
       </button>
 
       <div className="relative z-10 grid gap-2 bg-white p-3 text-[#101733] sm:grid-cols-2 sm:p-4 xl:grid-cols-4">
         <HeroStat icon="check" label={`Level ${level}`} value={`${Math.min(3000, xpToday).toLocaleString("vi-VN")} / 3,000 XP`} />
-        <HeroStat icon="fire" label={String(streak)} value="Ngày streak" />
-        <HeroStat icon="star" label={xpToday.toLocaleString("vi-VN")} value="XP hôm nay" />
-        <HeroStat icon="trophy" label={`Top ${rank}`} value="Xếp hạng VN" />
+        <HeroStat icon="fire" label={String(streak)} value={home.heroStreakLabel} />
+        <HeroStat icon="star" label={xpToday.toLocaleString("vi-VN")} value={home.heroXpTodayLabel} />
+        <HeroStat icon="trophy" label={`Top ${rank}`} value={home.heroRankLabel} />
       </div>
     </section>
   );
@@ -369,7 +377,10 @@ function SidebarLink({
   );
 }
 
+// NOTE: not currently rendered anywhere (HomePage uses HeroBanner instead) — kept in sync anyway.
 function Hero({ level, streak, xpToday, rank }: { level: number; streak: number; xpToday: number; rank: number }) {
+    const { dict } = useTranslation();
+    const home = dict.home;
     const createRoom = async () => {
     try {
       await api.post("/auth/jobs/generate-weekly-pool");
@@ -383,11 +394,11 @@ function Hero({ level, streak, xpToday, rank }: { level: number; streak: number;
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_48%_20%,rgba(255,255,255,0.35),transparent_26%),radial-gradient(circle_at_78%_48%,rgba(255,255,255,0.22),transparent_22%)]" />
       <div className="relative z-10 grid items-center gap-5 md:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_330px]">
         <div>
-          <h1 className="max-w-xl text-4xl font-black leading-tight sm:text-5xl">Học tiếng Anh như chơi game!</h1>
-          <p className="mt-5 max-w-lg text-base font-bold leading-7 text-white/90 sm:text-lg">Học, luyện, thi đấu và nhận thưởng. Nâng trình tiếng Anh mỗi ngày cùng PoppyLingo.</p>
+          <h1 className="max-w-xl text-4xl font-black leading-tight sm:text-5xl">{home.heroTitle}</h1>
+          <p className="mt-5 max-w-lg text-base font-bold leading-7 text-white/90 sm:text-lg">{home.heroSubtitle}</p>
           <div className="mt-7 flex flex-wrap gap-4">
-            <Link href="/courses" className="rounded-xl bg-[#6d35ff] px-6 py-4 font-black text-white shadow-lg">Bắt đầu học ngay</Link>
-            <Link href="/arena" className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-4 font-black text-[#652cff] shadow-lg"><AppIcon name="arena" tone="purple" size={18} bare /> Vào đấu trường</Link>
+            <Link href="/courses" className="rounded-xl bg-[#6d35ff] px-6 py-4 font-black text-white shadow-lg">{home.heroCtaStart}</Link>
+            <Link href="/arena" className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-4 font-black text-[#652cff] shadow-lg"><AppIcon name="arena" tone="purple" size={18} bare /> {home.heroCtaArena}</Link>
           </div>
         </div>
         <div className="hidden items-center justify-center md:flex">
@@ -401,9 +412,9 @@ function Hero({ level, streak, xpToday, rank }: { level: number; streak: number;
       </div>
       <div className="relative z-10 mt-5 grid gap-3 rounded-2xl bg-white/95 p-4 text-[#101733] shadow-xl sm:grid-cols-2 xl:grid-cols-4">
         <HeroStat icon="check" label={`Level ${level}`} value={`${Math.min(3000, xpToday).toLocaleString("vi-VN")} / 3,000 XP`} />
-        <HeroStat icon="fire" label={String(streak)} value="Ngày streak" />
-        <HeroStat icon="star" label={xpToday.toLocaleString("vi-VN")} value="XP hôm nay" />
-        <HeroStat icon="trophy" label={`Top ${rank}`} value="Xếp hạng VN" />
+        <HeroStat icon="fire" label={String(streak)} value={home.heroStreakLabel} />
+        <HeroStat icon="star" label={xpToday.toLocaleString("vi-VN")} value={home.heroXpTodayLabel} />
+        <HeroStat icon="trophy" label={`Top ${rank}`} value={home.heroRankLabel} />
       </div>
     </section>
   );
@@ -422,9 +433,12 @@ function HeroStat({ icon, label, value }: { icon: string; label: string; value: 
 }
 
 function FeatureGrid() {
+  const { dict } = useTranslation();
+  const home = dict.home;
+  const features = useMemo(() => buildFeatures(home), [home]);
   return (
     <section className="space-y-3">
-      <SectionTitle title="Khám phá tính năng" />
+      <SectionTitle title={home.featuresTitle} />
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
         {features.map((item) => (
           <Link key={item.title} href={item.href} className="rounded-2xl border border-[#e8e9f5] bg-white p-4 text-center shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
@@ -439,9 +453,12 @@ function FeatureGrid() {
 }
 
 function ToolsGrid() {
+  const { dict } = useTranslation();
+  const home = dict.home;
+  const tools = useMemo(() => buildTools(home), [home]);
   return (
     <section className="space-y-3">
-      <SectionTitle title="Công cụ miễn phí" link="/check-word" />
+      <SectionTitle title={home.toolsTitle} link="/check-word" />
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {tools.map((item) => (
           <Link key={item.title} href={item.href} className="flex items-center gap-4 rounded-2xl border border-[#e8e9f5] bg-white p-4 shadow-sm">
@@ -450,7 +467,7 @@ function ToolsGrid() {
               <span className="block font-black">{item.title}</span>
               <span className="block text-xs font-bold text-[#69708b]">{item.desc}</span>
             </span>
-            <span className="rounded-lg bg-[#dcfce7] px-2 py-1 text-[10px] font-black text-[#16a34a]">Free</span>
+            <span className="rounded-lg bg-[#dcfce7] px-2 py-1 text-[10px] font-black text-[#16a34a]">{home.freeBadge}</span>
           </Link>
         ))}
       </div>
@@ -459,9 +476,11 @@ function ToolsGrid() {
 }
 
 function CoursesGrid({ courses }: { courses: Course[] }) {
+  const { dict } = useTranslation();
+  const home = dict.home;
   return (
     <section className="space-y-3">
-      <SectionTitle title="Khóa học nổi bật" link="/courses" />
+      <SectionTitle title={home.coursesTitle} link="/courses" />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {courses.map((course, index) => (
           <Link key={course.id || course.title} href={course.slug ? `/courses/${course.slug}` : "/courses"} className="overflow-hidden rounded-2xl border border-[#e8e9f5] bg-white shadow-sm">
@@ -469,15 +488,15 @@ function CoursesGrid({ courses }: { courses: Course[] }) {
               <img src={course.thumbnail} alt={course.title} className="h-24 w-full object-cover" />
             ) : (
               <div className={`h-24 bg-gradient-to-br ${["from-emerald-200 to-sky-200", "from-orange-200 to-amber-100", "from-blue-200 to-violet-200", "from-pink-200 to-purple-200", "from-red-200 to-orange-200"][index % 5]} p-3`}>
-                <span className="rounded-lg bg-white/80 px-2 py-1 text-xs font-black text-[#652cff]">{course.level || "Cơ bản"}</span>
+                <span className="rounded-lg bg-white/80 px-2 py-1 text-xs font-black text-[#652cff]">{course.level || home.courseFallbackLevel}</span>
               </div>
             )}
             <div className="p-4">
               <h3 className="line-clamp-1 font-black">{course.title}</h3>
-              <p className="mt-1 line-clamp-2 text-xs font-bold text-[#69708b]">{course.description || "Lộ trình học tiếng Anh thú vị"}</p>
+              <p className="mt-1 line-clamp-2 text-xs font-bold text-[#69708b]">{course.description || home.courseFallbackDesc}</p>
               <div className="mt-3 flex items-center justify-between text-sm font-black">
                 <span className="text-amber-500">★ 4.9</span>
-                <span className="text-[#652cff]">{course.price ? `${course.price.toLocaleString("vi-VN")}đ` : "Free"}</span>
+                <span className="text-[#652cff]">{course.price ? `${course.price.toLocaleString("vi-VN")}đ` : home.freeBadge}</span>
               </div>
             </div>
           </Link>
@@ -488,23 +507,27 @@ function CoursesGrid({ courses }: { courses: Course[] }) {
 }
 
 function DailyTasks() {
+  const { dict } = useTranslation();
+  const home = dict.home;
   return (
-    <Panel title="Nhiệm vụ hằng ngày" action="Xem tất cả">
-      <Task icon="🔥" title="Học 10 từ mới" progress="7 / 10" reward="50" width="70%" />
-      <Task icon="🎧" title="Nghe 3 bài" progress="2 / 3" reward="40" width="66%" />
-      <Task icon="⚔" title="Thắng 1 trận đấu" progress="0 / 1" reward="60" width="8%" />
+    <Panel title={home.dailyTasksTitle} action={home.viewAll}>
+      <Task icon="🔥" title={home.dailyTasks[0]} progress="7 / 10" reward="50" width="70%" />
+      <Task icon="🎧" title={home.dailyTasks[1]} progress="2 / 3" reward="40" width="66%" />
+      <Task icon="⚔" title={home.dailyTasks[2]} progress="0 / 1" reward="60" width="8%" />
     </Panel>
   );
 }
 
 function RecentArena({ displayName, avatar, level }: { displayName: string; avatar?: string; level: number }) {
+  const { dict } = useTranslation();
+  const home = dict.home;
   return (
-    <Panel title="Đấu trường gần đây" action="Xem tất cả">
+    <Panel title={home.recentArenaTitle} action={home.viewAll}>
       <div className="flex items-center justify-between rounded-2xl bg-[#fafbff] p-3">
         <Player name={displayName} level={level} avatar={avatar} />
         <div className="px-2 text-center">
           <div className="text-2xl font-black"><span className="text-emerald-600">15</span> : <span className="text-red-500">8</span></div>
-          <p className="text-xs font-black text-emerald-600">Thắng</p>
+          <p className="text-xs font-black text-emerald-600">{home.winLabel}</p>
         </div>
         <Player name="Quang Huy" level={17} />
       </div>
@@ -513,9 +536,11 @@ function RecentArena({ displayName, avatar, level }: { displayName: string; avat
 }
 
 function CommunityPosts() {
+  const { dict } = useTranslation();
+  const home = dict.home;
   return (
-    <Panel title="Bài viết nổi bật từ cộng đồng">
-      {["5 mẹo học từ vựng siêu nhanh", "Kinh nghiệm đạt IELTS 7.0 từ con số 0", "Cách cải thiện phát âm hiệu quả mỗi ngày"].map((title, index) => (
+    <Panel title={home.communityPostsTitle}>
+      {home.communityPosts.map((title, index) => (
         <div key={title} className="flex items-center gap-3 rounded-xl p-1.5 hover:bg-[#fafbff]">
           <div className="h-10 w-14 rounded-xl bg-gradient-to-br from-[#dbeafe] to-[#fce7f3]" />
           <div className="min-w-0">
@@ -529,19 +554,28 @@ function CommunityPosts() {
 }
 
 function WhyStudyArena() {
-  const items = [
-    { icon: "book", tone: "bg-[#efe9ff] text-[#6d35ff]", title: "Học mà chơi", desc: "Học qua game hóa, không nhàm chán" },
-    { icon: "spark", tone: "bg-[#efe9ff] text-[#6d35ff]", title: "Cá nhân hóa", desc: "Lộ trình phù hợp với trình độ của bạn" },
-    { icon: "ai", tone: "bg-[#eaf2ff] text-[#2f80ff]", title: "AI thông minh", desc: "Hỗ trợ 24/7, sửa lỗi và luyện tập cùng bạn" },
-    { icon: "team", tone: "bg-[#efe9ff] text-[#6d35ff]", title: "Cộng đồng lớn", desc: "Kết bạn, chia sẻ và cùng nhau tiến bộ" },
-    { icon: "gift", tone: "bg-[#fff0f4] text-[#ff477d]", title: "Phần thưởng hấp dẫn", desc: "Nhận xu, huy hiệu và quà tặng giá trị" },
+  const { dict } = useTranslation();
+  const home = dict.home;
+  const icons = ["book", "spark", "ai", "team", "gift"];
+  const tones = [
+    "bg-[#efe9ff] text-[#6d35ff]",
+    "bg-[#efe9ff] text-[#6d35ff]",
+    "bg-[#eaf2ff] text-[#2f80ff]",
+    "bg-[#efe9ff] text-[#6d35ff]",
+    "bg-[#fff0f4] text-[#ff477d]",
   ];
+  const items = home.whyItems.map((item, index) => ({
+    icon: icons[index],
+    tone: tones[index],
+    title: item.title,
+    desc: item.desc,
+  }));
   const avatars = ["👩🏻", "👨🏻", "👩🏽", "👨🏽", "👩🏼"];
 
   return (
     <section className="mx-4 mb-5 grid gap-4 lg:mx-5 xl:grid-cols-[minmax(0,1fr)_500px]">
       <div className="rounded-2xl border border-[#e8e9f5] bg-white px-5 py-4 shadow-sm">
-        <h2 className="mb-3 text-[15px] font-black leading-5 text-[#171b3f]">Tại sao chọn PoppyLingo?</h2>
+        <h2 className="mb-3 text-[15px] font-black leading-5 text-[#171b3f]">{home.whyTitle}</h2>
         <div className="grid gap-x-5 gap-y-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {items.map((item) => (
             <div key={item.title} className="flex min-w-0 items-start gap-2.5">
@@ -562,18 +596,18 @@ function WhyStudyArena() {
         <span className="absolute right-9 top-7 h-3 w-6 rounded-full bg-[#efe8ff]" />
         <div className="relative z-10 flex min-h-[104px] items-center justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="max-w-[230px] text-[15px] font-black leading-5 text-[#171b3f]">Tham gia cộng đồng hơn 2.5M+ người học</h2>
+            <h2 className="max-w-[230px] text-[15px] font-black leading-5 text-[#171b3f]">{home.whyCommunityTitle}</h2>
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <div className="flex -space-x-2">
                 {avatars.map((avatar, index) => (
                   <span key={`${avatar}-${index}`} className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-[#eef2ff] to-[#ffe4e6] text-[15px] shadow-sm">
                     {avatar}
-                    <span className="sr-only">Người học {index + 1}</span>
+                    <span className="sr-only">{home.learnerSr.replace("{n}", String(index + 1))}</span>
                   </span>
                 ))}
               </div>
               <Link href="/community" className="shrink-0 rounded-xl bg-[#6d35ff] px-5 py-2.5 text-xs font-black text-white shadow-[0_12px_24px_rgba(109,53,255,0.25)]">
-                Tham gia ngay
+                {home.whyJoinNow}
               </Link>
             </div>
           </div>
@@ -652,6 +686,8 @@ function NovaToggle({
   petType: string;
   level: number;
 }) {
+  const { dict } = useTranslation();
+  const home = dict.home;
   return (
     <>
       {open && (
@@ -660,23 +696,23 @@ function NovaToggle({
             <div className="flex items-center gap-3">
               <SpiritPetAvatar petType={petType} level={level} size="sm" showLevelBadge={false} />
               <div>
-                <h3 className="font-black">Chat cùng Nova AI</h3>
-                <p className="text-xs font-bold text-white/75">Online</p>
+                <h3 className="font-black">{home.novaChatTitle}</h3>
+                <p className="text-xs font-bold text-white/75">{home.novaOnline}</p>
               </div>
             </div>
             <button onClick={() => setOpen(false)} className="rounded-full bg-white/15 px-3 py-2 font-black">×</button>
           </div>
           <div className="space-y-4 bg-[#faf8ff] p-4">
             <div className="max-w-[82%] rounded-2xl bg-white p-4 text-sm font-bold text-[#4b5575] shadow-sm">
-              Xin chào {displayName}! Hôm nay bạn muốn luyện tập gì nào?
+              {home.novaGreeting.replace("{name}", displayName)}
             </div>
             <div className="flex flex-wrap gap-2">
-              {["Luyện hội thoại", "Giải thích ngữ pháp", "Sửa bài viết", "Gợi ý từ vựng", "Tạo bài kiểm tra"].map((item) => (
+              {home.novaQuickReplies.map((item) => (
                 <button key={item} className="rounded-lg bg-white px-3 py-2 text-xs font-black text-[#6d35ff] shadow-sm">{item}</button>
               ))}
             </div>
             <div className="flex items-center gap-2">
-              <input placeholder="Nhập tin nhắn..." className="min-h-12 flex-1 rounded-xl border border-[#e8e9f5] bg-white px-4 text-sm font-bold outline-none" />
+              <input placeholder={home.novaInputPlaceholder} className="min-h-12 flex-1 rounded-xl border border-[#e8e9f5] bg-white px-4 text-sm font-bold outline-none" />
               <button className="rounded-xl bg-[#6d35ff] px-4 py-3 font-black text-white">➤</button>
             </div>
           </div>
@@ -686,7 +722,7 @@ function NovaToggle({
       <button
         onClick={() => setOpen(!open)}
         className="fixed bottom-5 right-4 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#6d35ff] to-[#9b6bff] text-3xl text-white shadow-[0_18px_50px_rgba(109,53,255,0.35)] sm:right-6"
-        aria-label="Mở Nova AI"
+        aria-label={home.novaOpenAria}
       >
         🤖
       </button>
@@ -695,10 +731,11 @@ function NovaToggle({
 }
 
 function SectionTitle({ title, link }: { title: string; link?: string }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center justify-between">
       <h2 className="text-lg font-black sm:text-xl">{title}</h2>
-      {link && <Link href={link} className="text-sm font-black text-[#6d35ff]">Xem tất cả</Link>}
+      {link && <Link href={link} className="text-sm font-black text-[#6d35ff]">{t("home.viewAll")}</Link>}
     </div>
   );
 }
@@ -731,7 +768,7 @@ function Task({ icon, title, progress, reward, width }: { icon: string; title: s
 function Player({ name, level, avatar }: { name: string; level: number; avatar?: string }) {
   return (
     <div className="min-w-0 text-center sm:text-left">
-      <img src={avatar || "/avatar-default.png"} alt={name} className="mx-auto h-10 w-10 rounded-full object-cover sm:mx-0" />
+      <img src={avatar || "/cat-home.jpg"} alt={name} className="mx-auto h-10 w-10 rounded-full object-cover sm:mx-0" />
       <p className="mt-1.5 max-w-20 truncate text-xs font-black">{name}</p>
       <p className="text-[11px] font-bold text-[#69708b]">Level {level}</p>
     </div>

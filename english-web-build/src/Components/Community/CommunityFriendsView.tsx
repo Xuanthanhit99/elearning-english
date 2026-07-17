@@ -128,7 +128,7 @@ export function CommunityFriendsView({
                 className="flex items-center gap-3 py-3"
               >
                 <img
-                  src={user.avatar || '/avatar-placeholder.png'}
+                  src={user.avatar || '/cat-home.jpg'}
                   alt=""
                   className="h-11 w-11 rounded-full object-cover"
                 />
@@ -187,7 +187,7 @@ export function CommunityFriendsView({
                 <img
                   src={
                     request.requester.avatar ||
-                    '/avatar-placeholder.png'
+                    '/cat-home.jpg'
                   }
                   alt=""
                   className="h-10 w-10 rounded-full object-cover"
@@ -240,7 +240,7 @@ export function CommunityFriendsView({
                 className="flex items-center gap-3 rounded-2xl border p-3"
               >
                 <img
-                  src={friend.avatar || '/avatar-placeholder.png'}
+                  src={friend.avatar || '/cat-home.jpg'}
                   alt=""
                   className="h-10 w-10 rounded-full object-cover"
                 />

@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import ThemeInitializer, {
+  themeAntiFlashScript,
+} from "@/src/Components/ThemeInitializer";
+import LanguageInitializer from "@/src/Components/LanguageInitializer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,8 +30,17 @@ export default function RootLayout({
     <html
       lang="vi"
       className={`${geistSans.variable} ${geistMono.variable}`}
+      suppressHydrationWarning
     >
-      <body className="min-h-screen antialiased border-[#f2dfc8] bg-[#fff4e8]">
+      <head>
+        <script
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: themeAntiFlashScript }}
+        />
+      </head>
+      <body className="min-h-screen antialiased border-[#f2dfc8] bg-[#fff4e8] dark:border-slate-800 dark:bg-slate-950">
+        <ThemeInitializer />
+        <LanguageInitializer />
         {children}
       </body>
     </html>

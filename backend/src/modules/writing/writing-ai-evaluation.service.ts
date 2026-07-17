@@ -30,6 +30,9 @@ export class WritingAiEvaluationService {
     level: string;
     minWords?: number | null;
     maxWords?: number | null;
+    correctionMode?: string;
+    translationMode?: string;
+    learningGoal?: string;
   }): Promise<WritingEvaluationResult> {
     const essay = input.essay.trim();
 
@@ -56,6 +59,14 @@ ${input.minWords ?? 0} - ${input.maxWords ?? 0} words
 
 Student essay:
 ${essay}
+
+Learner's goal: ${input.learningGoal || 'DAILY_ENGLISH'}
+
+Correction mode (correctionMode = ${input.correctionMode || 'EXPLAIN_GRAMMAR'}):
+${this.correctionModeInstruction(input.correctionMode)}
+
+Translation policy (translationMode = ${input.translationMode || 'ON_REQUEST'}):
+${this.translationModeInstruction(input.translationMode)}
 
 Return ONLY valid JSON, no markdown:
 {
@@ -93,6 +104,32 @@ Rules:
     const result = await this.model.generateContent(prompt);
     const parsed = this.parseJson(result.response.text());
     return this.normalize(parsed);
+  }
+
+  private correctionModeInstruction(correctionMode?: string): string {
+    switch (correctionMode) {
+      case 'MAJOR_ONLY':
+        return 'Only list mistakes that change the meaning of the sentence; ignore minor style issues.';
+      case 'CORRECT_EVERYTHING':
+        return 'List every mistake in detail, including minor grammar, spelling, and word choice issues.';
+      case 'NATIVE_EXPRESSION':
+        return 'After correcting mistakes, also suggest more natural, native-like phrasing where useful.';
+      case 'EXPLAIN_GRAMMAR':
+      default:
+        return 'For each mistake, briefly explain the grammar rule that was broken.';
+    }
+  }
+
+  private translationModeInstruction(translationMode?: string): string {
+    switch (translationMode) {
+      case 'ALWAYS':
+        return 'Include a Vietnamese translation for the feedback and key suggestions.';
+      case 'NEVER':
+        return 'Do not include any Vietnamese translation, keep feedback bilingual-free where possible.';
+      case 'ON_REQUEST':
+      default:
+        return 'Feedback/suggestions text is already expected in Vietnamese as instructed above; do not add English translation of it.';
+    }
   }
 
   private emptyResult(feedback: string): WritingEvaluationResult {

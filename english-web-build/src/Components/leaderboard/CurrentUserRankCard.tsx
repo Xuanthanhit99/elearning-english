@@ -1,6 +1,8 @@
-import { formatXp, zoneLabel } from "@/src/lib/leaderboard";
-import { LeaderboardEntry } from "@/src/types/leaderboard";
-
+import {
+  formatXp,
+  zoneLabel,
+} from '@/src/lib/leaderboard';
+import type { LeaderboardEntry } from '@/src/types/leaderboard';
 
 export function CurrentUserRankCard({
   entry,

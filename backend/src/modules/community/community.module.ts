@@ -1,6 +1,7 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../prisma/prisma.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { CommunityController } from './community.controller';
 import { CommunityJobService } from './community-job.service';
 import { CommunityService } from './community.service';
@@ -9,7 +10,11 @@ import { CommunityGateway } from './gateway/community.gateway';
 import { CommunityProcessor } from './processors/community.processor';
 
 @Module({
-  imports: [PrismaModule, BullModule.registerQueue({ name: COMMUNITY_QUEUE })],
+  imports: [
+    PrismaModule,
+    NotificationsModule,
+    BullModule.registerQueue({ name: COMMUNITY_QUEUE }),
+  ],
   controllers: [CommunityController],
   providers: [
     CommunityService,

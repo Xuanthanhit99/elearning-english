@@ -125,7 +125,7 @@ export default function ProfilePage() {
   }, []);
 
   const displayName = user?.fullname || "Minh Anh";
-  const avatar = user?.avatar || "/avatar-default.png";
+  const avatar = user?.avatar || "/cat-home.jpg";
   const level = pet?.level || arenaProfile?.level || 18;
   const petName = pet?.name || "Foxy";
   const petType = pet?.petType || "fox";

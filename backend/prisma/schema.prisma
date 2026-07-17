@@ -180,6 +180,10 @@ model User {
   englishLevel String?    @default("Beginner")
   learningGoal String?    @default("General English")
 
+  twoFactorSecret        String?
+  twoFactorTempSecret    String?
+  twoFactorRecoveryCodes String[] @default([])
+
   enrollments Enrollment[]
 
   lessonProgress LessonProgress[]
@@ -263,6 +267,7 @@ model User {
   settings             UserSettings?
   deviceSessions       UserDeviceSession[]
   learningDnaSnapshots LearningDnaSnapshot[]
+  auditLogs            AuditLog[]
 
   xpProfile               UserXpProfile?
   xpTransactions          XpTransaction[]
@@ -3355,6 +3360,13 @@ enum ThemeMode {
   SYSTEM
 }
 
+enum Language {
+  VI
+  EN
+  ZH
+  DE
+}
+
 enum LearningGoal {
   IELTS
   TOEIC
@@ -3463,6 +3475,7 @@ model UserSettings {
   autoJoinVoiceRoom Boolean           @default(false)
 
   theme                 ThemeMode @default(SYSTEM)
+  language              Language  @default(VI)
   primaryColor          String    @default("VIOLET")
   fontScale             Float     @default(1)
   compactMode           Boolean   @default(false)
@@ -3480,6 +3493,7 @@ model UserSettings {
   weeklyTargetDays   Int      @default(5)
   restDays           String[] @default([])
   preferredStudyTime String   @default("19:00")
+  timezone           String   @default("Asia/Ho_Chi_Minh")
 
   twoFactorEnabled    Boolean @default(false)
   dataPersonalization Boolean @default(true)
@@ -3507,6 +3521,22 @@ model UserDeviceSession {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, revokedAt])
+}
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  userId        String
+  action        String
+  changedFields String[] @default([])
+  metadata      Json?
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
 }
 
 model LearningDnaSnapshot {

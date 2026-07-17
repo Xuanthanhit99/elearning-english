@@ -7,7 +7,7 @@ import { useAuthStore } from "@/src/store/authStore";
 export default function CheckWordLayout({ children }: { children: ReactNode }) {
   const user = useAuthStore((state) => state.user);
   const displayName = user?.fullname || "Minh Anh";
-  const avatar = user?.avatar || "/avatar-default.png";
+  const avatar = user?.avatar || "/cat-home.jpg";
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#fbfbff] text-[#101733]">

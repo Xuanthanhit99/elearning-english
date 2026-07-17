@@ -1,8 +1,14 @@
-import { Controller, Post } from '@nestjs/common';
+import { Controller, Post, UseGuards } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
+import { Roles } from '../../../common/decorators/roles.decorator';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../common/guards/roles.guard';
 import { LeaderboardBootstrapService } from '../bootstrap/leaderboard-bootstrap.service';
 import { LeaderboardRewardService } from '../rewards/leaderboard-reward.service';
 
 @Controller('admin/leaderboard/maintenance')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.ADMIN)
 export class LeaderboardMaintenanceController {
   constructor(
     private readonly bootstrap: LeaderboardBootstrapService,

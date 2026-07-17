@@ -1,16 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import {
-  LeagueTier,
-  Prisma,
-  LeaderboardReward
-} from '@prisma/client';
+import { LeaderboardReward, LeagueTier, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class LeaderboardRewardSeedService {
-  constructor(
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async seedDefaultWeeklyRewards() {
     const definitions: Array<{
@@ -58,18 +52,16 @@ export class LeaderboardRewardSeedService {
     const created: LeaderboardReward[] = [];
 
     for (const definition of definitions) {
-      const existing =
-        await this.prisma.leaderboardReward.findFirst({
-          where: {
-            seasonId: null,
-            league: definition.league,
-            minRank: definition.minRank,
-            maxRank: definition.maxRank,
-            rewardType:
-              'WEEKLY_RANK_REWARD',
-            isActive: true,
-          },
-        });
+      const existing = await this.prisma.leaderboardReward.findFirst({
+        where: {
+          seasonId: null,
+          league: definition.league,
+          minRank: definition.minRank,
+          maxRank: definition.maxRank,
+          rewardType: 'WEEKLY_RANK_REWARD',
+          isActive: true,
+        },
+      });
 
       if (existing) {
         created.push(existing);
@@ -83,13 +75,10 @@ export class LeaderboardRewardSeedService {
             league: definition.league,
             minRank: definition.minRank,
             maxRank: definition.maxRank,
-            rewardType:
-              'WEEKLY_RANK_REWARD',
-            rewardValue:
-              definition.value,
+            rewardType: 'WEEKLY_RANK_REWARD',
+            rewardValue: definition.value,
             title: definition.title,
-            description:
-              'Phần thưởng thành tích bảng xếp hạng tuần.',
+            description: 'Phần thưởng thành tích bảng xếp hạng tuần.',
             isActive: true,
           },
         }),

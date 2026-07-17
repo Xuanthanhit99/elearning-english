@@ -29,11 +29,7 @@ export class LeaderboardCookieAuthService {
     const cookies =
       this.parseCookies(cookieHeader);
 
-    const token =
-      cookies.accessToken ??
-      cookies.access_token ??
-      cookies.jwt ??
-      cookies.token;
+    const token = cookies.access_token;
 
     if (!token) {
       throw new UnauthorizedException(

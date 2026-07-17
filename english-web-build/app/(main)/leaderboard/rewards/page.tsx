@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { LeaderboardRewardsPanel } from '@/components/leaderboard/LeaderboardRewardsPanel';
-import { LeaderboardShell } from '@/components/leaderboard/LeaderboardShell';
+import { LeaderboardRewardsPanel } from '@/src/Components/leaderboard/LeaderboardRewardsPanel';
+import { LeaderboardShell } from '@/src/Components/leaderboard/LeaderboardShell';
 
 export default function LeaderboardRewardsPage() {
   return (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Bell,
   Bot,
@@ -12,32 +12,62 @@ import {
   Shield,
   SlidersHorizontal,
   Sparkles,
-  UserRound,
 } from 'lucide-react';
 import { Field, SectionCard, Select, Toggle } from './ui';
 import { DeviceSession, Settings } from '@/src/lib/settings-types';
-import { settingsApi } from '@/src/lib/settings-api';
+import { settingsApi, twoFactorApi } from '@/src/lib/settings-api';
+import { useTranslation } from '@/src/hooks/useTranslation';
+import { useThemeStore, ThemeChoice } from '@/src/store/themeStore';
+import { useLanguageStore } from '@/src/store/languageStore';
+import { LOCALES, LOCALE_LABELS, Locale } from '@/src/i18n/types';
 
 const tabs = [
-  { id: 'learning', label: 'Học tập', icon: Brain },
-  { id: 'ai', label: 'AI Teacher', icon: Bot },
-  { id: 'speaking', label: 'Speaking', icon: Mic },
-  { id: 'notifications', label: 'Thông báo', icon: Bell },
-  { id: 'community', label: 'Cộng đồng', icon: MessageCircle },
-  { id: 'appearance', label: 'Giao diện', icon: Brush },
-  { id: 'privacy', label: 'Quyền riêng tư', icon: Shield },
-  { id: 'security', label: 'Bảo mật', icon: Lock },
-  { id: 'advanced', label: 'Nâng cao', icon: Sparkles },
+  { id: 'learning', icon: Brain },
+  { id: 'ai', icon: Bot },
+  { id: 'speaking', icon: Mic },
+  { id: 'notifications', icon: Bell },
+  { id: 'community', icon: MessageCircle },
+  { id: 'appearance', icon: Brush },
+  { id: 'privacy', icon: Shield },
+  { id: 'security', icon: Lock },
+  { id: 'advanced', icon: Sparkles },
 ] as const;
 
 type TabId = (typeof tabs)[number]['id'];
 
 export default function SettingsPage() {
+  const { t } = useTranslation();
+  const setTheme = useThemeStore((state) => state.setTheme);
+  const setLocale = useLanguageStore((state) => state.setLocale);
+  const tabLabels: Record<TabId, string> = {
+    learning: t('settings.tabLearning'),
+    ai: t('settings.tabAi'),
+    speaking: t('settings.tabSpeaking'),
+    notifications: t('settings.tabNotifications'),
+    community: t('settings.tabCommunity'),
+    appearance: t('settings.tabAppearance'),
+    privacy: t('settings.tabPrivacy'),
+    security: t('settings.tabSecurity'),
+    advanced: t('settings.tabAdvanced'),
+  };
   const [settings, setSettings] = useState<Settings | null>(null);
   const [devices, setDevices] = useState<DeviceSession[]>([]);
   const [activeTab, setActiveTab] = useState<TabId>('learning');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [twoFactorSetup, setTwoFactorSetup] = useState<{
+    qrCodeDataUrl: string;
+    manualEntryKey: string;
+  } | null>(null);
+  const [twoFactorOtp, setTwoFactorOtp] = useState('');
+  const [twoFactorRecoveryCodes, setTwoFactorRecoveryCodes] = useState<string[]>([]);
+  const [twoFactorDisableOpen, setTwoFactorDisableOpen] = useState(false);
+  const [twoFactorDisablePayload, setTwoFactorDisablePayload] = useState({
+    password: '',
+    otp: '',
+    recoveryCode: '',
+  });
+  const [twoFactorBusy, setTwoFactorBusy] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -46,15 +76,22 @@ export default function SettingsPage() {
     ]).then(([settingsData, deviceData]) => {
       setSettings(settingsData);
       setDevices(deviceData);
+      // Keep the global theme/language stores (used across the whole app)
+      // in sync with whatever was last saved for this account.
+      if (settingsData.theme) {
+        setTheme(settingsData.theme as ThemeChoice);
+      }
+      if (settingsData.language) {
+        setLocale(settingsData.language.toLowerCase() as Locale);
+      }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const dirtyPayload = useMemo(() => settings, [settings]);
 
   if (!settings) {
     return (
       <div className="grid min-h-[60vh] place-items-center">
-        <div className="text-sm text-slate-500">Đang tải cài đặt...</div>
+        <div className="text-sm text-slate-500">{t('common.loading')}</div>
       </div>
     );
   }
@@ -66,18 +103,21 @@ export default function SettingsPage() {
     setSettings((current) =>
       current ? { ...current, [key]: value } : current,
     );
+    // Live-preview theme/language immediately, instead of waiting for Save.
+    if (key === 'theme') setTheme(value as unknown as ThemeChoice);
+    if (key === 'language') setLocale((value as unknown as string).toLowerCase() as Locale);
   };
 
   const save = async () => {
     setSaving(true);
     setMessage('');
     try {
-      const updated = await settingsApi.update(dirtyPayload);
+      const updated = await settingsApi.update(settings);
       setSettings(updated);
-      setMessage('Đã lưu cài đặt');
+      setMessage(t('settings.savedMessage'));
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : 'Không thể lưu',
+        error instanceof Error ? error.message : 'Error',
       );
     } finally {
       setSaving(false);
@@ -89,7 +129,67 @@ export default function SettingsPage() {
       activeTab === 'security' ? 'privacy' : activeTab;
     const updated = await settingsApi.resetSection(section);
     setSettings(updated);
-    setMessage('Đã khôi phục mặc định');
+    setMessage(t('settings.resetMessage'));
+  };
+
+  const refreshSettings = async () => {
+    const updated = await settingsApi.get();
+    setSettings(updated);
+  };
+
+  const startTwoFactorSetup = async () => {
+    setTwoFactorBusy(true);
+    setMessage('');
+    try {
+      const setup = await twoFactorApi.setup();
+      setTwoFactorSetup(setup);
+      setTwoFactorOtp('');
+      setTwoFactorRecoveryCodes([]);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Không khởi tạo được 2FA.');
+    } finally {
+      setTwoFactorBusy(false);
+    }
+  };
+
+  const confirmTwoFactor = async () => {
+    if (twoFactorOtp.trim().length !== 6) {
+      setMessage('Vui lòng nhập mã OTP gồm 6 số.');
+      return;
+    }
+
+    setTwoFactorBusy(true);
+    setMessage('');
+    try {
+      const result = await twoFactorApi.confirm(twoFactorOtp.trim());
+      setTwoFactorRecoveryCodes(result.recoveryCodes);
+      await refreshSettings();
+      setMessage('Đã bật xác thực hai bước.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Mã OTP không đúng.');
+    } finally {
+      setTwoFactorBusy(false);
+    }
+  };
+
+  const disableTwoFactor = async () => {
+    setTwoFactorBusy(true);
+    setMessage('');
+    try {
+      await twoFactorApi.disable({
+        password: twoFactorDisablePayload.password || undefined,
+        otp: twoFactorDisablePayload.otp || undefined,
+        recoveryCode: twoFactorDisablePayload.recoveryCode || undefined,
+      });
+      setTwoFactorDisableOpen(false);
+      setTwoFactorDisablePayload({ password: '', otp: '', recoveryCode: '' });
+      await refreshSettings();
+      setMessage('Đã tắt xác thực hai bước.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Không thể tắt 2FA.');
+    } finally {
+      setTwoFactorBusy(false);
+    }
   };
 
   return (
@@ -98,13 +198,13 @@ export default function SettingsPage() {
         <div>
           <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-violet-600">
             <SlidersHorizontal className="h-4 w-4" />
-            PoppyLingo Settings
+            {t('settings.badge')}
           </div>
           <h1 className="text-3xl font-black tracking-tight text-slate-950 dark:text-white">
-            Cá nhân hóa trải nghiệm học
+            {t('settings.title')}
           </h1>
           <p className="mt-2 text-slate-500">
-            Điều chỉnh lộ trình, AI, Speaking, cộng đồng và bảo mật.
+            {t('settings.subtitle')}
           </p>
         </div>
 
@@ -116,14 +216,14 @@ export default function SettingsPage() {
             onClick={reset}
             className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold dark:border-slate-700"
           >
-            Mặc định
+            {t('settings.reset')}
           </button>
           <button
             onClick={save}
             disabled={saving}
             className="rounded-xl bg-violet-600 px-5 py-2 text-sm font-bold text-white disabled:opacity-60"
           >
-            {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+            {saving ? t('settings.saving') : t('settings.save')}
           </button>
         </div>
       </div>
@@ -145,7 +245,7 @@ export default function SettingsPage() {
                   }`}
                 >
                   <Icon className="h-4 w-4" />
-                  {tab.label}
+                  {tabLabels[tab.id]}
                 </button>
               );
             })}
@@ -427,45 +527,58 @@ export default function SettingsPage() {
           )}
 
           {activeTab === 'appearance' && (
-            <SectionCard title="Giao diện và khả năng tiếp cận">
-              <Field label="Chủ đề">
+            <SectionCard title={t('settings.appearanceTitle')}>
+              <Field label={t('settings.themeLabel')}>
                 <Select
                   value={settings.theme}
                   onChange={(value) => patch('theme', value)}
                   options={[
-                    ['LIGHT', 'Sáng'],
-                    ['DARK', 'Tối'],
-                    ['SYSTEM', 'Theo hệ thống'],
+                    ['LIGHT', t('theme.light')],
+                    ['DARK', t('theme.dark')],
+                    ['SYSTEM', t('theme.system')],
                   ].map(([value, label]) => ({ value, label }))}
                 />
               </Field>
-              <Field label="Cỡ chữ">
+              <Field
+                label={t('settings.languageLabel')}
+                description={t('settings.languageDescription')}
+              >
+                <Select
+                  value={(settings.language || 'vi').toLowerCase()}
+                  onChange={(value) => patch('language', value.toUpperCase())}
+                  options={LOCALES.map((locale) => ({
+                    value: locale,
+                    label: LOCALE_LABELS[locale],
+                  }))}
+                />
+              </Field>
+              <Field label={t('settings.fontScaleLabel')}>
                 <Select
                   value={settings.fontScale}
                   onChange={(value) =>
                     patch('fontScale', Number(value))
                   }
                   options={[
-                    { value: 0.9, label: 'Nhỏ' },
-                    { value: 1, label: 'Mặc định' },
-                    { value: 1.15, label: 'Lớn' },
-                    { value: 1.3, label: 'Rất lớn' },
+                    { value: 0.9, label: t('settings.fontScaleSmall') },
+                    { value: 1, label: t('settings.fontScaleDefault') },
+                    { value: 1.15, label: t('settings.fontScaleLarge') },
+                    { value: 1.3, label: t('settings.fontScaleXLarge') },
                   ]}
                 />
               </Field>
-              <Field label="Giảm chuyển động">
+              <Field label={t('settings.reduceMotionLabel')}>
                 <Toggle
                   checked={settings.reduceMotion}
                   onChange={(value) => patch('reduceMotion', value)}
                 />
               </Field>
-              <Field label="Tương phản cao">
+              <Field label={t('settings.highContrastLabel')}>
                 <Toggle
                   checked={settings.highContrast}
                   onChange={(value) => patch('highContrast', value)}
                 />
               </Field>
-              <Field label="Chế độ gọn">
+              <Field label={t('settings.compactModeLabel')}>
                 <Toggle
                   checked={settings.compactMode}
                   onChange={(value) => patch('compactMode', value)}
@@ -505,11 +618,14 @@ export default function SettingsPage() {
                 <Field label="Xác thực hai bước">
                   <Toggle
                     checked={settings.twoFactorEnabled}
-                    onChange={() =>
-                      setMessage(
-                        '2FA cần kết nối với module Auth/OTP hiện có.',
-                      )
-                    }
+                    disabled={twoFactorBusy}
+                    onChange={(enabled) => {
+                      if (enabled) {
+                        void startTwoFactorSetup();
+                      } else {
+                        setTwoFactorDisableOpen(true);
+                      }
+                    }}
                   />
                 </Field>
                 <Field label="Xuất dữ liệu cài đặt">
@@ -616,6 +732,159 @@ export default function SettingsPage() {
           )}
         </main>
       </div>
+
+      {twoFactorSetup && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/50 p-4">
+          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-950">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-black text-slate-950 dark:text-white">
+                  Bật xác thực hai bước
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Quét mã QR bằng Google Authenticator, Authy hoặc ứng dụng OTP tương tự.
+                </p>
+              </div>
+              <button
+                className="rounded-xl border border-slate-200 px-3 py-1 text-sm font-semibold dark:border-slate-700"
+                onClick={() => setTwoFactorSetup(null)}
+              >
+                Đóng
+              </button>
+            </div>
+
+            <div className="mt-5 grid gap-5 sm:grid-cols-[180px_minmax(0,1fr)]">
+              <div className="rounded-2xl border border-slate-200 bg-white p-3 dark:border-slate-800">
+                <img
+                  src={twoFactorSetup.qrCodeDataUrl}
+                  alt="2FA QR code"
+                  className="h-full w-full rounded-xl"
+                />
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <div className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    Mã nhập thủ công
+                  </div>
+                  <code className="mt-2 block break-all rounded-xl bg-slate-100 p-3 text-xs dark:bg-slate-900">
+                    {twoFactorSetup.manualEntryKey}
+                  </code>
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    Nhập mã OTP 6 số
+                  </label>
+                  <input
+                    value={twoFactorOtp}
+                    onChange={(event) => setTwoFactorOtp(event.target.value)}
+                    maxLength={6}
+                    inputMode="numeric"
+                    className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-900"
+                    placeholder="123456"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {twoFactorRecoveryCodes.length > 0 && (
+              <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+                <div className="font-bold">Recovery codes - chỉ hiển thị một lần</div>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  {twoFactorRecoveryCodes.map((code) => (
+                    <code key={code} className="rounded-lg bg-white px-2 py-1">
+                      {code}
+                    </code>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold dark:border-slate-700"
+                onClick={() => setTwoFactorSetup(null)}
+              >
+                Để sau
+              </button>
+              <button
+                disabled={twoFactorBusy || twoFactorRecoveryCodes.length > 0}
+                className="rounded-xl bg-violet-600 px-5 py-2 text-sm font-bold text-white disabled:opacity-60"
+                onClick={confirmTwoFactor}
+              >
+                {twoFactorBusy ? 'Đang xác minh...' : 'Xác nhận bật 2FA'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {twoFactorDisableOpen && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/50 p-4">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-950">
+            <h2 className="text-xl font-black text-slate-950 dark:text-white">
+              Tắt xác thực hai bước
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Nhập mật khẩu, mã OTP hoặc recovery code để xác minh.
+            </p>
+
+            <div className="mt-5 space-y-3">
+              <input
+                type="password"
+                placeholder="Mật khẩu"
+                value={twoFactorDisablePayload.password}
+                onChange={(event) =>
+                  setTwoFactorDisablePayload((current) => ({
+                    ...current,
+                    password: event.target.value,
+                  }))
+                }
+                className="w-full rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-900"
+              />
+              <input
+                placeholder="Mã OTP"
+                maxLength={6}
+                inputMode="numeric"
+                value={twoFactorDisablePayload.otp}
+                onChange={(event) =>
+                  setTwoFactorDisablePayload((current) => ({
+                    ...current,
+                    otp: event.target.value,
+                  }))
+                }
+                className="w-full rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-900"
+              />
+              <input
+                placeholder="Recovery code"
+                value={twoFactorDisablePayload.recoveryCode}
+                onChange={(event) =>
+                  setTwoFactorDisablePayload((current) => ({
+                    ...current,
+                    recoveryCode: event.target.value,
+                  }))
+                }
+                className="w-full rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-900"
+              />
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold dark:border-slate-700"
+                onClick={() => setTwoFactorDisableOpen(false)}
+              >
+                Hủy
+              </button>
+              <button
+                disabled={twoFactorBusy}
+                className="rounded-xl bg-red-600 px-5 py-2 text-sm font-bold text-white disabled:opacity-60"
+                onClick={disableTwoFactor}
+              >
+                {twoFactorBusy ? 'Đang tắt...' : 'Tắt 2FA'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

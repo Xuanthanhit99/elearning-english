@@ -38,8 +38,12 @@ export class AuthController {
   }
 
   @Post('login')
-  login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
-    return this.authService.login(dto, res);
+  login(
+    @Body() dto: LoginDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.login(dto, req, res);
   }
 
   @Post('refresh')
@@ -52,8 +56,8 @@ export class AuthController {
   }
 
   @Post('logout')
-  logout(@Res({ passthrough: true }) res: Response) {
-    return this.authService.logout(res);
+  logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    return this.authService.logout(req.cookies?.refresh_token, res);
   }
 
   @Get('me')
@@ -79,7 +83,7 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleCallback(@Req() req: any, @Res() res: Response) {
     try {
-      const result = await this.authService.socialLogin(req.user);
+      const result = await this.authService.socialLogin(req.user, req);
       res.cookie('refresh_token', result.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -117,7 +121,7 @@ export class AuthController {
   @UseGuards(AuthGuard('facebook'))
   async facebookCallback(@Req() req: any, @Res() res: Response) {
     try {
-      const result = await this.authService.socialLogin(req.user);
+      const result = await this.authService.socialLogin(req.user, req);
       res.cookie('refresh_token', result.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',

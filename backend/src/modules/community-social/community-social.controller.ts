@@ -8,12 +8,12 @@ import {
   Post,
   Query,
   Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
 import {
   CreateCommunityChallengeDto,
-  CreateCommunityClubDto,
   SendCommunityMessageDto,
   UpdateChallengeProgressDto,
 } from './dto/community-social.dto';
@@ -31,13 +31,13 @@ type AuthenticatedRequest = Request & {
 @Controller('community')
 @UseGuards(JwtAuthGuard)
 export class CommunitySocialController {
-  constructor(
-    private readonly service: CommunitySocialService,
-  ) {}
+  constructor(private readonly service: CommunitySocialService) {}
 
   private userId(req: AuthenticatedRequest) {
     const id = req.user?.id ?? req.user?.userId ?? req.user?.sub;
-    if (!id) throw new Error('Không tìm thấy userId từ access token');
+    if (!id) {
+      throw new UnauthorizedException('Không tìm thấy thông tin người dùng.');
+    }
     return id;
   }
 
@@ -74,10 +74,7 @@ export class CommunitySocialController {
     @Req() req: AuthenticatedRequest,
     @Param('userId') userId: string,
   ) {
-    return this.service.sendFriendRequest(
-      this.userId(req),
-      userId,
-    );
+    return this.service.sendFriendRequest(this.userId(req), userId);
   }
 
   @Patch('friends/requests/:requestId/accept')
@@ -85,10 +82,7 @@ export class CommunitySocialController {
     @Req() req: AuthenticatedRequest,
     @Param('requestId') requestId: string,
   ) {
-    return this.service.acceptFriendRequest(
-      this.userId(req),
-      requestId,
-    );
+    return this.service.acceptFriendRequest(this.userId(req), requestId);
   }
 
   @Patch('friends/requests/:requestId/reject')
@@ -96,10 +90,7 @@ export class CommunitySocialController {
     @Req() req: AuthenticatedRequest,
     @Param('requestId') requestId: string,
   ) {
-    return this.service.rejectFriendRequest(
-      this.userId(req),
-      requestId,
-    );
+    return this.service.rejectFriendRequest(this.userId(req), requestId);
   }
 
   @Delete('friends/:friendId')
@@ -107,10 +98,7 @@ export class CommunitySocialController {
     @Req() req: AuthenticatedRequest,
     @Param('friendId') friendId: string,
   ) {
-    return this.service.removeFriend(
-      this.userId(req),
-      friendId,
-    );
+    return this.service.removeFriend(this.userId(req), friendId);
   }
 
   @Get('clubs')
@@ -119,30 +107,6 @@ export class CommunitySocialController {
     @Query('search') search?: string,
   ) {
     return this.service.listClubs(this.userId(req), search);
-  }
-
-  @Post('clubs')
-  createClub(
-    @Req() req: AuthenticatedRequest,
-    @Body() dto: CreateCommunityClubDto,
-  ) {
-    return this.service.createClub(this.userId(req), dto);
-  }
-
-  @Post('clubs/:clubId/join')
-  joinClub(
-    @Req() req: AuthenticatedRequest,
-    @Param('clubId') clubId: string,
-  ) {
-    return this.service.joinClub(this.userId(req), clubId);
-  }
-
-  @Delete('clubs/:clubId/leave')
-  leaveClub(
-    @Req() req: AuthenticatedRequest,
-    @Param('clubId') clubId: string,
-  ) {
-    return this.service.leaveClub(this.userId(req), clubId);
   }
 
   @Get('challenges')
@@ -163,10 +127,7 @@ export class CommunitySocialController {
     @Req() req: AuthenticatedRequest,
     @Param('challengeId') challengeId: string,
   ) {
-    return this.service.joinChallenge(
-      this.userId(req),
-      challengeId,
-    );
+    return this.service.joinChallenge(this.userId(req), challengeId);
   }
 
   @Patch('challenges/:challengeId/progress')
@@ -184,10 +145,7 @@ export class CommunitySocialController {
 
   @Get('leaderboard')
   getLeaderboard(
-    @Query('period') period:
-      | 'WEEKLY'
-      | 'MONTHLY'
-      | 'ALL_TIME' = 'WEEKLY',
+    @Query('period') period: 'WEEKLY' | 'MONTHLY' | 'ALL_TIME' = 'WEEKLY',
   ) {
     return this.service.getLeaderboard(period);
   }
@@ -202,10 +160,7 @@ export class CommunitySocialController {
     @Req() req: AuthenticatedRequest,
     @Param('userId') userId: string,
   ) {
-    return this.service.openDirectConversation(
-      this.userId(req),
-      userId,
-    );
+    return this.service.openDirectConversation(this.userId(req), userId);
   }
 
   @Get('conversations/:conversationId/messages')
@@ -214,11 +169,7 @@ export class CommunitySocialController {
     @Param('conversationId') conversationId: string,
     @Query('cursor') cursor?: string,
   ) {
-    return this.service.getMessages(
-      this.userId(req),
-      conversationId,
-      cursor,
-    );
+    return this.service.getMessages(this.userId(req), conversationId, cursor);
   }
 
   @Post('conversations/:conversationId/messages')
@@ -227,10 +178,6 @@ export class CommunitySocialController {
     @Param('conversationId') conversationId: string,
     @Body() dto: SendCommunityMessageDto,
   ) {
-    return this.service.sendMessage(
-      this.userId(req),
-      conversationId,
-      dto,
-    );
+    return this.service.sendMessage(this.userId(req), conversationId, dto);
   }
 }

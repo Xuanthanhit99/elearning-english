@@ -9,6 +9,7 @@ import {
 } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { MissionV2GeneratorService } from '../missions-v2/services/mission-v2-generator.service';
+import { SettingsQueryService } from '../settings/settings-query.service';
 
 const SKILLS: Array<{ key: LearningSkill; label: string; href: string }> = [
   { key: LearningSkill.VOCABULARY, label: 'Từ vựng', href: '/vocabulary' },
@@ -44,10 +45,13 @@ export class DashboardService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly missionGenerator: MissionV2GeneratorService,
+    private readonly settingsQuery: SettingsQueryService,
   ) {}
 
   async getDashboard(userId: string) {
     await this.missionGenerator.ensureCurrentMissions(userId);
+
+    const settings = await this.settingsQuery.getSettings(userId);
 
     const now = new Date();
     const startOfToday = this.startOfDay(now);
@@ -266,6 +270,20 @@ export class DashboardService {
         level: user.level,
         englishLevel: user.englishLevel,
         learningGoal: user.learningGoal,
+      },
+      // Real settings-driven flags — the frontend must use these instead of
+      // re-deriving them, so behavior stays consistent everywhere the
+      // dashboard is rendered.
+      preferences: {
+        focusMode: settings.focusMode,
+        adaptiveDashboard: settings.adaptiveDashboard,
+        energyMode: settings.energyMode,
+        learningGoal: settings.learningGoal,
+        currentLevel: settings.currentLevel,
+      },
+      widgetVisibility: {
+        community: !settings.focusMode,
+        leaderboard: !settings.focusMode,
       },
       currentStreak: pet?.streak ?? 0,
       xp: {

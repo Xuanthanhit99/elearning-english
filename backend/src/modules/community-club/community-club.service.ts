@@ -20,6 +20,7 @@ import {
   UpdateClubMemberDto,
 } from './community-club.dto';
 import { CommunityClubGateway } from './community-club.gateway';
+import { applyCommunityDisplayNames } from '../community/community-display-name.util';
 
 const USER_SELECT = {
   id: true,
@@ -29,6 +30,11 @@ const USER_SELECT = {
   level: true,
   xp: true,
   englishLevel: true,
+  settings: {
+    select: {
+      communityNickname: true,
+    },
+  },
 } satisfies Prisma.UserSelect;
 
 @Injectable()
@@ -82,7 +88,7 @@ export class CommunityClubService {
       },
     });
 
-    return items.map((item) => item.following);
+    return applyCommunityDisplayNames(items.map((item) => item.following));
   }
 
   async getFollowers(userId: string) {
@@ -96,7 +102,7 @@ export class CommunityClubService {
       },
     });
 
-    return items.map((item) => item.follower);
+    return applyCommunityDisplayNames(items.map((item) => item.follower));
   }
 
   async createClub(userId: string, dto: CreateClubDto) {
@@ -138,57 +144,57 @@ export class CommunityClubService {
         },
       });
 
-      return club;
+      return applyCommunityDisplayNames({
+        ...club,
+        joined: true,
+        myRole: 'OWNER',
+        isOwner: true,
+      });
     });
   }
 
-async getClub(userId: string, clubId: string) {
-  const club = await this.prisma.communityClub.findFirst({
-    where: {
-      id: clubId,
-      isActive: true,
-    },
-    include: {
-      owner: {
-        select: {
-          id: true,
-          fullname: true,
-          username: true,
-          avatar: true,
-          level: true,
-          xp: true,
+  async getClub(userId: string, clubId: string) {
+    const club = await this.prisma.communityClub.findFirst({
+      where: {
+        id: clubId,
+        isActive: true,
+      },
+      include: {
+        owner: { select: USER_SELECT },
+        members: {
+          where: {
+            userId,
+          },
+          select: {
+            role: true,
+            joinedAt: true,
+          },
+        },
+        _count: {
+          select: {
+            members: true,
+            posts: true,
+            messages: true,
+            events: true,
+            resources: true,
+          },
         },
       },
-      members: {
-        where: {
-          userId,
-        },
-        select: {
-          role: true,
-          joinedAt: true,
-        },
-      },
-      _count: {
-        select: {
-          members: true,
-          posts: true,
-        },
-      },
-    },
-  });
+    });
 
-  if (!club) {
-    throw new NotFoundException('Không tìm thấy câu lạc bộ');
+    if (!club) {
+      throw new NotFoundException('Không tìm thấy câu lạc bộ');
+    }
+
+    const membership = club.members[0] ?? null;
+
+    return applyCommunityDisplayNames({
+      ...club,
+      joined: Boolean(membership),
+      myRole: membership?.role ?? null,
+      isOwner: club.ownerId === userId,
+    });
   }
-
-  const membership = club.members[0] ?? null;
-
-  return {
-    ...club,
-    joined: Boolean(membership),
-    myRole: membership?.role ?? null,
-  };
-}
 
   async joinClub(userId: string, clubId: string, message?: string) {
     const club = await this.prisma.communityClub.findFirst({
@@ -225,11 +231,7 @@ async getClub(userId: string, clubId: string) {
     return { status: 'ACTIVE' };
   }
 
-  async approveJoinRequest(
-    actorId: string,
-    clubId: string,
-    requestId: string,
-  ) {
+  async approveJoinRequest(actorId: string, clubId: string, requestId: string) {
     await this.assertCanManageMembers(actorId, clubId);
 
     const request = await this.prisma.communityClubJoinRequest.findFirst({
@@ -311,19 +313,20 @@ async getClub(userId: string, clubId: string) {
     return { joined: false };
   }
 
-  async getMembers(clubId: string) {
-    return this.prisma.communityClubMember.findMany({
+  async getMembers(userId: string, clubId: string) {
+    await this.assertActiveMember(userId, clubId);
+
+    const members = await this.prisma.communityClubMember.findMany({
       where: { clubId },
-      orderBy: [
-        { role: 'asc' },
-        { joinedAt: 'asc' },
-      ],
+      orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }],
       include: {
         user: {
           select: USER_SELECT,
         },
       },
     });
+
+    return applyCommunityDisplayNames(members);
   }
 
   async updateMemberRole(
@@ -347,14 +350,10 @@ async getClub(userId: string, clubId: string) {
     });
 
     this.gateway.emitClubMemberUpdated(clubId, member);
-    return member;
+    return applyCommunityDisplayNames(member);
   }
 
-  async removeMember(
-    actorId: string,
-    clubId: string,
-    memberId: string,
-  ) {
+  async removeMember(actorId: string, clubId: string, memberId: string) {
     await this.assertCanManageMembers(actorId, clubId);
 
     const member = await this.prisma.communityClubMember.findUnique({
@@ -389,11 +388,7 @@ async getClub(userId: string, clubId: string) {
     return { removed: true };
   }
 
-  async getClubPosts(
-    userId: string,
-    clubId: string,
-    cursor?: string,
-  ) {
+  async getClubPosts(userId: string, clubId: string, cursor?: string) {
     await this.assertCanViewClub(userId, clubId);
 
     const posts = await this.prisma.communityPost.findMany({
@@ -437,17 +432,13 @@ async getClub(userId: string, clubId: string) {
     const hasMore = posts.length > 10;
     if (hasMore) posts.pop();
 
-    return {
+    return applyCommunityDisplayNames({
       items: posts,
-      nextCursor: hasMore ? posts.at(-1)?.id ?? null : null,
-    };
+      nextCursor: hasMore ? (posts.at(-1)?.id ?? null) : null,
+    });
   }
 
-  async createClubPost(
-    userId: string,
-    clubId: string,
-    dto: CreateClubPostDto,
-  ) {
+  async createClubPost(userId: string, clubId: string, dto: CreateClubPostDto) {
     await this.assertActiveMember(userId, clubId);
 
     const post = await this.prisma.communityPost.create({
@@ -480,14 +471,10 @@ async getClub(userId: string, clubId: string) {
       },
     });
 
-    return post;
+    return applyCommunityDisplayNames(post);
   }
 
-  async getMessages(
-    userId: string,
-    clubId: string,
-    cursor?: string,
-  ) {
+  async getMessages(userId: string, clubId: string, cursor?: string) {
     await this.assertActiveMember(userId, clubId);
 
     const messages = await this.prisma.communityClubMessage.findMany({
@@ -515,17 +502,13 @@ async getClub(userId: string, clubId: string) {
     const hasMore = messages.length > 50;
     if (hasMore) messages.pop();
 
-    return {
+    return applyCommunityDisplayNames({
       items: messages.reverse(),
-      nextCursor: hasMore ? messages[0]?.id ?? null : null,
-    };
+      nextCursor: hasMore ? (messages[0]?.id ?? null) : null,
+    });
   }
 
-  async sendMessage(
-    userId: string,
-    clubId: string,
-    dto: CreateClubMessageDto,
-  ) {
+  async sendMessage(userId: string, clubId: string, dto: CreateClubMessageDto) {
     await this.assertActiveMember(userId, clubId);
 
     const message = await this.prisma.communityClubMessage.create({
@@ -544,14 +527,15 @@ async getClub(userId: string, clubId: string) {
       },
     });
 
-    this.gateway.emitClubMessage(clubId, message);
-    return message;
+    const mapped = applyCommunityDisplayNames(message);
+    this.gateway.emitClubMessage(clubId, mapped);
+    return mapped;
   }
 
   async getEvents(userId: string, clubId: string) {
     await this.assertCanViewClub(userId, clubId);
 
-    return this.prisma.communityClubEvent.findMany({
+    const events = await this.prisma.communityClubEvent.findMany({
       where: { clubId },
       orderBy: {
         startsAt: 'asc',
@@ -566,16 +550,14 @@ async getClub(userId: string, clubId: string) {
         },
       },
     });
+
+    return applyCommunityDisplayNames(events);
   }
 
-  async createEvent(
-    userId: string,
-    clubId: string,
-    dto: CreateClubEventDto,
-  ) {
+  async createEvent(userId: string, clubId: string, dto: CreateClubEventDto) {
     await this.assertCanModerate(userId, clubId);
 
-    return this.prisma.communityClubEvent.create({
+    const event = await this.prisma.communityClubEvent.create({
       data: {
         clubId,
         creatorId: userId,
@@ -591,24 +573,21 @@ async getClub(userId: string, clubId: string) {
         },
       },
     });
+
+    return applyCommunityDisplayNames(event);
   }
 
-  async attendEvent(
-    userId: string,
-    clubId: string,
-    eventId: string,
-  ) {
+  async attendEvent(userId: string, clubId: string, eventId: string) {
     await this.assertActiveMember(userId, clubId);
 
-    const existing =
-      await this.prisma.communityClubEventAttendee.findUnique({
-        where: {
-          eventId_userId: {
-            eventId,
-            userId,
-          },
+    const existing = await this.prisma.communityClubEventAttendee.findUnique({
+      where: {
+        eventId_userId: {
+          eventId,
+          userId,
         },
-      });
+      },
+    });
 
     if (!existing) {
       await this.prisma.$transaction([
@@ -706,10 +685,7 @@ async getClub(userId: string, clubId: string) {
     });
   }
 
-  private async assertCanViewClub(
-    userId: string,
-    clubId: string,
-  ) {
+  private async assertCanViewClub(userId: string, clubId: string) {
     const club = await this.prisma.communityClub.findUnique({
       where: { id: clubId },
     });
@@ -723,10 +699,7 @@ async getClub(userId: string, clubId: string) {
     await this.assertActiveMember(userId, clubId);
   }
 
-  private async assertActiveMember(
-    userId: string,
-    clubId: string,
-  ) {
+  private async assertActiveMember(userId: string, clubId: string) {
     const member = await this.prisma.communityClubMember.findUnique({
       where: {
         clubId_userId: { clubId, userId },
@@ -742,29 +715,19 @@ async getClub(userId: string, clubId: string) {
     return member;
   }
 
-  private async assertCanModerate(
-    userId: string,
-    clubId: string,
-  ) {
+  private async assertCanModerate(userId: string, clubId: string) {
     const member = await this.assertActiveMember(userId, clubId);
 
     if (!['OWNER', 'ADMIN', 'MODERATOR'].includes(member.role)) {
-      throw new ForbiddenException(
-        'Bạn không có quyền quản trị câu lạc bộ',
-      );
+      throw new ForbiddenException('Bạn không có quyền quản trị câu lạc bộ');
     }
   }
 
-  private async assertCanManageMembers(
-    userId: string,
-    clubId: string,
-  ) {
+  private async assertCanManageMembers(userId: string, clubId: string) {
     const member = await this.assertActiveMember(userId, clubId);
 
     if (!['OWNER', 'ADMIN'].includes(member.role)) {
-      throw new ForbiddenException(
-        'Bạn không có quyền quản lý thành viên',
-      );
+      throw new ForbiddenException('Bạn không có quyền quản lý thành viên');
     }
   }
 
@@ -772,9 +735,7 @@ async getClub(userId: string, clubId: string) {
     const member = await this.assertActiveMember(userId, clubId);
 
     if (member.role !== 'OWNER') {
-      throw new ForbiddenException(
-        'Chỉ chủ câu lạc bộ mới có quyền này',
-      );
+      throw new ForbiddenException('Chỉ chủ câu lạc bộ mới có quyền này');
     }
   }
 }

@@ -1,11 +1,21 @@
-import { Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { LeaderboardRewardService } from './leaderboard-reward.service';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 
 @Controller('leaderboard/rewards')
 @UseGuards(JwtAuthGuard)
 export class LeaderboardRewardController {
-  constructor(private readonly rewards: LeaderboardRewardService) {}
+  constructor(
+    private readonly rewards:
+      LeaderboardRewardService,
+  ) {}
 
   @Get()
   listMyRewards(
@@ -16,7 +26,9 @@ export class LeaderboardRewardController {
       };
     },
   ) {
-    return this.rewards.listMyRewards(req.user.id);
+    return this.rewards.listMyRewards(
+      req.user.id,
+    );
   }
 
   @Post(':id/claim')
@@ -30,6 +42,9 @@ export class LeaderboardRewardController {
     @Param('id')
     rewardId: string,
   ) {
-    return this.rewards.claim(req.user.id, rewardId);
+    return this.rewards.claim(
+      req.user.id,
+      rewardId,
+    );
   }
 }

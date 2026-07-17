@@ -222,7 +222,7 @@ export function CommunityCommentsPanel({
                   <img
                     src={
                       comment.author.avatar ||
-                      '/avatar-placeholder.png'
+                      '/cat-home.jpg'
                     }
                     alt={comment.author.fullname}
                     className="h-10 w-10 shrink-0 rounded-full border-2 border-white object-cover shadow-sm ring-1 ring-slate-200"
@@ -292,7 +292,7 @@ export function CommunityCommentsPanel({
                             <img
                               src={
                                 reply.author.avatar ||
-                                '/avatar-placeholder.png'
+                                '/cat-home.jpg'
                               }
                               alt={reply.author.fullname}
                               className="h-8 w-8 shrink-0 rounded-full border border-white object-cover shadow-sm ring-1 ring-slate-200"

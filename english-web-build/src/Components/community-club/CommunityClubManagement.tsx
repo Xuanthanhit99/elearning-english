@@ -21,7 +21,7 @@ import {
   rejectClubJoinRequest,
   transferClubOwnership,
   updateClubMemberRole,
-} from "../community-club-permission-api";
+} from "@/src/lib/community-club-permission-api";
 import { searchCommunityUsers } from "@/src/lib/community-social-api";
 
 export function CommunityClubManagement({
@@ -206,7 +206,7 @@ export function CommunityClubManagement({
               {inviteResults.map((user) => (
                 <div key={user.id} className="flex items-center gap-3 py-3">
                   <img
-                    src={user.avatar || "/avatar-placeholder.png"}
+                    src={user.avatar || "/cat-home.jpg"}
                     alt=""
                     className="h-10 w-10 rounded-full object-cover"
                   />
@@ -242,7 +242,7 @@ export function CommunityClubManagement({
               {data.pendingRequests.map((request: any) => (
                 <div key={request.id} className="flex items-center gap-3 py-3">
                   <img
-                    src={request.user.avatar || "/avatar-placeholder.png"}
+                    src={request.user.avatar || "/cat-home.jpg"}
                     alt=""
                     className="h-10 w-10 rounded-full object-cover"
                   />
@@ -285,7 +285,7 @@ export function CommunityClubManagement({
               className="flex flex-wrap items-center gap-3 py-3"
             >
               <img
-                src={member.user.avatar || "/avatar-placeholder.png"}
+                src={member.user.avatar || "/cat-home.jpg"}
                 alt=""
                 className="h-11 w-11 rounded-full object-cover"
               />

@@ -19,6 +19,13 @@ export class NotificationsProcessor extends WorkerHost {
       return this.notificationsService.createFromPayload(job.data as CreateNotificationInput);
     }
 
+    if (job.name === NotificationJobName.USER_DAILY_REMINDER) {
+      // Per-user repeatable job created by NotificationScheduler.syncUserDailyReminder.
+      // Re-check the live setting at fire time in case it changed after the
+      // job was scheduled but before this tick ran.
+      return this.createUserDailyReminder(job.data as CreateNotificationInput);
+    }
+
     if (job.name === NotificationJobName.DAILY_REMINDERS) {
       return this.createDailyReminders();
     }
@@ -30,9 +37,35 @@ export class NotificationsProcessor extends WorkerHost {
     return { skipped: true };
   }
 
+  private async createUserDailyReminder(payload: CreateNotificationInput) {
+    const settings = await this.prisma.userSettings.findUnique({
+      where: { userId: payload.userId },
+      select: { dailyReminderEnabled: true, pushNotification: true },
+    });
+
+    // No row yet means defaults apply (dailyReminderEnabled/pushNotification
+    // both default to true) — only an explicit false should skip the send.
+    if (settings?.dailyReminderEnabled === false) {
+      return { skipped: true, reason: 'dailyReminderEnabled is false' };
+    }
+
+    if (settings?.pushNotification === false) {
+      return { skipped: true, reason: 'pushNotification is false' };
+    }
+
+    await this.notificationsService.createOncePerDay(payload);
+    return { created: 1 };
+  }
+
   private async createDailyReminders() {
     const users = await this.prisma.user.findMany({
-      where: { status: 'ACTIVE' },
+      where: {
+        status: 'ACTIVE',
+        // Users who never opened Settings have no UserSettings row yet —
+        // treat that as "defaults apply" (dailyReminderEnabled defaults to
+        // true), rather than silently excluding them.
+        OR: [{ settings: null }, { settings: { dailyReminderEnabled: true } }],
+      },
       select: { id: true, fullname: true },
       take: 500,
     });
@@ -54,7 +87,10 @@ export class NotificationsProcessor extends WorkerHost {
 
   private async createWeeklyGoalReminders() {
     const users = await this.prisma.user.findMany({
-      where: { status: 'ACTIVE' },
+      where: {
+        status: 'ACTIVE',
+        OR: [{ settings: null }, { settings: { missionReminder: true } }],
+      },
       select: { id: true, fullname: true },
       take: 500,
     });

@@ -22,7 +22,7 @@ import { CommunityClubChat } from "./CommunityClubChat";
 import { CommunityClubMembers } from "./CommunityClubMembers";
 
 import { CommunityClubManagement } from "../community-club/CommunityClubManagement";
-import { leaveClubSafely } from "../community-club-permission-api";
+import { leaveClubSafely } from "@/src/lib/community-club-permission-api";
 import { CommunityClubOverview } from "../Community/CommunityClubOverview";
 import { CommunityClubPosts } from "../Community/CommunityClubPosts";
 import { CommunityClubChallenges } from "../Community/CommunityClubChallenges";
@@ -85,7 +85,7 @@ const API_ORIGIN = (() => {
   const configured =
     process.env.NEXT_PUBLIC_API_PUBLIC_URL ??
     process.env.NEXT_PUBLIC_API_URL ??
-    "http://localhost:3001";
+    "http://localhost:3002";
 
   try {
     return new URL(configured).origin;
@@ -125,9 +125,7 @@ const canManageClub =
   club?.myRole === 'ADMIN';
 
   const tabs = useMemo(() => {
-    console.log("canManageClub", canManageClub);
     if (!canManageClub) return baseTabs;
-    console.log("canManageClub", canManageClub);
     return [
       ...baseTabs,
       {

@@ -8,6 +8,7 @@ import {
   Post,
   Query,
   Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
@@ -39,7 +40,9 @@ export class CommunityClubController {
 
   private userId(req: AuthRequest) {
     const id = req.user?.id ?? req.user?.userId ?? req.user?.sub;
-    if (!id) throw new Error('Không tìm thấy userId');
+    if (!id) {
+      throw new UnauthorizedException('Không tìm thấy thông tin người dùng.');
+    }
     return id;
   }
 
@@ -106,22 +109,12 @@ export class CommunityClubController {
     return this.service.leaveClub(this.userId(req), clubId);
   }
 
-  @Patch('clubs/:clubId/join-requests/:requestId/approve')
-  approveJoin(
+  @Get('clubs/:clubId/members')
+  members(
     @Req() req: AuthRequest,
     @Param('clubId') clubId: string,
-    @Param('requestId') requestId: string,
   ) {
-    return this.service.approveJoinRequest(
-      this.userId(req),
-      clubId,
-      requestId,
-    );
-  }
-
-  @Get('clubs/:clubId/members')
-  members(@Param('clubId') clubId: string) {
-    return this.service.getMembers(clubId);
+    return this.service.getMembers(this.userId(req), clubId);
   }
 
   @Patch('clubs/:clubId/members/:memberId')

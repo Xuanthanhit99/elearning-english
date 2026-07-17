@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import { getLeaderboardHistory } from '@/api/leaderboard';
-import { LeaderboardHistoryList } from '@/components/leaderboard/LeaderboardHistoryList';
-import { LeaderboardShell } from '@/components/leaderboard/LeaderboardShell';
+import { getLeaderboardHistory } from '@/src/lib/leaderboard-api';
+import { LeaderboardHistoryList } from '@/src/Components/leaderboard/LeaderboardHistoryList';
+import { LeaderboardShell } from '@/src/Components/leaderboard/LeaderboardShell';
 
 export default async function LeaderboardHistoryPage() {
   let items = [];

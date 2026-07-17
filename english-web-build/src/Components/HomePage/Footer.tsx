@@ -1,9 +1,14 @@
 // src/Components/Footer.tsx
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import AppLogo from "@/src/Components/UI/AppLogo";
+import { useTranslation } from "@/src/hooks/useTranslation";
 
 export default function Footer() {
+  const { dict } = useTranslation();
+  const footer = dict.footer;
   return (
    <footer className="bg-gradient-to-b from-[#fffaf5] via-[#fff1e3] to-[#1f2a44] pt-20">
   <div className="mx-auto max-w-7xl px-4">
@@ -11,17 +16,15 @@ export default function Footer() {
           <div className="grid items-center gap-10 lg:grid-cols-[1.2fr_0.8fr]">
             <div>
               <span className="inline-flex rounded-full bg-white/15 px-4 py-2 text-sm font-bold text-white">
-                🚀 Bắt đầu ngay hôm nay
+                {footer.ctaBadge}
               </span>
 
-              <h2 className="mt-6 text-4xl font-extrabold leading-tight text-white sm:text-5xl">
-                Bắt đầu miễn phí
-                <br />
-                cùng PoppyLingo
+              <h2 className="mt-6 whitespace-pre-line text-4xl font-extrabold leading-tight text-white sm:text-5xl">
+                {footer.title}
               </h2>
 
               <p className="mt-5 max-w-xl text-lg leading-8 text-white/80">
-                Đăng ký để học miễn phí, check bài, check từ và lưu tiến độ học mỗi ngày.
+                {footer.subtitle}
               </p>
 
               <div className="mt-8 flex flex-wrap gap-4">
@@ -29,14 +32,14 @@ export default function Footer() {
                   href="/register"
                   className="rounded-2xl bg-[#ff6b00] px-8 py-4 font-bold text-white shadow-lg shadow-orange-950/20 hover:bg-[#e85f00]"
                 >
-                  Đăng ký miễn phí
+                  {footer.ctaRegister}
                 </Link>
 
                 <Link
                   href="/courses"
                   className="rounded-2xl border border-white/20 bg-white/10 px-8 py-4 font-bold text-white hover:bg-white/20"
                 >
-                  Xem khóa học
+                  {footer.ctaCourses}
                 </Link>
               </div>
             </div>
@@ -60,7 +63,7 @@ export default function Footer() {
         <AppLogo compact />
       </div>
 
-      <p>© 2026 PoppyLingo. Học ngôn ngữ cùng Poppy.</p>
+      <p>{footer.copyright}</p>
     </div>
   </div>
 </footer>

@@ -1,9 +1,10 @@
 'use client';
 
-import { leagueIcons, leagueLabels } from "@/src/lib/leaderboard";
-import { WeeklyResultPayload } from "@/src/types/leaderboard";
-
-
+import {
+  leagueIcons,
+  leagueLabels,
+} from '@/src/lib/leaderboard';
+import type { WeeklyResultPayload } from '@/src/types/leaderboard';
 
 export function WeeklyResultModal({
   result,

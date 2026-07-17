@@ -151,7 +151,7 @@ export function CommunityMessagesView({
                 }`}
               >
                 <img
-                  src={user?.avatar || '/avatar-placeholder.png'}
+                  src={user?.avatar || '/cat-home.jpg'}
                   alt={user?.fullname || ''}
                   className="h-12 w-12 rounded-full border-2 border-white object-cover shadow-sm ring-1 ring-slate-200"
                 />
@@ -176,7 +176,7 @@ export function CommunityMessagesView({
       <section className="flex min-w-0 flex-col">
         <header className="flex items-center gap-3 border-b-2 border-slate-100 p-4">
           <img
-            src={activeUser?.avatar || '/avatar-placeholder.png'}
+            src={activeUser?.avatar || '/cat-home.jpg'}
             alt={activeUser?.fullname || ''}
             className="h-11 w-11 rounded-full border-2 border-white object-cover shadow-sm ring-1 ring-slate-200"
           />
@@ -200,7 +200,7 @@ export function CommunityMessagesView({
             >
               <img
                 src={
-                  message.sender.avatar || '/avatar-placeholder.png'
+                  message.sender.avatar || '/cat-home.jpg'
                 }
                 alt={message.sender.fullname}
                 className="h-8 w-8 rounded-full object-cover"

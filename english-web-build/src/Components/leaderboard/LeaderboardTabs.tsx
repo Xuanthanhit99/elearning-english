@@ -1,6 +1,6 @@
 'use client';
 
-import type { LeaderboardScope } from '@/types/leaderboard';
+import type { LeaderboardScope } from '@/src/types/leaderboard';
 
 const tabs: Array<{
   value: LeaderboardScope;

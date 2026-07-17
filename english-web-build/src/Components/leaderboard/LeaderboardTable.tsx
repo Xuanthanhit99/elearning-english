@@ -1,6 +1,9 @@
-import { formatXp, movementLabel, zoneLabel } from "@/src/lib/leaderboard";
-import { LeaderboardEntry } from "@/src/types/leaderboard";
-
+import {
+  formatXp,
+  movementLabel,
+  zoneLabel,
+} from '@/src/lib/leaderboard';
+import type { LeaderboardEntry } from '@/src/types/leaderboard';
 
 export function LeaderboardTable({
   entries,
@@ -20,6 +23,7 @@ export function LeaderboardTable({
           <LeaderboardRow
             key={entry.user.id}
             entry={entry}
+            active={entry.isCurrentUser === true}
           />
         ))}
       </div>
@@ -29,26 +33,25 @@ export function LeaderboardTable({
 
 function LeaderboardRow({
   entry,
+  active,
 }: {
   entry: LeaderboardEntry;
+  active: boolean;
 }) {
-  const movement =
-    movementLabel(entry);
+  const movement = movementLabel(entry);
 
   return (
     <article
       className={[
         'grid grid-cols-[46px_1fr_auto] items-center gap-3 px-4 py-4 sm:grid-cols-[60px_1fr_120px_110px]',
-        entry.isCurrentUser
+        active
           ? 'bg-violet-50'
           : 'bg-white',
       ].join(' ')}
     >
       <div className="text-center text-lg font-black">
         {entry.rank <= 3
-          ? ['🥇', '🥈', '🥉'][
-              entry.rank - 1
-            ]
+          ? ['🥇', '🥈', '🥉'][entry.rank - 1]
           : `#${entry.rank}`}
       </div>
 
@@ -61,17 +64,14 @@ function LeaderboardRow({
               className="h-full w-full object-cover"
             />
           ) : (
-            entry.user.displayName[0]
-              ?.toUpperCase()
+            entry.user.displayName?.[0]?.toUpperCase()
           )}
         </div>
 
         <div className="min-w-0">
           <p className="truncate font-black">
             {entry.user.displayName}
-            {entry.isCurrentUser
-              ? ' (Bạn)'
-              : ''}
+            {active ? ' (Bạn)' : ''}
           </p>
 
           <p className="truncate text-xs text-slate-500">
@@ -89,14 +89,12 @@ function LeaderboardRow({
         <p className="font-black text-violet-700">
           {formatXp(entry.periodXp)} XP
         </p>
-
         <p
           className={[
             'text-xs font-bold sm:hidden',
             movement.direction === 'up'
               ? 'text-emerald-600'
-              : movement.direction ===
-                  'down'
+              : movement.direction === 'down'
                 ? 'text-rose-600'
                 : 'text-slate-400',
           ].join(' ')}

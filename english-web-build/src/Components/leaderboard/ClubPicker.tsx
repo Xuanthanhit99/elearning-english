@@ -1,6 +1,6 @@
 'use client';
 
-import type { ClubSummary } from '@/types/leaderboard';
+import type { ClubSummary } from '@/src/types/leaderboard';
 
 export function ClubPicker({
   clubs,

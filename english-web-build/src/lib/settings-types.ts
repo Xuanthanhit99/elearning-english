@@ -42,6 +42,7 @@ export type Settings = {
   autoJoinVoiceRoom: boolean;
 
   theme: string;
+  language: string;
   primaryColor: string;
   fontScale: number;
   compactMode: boolean;
@@ -59,6 +60,7 @@ export type Settings = {
   weeklyTargetDays: number;
   restDays: string[];
   preferredStudyTime: string;
+  timezone: string;
 
   twoFactorEnabled: boolean;
   dataPersonalization: boolean;

@@ -79,7 +79,7 @@ export function CommunityLeaderboardView() {
               )}
             </div>
             <img
-              src={item.user.avatar || '/avatar-placeholder.png'}
+              src={item.user.avatar || '/cat-home.jpg'}
               alt=""
               className="h-11 w-11 rounded-full object-cover"
             />

@@ -20,7 +20,7 @@ export default function WelcomeLoginModal({
   onClose,
 }: Props) {
   const [countdown, setCountdown] = useState(10);
-  console.log("WelcomeLoginModal", open);
+
   useEffect(() => {
     if (!open) return;
 

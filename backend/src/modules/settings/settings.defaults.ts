@@ -4,6 +4,7 @@ import {
   CorrectionMode,
   EnglishAccent,
   EnglishLevel,
+  Language,
   LearningGoal,
   MessagePermission,
   Prisma,
@@ -79,6 +80,7 @@ export const settingsDefaults = {
 
   appearance: {
     theme: ThemeMode.SYSTEM,
+    language: Language.VI,
     primaryColor: 'VIOLET',
     fontScale: 1,
     compactMode: false,

@@ -13,9 +13,9 @@ import {
   LEAGUE_RULES,
   resolveZone,
 } from './leaderboard-phase3.constants';
-import { LeaderboardRealtimeGateway } from './leaderboard-realtime.gateway';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { LeaderboardRealtimeGateway } from '../socket/leaderboard-realtime.gateway';
 import { NotificationsService } from 'src/modules/notifications/notifications.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 type ClosedEntry = {
   userId: string;
@@ -292,9 +292,7 @@ export class LeaderboardWeeklyCloseService {
           },
           update: {
             status: LeaderboardRewardStatus.AVAILABLE,
-
-            payload: this.toJsonInput(reward.rewardValue),
-
+            payload: reward.rewardValue as Prisma.InputJsonValue,
             expiresAt: this.addDays(new Date(), 30),
           },
           create: {
@@ -302,11 +300,8 @@ export class LeaderboardWeeklyCloseService {
             xpProfileId: entry.xpProfileId,
             rewardId: reward.id,
             seasonId,
-
             status: LeaderboardRewardStatus.AVAILABLE,
-
-            payload: this.toJsonInput(reward.rewardValue),
-
+            payload: reward.rewardValue as Prisma.InputJsonValue,
             expiresAt: this.addDays(new Date(), 30),
           },
         });
@@ -496,11 +491,5 @@ export class LeaderboardWeeklyCloseService {
 
   private weekLabel(value: Date) {
     return value.toISOString().slice(0, 10);
-  }
-
-  private toJsonInput(
-    value: Prisma.JsonValue,
-  ): Prisma.InputJsonValue | typeof Prisma.JsonNull {
-    return value === null ? Prisma.JsonNull : (value as Prisma.InputJsonValue);
   }
 }

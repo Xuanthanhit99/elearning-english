@@ -16,6 +16,7 @@ import {
 import { WritingAiEvaluationService } from './writing-ai-evaluation.service';
 import { WritingProcessingQueueData } from './writing-processing.types';
 import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
+import { SettingsQueryService } from '../settings/settings-query.service';
 
 @Processor(WRITING_PROCESSING_QUEUE, {
   concurrency: 2,
@@ -28,6 +29,7 @@ export class WritingProcessor extends WorkerHost {
     private readonly ai: WritingAiEvaluationService,
     private readonly missionProgress: MissionV2ProgressService,
     private readonly learningXp: LearningXpPublisher,
+    private readonly settingsQuery: SettingsQueryService,
   ) {
     super();
   }
@@ -71,6 +73,8 @@ export class WritingProcessor extends WorkerHost {
         throw new Error('WritingSession not found');
       }
 
+      const aiSettings = await this.settingsQuery.getAiSettings(userId);
+
       const evaluation = await this.ai.evaluate({
         prompt: session.lesson.prompt,
         essay: processingJob.content,
@@ -78,6 +82,9 @@ export class WritingProcessor extends WorkerHost {
         level: session.lesson.level,
         minWords: session.lesson.minWords,
         maxWords: session.lesson.maxWords,
+        correctionMode: aiSettings.correctionMode,
+        translationMode: aiSettings.translationMode,
+        learningGoal: aiSettings.learningGoal,
       });
 
       await this.updateJob(processingJobId, {

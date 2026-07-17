@@ -2,6 +2,7 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Injectable, Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { NotificationsService } from '../../notifications/notifications.service';
 import { COMMUNITY_JOB, COMMUNITY_QUEUE } from '../community.constants';
 import { CommunityGateway } from '../gateway/community.gateway';
 
@@ -13,6 +14,7 @@ export class CommunityProcessor extends WorkerHost {
   constructor(
     private readonly prisma: PrismaService,
     private readonly gateway: CommunityGateway,
+    private readonly notifications: NotificationsService,
   ) {
     super();
   }
@@ -48,6 +50,13 @@ export class CommunityProcessor extends WorkerHost {
       },
     });
     this.gateway.emitNotification(post.authorId, notification);
+    await this.notifications.createFromPayload({
+      userId: post.authorId,
+      type: 'COMMUNITY',
+      title: 'Binh luan moi',
+      message: 'Co nguoi vua binh luan bai viet cua ban.',
+      href: `/community/posts/${data.postId}`,
+    });
   }
 
   private async createReactionNotification(data: Record<string, string>) {
@@ -65,6 +74,13 @@ export class CommunityProcessor extends WorkerHost {
       },
     });
     this.gateway.emitNotification(post.authorId, notification);
+    await this.notifications.createFromPayload({
+      userId: post.authorId,
+      type: 'COMMUNITY',
+      title: 'Tuong tac moi',
+      message: 'Co nguoi vua bay to cam xuc voi bai viet cua ban.',
+      href: `/community/posts/${data.postId}`,
+    });
   }
 
   private async createFollowNotification(data: Record<string, string>) {
@@ -78,6 +94,13 @@ export class CommunityProcessor extends WorkerHost {
       },
     });
     this.gateway.emitNotification(data.followingId, notification);
+    await this.notifications.createFromPayload({
+      userId: data.followingId,
+      type: 'COMMUNITY',
+      title: 'Nguoi theo doi moi',
+      message: 'Co nguoi vua theo doi ban.',
+      href: '/community',
+    });
   }
 
   private async recalculatePostScore(postId: string) {

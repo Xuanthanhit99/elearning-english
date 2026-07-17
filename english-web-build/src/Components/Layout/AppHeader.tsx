@@ -6,6 +6,10 @@ import { api } from "@/src/lib/axios";
 import NotificationDrawer from "@/src/Components/Notifications/NotificationDrawer";
 import { getUnreadNotificationCount } from "@/src/lib/notifications-api";
 import { useAuthStore } from "@/src/store/authStore";
+import { settingsApi } from "@/src/lib/settings-api";
+import { useTranslation } from "@/src/hooks/useTranslation";
+import LanguageSwitcher from "./LanguageSwitcher";
+import ThemeToggle from "./ThemeToggle";
 import {
   Bell,
   ChevronDown,
@@ -40,6 +44,7 @@ export default function AppHeader({
   sidebarCollapsed,
 }: AppHeaderProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
   const profileRef = useRef<HTMLDivElement | null>(null);
@@ -57,7 +62,7 @@ export default function AppHeader({
       })
     | null;
 
-  const fullname = displayUser?.fullname || "Bạn học";
+  const fullname = displayUser?.fullname || t("header.defaultUser");
   const level =
     displayUser?.englishLevel ||
     `Level ${displayUser?.currentLevel || displayUser?.level || 1}`;
@@ -98,6 +103,15 @@ export default function AppHeader({
     };
   }, []);
 
+  async function persistPreference(payload: { language?: string; theme?: string }) {
+    if (!user) return;
+    try {
+      await settingsApi.update(payload);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   async function handleLogout() {
     try {
       await api.post("/auth/logout");
@@ -121,7 +135,7 @@ export default function AppHeader({
       <div className="flex h-full min-w-0 items-center gap-2 px-3 sm:gap-3 sm:px-5 lg:px-7">
         <button
           type="button"
-          aria-label="Mở menu"
+          aria-label={t("header.openMenu")}
           onClick={onOpenMobileMenu}
           className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 lg:hidden"
         >
@@ -129,11 +143,11 @@ export default function AppHeader({
         </button>
 
         <div className="hidden min-w-[190px] lg:block">
-          <p className="truncate text-sm font-black text-slate-950">
-            Chào {fullname.split(" ").slice(-1)[0]}!
+          <p className="truncate text-sm font-black text-slate-950 dark:text-white">
+            {t("header.greeting", { name: fullname.split(" ").slice(-1)[0] })}
           </p>
           <p className="truncate text-xs font-bold text-slate-500">
-            Sẵn sàng học tiếp hôm nay?
+            {t("header.readyToday")}
           </p>
         </div>
 
@@ -144,21 +158,24 @@ export default function AppHeader({
             size={18}
           />
           <input
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-10 pr-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-violet-400 focus:bg-white sm:pl-11 sm:pr-4"
-            placeholder="Tìm bài học, từ vựng, ngữ pháp..."
+            className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-10 pr-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-violet-400 focus:bg-white sm:pl-11 sm:pr-4 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            placeholder={t("header.searchPlaceholder")}
           />
         </label>
 
         <div className="hidden items-center gap-2 md:flex">
-          <HeaderStat icon={<Flame size={18} />} label="Streak" value={streak} />
-          <HeaderStat icon={<Star size={18} />} label="XP" value={xp} />
+          <HeaderStat icon={<Flame size={18} />} label={t("header.streak")} value={streak} />
+          <HeaderStat icon={<Star size={18} />} label={t("header.xp")} value={xp} />
         </div>
+
+        <LanguageSwitcher onChange={(locale) => persistPreference({ language: locale.toUpperCase() })} />
+        <ThemeToggle onChange={(theme) => persistPreference({ theme })} />
 
         <button
           type="button"
-          aria-label="Thông báo"
+          aria-label={t("header.notifications")}
           onClick={() => setNotificationsOpen(true)}
-          className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-violet-600"
+          className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-violet-600 dark:border-slate-700 dark:bg-slate-900"
         >
           <Bell size={19} />
           {unreadNotifications > 0 && (
@@ -172,9 +189,9 @@ export default function AppHeader({
           <button
             type="button"
             aria-expanded={profileOpen}
-            aria-label="Tài khoản"
+            aria-label={t("header.account")}
             onClick={() => setProfileOpen((open) => !open)}
-            className="flex h-11 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-2.5 text-left"
+            className="flex h-11 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-2.5 text-left dark:border-slate-700 dark:bg-slate-900"
           >
             {displayUser?.avatar ? (
               <img
@@ -188,7 +205,7 @@ export default function AppHeader({
               </span>
             )}
             <span className="hidden min-w-0 sm:block">
-              <span className="block max-w-[110px] truncate text-sm font-black text-slate-950">
+              <span className="block max-w-[110px] truncate text-sm font-black text-slate-950 dark:text-white">
                 {fullname}
               </span>
               <span className="block truncate text-xs font-bold text-slate-500">
@@ -204,23 +221,23 @@ export default function AppHeader({
           </button>
 
           {profileOpen && (
-            <div className="absolute right-0 top-13 z-50 w-[min(14rem,calc(100vw-1.5rem))] rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+            <div className="absolute right-0 top-13 z-50 w-[min(14rem,calc(100vw-1.5rem))] rounded-2xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
               <DropdownLink href="/profile" icon={<User size={16} />}>
-                Hồ sơ cá nhân
+                {t("header.profile")}
               </DropdownLink>
               <DropdownLink href="/profile" icon={<Trophy size={16} />}>
-                Thành tích
+                {t("header.achievements")}
               </DropdownLink>
               <DropdownLink href="/settings" icon={<Settings size={16} />}>
-                Cài đặt
+                {t("header.settings")}
               </DropdownLink>
               <button
                 type="button"
                 onClick={handleLogout}
-                className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-black text-red-600 hover:bg-red-50"
+                className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-black text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
               >
                 <LogOut size={16} />
-                Đăng xuất
+                {t("header.logout")}
               </button>
             </div>
           )}

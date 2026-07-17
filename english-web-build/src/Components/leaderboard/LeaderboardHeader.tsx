@@ -1,17 +1,19 @@
 'use client';
 
-import { useCountdown } from '@/src/hooks/useCountdown';
-import { leagueIcons, leagueLabels } from '@/src/lib/leaderboard';
-import { LeaderboardPeriod } from '@/src/types/leaderboard';
 import Link from 'next/link';
-
+import { useCountdown } from '@/src/hooks/useCountdown';
+import {
+  leagueIcons,
+  leagueLabels,
+} from '@/src/lib/leaderboard';
+import type { LeaderboardPeriod } from '@/src/types/leaderboard';
 
 export function LeaderboardHeader({
   period,
 }: {
   period?: LeaderboardPeriod;
 }) {
-  const countdown = useCountdown(period?.endsAt);
+  const countdown = useCountdown(period?.endsAt ?? undefined);
   const league = period?.league ?? 'BRONZE';
 
   return (

@@ -1,5 +1,5 @@
-import { formatXp } from "@/src/lib/leaderboard";
-import { LeaderboardEntry } from "@/src/types/leaderboard";
+import { formatXp } from '@/src/lib/leaderboard';
+import type { LeaderboardEntry } from '@/src/types/leaderboard';
 
 export function LeaderboardPodium({
   entries,

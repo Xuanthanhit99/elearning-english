@@ -9,6 +9,8 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { MissionV2PeriodService } from './mission-v2-period.service';
 import { MissionV2TemplateService } from './mission-v2-template.service';
+import { SettingsQueryService } from '../../settings/settings-query.service';
+import { EnergyModeService, EnergyModeAssessment } from '../../settings/energy-mode.service';
 
 @Injectable()
 export class MissionV2GeneratorService {
@@ -18,10 +20,15 @@ export class MissionV2GeneratorService {
       MissionV2PeriodService,
     private readonly templates:
       MissionV2TemplateService,
+    private readonly settingsQuery: SettingsQueryService,
+    private readonly energyMode: EnergyModeService,
   ) {}
 
   async ensureCurrentMissions(userId: string) {
     await this.templates.ensureDefaultTemplates();
+
+    const learningSettings = await this.settingsQuery.getLearningSettings(userId);
+    const energyAssessment = await this.energyMode.assess(userId);
 
     const result =
       await this.prisma.placementResult.findFirst({
@@ -83,6 +90,8 @@ export class MissionV2GeneratorService {
         userId,
         template,
         result,
+        learningSettings,
+        energyAssessment,
       );
     }
   }
@@ -106,6 +115,10 @@ export class MissionV2GeneratorService {
           }>;
         }
       | null,
+    learningSettings: Awaited<
+      ReturnType<SettingsQueryService['getLearningSettings']>
+    >,
+    energyAssessment: EnergyModeAssessment,
   ) {
     const period = this.periods.getPeriod(
       template.type,
@@ -152,7 +165,13 @@ export class MissionV2GeneratorService {
       template.code ===
       'V2_DAILY_PRIORITY_SKILL'
     ) {
-      skill = topPriority?.skill ?? null;
+      // Placement priority wins when available; otherwise fall back to the
+      // user's own Settings preference so missions still feel personalized
+      // before a placement test has ever run.
+      skill =
+        topPriority?.skill ??
+        (learningSettings.preferredSkills?.[0] as LearningSkill | undefined) ??
+        null;
 
       if (!skill) {
         return;
@@ -161,8 +180,12 @@ export class MissionV2GeneratorService {
       title = `Luyện ${this.skillLabel(skill)}`;
       description =
         topPriority?.reason ??
-        template.description;
+        (!topPriority && learningSettings.preferredSkills?.length
+          ? 'Dựa trên kỹ năng bạn ưu tiên trong Cài đặt học tập.'
+          : template.description);
     }
+
+    const target = this.resolveTarget(template, learningSettings, energyAssessment);
 
     const existing =
       await this.prisma.userMissionV2.findFirst({
@@ -193,7 +216,7 @@ export class MissionV2GeneratorService {
         type: template.type,
         scope: template.scope,
         action: template.action,
-        target: template.defaultTarget,
+        target,
         rewardXp: template.rewardXp,
         rewardCoins:
           template.rewardCoins,
@@ -211,6 +234,42 @@ export class MissionV2GeneratorService {
         expiresAt: period.expiresAt,
       },
     });
+  }
+
+  /**
+   * Scales a template's default target using the user's own Settings, so
+   * next-cycle missions actually reflect challengeMode and dailyStudyMinutes
+   * instead of always using the same hard-coded template value. Only ever
+   * applies to newly generated missions for a *future* period — an active
+   * mission the user is already working on today is never mutated here.
+   *
+   * Energy Mode is applied last, as a temporary session-level reduction on
+   * top of the challengeMode-scaled target — it never touches the user's
+   * official level/challengeMode preference, it only shrinks *this cycle's*
+   * target when recent accuracy signals fatigue.
+   */
+  private resolveTarget(
+    template: MissionTemplateV2,
+    learningSettings: { challengeMode: string; dailyStudyMinutes: number },
+    energyAssessment: EnergyModeAssessment,
+  ): number {
+    if (template.action === 'STUDY_MINUTES') {
+      const studyTarget = Math.max(1, learningSettings.dailyStudyMinutes);
+      return this.energyMode.applyToTarget(studyTarget, energyAssessment);
+    }
+
+    const challengeMultiplier: Record<string, number> = {
+      EASY: 0.8,
+      NORMAL: 1,
+      HARD: 1.25,
+      EXPERT: 1.5,
+    };
+
+    const multiplier = challengeMultiplier[learningSettings.challengeMode] ?? 1;
+
+    const scaledTarget = Math.max(1, Math.round(template.defaultTarget * multiplier));
+
+    return this.energyMode.applyToTarget(scaledTarget, energyAssessment);
   }
 
   private skillLabel(skill: LearningSkill) {

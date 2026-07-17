@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import {
   CefrLevel,
+  EnglishLevel,
   PlacementProcessingItemStatus,
   PlacementProcessingStatus,
   PlacementResultStatus,
@@ -14,6 +15,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { randomUUID } from 'crypto';
 import { PlacementResultAiService } from './placement-result-ai/placement-result-ai.service';
 import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
+import { SettingsCommandService } from '../settings/settings-command.service';
 
 @Injectable()
 export class PlacementResultService {
@@ -21,6 +23,7 @@ export class PlacementResultService {
     private readonly prisma: PrismaService,
     private readonly aiService: PlacementResultAiService,
     private readonly learningXp: LearningXpPublisher,
+    private readonly settingsCommand: SettingsCommandService,
   ) {}
 
   async ensureGenerated(userId: string, testId: string) {
@@ -243,6 +246,22 @@ export class PlacementResultService {
         })),
       });
     });
+
+    // Settings owns whether the auto-detected level is actually applied
+    // (it no-ops when the user has disabled autoDetectLevel). This must run
+    // through SettingsCommandService, never a direct Prisma write here, so
+    // the settings.updated event / audit trail stay consistent.
+    try {
+      await this.settingsCommand.applyPlacementResult(userId, {
+        level: this.cefrToEnglishLevel(aiResult.overallLevel),
+      });
+    } catch (error) {
+      console.error(`applyPlacementResult failed for userId=${userId}`, error);
+    }
+  }
+
+  private cefrToEnglishLevel(level: CefrLevel): EnglishLevel {
+    return EnglishLevel[level as keyof typeof EnglishLevel];
   }
 
   async getResult(userId: string, testId: string) {

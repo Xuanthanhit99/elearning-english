@@ -12,6 +12,7 @@ import { CreateCommunityPostDto } from './dto/create-community-post.dto';
 import { GetCommunityFeedDto } from './dto/get-community-feed.dto';
 import { UpdateCommunityPostDto } from './dto/update-community-post.dto';
 import { CommunityGateway } from './gateway/community.gateway';
+import { applyCommunityDisplayNames } from './community-display-name.util';
 
 const COMMUNITY_AUTHOR_SELECT = {
   id: true,
@@ -20,6 +21,11 @@ const COMMUNITY_AUTHOR_SELECT = {
   avatar: true,
   level: true,
   xp: true,
+  settings: {
+    select: {
+      communityNickname: true,
+    },
+  },
 } satisfies Prisma.UserSelect;
 
 type CommunityPostMapped = Prisma.CommunityPostGetPayload<{
@@ -312,7 +318,8 @@ export class CommunityService {
       return created;
     });
 
-    this.gateway.emitCommentCreated(postId, comment);
+    const mapped = applyCommunityDisplayNames(comment);
+    this.gateway.emitCommentCreated(postId, mapped);
     await Promise.all([
       this.jobs.addCommentNotification({
         postId,
@@ -321,7 +328,7 @@ export class CommunityService {
       }),
       this.jobs.recalculatePostScore(postId),
     ]);
-    return comment;
+    return mapped;
   }
 
   async reactPost(userId: string, postId: string, type: CommunityReactionType) {
@@ -486,14 +493,14 @@ export class CommunityService {
   }
 
   private mapPost(post: CommunityPostMapped) {
-    return {
+    return applyCommunityDisplayNames({
       ...post,
       myReaction: post.reactions[0]?.type ?? null,
       isBookmarked: post.bookmarks.length > 0,
       commentsCount: post._count.comments,
       reactionsCount: post._count.reactions,
       bookmarksCount: post._count.bookmarks,
-    };
+    });
   }
 
   private async assertPostOwner(userId: string, postId: string) {

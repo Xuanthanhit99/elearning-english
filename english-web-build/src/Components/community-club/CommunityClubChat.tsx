@@ -112,7 +112,7 @@ export function CommunityClubChat({
             <img
               src={
                 message.sender.avatar ||
-                '/avatar-placeholder.png'
+                '/cat-home.jpg'
               }
               alt={message.sender.fullname}
               className="h-9 w-9 rounded-full object-cover"

@@ -1,5 +1,8 @@
-import { LeaderboardEntry, LeaderboardZone, LeagueTier } from "../types/leaderboard";
-
+import type {
+  LeaderboardEntry,
+  LeaderboardZone,
+  LeagueTier,
+} from '@/src/types/leaderboard';
 
 export const leagueLabels: Record<LeagueTier, string> = {
   BRONZE: 'Đồng',

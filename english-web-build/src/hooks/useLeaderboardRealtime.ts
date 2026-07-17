@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { getLeaderboardSocket } from '../lib/leaderboard-socket';
-import { WeeklyResultPayload } from '../types/leaderboard';
+import { getLeaderboardSocket } from '@/src/lib/leaderboard-socket';
+import type { WeeklyResultPayload } from '@/src/types/leaderboard';
 
 export function useLeaderboardRealtime(input: {
   groupId?: string | null;
@@ -14,80 +14,66 @@ export function useLeaderboardRealtime(input: {
   onSeasonStarted?: () => void;
 }) {
   useEffect(() => {
-    const socket =
-      getLeaderboardSocket();
+    const socket = getLeaderboardSocket();
 
     if (input.groupId) {
-      socket.emit(
-        'leaderboard:join-group',
-        {
-          groupId: input.groupId,
-        },
-      );
+      socket.emit('leaderboard:join-group', {
+        groupId: input.groupId,
+      });
     }
 
-    const onUpdated = () =>
+    const updated = () =>
       input.onLeaderboardUpdated?.();
 
-    const onWeekly = (
+    const weekly = (
       payload: WeeklyResultPayload,
-    ) =>
-      input.onWeeklyResult?.(payload);
+    ) => input.onWeeklyResult?.(payload);
 
-    const onReward = () =>
+    const reward = () =>
       input.onRewardAvailable?.();
 
-    const onSeason = () =>
+    const season = () =>
       input.onSeasonStarted?.();
 
     socket.on(
       'leaderboard:group-updated',
-      onUpdated,
+      updated,
     );
-
     socket.on(
       'leaderboard:weekly-result',
-      onWeekly,
+      weekly,
     );
-
     socket.on(
       'leaderboard:reward-available',
-      onReward,
+      reward,
     );
-
     socket.on(
       'leaderboard:season-started',
-      onSeason,
+      season,
     );
 
     return () => {
       if (input.groupId) {
-        socket.emit(
-          'leaderboard:leave-group',
-          {
-            groupId: input.groupId,
-          },
-        );
+        socket.emit('leaderboard:leave-group', {
+          groupId: input.groupId,
+        });
       }
 
       socket.off(
         'leaderboard:group-updated',
-        onUpdated,
+        updated,
       );
-
       socket.off(
         'leaderboard:weekly-result',
-        onWeekly,
+        weekly,
       );
-
       socket.off(
         'leaderboard:reward-available',
-        onReward,
+        reward,
       );
-
       socket.off(
         'leaderboard:season-started',
-        onSeason,
+        season,
       );
     };
   }, [

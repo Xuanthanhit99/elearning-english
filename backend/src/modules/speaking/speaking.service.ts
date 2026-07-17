@@ -23,6 +23,7 @@ import {
   TranscribeSpeakingDto,
 } from '../speaking-practice/dto/speaking-practice.dto';
 import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
+import { SettingsQueryService } from '../settings/settings-query.service';
 
 @Injectable()
 export class SpeakingService {
@@ -31,6 +32,7 @@ export class SpeakingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly learningXp: LearningXpPublisher,
+    private readonly settingsQuery: SettingsQueryService,
   ) {
     if (!process.env.GEMINI_API_KEY) {
       throw new Error('Missing GEMINI_API_KEY');
@@ -77,6 +79,7 @@ Format:
     expectedText?: string | null;
     transcript: string;
     level: string;
+    correctionMode?: string;
   }) {
     const transcript = String(params.transcript || '').trim();
     const meaningfulWords = transcript
@@ -105,6 +108,9 @@ User transcript:
 ${transcript}
 
 Level: ${params.level}
+
+Chế độ sửa lỗi (correctionMode = ${params.correctionMode || 'EXPLAIN_GRAMMAR'}):
+${this.correctionModeInstruction(params.correctionMode)}
 
 Quy tắc bắt buộc:
 - Chấm dựa trên User transcript, không được tự giả định người dùng đã nói đúng.
@@ -943,10 +949,13 @@ Format:
       },
     });
 
+    const speakingConfig = await this.settingsQuery.getSpeakingSettings(userId);
+
     if (oldInProgress) {
       return {
         sessionId: oldInProgress.id,
         redirectUrl: `/speaking/practice/${oldInProgress.id}`,
+        speakingConfig,
       };
     }
 
@@ -962,7 +971,22 @@ Format:
     return {
       sessionId: session.id,
       redirectUrl: `/speaking/practice/${session.id}`,
+      speakingConfig,
     };
+  }
+
+  private correctionModeInstruction(correctionMode?: string): string {
+    switch (correctionMode) {
+      case 'MAJOR_ONLY':
+        return 'Chỉ nêu các lỗi nghiêm trọng làm sai nghĩa câu, bỏ qua lỗi nhỏ.';
+      case 'CORRECT_EVERYTHING':
+        return 'Nêu chi tiết tất cả lỗi, kể cả lỗi nhỏ về ngữ pháp, phát âm, từ vựng.';
+      case 'NATIVE_EXPRESSION':
+        return 'Sau khi sửa lỗi, gợi ý thêm cách diễn đạt tự nhiên hơn như người bản xứ.';
+      case 'EXPLAIN_GRAMMAR':
+      default:
+        return 'Sửa lỗi và giải thích ngắn gọn nguyên nhân lỗi ngữ pháp.';
+    }
   }
 
   private buildLessonOrderBy(
@@ -2235,6 +2259,8 @@ Format:
       audioUrl: dto.audioUrl,
     });
 
+    const aiSettings = await this.settingsQuery.getAiSettings(userId);
+
     const evaluation = invalidReason
       ? this.emptySpeakingEvaluation(invalidReason)
       : await this.evaluateSpeakingAnswer({
@@ -2242,6 +2268,7 @@ Format:
           expectedText,
           transcript,
           level: session.lesson.level,
+          correctionMode: aiSettings.correctionMode,
         });
 
     const normalizedEvaluation = this.normalizeEvaluation(evaluation);

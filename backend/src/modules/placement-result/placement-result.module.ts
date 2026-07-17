@@ -4,9 +4,10 @@ import { PlacementResultService } from './placement-result.service';
 import { PlacementResultAiService } from './placement-result-ai/placement-result-ai.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { LearningXpModule } from '../learning-xp/learning-xp.module';
+import { SettingsModule } from '../settings/settings.module';
 
 @Module({
-  imports: [PrismaModule, LearningXpModule ],
+  imports: [PrismaModule, LearningXpModule, SettingsModule],
   controllers: [PlacementResultController],
   providers: [PlacementResultService, PlacementResultAiService],
   exports: [PlacementResultService],

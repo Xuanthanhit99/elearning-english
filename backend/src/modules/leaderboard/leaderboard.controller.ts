@@ -15,7 +15,6 @@ import { LeaderboardQueryDto } from './dto/leaderboard-query.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 
 // Thay JwtAuthGuard bằng guard thực tế của dự án.
-
 @Controller('leaderboards')
 @UseGuards(JwtAuthGuard)
 export class LeaderboardController {
@@ -77,8 +76,7 @@ export class LeaderboardController {
   @Patch('privacy')
   updatePrivacy(
     @Req() req: any,
-    @Body()
-    body: {
+    @Body() body: {
       optedOut?: boolean;
       showOnline?: boolean;
       showStreak?: boolean;
@@ -87,10 +85,5 @@ export class LeaderboardController {
     },
   ) {
     return this.service.updatePrivacy(req.user.id, body);
-  }
-
-  @Get('my-clubs')
-  getMyClubs(@Req() req: any) {
-    return this.service.getMyClubs(req.user.id);
   }
 }

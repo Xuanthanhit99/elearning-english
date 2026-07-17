@@ -8,7 +8,7 @@ import {
   Prisma,
 } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { LEAGUE_ORDER, LEAGUE_RULES } from '../backgrount-job/leaderboard-phase3.constants';
+import { LEAGUE_ORDER, LEAGUE_RULES } from '../background-job/leaderboard-phase3.constants';
 
 @Injectable()
 export class LeaderboardBootstrapService implements OnApplicationBootstrap {

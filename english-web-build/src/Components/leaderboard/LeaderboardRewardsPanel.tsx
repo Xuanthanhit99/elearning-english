@@ -8,8 +8,8 @@ import {
 import {
   claimLeaderboardReward,
   getLeaderboardRewards,
-} from '@/api/leaderboard';
-import type { LeaderboardReward } from '@/types/leaderboard';
+} from '@/src/lib/leaderboard-api';
+import type { LeaderboardReward } from '@/src/types/leaderboard';
 
 export function LeaderboardRewardsPanel() {
   const [items, setItems] = useState<
@@ -108,9 +108,9 @@ export function LeaderboardRewardsPanel() {
             </div>
 
             <div className="mt-5 flex flex-wrap gap-2">
-              <Reward text={`+${item.payload.xp} XP`} show={item.payload.xp > 0} />
-              <Reward text={`+${item.payload.coins} coins`} show={item.payload.coins > 0} />
-              <Reward text={`+${item.payload.food} food`} show={item.payload.food > 0} />
+              <Reward text={`+${item.payload.xp ?? 0} XP`} show={(item.payload.xp ?? 0) > 0} />
+              <Reward text={`+${item.payload.coins ?? 0} coins`} show={(item.payload.coins ?? 0) > 0} />
+              <Reward text={`+${item.payload.food ?? 0} food`} show={(item.payload.food ?? 0) > 0} />
             </div>
 
             <button

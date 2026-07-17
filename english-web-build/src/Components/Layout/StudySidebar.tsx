@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import AppLogo from "@/src/Components/UI/AppLogo";
 import { AppIcon, AppIconName } from "@/src/Components/UI/AppIcon";
+import { useTranslation } from "@/src/hooks/useTranslation";
+import studySidebarContent, { StudySidebarContent } from "./studySidebar.content";
 
 type TreeItem = {
   icon?: AppIconName;
@@ -13,125 +15,131 @@ type TreeItem = {
   children?: TreeItem[];
 };
 
-const learningTree: TreeItem[] = [
-  {
-    icon: "sparkles",
-    label: "AI tạo bài học",
-    href: "/lesson-builder",
-    match: (path) => path.startsWith("/lesson-builder"),
-  },
-  {
-    icon: "book",
-    label: "Tổng quan",
-    href: "/vocabulary/overview",
-    match: (path) => path === "/vocabulary/overview",
-  },
-  {
-    icon: "target",
-    label: "Xáº¿p trÃ¬nh Ä‘á»™",
-    href: "/placement",
-    match: (path) => path.startsWith("/placement"),
-    children: [
-      {
-        label: "Kiá»ƒm tra trÃ¬nh Ä‘á»™",
-        href: "/placement",
-        match: (path) =>
-          path === "/placement" ||
-          path === "/placement/introduction" ||
-          path.startsWith("/placement/test"),
-      },
-      {
-        label: "Dashboard",
-        href: "/placement/dashboard",
-        match: (path) => path === "/placement/dashboard",
-      },
-    ],
-  },
-  {
-    icon: "book",
-    label: "Từ vựng",
-    href: "/vocabulary",
-    match: (path) => path === "/vocabulary" || path.startsWith("/vocabulary/"),
-    children: [
-      { label: "Danh sách từ", href: "/vocabulary", match: (path) => path === "/vocabulary" },
-      { label: "Flashcards", href: "/vocabulary/flashcards", match: (path) => path === "/vocabulary/flashcards" },
-      { label: "Ôn tập", href: "/vocabulary/review", match: (path) => path === "/vocabulary/review" },
-      { label: "Kiểm tra", href: "/vocabulary/test", match: (path) => path === "/vocabulary/test" },
-    ],
-  },
-  {
-    icon: "graduation",
-    label: "Ngữ pháp",
-    href: "/grammar",
-    match: (path) => path.startsWith("/grammar"),
-  },
-  {
-    icon: "volume",
-    label: "Nghe",
-    href: "/listening",
-    match: (path) => path.startsWith("/listening"),
-    children: [
-      { label: "Luyện nghe", href: "/listening", match: (path) => path === "/listening" },
-      { label: "Nghe chép chính tả", href: "/listening/dictation", match: (path) => path === "/listening/dictation" },
-      { label: "Nghe hiểu đoạn", href: "/listening/reading", match: (path) => path === "/listening/reading" },
-      { label: "Nghe theo chủ đề", href: "/listening/topic", match: (path) => path === "/listening/topic" },
-    ],
-  },
-  {
-    icon: "mic",
-    label: "Nói",
-    href: "/speaking",
-    match: (path) => path.startsWith("/speaking") || path.startsWith("/pronunciation"),
-    children: [
-      { label: "Luyện phát âm", href: "/pronunciation", match: (path) => path.startsWith("/pronunciation") },
-      { label: "Chủ đề nói", href: "/speaking/topics", match: (path) => path === "/speaking/topics" },
-      { label: "Tình huống", href: "/speaking/situations", match: (path) => path === "/speaking/situations" },
-    ],
-  },
-  {
-    icon: "book",
-    label: "Đọc hiểu",
-    href: "/reading",
-    match: (path) => path.startsWith("/reading"),
-    children: [
-      { label: "Tổng quan đọc", href: "/reading", match: (path) => path === "/reading" },
-      { label: "Luyện đọc", href: "/reading/readingpractice", match: (path) => path === "/reading/readingpractice" },
-    ],
-  },
-  {
-    icon: "pen",
-    label: "Viết",
-    href: "/writing",
-    match: (path) => path.startsWith("/writing") || path.startsWith("/check-writing"),
-    children: [
-      { label: "Luyện viết", href: "/writing", match: (path) => path === "/writing" },
-      { label: "AI chấm bài", href: "/check-writing", match: (path) => path.startsWith("/check-writing") },
-    ],
-  },
-  {
-    icon: "star",
-    label: "Flashcards",
-    href: "/flashcards",
-    match: (path) => path.startsWith("/flashcards"),
-    children: [
-      { label: "Ôn tập hôm nay", href: "/flashcards", match: (path) => path === "/flashcards" },
-      { label: "Tất cả thẻ", href: "/flashcards/all", match: (path) => path === "/flashcards/all" },
-      { label: "Tạo bộ thẻ", href: "/flashcards/create", match: (path) => path === "/flashcards/create" },
-    ],
-  },
-];
+function buildLearningTree(c: StudySidebarContent): TreeItem[] {
+  return [
+    {
+      icon: "sparkles",
+      label: c.tree.lessonBuilder,
+      href: "/lesson-builder",
+      match: (path) => path.startsWith("/lesson-builder"),
+    },
+    {
+      icon: "book",
+      label: c.tree.overview,
+      href: "/vocabulary/overview",
+      match: (path) => path === "/vocabulary/overview",
+    },
+    {
+      icon: "target",
+      label: c.tree.placement,
+      href: "/placement",
+      match: (path) => path.startsWith("/placement"),
+      children: [
+        {
+          label: c.tree.placementTest,
+          href: "/placement",
+          match: (path) =>
+            path === "/placement" ||
+            path === "/placement/introduction" ||
+            path.startsWith("/placement/test"),
+        },
+        {
+          label: c.tree.placementDashboard,
+          href: "/placement/dashboard",
+          match: (path) => path === "/placement/dashboard",
+        },
+      ],
+    },
+    {
+      icon: "book",
+      label: c.tree.vocabulary,
+      href: "/vocabulary",
+      match: (path) => path === "/vocabulary" || path.startsWith("/vocabulary/"),
+      children: [
+        { label: c.tree.vocabularyList, href: "/vocabulary", match: (path) => path === "/vocabulary" },
+        { label: c.tree.flashcards, href: "/vocabulary/flashcards", match: (path) => path === "/vocabulary/flashcards" },
+        { label: c.tree.review, href: "/vocabulary/review", match: (path) => path === "/vocabulary/review" },
+        { label: c.tree.test, href: "/vocabulary/test", match: (path) => path === "/vocabulary/test" },
+      ],
+    },
+    {
+      icon: "graduation",
+      label: c.tree.grammar,
+      href: "/grammar",
+      match: (path) => path.startsWith("/grammar"),
+    },
+    {
+      icon: "volume",
+      label: c.tree.listening,
+      href: "/listening",
+      match: (path) => path.startsWith("/listening"),
+      children: [
+        { label: c.tree.listeningPractice, href: "/listening", match: (path) => path === "/listening" },
+        { label: c.tree.listeningDictation, href: "/listening/dictation", match: (path) => path === "/listening/dictation" },
+        { label: c.tree.listeningReading, href: "/listening/reading", match: (path) => path === "/listening/reading" },
+        { label: c.tree.listeningTopic, href: "/listening/topic", match: (path) => path === "/listening/topic" },
+      ],
+    },
+    {
+      icon: "mic",
+      label: c.tree.speaking,
+      href: "/speaking",
+      match: (path) => path.startsWith("/speaking") || path.startsWith("/pronunciation"),
+      children: [
+        { label: c.tree.pronunciation, href: "/pronunciation", match: (path) => path.startsWith("/pronunciation") },
+        { label: c.tree.speakingTopics, href: "/speaking/topics", match: (path) => path === "/speaking/topics" },
+        { label: c.tree.speakingSituations, href: "/speaking/situations", match: (path) => path === "/speaking/situations" },
+      ],
+    },
+    {
+      icon: "book",
+      label: c.tree.reading,
+      href: "/reading",
+      match: (path) => path.startsWith("/reading"),
+      children: [
+        { label: c.tree.readingOverview, href: "/reading", match: (path) => path === "/reading" },
+        { label: c.tree.readingPractice, href: "/reading/readingpractice", match: (path) => path === "/reading/readingpractice" },
+      ],
+    },
+    {
+      icon: "pen",
+      label: c.tree.writing,
+      href: "/writing",
+      match: (path) => path.startsWith("/writing") || path.startsWith("/check-writing"),
+      children: [
+        { label: c.tree.writingPractice, href: "/writing", match: (path) => path === "/writing" },
+        { label: c.tree.writingCheck, href: "/check-writing", match: (path) => path.startsWith("/check-writing") },
+      ],
+    },
+    {
+      icon: "star",
+      label: c.tree.flashcards,
+      href: "/flashcards",
+      match: (path) => path.startsWith("/flashcards"),
+      children: [
+        { label: c.tree.flashcardsToday, href: "/flashcards", match: (path) => path === "/flashcards" },
+        { label: c.tree.flashcardsAll, href: "/flashcards/all", match: (path) => path === "/flashcards/all" },
+        { label: c.tree.flashcardsCreate, href: "/flashcards/create", match: (path) => path === "/flashcards/create" },
+      ],
+    },
+  ];
+}
 
-const communityItems: TreeItem[] = [
-  { icon: "users", label: "Cộng đồng", href: "/community", match: (path) => path === "/community" },
-  { icon: "message", label: "Hỏi đáp", href: "/community?mode=question", match: (path) => path === "/community?mode=question" },
-  { icon: "trophy", label: "Thành tích", href: "/profile", match: (path) => path.startsWith("/profile") },
-];
+function buildCommunityItems(c: StudySidebarContent): TreeItem[] {
+  return [
+    { icon: "users", label: c.community.community, href: "/community", match: (path) => path === "/community" },
+    { icon: "message", label: c.community.qa, href: "/community?mode=question", match: (path) => path === "/community?mode=question" },
+    { icon: "trophy", label: c.community.achievements, href: "/profile", match: (path) => path.startsWith("/profile") },
+  ];
+}
 
-const otherItems: TreeItem[] = [
-  { icon: "book", label: "Khóa học", href: "/courses", match: (path) => path.startsWith("/courses") },
-  { icon: "shop", label: "Shop", href: "/pet", match: (path) => path.startsWith("/pet") },
-  { icon: "settings", label: "Cài đặt", href: "/profile", match: (path) => path.startsWith("/profile") },
-];
+function buildOtherItems(c: StudySidebarContent): TreeItem[] {
+  return [
+    { icon: "book", label: c.other.courses, href: "/courses", match: (path) => path.startsWith("/courses") },
+    { icon: "shop", label: c.other.shop, href: "/pet", match: (path) => path.startsWith("/pet") },
+    { icon: "settings", label: c.other.settings, href: "/profile", match: (path) => path.startsWith("/profile") },
+  ];
+}
 
 function itemActive(item: TreeItem, pathname: string) {
   return item.match ? item.match(pathname) : pathname === item.href;
@@ -197,7 +205,7 @@ function TreeNode({ item }: { item: TreeItem }) {
       {open && (
         <div className="ml-[27px] border-l-2 border-[#e2ddff] py-1 pl-6">
           {item.children?.map((child) => (
-            <SidebarLeaf key={child.label} item={child} compact />
+            <SidebarLeaf key={child.href} item={child} compact />
           ))}
         </div>
       )}
@@ -220,44 +228,50 @@ export default function StudySidebar({
   className?: string;
   fixed?: boolean;
 }) {
+  const { locale } = useTranslation();
+  const c = studySidebarContent[locale];
+  const learningTree = buildLearningTree(c);
+  const communityItems = buildCommunityItems(c);
+  const otherItems = buildOtherItems(c);
+
   return (
     <aside
       className={`${fixed ? "fixed left-0 top-0" : "sticky top-0"} hidden h-screen w-[286px] shrink-0 overflow-y-auto border-r border-[#e8e9f5] bg-white px-4 py-6 xl:block ${className}`}
     >
       <AppLogo />
       <nav className="mt-9 space-y-1">
-        <SidebarLeaf item={{ icon: "home", label: "Trang chủ", href: "/" }} />
-        <SidebarLeaf item={{ icon: "book", label: "Dashboard", href: "/dashboard" }} />
+        <SidebarLeaf item={{ icon: "home", label: c.navHome, href: "/" }} />
+        <SidebarLeaf item={{ icon: "book", label: c.navDashboard, href: "/dashboard" }} />
 
-        <SectionTitle>Học tập</SectionTitle>
+        <SectionTitle>{c.sectionLearning}</SectionTitle>
         <div className="relative">
           <span className="absolute left-[27px] top-3 bottom-3 w-px bg-[#e2ddff]" />
           <div className="relative space-y-1">
             {learningTree.map((item) => (
-              <TreeNode key={item.label} item={item} />
+              <TreeNode key={item.href} item={item} />
             ))}
           </div>
         </div>
 
-        <SectionTitle>Cộng đồng</SectionTitle>
+        <SectionTitle>{c.sectionCommunity}</SectionTitle>
         {communityItems.map((item) => (
-          <SidebarLeaf key={item.label} item={item} />
+          <SidebarLeaf key={item.href} item={item} />
         ))}
 
-        <SectionTitle>Khác</SectionTitle>
+        <SectionTitle>{c.sectionOther}</SectionTitle>
         {otherItems.map((item) => (
-          <SidebarLeaf key={item.label} item={item} />
+          <SidebarLeaf key={item.href} item={item} />
         ))}
       </nav>
 
       <section className="mt-8 rounded-2xl bg-[#f4f0ff] p-5">
         <AppIcon name="crown" tone="yellow" />
-        <h3 className="mt-2 font-black text-[#652cff]">Nâng cấp Premium</h3>
+        <h3 className="mt-2 font-black text-[#652cff]">{c.premiumTitle}</h3>
         <p className="mt-3 text-sm font-bold leading-6 text-[#69708b]">
-          Học không giới hạn, nhận nhiều đặc quyền hấp dẫn!
+          {c.premiumDesc}
         </p>
         <button className="mt-5 w-full rounded-xl bg-[#6d35ff] px-4 py-3 text-sm font-black text-white">
-          Nâng cấp ngay
+          {c.premiumCta}
         </button>
       </section>
     </aside>

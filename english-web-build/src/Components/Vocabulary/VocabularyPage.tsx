@@ -9,6 +9,9 @@ import { AppIcon, AppIconName } from "@/src/Components/UI/AppIcon";
 import AppLogo from "@/src/Components/UI/AppLogo";
 import StudySidebar from "@/src/Components/Layout/StudySidebar";
 import { X, Gift, BookOpen, Star, Target, RotateCcw } from "lucide-react";
+import { useTranslation } from "@/src/hooks/useTranslation";
+import { Locale } from "@/src/i18n/types";
+import vocab from "./vocabularyPage.content";
 
 type VocabularyWord = {
   id: string;
@@ -251,9 +254,11 @@ const getVocabularyImageUrl = (word?: VocabularyWord | null) => {
 };
 
 export default function VocabularyPage() {
+  const { locale } = useTranslation();
+  const c = vocab[locale];
   const user = useAuthStore((state) => state.user);
   const displayName = user?.fullname || "Minh Anh";
-  const avatar = user?.avatar || "/avatar-default.png";
+  const avatar = user?.avatar || "/cat-home.jpg";
 
   const [today, setToday] = useState<TodayVocabulary | null>(null);
   const [dailyWords, setDailyWords] = useState<DailyWordItem[]>([]);
@@ -364,9 +369,7 @@ export default function VocabularyPage() {
           setActiveIndex(0);
         } catch {
           setDailyWords([]);
-          setMessage(
-            "Không tải được danh sách từ hôm nay. Hãy đăng nhập lại hoặc tải lại trang.",
-          );
+          setMessage(c.messages.loadWordsError);
         }
       } else {
         setDailyWords([]);
@@ -374,9 +377,7 @@ export default function VocabularyPage() {
     } else {
       setToday(null);
       setDailyWords([]);
-      setMessage(
-        "Chưa tải được bài học từ vựng. Hãy kiểm tra đăng nhập rồi thử lại.",
-      );
+      setMessage(c.messages.loadTodayError);
     }
 
     setLoading(false);
@@ -407,9 +408,7 @@ export default function VocabularyPage() {
   const markProgress = async (status: "KNOWN" | "REVIEW" | "LEARNING") => {
     if (!currentWord?.id || today?.locked || isTodayCompleted) {
       setMessage(
-        isTodayCompleted
-          ? "Bạn đã hoàn thành bài học hôm nay. Ngày mai sẽ có chủ đề mới."
-          : "Chưa có từ vựng hợp lệ để lưu tiến độ. Hãy đăng nhập và tải lại bài học.",
+        isTodayCompleted ? c.messages.alreadyCompleted : c.messages.noValidWord,
       );
       return;
     }
@@ -429,36 +428,34 @@ export default function VocabularyPage() {
       if (nextIndex < dailyWords.length) {
         setActiveIndex(nextIndex);
         setMessage(
-          status === "KNOWN"
-            ? "Đã lưu: bạn đã biết từ này. Chuyển sang từ tiếp theo."
-            : "Đã đưa từ vào lịch ôn tập. Chuyển sang từ tiếp theo.",
+          status === "KNOWN" ? c.messages.savedKnown : c.messages.savedReview,
         );
       } else {
         setMessage(
           status === "KNOWN"
-            ? "Đã lưu: bạn đã biết từ này. Bạn đã xem hết danh sách hôm nay."
-            : "Đã đưa từ vào lịch ôn tập. Bạn đã xem hết danh sách hôm nay.",
+            ? c.messages.savedKnownDone
+            : c.messages.savedReviewDone,
         );
       }
     } catch {
-      setMessage("Không lưu được tiến độ. Hãy đăng nhập lại rồi thử tiếp.");
+      setMessage(c.messages.saveProgressError);
     }
   };
   const toggleNotebook = async () => {
     if (!currentWord?.id) {
-      setMessage("Chưa có từ vựng hợp lệ để lưu sổ tay.");
+      setMessage(c.messages.noWordForNotebook);
       return;
     }
     const isSaved = Boolean(currentItem?.inNotebook);
     try {
       if (isSaved) {
         await api.delete(`/vocabulary/words/${currentWord.id}/notebook`);
-        setMessage("Đã bỏ từ khỏi sổ tay.");
+        setMessage(c.messages.removedFromNotebook);
       } else {
         await api.post(`/vocabulary/words/${currentWord.id}/notebook`, {
           note: "Lưu từ từ trang học hôm nay",
         });
-        setMessage("Đã thêm từ vào sổ tay.");
+        setMessage(c.messages.addedToNotebook);
       }
       setDailyWords((items) =>
         items.map((item) =>
@@ -471,7 +468,7 @@ export default function VocabularyPage() {
       setNotebookItems(notebookRes.data || []);
       setNotebookCount(notebookRes.data?.length || 0);
     } catch {
-      setMessage("Không cập nhật được sổ tay. Hãy đăng nhập lại rồi thử tiếp.");
+      setMessage(c.messages.notebookUpdateError);
     }
   };
   const openDetail = async () => {
@@ -490,7 +487,7 @@ export default function VocabularyPage() {
 
   const openFlashcard = async () => {
     if (isTodayCompleted) {
-      setMessage("Bạn đã hoàn thành bài học hôm nay. Hãy ôn lại trong mục Ôn tập.");
+      setMessage(c.messages.alreadyCompleted);
       return;
     }
     window.location.href = "/vocabulary/flashcards";
@@ -513,18 +510,14 @@ export default function VocabularyPage() {
       });
     } else {
       setFlashcard(null);
-      setMessage(
-        "Đã hoàn thành bộ flashcard hôm nay. Foxy đã cập nhật lịch ôn cho bạn.",
-      );
+      setMessage(c.messages.flashcardCompleted);
     }
     await loadVocabulary();
   };
 
   const playAudio = () => {
     if (!currentWord?.audio) {
-      setMessage(
-        "Từ này chưa có audio. Backend có thể bổ sung TTS sau để tự sinh file phát âm.",
-      );
+      setMessage(c.messages.noAudio);
       return;
     }
     new Audio(currentWord.audio).play();
@@ -540,19 +533,14 @@ export default function VocabularyPage() {
       `/vocabulary/daily/${today.id}/words/${currentWord.id}/navigation`,
     );
     if (res.data?.next) setActiveIndex(res.data.currentIndex + 1);
-    else
-      setMessage(
-        "Bạn đã xem hết danh sách từ hôm nay. Có thể bấm hoàn thành bài học.",
-      );
+    else setMessage(c.messages.allWordsViewed);
   };
 
   const completeToday = async () => {
     if (!today?.id || today.locked || isTodayCompleted) return;
     await api.post(`/vocabulary/daily/${today.id}/complete`);
     setOpenModalProgress(true);
-    setMessage(
-      "Đã hoàn thành bài học hôm nay. Các từ sẽ được đưa vào lịch ôn tập.",
-    );
+    setMessage(c.messages.completedToday);
     await loadVocabulary();
   };
 
@@ -565,9 +553,7 @@ export default function VocabularyPage() {
     setDailyWords(res.data?.words || []);
     setActiveIndex(Math.min(learnedCount, Math.max((res.data?.words?.length || 1) - 1, 0)));
     setOpenModalProgress(false);
-    setMessage(
-      `Đã mở thêm ${amount} từ. Hãy học vừa sức để nhớ lâu hơn nhé.`,
-    );
+    setMessage(c.messages.extraWordsAdded.replace("{amount}", String(amount)));
   };
 
   const submitCompletionReview = async (
@@ -586,9 +572,7 @@ export default function VocabularyPage() {
     setShareOpen(false);
     setShareContent("");
     setMessage(
-      res.data?.post?.id
-        ? "Đã đăng bài từ vựng sang cộng đồng."
-        : "Đã tạo nội dung chia sẻ.",
+      res.data?.post?.id ? c.messages.sharePosted : c.messages.shareCreated,
     );
   };
 
@@ -616,7 +600,7 @@ export default function VocabularyPage() {
                 >
                   <AppIcon name="chevronLeft" bare size={24} />
                 </Link>
-                <h1 className="text-2xl font-black">Từ vựng</h1>
+                <h1 className="text-2xl font-black">{c.title}</h1>
               </div>
 
               {today?.locked ? (
@@ -734,9 +718,7 @@ export default function VocabularyPage() {
         onClose={() => setOpenModalProgress(false)}
         onFinish={() => {
           setOpenModalProgress(false);
-          setMessage(
-            "Bạn đã hoàn thành mục tiêu hôm nay. Ngày mai AI sẽ chọn thêm từ mới.",
-          );
+          setMessage(c.messages.goalReachedTomorrow);
         }}
         onLearnExtra={(amount) => void addExtraWords(amount)}
         onSubmitReview={submitCompletionReview}
@@ -747,19 +729,21 @@ export default function VocabularyPage() {
 }
 
 function LockedNotice({ reason }: { reason?: string }) {
+  const { locale } = useTranslation();
+  const c = vocab[locale];
   return (
     <section className="rounded-2xl border border-[#fed7aa] bg-[#fff7ed] p-5">
       <h2 className="text-xl font-black text-[#c2410c]">
-        Tuần học mới đang bị khóa
+        {c.locked.title}
       </h2>
       <p className="mt-2 font-bold text-[#9a3412]">
-        {reason || "Bạn cần hoàn thành bài kiểm tra tuần trước để tiếp tục."}
+        {reason || c.locked.defaultReason}
       </p>
       <Link
         href="/vocabulary/test"
         className="mt-4 inline-flex rounded-xl bg-[#6d35ff] px-5 py-3 font-black text-white"
       >
-        Làm bài kiểm tra
+        {c.locked.cta}
       </Link>
     </section>
   );
@@ -776,6 +760,8 @@ export function TopBar({
   displayName: string;
   avatar: string;
 }) {
+  const { locale } = useTranslation();
+  const c = vocab[locale];
   return (
     <header className="sticky top-0 z-40 border-b border-[#e8e9f5] bg-white/95 px-4 py-4 backdrop-blur lg:px-8">
       <div className="flex items-center gap-4">
@@ -787,19 +773,19 @@ export function TopBar({
             className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8b91aa]"
           />
           <input
-            placeholder="Tìm bài học, từ vựng, ngữ pháp..."
+            placeholder={c.topBar.searchPlaceholder}
             className="h-14 w-full rounded-xl border border-[#dfe2f3] bg-white pl-12 pr-4 text-sm font-bold outline-none placeholder:text-[#8b91aa] focus:border-[#6d35ff]"
           />
         </label>
         <div className="ml-auto flex items-center gap-3">
-          <TopMetric icon="fire" value="18" label="Streak" tone="orange" />
+          <TopMetric icon="fire" value="18" label={c.topBar.streak} tone="orange" />
           <TopMetric
             icon="star"
             value="2,450"
-            label="XP hôm nay"
+            label={c.topBar.xpToday}
             tone="yellow"
           />
-          <TopMetric icon="diamond" value="5,230" label="Xu" tone="cyan" />
+          <TopMetric icon="diamond" value="5,230" label={c.topBar.coins} tone="cyan" />
           <button className="relative flex h-11 w-11 items-center justify-center rounded-full border border-[#e8e9f5] bg-white text-xl">
             <AppIcon name="bell" bare size={20} className="text-[#6d35ff]" />
             <span className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 text-[10px] font-black text-white">
@@ -969,6 +955,8 @@ function WordStudyCard(props: {
   onShare: () => void;
   onAudio: () => void;
 }) {
+  const { locale } = useTranslation();
+  const c = vocab[locale];
   const { completed, item, locked, total, word } = props;
   const displayWord = word?.word || "Environment";
   const meaning =
@@ -987,7 +975,7 @@ function WordStudyCard(props: {
         <div className="min-w-0">
           {completed && (
             <span className="mb-4 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-700">
-              Đã hoàn thành hôm nay
+              {c.studyCard.completedBadge}
             </span>
           )}
           <div className="flex flex-wrap items-center gap-4">
@@ -1006,14 +994,14 @@ function WordStudyCard(props: {
             {word?.phonetic || "/ɪnˈvaɪrənmənt/"}
           </p>
           <span className="mt-5 inline-flex rounded-lg bg-[#dcfce7] px-3 py-1.5 text-sm font-black text-[#16a34a]">
-            {word?.partOfSpeech || "Danh từ"}
+            {word?.partOfSpeech || c.studyCard.defaultPartOfSpeech}
           </span>
 
           <h3 className="mt-6 text-lg font-black text-[#101733]">
             {meaning}
           </h3>
           <div className="mt-5 border-l-4 border-[#6d35ff] pl-4">
-            <p className="text-sm font-black text-[#6d35ff]">Ví dụ</p>
+            <p className="text-sm font-black text-[#6d35ff]">{c.studyCard.exampleLabel}</p>
             <p className="mt-3 font-bold leading-7 text-[#101733]">
               {example}
             </p>
@@ -1061,32 +1049,34 @@ function WordStudyCard(props: {
         <ActionButton
           active={Boolean(item?.inNotebook)}
           icon="plus"
-          label={item?.inNotebook ? "Đã lưu sổ tay" : "Thêm vào sổ tay"}
+          label={item?.inNotebook ? c.studyCard.savedNotebook : c.studyCard.addNotebook}
           onClick={props.onNotebook}
         />
         <ActionButton
           disabled={locked}
           icon="notebook"
-          label="Flashcard"
+          label={c.studyCard.flashcard}
           onClick={props.onFlashcard}
         />
         <ActionButton
           disabled={locked}
           icon="shield"
-          label="Đã biết"
+          label={c.studyCard.known}
           onClick={props.onKnown}
         />
         <ActionButton
           disabled={locked}
           icon="shield"
-          label="Cần ôn lại"
+          label={c.studyCard.review}
           onClick={props.onReview}
         />
-        <ActionButton icon="message" label="Chia sẻ" onClick={props.onShare} />
+        <ActionButton icon="message" label={c.studyCard.share} onClick={props.onShare} />
       </div>
 
       <div className="border-t border-[#ece8fb] px-6 py-3 text-center text-sm font-black text-[#7377a8]">
-        Từ {Math.min(props.activeIndex + 1, Math.max(total, 1))}/{Math.max(total, 1)}
+        {c.studyCard.wordCounter
+          .replace("{current}", String(Math.min(props.activeIndex + 1, Math.max(total, 1))))
+          .replace("{total}", String(Math.max(total, 1)))}
       </div>
     </section>
   );
@@ -1132,7 +1122,17 @@ function WordDetailTabs({
   word: VocabularyWord | null;
   onFlashcard: () => void;
 }) {
-  const [activeTab, setActiveTab] = useState("Chi tiết");
+  const { locale } = useTranslation();
+  const c = vocab[locale];
+  const tabOrder = ["detail", "example", "synonym", "antonym", "related"] as const;
+  const tabLabels: Record<(typeof tabOrder)[number], string> = {
+    detail: c.tabs.detail,
+    example: c.tabs.example,
+    synonym: c.tabs.synonym,
+    antonym: c.tabs.antonym,
+    related: c.tabs.relatedPhrase,
+  };
+  const [activeTab, setActiveTab] = useState<(typeof tabOrder)[number]>("detail");
   const synonyms = word?.synonyms?.length
     ? word.synonyms
     : relations?.synonyms || [];
@@ -1144,27 +1144,27 @@ function WordDetailTabs({
   return (
     <section className="overflow-hidden rounded-2xl border border-[#ece8fb] bg-white shadow-sm">
       <div className="flex overflow-x-auto border-b border-[#ece8fb] text-sm font-black text-[#5e6391]">
-        {["Chi tiết", "Ví dụ", "Từ đồng nghĩa", "Từ trái nghĩa", "Cụm từ liên quan"].map(
-          (label) => (
+        {tabOrder.map(
+          (tabId) => (
             <button
-              key={label}
-              onClick={() => setActiveTab(label)}
-              className={`min-w-fit px-7 py-4 ${activeTab === label ? "bg-[#f4f0ff] text-[#6d35ff]" : ""}`}
+              key={tabId}
+              onClick={() => setActiveTab(tabId)}
+              className={`min-w-fit px-7 py-4 ${activeTab === tabId ? "bg-[#f4f0ff] text-[#6d35ff]" : ""}`}
             >
-              {label}
+              {tabLabels[tabId]}
             </button>
           ),
         )}
       </div>
 
-      {activeTab === "Ví dụ" ? (
+      {activeTab === "example" ? (
         <ExampleTabContent
           level={level}
           relations={relations}
           word={word}
           onFlashcard={onFlashcard}
         />
-      ) : activeTab === "Từ đồng nghĩa" ? (
+      ) : activeTab === "synonym" ? (
         <SynonymTabContent
           level={level}
           relations={relations}
@@ -1172,14 +1172,14 @@ function WordDetailTabs({
           word={word}
           onFlashcard={onFlashcard}
         />
-      ) : activeTab === "Từ trái nghĩa" ? (
+      ) : activeTab === "antonym" ? (
         <AntonymTabContent
           antonyms={antonyms}
           relations={relations}
           word={word}
           onFlashcard={onFlashcard}
         />
-      ) : activeTab === "Cụm từ liên quan" ? (
+      ) : activeTab === "related" ? (
         <RelatedPhraseTabContent
           relations={relations}
           word={word}
@@ -1188,19 +1188,19 @@ function WordDetailTabs({
       ) : (
       <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="space-y-5 text-sm font-bold text-[#59627f]">
-          <InfoRow label="Loại từ" value={word?.partOfSpeech || "Danh từ"} />
+          <InfoRow label={c.detailTab.wordType} value={word?.partOfSpeech || c.studyCard.defaultPartOfSpeech} />
           <InfoRow
-            label="Cấp độ"
+            label={c.detailTab.level}
             value={level}
-            badge={word?.difficulty ? `Độ khó ${word.difficulty}` : "Trung cấp"}
+            badge={word?.difficulty ? `Độ khó ${word.difficulty}` : c.detailTab.mediumBadge}
           />
           <InfoRow
-            label="Chủ đề"
-            value={word?.topic?.name || "Theo chủ đề hôm nay"}
+            label={c.detailTab.topic}
+            value={word?.topic?.name || c.detailTab.defaultTopic}
           />
 
           <div>
-            <p className="font-black text-[#101733]">Word family</p>
+            <p className="font-black text-[#101733]">{c.detailTab.wordFamily}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {(synonyms.length ? synonyms : [word?.word || "environment"])
                 .slice(0, 4)
@@ -1216,7 +1216,7 @@ function WordDetailTabs({
           </div>
 
           <div>
-            <p className="font-black text-[#101733]">Collocations</p>
+            <p className="font-black text-[#101733]">{c.detailTab.collocations}</p>
             <ul className="mt-3 list-disc space-y-2 pl-5">
               {(sameTopic.length
                 ? sameTopic.slice(0, 3).map((item: VocabularyWord) => item.word)
@@ -1233,7 +1233,7 @@ function WordDetailTabs({
 
           {antonyms.length > 0 && (
             <div>
-              <p className="font-black text-[#101733]">Từ trái nghĩa</p>
+              <p className="font-black text-[#101733]">{c.detailTab.antonyms}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {antonyms.slice(0, 4).map((item: string) => (
                   <span
@@ -1249,22 +1249,21 @@ function WordDetailTabs({
         </div>
 
         <div className="rounded-2xl bg-[#f7f5ff] p-6">
-          <p className="font-black text-[#101733]">Ghi nhớ</p>
+          <p className="font-black text-[#101733]">{c.detailTab.memoTitle}</p>
           <p className="mt-4 text-sm font-bold leading-6 text-[#27245f]">
-            Liên tưởng: “{word?.word || "word"}” với ngữ cảnh thật trong ví dụ.
-            Dùng flashcard để ôn lại nhanh và lưu lịch ôn tự động.
+            {c.detailTab.memoText.replace("{word}", word?.word || "word")}
           </p>
           <div className="mt-8 flex items-end gap-5">
             <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-3xl bg-white text-[#f97316] shadow-sm">
               <AppIcon name="paw" bare size={72} />
             </div>
             <div className="rounded-2xl bg-white p-4 text-sm font-bold leading-6 text-[#101733] shadow-sm">
-              Ghi nhớ từ mới hiệu quả hơn với flashcard nhé!
+              {c.detailTab.flashcardTip}
               <button
                 onClick={onFlashcard}
                 className="mt-4 block rounded-xl bg-[#6d35ff] px-5 py-3 text-sm font-black text-white"
               >
-                Học với flashcard
+                {c.detailTab.learnWithFlashcard}
               </button>
             </div>
           </div>
@@ -1286,6 +1285,8 @@ function ExampleTabContent({
   word: VocabularyWord | null;
   onFlashcard: () => void;
 }) {
+  const { locale } = useTranslation();
+  const c = vocab[locale];
   const image = getVocabularyImageUrl(word);
   const sameTopic = relations?.sameTopic || [];
   const examples = [
@@ -1308,25 +1309,25 @@ function ExampleTabContent({
   return (
     <div className="grid gap-6 p-5 lg:grid-cols-[210px_minmax(0,1fr)]">
       <aside className="space-y-5 text-sm font-bold text-[#4f5790]">
-        <ExampleMeta label="Loại từ" value={word?.partOfSpeech || "adjective (tính từ)"} />
+        <ExampleMeta label={c.detailTab.wordType} value={word?.partOfSpeech || "adjective (tính từ)"} />
         <ExampleMeta
           action={word?.audio ? () => new Audio(word.audio || "").play() : undefined}
-          label="Phiên âm"
+          label={c.exampleTab.phonetic}
           value={word?.phonetic || "/səˈsteɪ.nə.bəl/"}
         />
         <ExampleMeta
           badge={level}
-          label="Cấp độ"
+          label={c.detailTab.level}
           value={word?.difficulty ? `Độ khó ${word.difficulty}` : "Trung cấp cao"}
         />
         <ExampleMeta
           icon="leaf"
-          label="Chủ đề"
+          label={c.detailTab.topic}
           value={word?.topic?.name || "Environment"}
         />
 
         <div>
-          <p className="font-black text-[#101733]">Word family</p>
+          <p className="font-black text-[#101733]">{c.detailTab.wordFamily}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {(family.length ? family : ["sustain", "sustainability"])
               .slice(0, 3)
@@ -1342,7 +1343,7 @@ function ExampleTabContent({
         </div>
 
         <div>
-          <p className="font-black text-[#101733]">Collocations</p>
+          <p className="font-black text-[#101733]">{c.detailTab.collocations}</p>
           <ul className="mt-3 list-disc space-y-2 pl-4 text-xs leading-5">
             {(sameTopic.length
               ? sameTopic.slice(0, 4).map((item: VocabularyWord) => item.word)
@@ -1376,7 +1377,7 @@ function ExampleTabContent({
             <p className="mt-3 text-sm font-bold text-[#4f5790]">
               {word?.phonetic || "/səˈsteɪ.nə.bəl/"}
             </p>
-            <p className="mt-5 text-sm font-black text-[#101733]">Nghĩa</p>
+            <p className="mt-5 text-sm font-black text-[#101733]">{c.exampleTab.meaning}</p>
             <p className="mt-2 max-w-xl text-sm font-bold leading-6 text-[#4f5790]">
               {word?.meaningVi ||
                 word?.meaningEn ||
@@ -1403,7 +1404,7 @@ function ExampleTabContent({
         </div>
 
         <div className="p-6">
-          <h4 className="text-xl font-black">Ví dụ</h4>
+          <h4 className="text-xl font-black">{c.exampleTab.examplesTitle}</h4>
           <div className="mt-4 space-y-3">
             {examples.map((example, index) => (
               <div
@@ -1432,14 +1433,14 @@ function ExampleTabContent({
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <button className="inline-flex items-center gap-2 rounded-xl border border-[#e8e9f5] px-6 py-3 text-sm font-black text-[#6d35ff]">
               <AppIcon name="notebook" bare size={16} />
-              Lưu từ
+              {c.exampleTab.saveWord}
             </button>
             <button
               onClick={onFlashcard}
               className="inline-flex items-center gap-2 rounded-xl bg-[#6d35ff] px-8 py-3 text-sm font-black text-white"
             >
               <AppIcon name="notebook" bare size={16} />
-              Học với flashcard
+              {c.detailTab.learnWithFlashcard}
             </button>
           </div>
         </div>
@@ -1461,6 +1462,8 @@ function SynonymTabContent({
   word: VocabularyWord | null;
   onFlashcard: () => void;
 }) {
+  const { locale } = useTranslation();
+  const c = vocab[locale];
   const image = getVocabularyImageUrl(word);
   const sameTopic = relations?.sameTopic || [];
   const synonymItems: Array<{
@@ -1540,14 +1543,14 @@ function SynonymTabContent({
       <div className="p-6">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h4 className="text-xl font-black">Từ đồng nghĩa</h4>
+            <h4 className="text-xl font-black">{c.synonymTab.title}</h4>
             <p className="mt-1 text-sm font-bold text-[#69708b]">
-              Những từ có nghĩa tương tự với “{word?.word || "sustainable"}”.
+              {c.synonymTab.subtitle.replace("{word}", word?.word || "sustainable")}
             </p>
           </div>
           <button className="inline-flex items-center gap-2 rounded-xl border border-[#e8e9f5] px-4 py-2 text-sm font-black text-[#6d35ff]">
             <AppIcon name="sparkles" bare size={15} />
-            Xem tất cả
+            {c.synonymTab.viewAll}
           </button>
         </div>
 
@@ -1609,10 +1612,9 @@ function SynonymTabContent({
           <div className="flex items-center gap-3">
             <AppIcon name="sparkles" tone="purple" />
             <div>
-              <p className="font-black">Ghi nhớ nhanh</p>
+              <p className="font-black">{c.synonymTab.quickMemoTitle}</p>
               <p className="text-sm font-bold text-[#69708b]">
-                Học từ đồng nghĩa giúp bạn diễn đạt tự nhiên hơn và ghi nhớ từ
-                vựng lâu hơn.
+                {c.synonymTab.quickMemoDesc}
               </p>
             </div>
           </div>
@@ -1621,7 +1623,7 @@ function SynonymTabContent({
             className="inline-flex items-center gap-2 rounded-xl border border-[#6d35ff] px-6 py-3 text-sm font-black text-[#6d35ff]"
           >
             <AppIcon name="zap" bare size={15} />
-            Luyện tập ngay
+            {c.synonymTab.practiceNow}
           </button>
         </div>
       </div>
@@ -1640,6 +1642,8 @@ function AntonymTabContent({
   word: VocabularyWord | null;
   onFlashcard: () => void;
 }) {
+  const { locale } = useTranslation();
+  const c = vocab[locale];
   const image = getVocabularyImageUrl(word);
   const sameTopic = relations?.sameTopic || [];
   const antonymItems: Array<{
@@ -1719,9 +1723,9 @@ function AntonymTabContent({
 
       <div className="p-6">
         <div className="mb-5">
-          <h4 className="text-xl font-black">Từ trái nghĩa</h4>
+          <h4 className="text-xl font-black">{c.antonymTab.title}</h4>
           <p className="mt-1 text-sm font-bold text-[#69708b]">
-            Những từ có nghĩa trái ngược với “{word?.word || "sustainable"}”.
+            {c.antonymTab.subtitle.replace("{word}", word?.word || "sustainable")}
           </p>
         </div>
 
@@ -1778,14 +1782,14 @@ function AntonymTabContent({
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
           <button className="inline-flex items-center gap-2 rounded-xl border border-[#e8e9f5] px-6 py-3 text-sm font-black text-[#6d35ff]">
             <AppIcon name="notebook" bare size={16} />
-            Lưu từ
+            {c.exampleTab.saveWord}
           </button>
           <button
             onClick={onFlashcard}
             className="inline-flex items-center gap-2 rounded-xl bg-[#6d35ff] px-8 py-3 text-sm font-black text-white"
           >
             <AppIcon name="zap" bare size={16} />
-            Luyện tập ngay
+            {c.synonymTab.practiceNow}
           </button>
         </div>
       </div>
@@ -1802,6 +1806,8 @@ function RelatedPhraseTabContent({
   word: VocabularyWord | null;
   onFlashcard: () => void;
 }) {
+  const { locale } = useTranslation();
+  const c = vocab[locale];
   const image = getVocabularyImageUrl(word);
   const baseWord = word?.word || "sustainable";
   const sameTopic = relations?.sameTopic || [];
@@ -1850,7 +1856,7 @@ function RelatedPhraseTabContent({
 
       <div className="p-6">
         <h4 className="text-xl font-black">
-          Cụm từ thường gặp với “{baseWord}”
+          {c.relatedPhraseTab.title.replace("{word}", baseWord)}
         </h4>
 
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
@@ -1888,14 +1894,14 @@ function RelatedPhraseTabContent({
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
           <button className="inline-flex items-center gap-2 rounded-xl border border-[#e8e9f5] px-6 py-3 text-sm font-black text-[#6d35ff]">
             <AppIcon name="notebook" bare size={16} />
-            Lưu từ
+            {c.exampleTab.saveWord}
           </button>
           <button
             onClick={onFlashcard}
             className="inline-flex items-center gap-2 rounded-xl bg-[#6d35ff] px-8 py-3 text-sm font-black text-white"
           >
             <AppIcon name="zap" bare size={16} />
-            Luyện tập ngay
+            {c.synonymTab.practiceNow}
           </button>
         </div>
       </div>
@@ -2134,6 +2140,8 @@ function WordPager({
   onNext: () => void;
   onPrevious: () => void;
 }) {
+  const { locale } = useTranslation();
+  const c = vocab[locale];
   const isLast = activeIndex >= total - 1;
   return (
     <section className="grid items-center gap-4 sm:grid-cols-[1fr_auto_1fr]">
@@ -2144,9 +2152,9 @@ function WordPager({
       >
         <AppIcon name="chevronLeft" bare size={20} className="text-[#6d35ff]" />
         <span>
-          <span className="block">Từ trước</span>
+          <span className="block">{c.pager.prevWord}</span>
           <span className="block text-xs text-[#7377a8]">
-            {previousItem?.word?.word || "Không có"}
+            {previousItem?.word?.word || c.pager.none}
           </span>
         </span>
       </button>
@@ -2159,7 +2167,7 @@ function WordPager({
           onClick={onComplete}
           className="rounded-xl bg-[#6d35ff] px-5 py-4 font-black text-white shadow-sm disabled:cursor-not-allowed disabled:bg-emerald-500"
         >
-          {completed ? "Đã hoàn thành" : "Hoàn thành bài học"}
+          {completed ? c.pager.completed : c.pager.completeLesson}
         </button>
       ) : (
         <button
@@ -2168,9 +2176,9 @@ function WordPager({
           className="flex items-center justify-end gap-3 rounded-xl border border-[#ece8fb] bg-white px-5 py-4 text-right font-black text-[#101733] shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
         >
           <span>
-            <span className="block">Từ tiếp</span>
+            <span className="block">{c.pager.nextWord}</span>
             <span className="block text-xs text-[#7377a8]">
-              {nextItem?.word?.word || "Không có"}
+              {nextItem?.word?.word || c.pager.none}
             </span>
           </span>
           <AppIcon name="chevronRight" bare size={20} className="text-[#6d35ff]" />
@@ -2455,13 +2463,15 @@ function StatsPanel({
   notebookCount: number;
   percent: number;
 }) {
+  const { locale } = useTranslation();
+  const c = vocab[locale];
   const mastered = stats?.masteredWords || 0;
   const learned = stats?.learnedWords || fallbackLearned;
   const reviewDue = stats?.reviewDue || 0;
   const displayPercent = stats?.memoryRate || percent || 0;
 
   return (
-    <Panel title="Tiến độ của bạn">
+    <Panel title={c.statsPanel.title}>
       <div className="grid items-center gap-6 sm:grid-cols-[150px_1fr]">
         <div
           className="grid h-36 w-36 place-items-center rounded-full"
@@ -2475,16 +2485,16 @@ function StatsPanel({
                 {displayPercent}%
               </span>
               <span className="block text-xs font-bold text-[#7377a8]">
-                Đã thành thạo
+                {c.statsPanel.mastered}
               </span>
             </span>
           </div>
         </div>
         <div className="space-y-4 text-sm font-bold text-[#59627f]">
-          <ProgressLegend color="#7c3aed" label="Đã học" value={`${learned} từ`} />
-          <ProgressLegend color="#22c55e" label="Thành thạo" value={`${mastered} từ`} />
-          <ProgressLegend color="#ef4444" label="Cần ôn" value={`${reviewDue} từ`} />
-          <ProgressLegend color="#6d35ff" label="Sổ tay" value={`${stats?.notebookWords || notebookCount} từ`} />
+          <ProgressLegend color="#7c3aed" label={c.statsPanel.learned} value={`${learned} ${c.statsPanel.unit}`} />
+          <ProgressLegend color="#22c55e" label={c.statsPanel.toMastered} value={`${mastered} ${c.statsPanel.unit}`} />
+          <ProgressLegend color="#ef4444" label={c.statsPanel.toReview} value={`${reviewDue} ${c.statsPanel.unit}`} />
+          <ProgressLegend color="#6d35ff" label={c.statsPanel.notebook} value={`${stats?.notebookWords || notebookCount} ${c.statsPanel.unit}`} />
         </div>
       </div>
     </Panel>
@@ -2523,6 +2533,9 @@ function NotebookPanel({
   items: NotebookItem[];
   onSelectWord: (wordId: string) => void;
 }) {
+  const { locale } = useTranslation();
+  const c = vocab[locale];
+  const dateLocales: Record<Locale, string> = { vi: "vi-VN", en: "en-US", zh: "zh-CN", de: "de-DE" };
   const list = items.length
     ? items.slice(0, 3)
     : currentWord
@@ -2530,7 +2543,7 @@ function NotebookPanel({
       : [];
 
   return (
-    <Panel title="Sổ tay của tôi" action="Xem tất cả">
+    <Panel title={c.notebookPanel.title} action={c.notebookPanel.viewAll}>
       <div className="space-y-3">
         {list.length ? (
           list.map((item) => (
@@ -2548,8 +2561,11 @@ function NotebookPanel({
                 </span>
                 <span className="block truncate text-xs font-bold text-[#7377a8]">
                   {item.createdAt
-                    ? `Đã thêm vào ${new Date(item.createdAt).toLocaleDateString("vi-VN")}`
-                    : item.word.meaningVi || item.word.meaningEn || "Từ hôm nay"}
+                    ? c.notebookPanel.addedOn.replace(
+                        "{date}",
+                        new Date(item.createdAt).toLocaleDateString(dateLocales[locale]),
+                      )
+                    : item.word.meaningVi || item.word.meaningEn || c.notebookPanel.defaultLabel}
                 </span>
               </span>
               <AppIcon name="notebook" bare size={18} className="text-[#6d35ff]" />
@@ -2557,7 +2573,7 @@ function NotebookPanel({
           ))
         ) : (
           <p className="text-sm font-bold text-[#7377a8]">
-            Chưa có từ nào trong sổ tay.
+            {c.notebookPanel.empty}
           </p>
         )}
       </div>
@@ -2572,11 +2588,13 @@ function ReviewSuggestionPanel({
   suggestions: any;
   onSelectWord: (wordId: string) => void;
 }) {
+  const { locale } = useTranslation();
+  const c = vocab[locale];
   const words = suggestions?.weakWords?.length
     ? suggestions.weakWords.slice(0, 3)
     : fallbackWeakWords.map((word) => ({ word, wordId: "" }));
   return (
-    <Panel title="Ôn tập gợi ý" action="Xem tất cả">
+    <Panel title={c.reviewSuggestion.title} action={c.reviewSuggestion.viewAll}>
       <div className="space-y-3">
         {words.map((item: any) => (
           <button
@@ -2593,7 +2611,7 @@ function ReviewSuggestionPanel({
                 {item.word}
               </span>
               <span className="block text-xs font-bold text-[#7377a8]">
-                {item.meaningVi || item.meaningEn || item.status || "B1 · Danh từ"}
+                {item.meaningVi || item.meaningEn || item.status || c.reviewSuggestion.defaultMeta}
               </span>
             </span>
           </button>
@@ -2612,17 +2630,19 @@ function ChallengeCard({
   onOpen: () => void;
   word?: string;
 }) {
+  const { locale } = useTranslation();
+  const c = vocab[locale];
   const total = challenge?.total || 1;
   const done = 0;
   return (
-    <Panel title="Thử thách hôm nay">
+    <Panel title={c.challengeCard.title}>
       <div className="flex items-start gap-3">
         <AppIcon name="target" tone="purple" />
         <p className="text-sm font-bold leading-6 text-[#59627f]">
           {challenge?.locked
             ? challenge.reason
             : challenge?.prompt ||
-              `Sử dụng từ "${challenge?.word || word || "vocabulary"}" trong 1 câu`}
+              c.challengeCard.defaultPrompt.replace("{word}", challenge?.word || word || "vocabulary")}
         </p>
       </div>
       <div className="mt-5 flex items-center gap-3 text-sm font-black text-[#7377a8]">
@@ -2642,7 +2662,7 @@ function ChallengeCard({
         disabled={Boolean(challenge?.locked)}
         className="mt-6 w-full rounded-xl border border-[#6d35ff] bg-white px-5 py-3 font-black text-[#6d35ff] disabled:cursor-not-allowed disabled:opacity-50"
       >
-        Bắt đầu thử thách
+        {c.challengeCard.start}
       </button>
     </Panel>
   );
@@ -2671,25 +2691,27 @@ function DetailModal({
   relations: any;
   onClose: () => void;
 }) {
+  const { locale } = useTranslation();
+  const c = vocab[locale];
   return (
     <Modal onClose={onClose}>
       <h2 className="text-3xl font-black">{detail.word}</h2>
       <p className="mt-2 text-lg font-bold text-[#69708b]">
-        {detail.phonetic} · {detail.partOfSpeech || "Từ vựng"}
+        {detail.phonetic} · {detail.partOfSpeech || c.detailModal.defaultType}
       </p>
       <div className="mt-6 rounded-2xl bg-[#f8f6ff] p-5">
-        <h3 className="font-black">Nghĩa</h3>
+        <h3 className="font-black">{c.detailModal.meaning}</h3>
         <p className="mt-2 font-bold">{detail.meaningVi || detail.meaningEn}</p>
         <p className="mt-3 text-sm font-bold text-[#69708b]">
           {detail.example}
         </p>
       </div>
       <div className="mt-5 grid gap-4 md:grid-cols-2">
-        <InfoList title="Đồng nghĩa" items={relations?.synonyms || []} />
-        <InfoList title="Trái nghĩa" items={relations?.antonyms || []} />
+        <InfoList title={c.detailModal.synonyms} items={relations?.synonyms || []} />
+        <InfoList title={c.detailModal.antonyms} items={relations?.antonyms || []} />
       </div>
       <div className="mt-5">
-        <h3 className="font-black">Cùng chủ đề</h3>
+        <h3 className="font-black">{c.detailModal.sameTopic}</h3>
         <div className="mt-3 flex flex-wrap gap-2">
           {(relations?.sameTopic || [])
             .slice(0, 8)
@@ -2716,13 +2738,15 @@ function FlashcardModal({
   onClose: () => void;
   onReview: (rating: "AGAIN" | "HARD" | "GOOD" | "EASY") => void;
 }) {
+  const { locale } = useTranslation();
+  const c = vocab[locale];
   const total = flashcard.session?.cards?.length || 1;
   const index = (flashcard.cardIndex || 0) + 1;
   return (
     <Modal onClose={onClose}>
       <div className="text-center">
         <p className="text-sm font-black uppercase text-[#6d35ff]">
-          Flashcard {index}/{total}
+          {c.flashcardModal.counter.replace("{index}", String(index)).replace("{total}", String(total))}
         </p>
         <h2 className="mt-3 text-5xl font-black">{flashcard.front}</h2>
         <p className="mt-3 text-xl font-bold text-[#69708b]">
@@ -2737,25 +2761,25 @@ function FlashcardModal({
             onClick={() => onReview("AGAIN")}
             className="rounded-xl border border-[#fecaca] bg-white px-4 py-4 font-black text-[#ef4444]"
           >
-            Again
+            {c.flashcardModal.again}
           </button>
           <button
             onClick={() => onReview("HARD")}
             className="rounded-xl border border-[#fed7aa] bg-white px-4 py-4 font-black text-[#f97316]"
           >
-            Hard
+            {c.flashcardModal.hard}
           </button>
           <button
             onClick={() => onReview("GOOD")}
             className="rounded-xl bg-[#22c55e] px-4 py-4 font-black text-white"
           >
-            Good
+            {c.flashcardModal.good}
           </button>
           <button
             onClick={() => onReview("EASY")}
             className="rounded-xl bg-[#6d35ff] px-4 py-4 font-black text-white"
           >
-            Easy
+            {c.flashcardModal.easy}
           </button>
         </div>
       </div>
@@ -2776,24 +2800,28 @@ function ShareModal({
   onSubmit: () => void;
   onClose: () => void;
 }) {
+  const { locale } = useTranslation();
+  const c = vocab[locale];
   return (
     <Modal onClose={onClose}>
-      <h2 className="text-3xl font-black">Chia sẻ từ vựng</h2>
+      <h2 className="text-3xl font-black">{c.shareModal.title}</h2>
       <p className="mt-2 font-bold text-[#69708b]">
-        Tạo bài viết cộng đồng cho từ{" "}
+        {c.shareModal.subtitle}{" "}
         <span className="text-[#6d35ff]">{word?.word}</span>
       </p>
       <textarea
         value={content}
         onChange={(event) => setContent(event.target.value)}
-        placeholder={`Hôm nay mình học từ "${word?.word}". ${word?.meaningVi || word?.meaningEn || ""}`}
+        placeholder={c.shareModal.placeholder
+          .replace("{word}", word?.word || "")
+          .replace("{meaning}", word?.meaningVi || word?.meaningEn || "")}
         className="mt-6 min-h-40 w-full rounded-2xl border border-[#e8e9f5] p-4 font-bold outline-none focus:border-[#6d35ff]"
       />
       <button
         onClick={onSubmit}
         className="mt-5 w-full rounded-xl bg-[#6d35ff] px-5 py-4 font-black text-white"
       >
-        Đăng lên cộng đồng
+        {c.shareModal.postButton}
       </button>
     </Modal>
   );
@@ -2818,17 +2846,22 @@ function ChallengeModal({
   onSubmit: () => void;
   onClose: () => void;
 }) {
+  const { locale } = useTranslation();
+  const c = vocab[locale];
   const isSentenceMode =
     challenge?.type === "WRITE_SENTENCE" || Boolean(challenge?.prompt);
   return (
     <Modal onClose={onClose}>
       <h2 className="text-3xl font-black">
-        {challenge?.title || "Thử thách hôm nay"}
+        {challenge?.title || c.challengeModal.defaultTitle}
       </h2>
       {result && (
         <div className="mt-4 rounded-xl bg-[#ecfdf5] p-4 font-black text-[#15803d]">
           {result.feedback ||
-            `Kết quả: ${result.correct}/${result.total} câu đúng · ${result.score}%`}
+            c.challengeModal.resultFallback
+              .replace("{correct}", String(result.correct))
+              .replace("{total}", String(result.total))
+              .replace("{score}", String(result.score))}
         </div>
       )}
       {isSentenceMode ? (
@@ -2836,13 +2869,13 @@ function ChallengeModal({
           <h3 className="font-black">{challenge?.prompt}</h3>
           {challenge?.hint && (
             <p className="mt-2 text-sm font-bold text-[#69708b]">
-              Gợi ý: {challenge.hint}
+              {c.challengeModal.hint}: {challenge.hint}
             </p>
           )}
           <textarea
             value={sentence}
             onChange={(event) => setSentence(event.target.value)}
-            placeholder="Ví dụ: We should protect the environment every day."
+            placeholder={c.challengeModal.sentencePlaceholder}
             className="mt-4 min-h-36 w-full rounded-2xl border border-[#e8e9f5] p-4 font-bold outline-none focus:border-[#6d35ff]"
           />
         </div>
@@ -2854,7 +2887,7 @@ function ChallengeModal({
               className="rounded-2xl border border-[#e8e9f5] p-4"
             >
               <h3 className="font-black">
-                Câu {index + 1}: {question.prompt}
+                {c.challengeModal.questionLabel.replace("{n}", String(index + 1))}: {question.prompt}
               </h3>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {question.options.map((option) => (
@@ -2877,13 +2910,15 @@ function ChallengeModal({
         onClick={onSubmit}
         className="mt-6 w-full rounded-xl bg-[#6d35ff] px-5 py-4 font-black text-white"
       >
-        Nộp bài
+        {c.challengeModal.submit}
       </button>
     </Modal>
   );
 }
 
 function InfoList({ title, items }: { title: string; items: string[] }) {
+  const { locale } = useTranslation();
+  const c = vocab[locale];
   return (
     <div className="rounded-2xl border border-[#e8e9f5] p-4">
       <h3 className="font-black">{title}</h3>
@@ -2899,7 +2934,7 @@ function InfoList({ title, items }: { title: string; items: string[] }) {
           ))
         ) : (
           <span className="text-sm font-bold text-[#8b91aa]">
-            Chưa có dữ liệu
+            {c.infoListEmpty}
           </span>
         )}
       </div>
@@ -3025,6 +3060,8 @@ function LessonCompletedModal({
   words: DailyWordItem[];
   wordsLearned: number;
 }) {
+  const { locale } = useTranslation();
+  const c = vocab[locale];
   const [mode, setMode] = useState<"summary" | "review" | "reviewDone" | "explore">("summary");
   const [reviewIndex, setReviewIndex] = useState(0);
   const [reviewInput, setReviewInput] = useState("");
@@ -3091,10 +3128,12 @@ function LessonCompletedModal({
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-black text-violet-600">
-                  Ôn tập SRS {reviewIndex + 1}/{reviewWords.length}
+                  {c.completedModal.reviewCounter
+                    .replace("{index}", String(reviewIndex + 1))
+                    .replace("{total}", String(reviewWords.length))}
                 </p>
                 <h2 className="mt-2 text-2xl font-extrabold text-slate-950">
-                  {["Flashcard", "Chọn nghĩa", "Gõ lại từ", "Nghe và chọn", "Điền từ"][currentReviewMode]}
+                  {c.completedModal.reviewModes[currentReviewMode]}
                 </h2>
               </div>
               <button onClick={() => setMode("summary")} className="rounded-full bg-slate-100 p-2">
@@ -3117,7 +3156,7 @@ function LessonCompletedModal({
 
               {currentReviewMode === 1 && (
                 <>
-                  <p className="text-sm font-bold text-slate-500">Chọn nghĩa đúng của:</p>
+                  <p className="text-sm font-bold text-slate-500">{c.completedModal.chooseCorrectMeaning}</p>
                   <p className="mt-2 text-3xl font-black text-violet-700">{currentReviewWord.word}</p>
                   <div className="mt-5 grid gap-2">
                     {meaningOptions.map((option) => (
@@ -3141,7 +3180,7 @@ function LessonCompletedModal({
 
               {currentReviewMode === 2 && (
                 <>
-                  <p className="text-sm font-bold text-slate-500">Gõ lại từ có nghĩa là:</p>
+                  <p className="text-sm font-bold text-slate-500">{c.completedModal.typeWordMeaning}</p>
                   <p className="mt-2 text-xl font-black text-slate-900">
                     {currentReviewWord.meaningVi || currentReviewWord.meaningEn}
                   </p>
@@ -3152,7 +3191,7 @@ function LessonCompletedModal({
                       if (event.key === "Enter") submitTypedReview();
                     }}
                     className="mt-5 w-full rounded-xl border border-violet-100 px-4 py-3 font-bold outline-none focus:border-violet-500"
-                    placeholder="Nhập từ tiếng Anh..."
+                    placeholder={c.completedModal.typeWordPlaceholder}
                   />
                 </>
               )}
@@ -3163,10 +3202,10 @@ function LessonCompletedModal({
                     onClick={() => currentReviewWord.audio && new Audio(currentReviewWord.audio).play()}
                     className="rounded-xl bg-violet-600 px-5 py-3 font-black text-white"
                   >
-                    Nghe phát âm
+                    {c.completedModal.listenAndChoose}
                   </button>
                   <p className="mt-3 text-sm font-bold text-slate-500">
-                    Không có audio thì hãy chọn từ theo nghĩa: {currentReviewWord.meaningVi || currentReviewWord.meaningEn}
+                    {c.completedModal.listenNoAudioFallback} {currentReviewWord.meaningVi || currentReviewWord.meaningEn}
                   </p>
                   <div className="mt-5 grid grid-cols-2 gap-2">
                     {wordOptions.map((option) => (
@@ -3184,7 +3223,7 @@ function LessonCompletedModal({
 
               {currentReviewMode === 4 && (
                 <>
-                  <p className="text-sm font-bold text-slate-500">Điền từ còn thiếu:</p>
+                  <p className="text-sm font-bold text-slate-500">{c.completedModal.fillMissingWord}</p>
                   <p className="mt-2 text-lg font-black text-slate-900">
                     {blankReviewWord(currentReviewWord.example, currentReviewWord.word)}
                   </p>
@@ -3195,7 +3234,7 @@ function LessonCompletedModal({
                       if (event.key === "Enter") submitTypedReview();
                     }}
                     className="mt-5 w-full rounded-xl border border-violet-100 px-4 py-3 font-bold outline-none focus:border-violet-500"
-                    placeholder="Nhập từ còn thiếu..."
+                    placeholder={c.completedModal.fillMissingPlaceholder}
                   />
                 </>
               )}
@@ -3206,18 +3245,18 @@ function LessonCompletedModal({
                 onClick={submitTypedReview}
                 className="mt-5 w-full rounded-xl bg-violet-600 py-3 font-black text-white"
               >
-                Kiểm tra
+                {c.completedModal.check}
               </button>
             ) : currentReviewMode === 0 ? (
               <div className="mt-5 grid grid-cols-3 gap-2">
                 <button onClick={() => void answerReview("AGAIN")} className="rounded-xl bg-red-50 py-3 font-black text-red-600">
-                  Quên
+                  {c.completedModal.forgot}
                 </button>
                 <button onClick={() => void answerReview("HARD")} className="rounded-xl bg-amber-50 py-3 font-black text-amber-600">
-                  Khó nhớ
+                  {c.completedModal.hard}
                 </button>
                 <button onClick={() => void answerReview("GOOD")} className="rounded-xl bg-emerald-50 py-3 font-black text-emerald-600">
-                  Nhớ rồi
+                  {c.completedModal.remembered}
                 </button>
               </div>
             ) : null}
@@ -3230,16 +3269,17 @@ function LessonCompletedModal({
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/55 px-4 backdrop-blur-sm">
         <div className="w-full max-w-[480px] rounded-[28px] bg-white p-7 text-center shadow-2xl">
-          <h2 className="text-3xl font-extrabold text-violet-600">Ôn tập xong!</h2>
+          <h2 className="text-3xl font-extrabold text-violet-600">{c.completedModal.reviewDoneTitle}</h2>
           <p className="mt-3 font-bold text-slate-600">
-            Bạn nhớ đúng {reviewResult?.remembered || 0}/{reviewResult?.total || reviewWords.length} từ.
-            Lịch SRS đã được cập nhật.
+            {c.completedModal.reviewDoneDesc
+              .replace("{remembered}", String(reviewResult?.remembered || 0))
+              .replace("{total}", String(reviewResult?.total || reviewWords.length))}
           </p>
           <button
             onClick={onFinish}
             className="mt-6 w-full rounded-xl bg-violet-600 py-3 font-black text-white"
           >
-            Hoàn thành hôm nay
+            {c.completedModal.finishToday}
           </button>
         </div>
       </div>
@@ -3276,12 +3316,16 @@ function LessonCompletedModal({
         {/* Header */}
         <div className="relative px-8 pt-10 text-center">
           <h2 className="text-3xl font-extrabold leading-tight text-violet-600">
-            🎉 Bạn đã hoàn thành <br /> mục tiêu hôm nay!
+            {c.completedModal.title.split("\n").map((line, index) => (
+              <span key={index}>
+                {index > 0 && <br />}
+                {line.trim()}
+              </span>
+            ))}
           </h2>
 
           <p className="mt-3 text-sm text-slate-500">
-            Bạn vừa hoàn thành Daily Goal. Giờ hãy chọn bước tiếp theo:
-            ôn lại để nhớ lâu, học thêm vừa sức, hoặc kết thúc hôm nay.
+            {c.completedModal.subtitle}
           </p>
 
           <img
@@ -3296,14 +3340,14 @@ function LessonCompletedModal({
           {/* Stats */}
           <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
             <p className="mb-4 text-center text-xs font-bold text-slate-600">
-              Thành tích của bạn hôm nay
+              {c.completedModal.statsTitle}
             </p>
 
             <div className="grid grid-cols-3 gap-3">
               <StatItem
                 icon={<BookOpen size={22} />}
                 value={String(wordsLearned)}
-                label="Từ mới"
+                label={c.completedModal.newWords}
                 color="text-violet-600"
                 bg="bg-violet-100"
               />
@@ -3311,15 +3355,15 @@ function LessonCompletedModal({
               <StatItem
                 icon={<Star size={22} />}
                 value={`${accuracy}%`}
-                label="Độ chính xác"
+                label={c.completedModal.accuracy}
                 color="text-amber-500"
                 bg="bg-amber-100"
               />
 
               <StatItem
                 icon={<Target size={22} />}
-                value={`${minutes} phút`}
-                label="Thời gian"
+                value={c.completedModal.minutes.replace("{n}", String(minutes))}
+                label={c.completedModal.time}
                 color="text-emerald-500"
                 bg="bg-emerald-100"
               />
@@ -3328,11 +3372,10 @@ function LessonCompletedModal({
 
           <div className="mt-4 rounded-2xl border border-amber-100 bg-amber-50 p-4">
             <p className="text-sm font-black text-amber-800">
-              Khuyến nghị học bền vững
+              {c.completedModal.tipTitle}
             </p>
             <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
-              Học quá nhiều từ mới trong một ngày có thể làm giảm khả năng ghi
-              nhớ. PoppyLingo khuyến nghị 10-20 từ/ngày và ưu tiên ôn tập SRS.
+              {c.completedModal.tipDesc}
             </p>
           </div>
 
@@ -3342,13 +3385,13 @@ function LessonCompletedModal({
             </div>
 
             <div>
-              <p className="font-bold text-violet-700">Ngày mai học thông minh hơn</p>
+              <p className="font-bold text-violet-700">{c.completedModal.tomorrowTitle}</p>
               <p className="text-sm text-slate-600">
-                AI sẽ ưu tiên ôn lại các từ đến hạn trước khi mở từ mới.
+                {c.completedModal.tomorrowDesc}
               </p>
 
               <div className="mt-2 inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-bold text-blue-600 shadow-sm">
-                SRS: 1 ngày → 3 ngày → 7 ngày → 14 ngày
+                {c.completedModal.srsLine}
               </div>
             </div>
           </div>
@@ -3360,7 +3403,7 @@ function LessonCompletedModal({
               className="flex items-center justify-center gap-2 rounded-xl bg-violet-600 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-200 hover:bg-violet-700"
             >
               <RotateCcw size={16} />
-              Ôn tập ngay
+              {c.completedModal.reviewNow}
             </button>
 
             <div className="grid grid-cols-3 gap-2">
@@ -3370,7 +3413,7 @@ function LessonCompletedModal({
                   onClick={() => onLearnExtra(amount)}
                   className="rounded-xl border border-violet-100 bg-white py-3 text-sm font-bold text-violet-700 hover:bg-violet-50"
                 >
-                  Học thêm {amount}
+                  {c.completedModal.learnMore.replace("{amount}", String(amount))}
                 </button>
               ))}
             </div>
@@ -3379,7 +3422,7 @@ function LessonCompletedModal({
               onClick={onFinish}
               className="rounded-xl border border-slate-200 bg-white py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50"
             >
-              Hoàn thành hôm nay
+              {c.completedModal.finishToday}
             </button>
 
             <div className="grid grid-cols-2 gap-2">
@@ -3387,20 +3430,19 @@ function LessonCompletedModal({
                 href="/speaking"
                 className="rounded-xl bg-emerald-50 py-3 text-center text-sm font-bold text-emerald-700 hover:bg-emerald-100"
               >
-                Đi luyện Speaking
+                {c.completedModal.goSpeaking}
               </Link>
               <Link
                 href="/reading"
                 className="rounded-xl bg-sky-50 py-3 text-center text-sm font-bold text-sky-700 hover:bg-sky-100"
               >
-                Đi luyện Reading
+                {c.completedModal.goReading}
               </Link>
             </div>
           </div>
 
           <p className="mt-5 text-center text-xs font-medium text-slate-400">
-            Trong thời gian chờ từ mới, bạn có thể luyện Reading, Listening,
-            Speaking hoặc Grammar.
+            {c.completedModal.footerNote}
           </p>
         </div>
       </div>

@@ -74,7 +74,7 @@ export function CommunityClubMembers({
             <img
               src={
                 member.user.avatar ||
-                '/avatar-placeholder.png'
+                '/cat-home.jpg'
               }
               alt={member.user.fullname}
               className="h-11 w-11 rounded-full object-cover"

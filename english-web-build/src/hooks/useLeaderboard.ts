@@ -5,8 +5,15 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { LeaderboardResponse, LeaderboardScope } from '../types/leaderboard';
-import { getClubLeaderboard, getFriendsLeaderboard, getGlobalLeaderboard } from '../lib/leaderboard-api';
+import {
+  getClubLeaderboard,
+  getFriendsLeaderboard,
+  getGlobalLeaderboard,
+} from '@/src/lib/leaderboard-api';
+import type {
+  LeaderboardResponse,
+  LeaderboardScope,
+} from '@/src/types/leaderboard';
 
 export function useLeaderboard(input: {
   scope: LeaderboardScope;

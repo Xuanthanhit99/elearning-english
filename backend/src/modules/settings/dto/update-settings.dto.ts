@@ -4,16 +4,20 @@ import {
   CorrectionMode,
   EnglishAccent,
   EnglishLevel,
+  Language,
   LearningGoal,
+  LearningSkill,
   MessagePermission,
   ThemeMode,
   TranslationMode,
 } from '@prisma/client';
 import {
   ArrayMaxSize,
+  ArrayUnique,
   IsArray,
   IsBoolean,
   IsEnum,
+  IsIn,
   IsInt,
   IsNumber,
   IsOptional,
@@ -22,63 +26,98 @@ import {
   Max,
   Min,
 } from 'class-validator';
+import { IsIanaTimezone } from '../validators/is-iana-timezone.validator';
+
+const WEEKDAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'] as const;
 
 export class UpdateSettingsDto {
-  @IsOptional() @IsEnum(LearningGoal)
+  @IsOptional()
+  @IsEnum(LearningGoal)
   learningGoal?: LearningGoal;
 
-  @IsOptional() @IsInt() @Min(5) @Max(180)
+  @IsOptional()
+  @IsInt()
+  @Min(5)
+  @Max(180)
   dailyStudyMinutes?: number;
 
-  @IsOptional() @IsArray() @ArrayMaxSize(8) @IsString({ each: true })
-  preferredSkills?: string[];
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(6)
+  @ArrayUnique()
+  @IsEnum(LearningSkill, { each: true })
+  preferredSkills?: LearningSkill[];
 
-  @IsOptional() @IsEnum(EnglishLevel)
+  @IsOptional()
+  @IsEnum(EnglishLevel)
   currentLevel?: EnglishLevel;
 
-  @IsOptional() @IsBoolean()
+  @IsOptional()
+  @IsBoolean()
   autoDetectLevel?: boolean;
 
-  @IsOptional() @IsEnum(ChallengeMode)
+  @IsOptional()
+  @IsEnum(ChallengeMode)
   challengeMode?: ChallengeMode;
 
-  @IsOptional() @IsString()
+  @IsOptional()
+  @IsString()
   aiTeacher?: string;
 
-  @IsOptional() @IsEnum(AiPersonality)
+  @IsOptional()
+  @IsEnum(AiPersonality)
   aiPersonality?: AiPersonality;
 
-  @IsOptional() @IsNumber() @Min(0.5) @Max(2)
+  @IsOptional()
+  @IsNumber()
+  @Min(0.5)
+  @Max(2)
   conversationSpeed?: number;
 
-  @IsOptional() @IsEnum(CorrectionMode)
+  @IsOptional()
+  @IsEnum(CorrectionMode)
   correctionMode?: CorrectionMode;
 
-  @IsOptional() @IsEnum(TranslationMode)
+  @IsOptional()
+  @IsEnum(TranslationMode)
   translationMode?: TranslationMode;
 
-  @IsOptional() @IsString()
+  @IsOptional()
+  @IsString()
   speechProvider?: string;
 
-  @IsOptional() @IsInt() @Min(0) @Max(100)
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(100)
   micSensitivity?: number;
 
-  @IsOptional() @IsInt() @Min(1) @Max(30)
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(30)
   autoStopSeconds?: number | null;
 
-  @IsOptional() @IsNumber() @Min(0.5) @Max(2)
+  @IsOptional()
+  @IsNumber()
+  @Min(0.5)
+  @Max(2)
   playbackSpeed?: number;
 
-  @IsOptional() @IsEnum(EnglishAccent)
+  @IsOptional()
+  @IsEnum(EnglishAccent)
   accent?: EnglishAccent;
 
-  @IsOptional() @IsBoolean()
+  @IsOptional()
+  @IsBoolean()
   captionsEnabled?: boolean;
 
-  @IsOptional() @IsBoolean()
+  @IsOptional()
+  @IsBoolean()
   dailyReminderEnabled?: boolean;
 
-  @IsOptional() @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/)
+  @IsOptional()
+  @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/)
   dailyReminderTime?: string;
 
   @IsOptional() @IsBoolean() missionReminder?: boolean;
@@ -97,22 +136,34 @@ export class UpdateSettingsDto {
   @IsOptional() @IsBoolean() showOnlineStatus?: boolean;
   @IsOptional() @IsBoolean() showLastSeen?: boolean;
 
-  @IsOptional() @IsString()
+  @IsOptional()
+  @IsString()
   communityNickname?: string | null;
 
-  @IsOptional() @IsEnum(MessagePermission)
+  @IsOptional()
+  @IsEnum(MessagePermission)
   messagePermission?: MessagePermission;
 
-  @IsOptional() @IsBoolean()
+  @IsOptional()
+  @IsBoolean()
   autoJoinVoiceRoom?: boolean;
 
-  @IsOptional() @IsEnum(ThemeMode)
+  @IsOptional()
+  @IsEnum(ThemeMode)
   theme?: ThemeMode;
 
-  @IsOptional() @IsString()
+  @IsOptional()
+  @IsEnum(Language)
+  language?: Language;
+
+  @IsOptional()
+  @IsString()
   primaryColor?: string;
 
-  @IsOptional() @IsNumber() @Min(0.8) @Max(1.4)
+  @IsOptional()
+  @IsNumber()
+  @Min(0.8)
+  @Max(1.4)
   fontScale?: number;
 
   @IsOptional() @IsBoolean() compactMode?: boolean;
@@ -128,14 +179,26 @@ export class UpdateSettingsDto {
   @IsOptional() @IsBoolean() adaptiveDashboard?: boolean;
   @IsOptional() @IsBoolean() autoSchedule?: boolean;
 
-  @IsOptional() @IsInt() @Min(1) @Max(7)
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(7)
   weeklyTargetDays?: number;
 
-  @IsOptional() @IsArray() @ArrayMaxSize(7) @IsString({ each: true })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(7)
+  @ArrayUnique()
+  @IsIn(WEEKDAYS, { each: true })
   restDays?: string[];
 
-  @IsOptional() @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/)
+  @IsOptional()
+  @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/)
   preferredStudyTime?: string;
+
+  @IsOptional()
+  @IsIanaTimezone()
+  timezone?: string;
 
   @IsOptional() @IsBoolean() dataPersonalization?: boolean;
   @IsOptional() @IsBoolean() analyticsConsent?: boolean;

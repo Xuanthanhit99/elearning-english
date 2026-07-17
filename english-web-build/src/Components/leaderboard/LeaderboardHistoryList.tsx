@@ -2,8 +2,8 @@ import {
   formatXp,
   leagueIcons,
   leagueLabels,
-} from '@/lib/leaderboard';
-import type { LeaderboardHistoryItem } from '@/types/leaderboard';
+} from '@/src/lib/leaderboard';
+import type { LeaderboardHistoryItem } from '@/src/types/leaderboard';
 
 export function LeaderboardHistoryList({
   items,

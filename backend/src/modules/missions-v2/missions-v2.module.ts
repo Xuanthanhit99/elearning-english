@@ -9,9 +9,10 @@ import { MissionV2QueryService } from './services/mission-v2-query.service';
 import { MissionV2RewardService } from './services/mission-v2-reward.service';
 import { MissionV2TemplateService } from './services/mission-v2-template.service';
 import { LearningXpModule } from '../learning-xp/learning-xp.module';
+import { SettingsModule } from '../settings/settings.module';
 
 @Module({
-  imports: [PrismaModule, NotificationsModule, LearningXpModule],
+  imports: [PrismaModule, NotificationsModule, LearningXpModule, SettingsModule],
   controllers: [MissionsV2Controller],
   providers: [
     MissionV2PeriodService,
