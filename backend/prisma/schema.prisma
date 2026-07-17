@@ -291,6 +291,8 @@ model User {
   vocabularyNotebookItems   UserVocabularyNotebook[]
   languageCertificates      UserLanguageCertificate[]
   aiLessonBuilderProjects   AILessonBuilderProject[]
+  chatSessions              ChatSession[]
+  userPet                   UserPet?
 }
 
 model Course {
@@ -3554,4 +3556,45 @@ model LearningDnaSnapshot {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, generatedAt])
+}
+
+model ChatSession {
+  id        String        @id @default(uuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
+  title     String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  messages  ChatMessage[]
+}
+
+model ChatMessage {
+  id        String      @id @default(uuid())
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      ChatRole
+  content   String      @db.Text
+  createdAt DateTime    @default(now())
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+}
+
+enum QuickAction {
+  CHEER_UP
+  BANTER
+  QUICK_TIP
+}
+
+model UserPet {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  name      String   @default("Miu")
+  level     Int      @default(1)
+  streak    Int      @default(0)
+  hp        Int      @default(100)
+  updatedAt DateTime @updatedAt
 }

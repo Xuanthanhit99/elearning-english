@@ -67,6 +67,8 @@ import { LeaderboardModule } from './modules/leaderboard/leaderboard.module';
 import { LearningXpModule } from './modules/learning-xp/learning-xp.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { SettingsModule } from './modules/settings/settings.module';
+import { PlacementSessionModule } from './modules/placement/placement-session/placement-session.module';
+import { ChatSessionModule } from './modules/chat-session/chat-session.module';
 
 @Module({
   imports: [
@@ -150,6 +152,8 @@ import { SettingsModule } from './modules/settings/settings.module';
     CommunityClubPermissionModule,
     LeaderboardModule,
     SettingsModule,
+    PlacementSessionModule,
+    ChatSessionModule
   ],
   providers: [
     GeminiService,

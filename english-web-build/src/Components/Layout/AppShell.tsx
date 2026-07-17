@@ -84,6 +84,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         daysLeft={petDaysLeft}
         onClose={() => setShowPetPrompt(false)}
       />
+<FloatingPetCompanion />
 
       <main
         className={[
@@ -93,8 +94,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
       >
         <ResponsiveContainer>{children}</ResponsiveContainer>
       </main>
-
-      <FloatingPetCompanion />
 
       <style jsx global>{`
         .app-shell-content > main,

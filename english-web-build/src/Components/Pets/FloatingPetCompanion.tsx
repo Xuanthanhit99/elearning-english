@@ -1,9 +1,12 @@
-﻿"use client";
+﻿// components/Pets/FloatingPetCompanion.tsx
+"use client";
 
 import { api } from "@/src/lib/axios";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import SpiritPetAvatar from "./SpiritPetAvatar";
+import { sendChatMessage } from "@/src/lib/chat.api";
+import { useRouter } from "next/navigation";
 
 type Pet = {
   petType: string;
@@ -24,7 +27,10 @@ type ChatMessage = {
   id: number;
   from: "user" | "pet";
   text: string;
+  action?: { path: string; label: string } | null;
 };
+
+type QuickActionKey = "CHEER_UP" | "BANTER" | "QUICK_TIP";
 
 const PETS: Record<string, { color: string; label: string }> = {
   cat: { color: "#ff8a00", label: "mèo" },
@@ -42,39 +48,17 @@ const ENCOURAGEMENTS = [
   "Nếu thấy mệt, mình đề xuất 5 phút nhẹ nhàng: một từ mới, một câu nói, một nụ cười.",
 ];
 
-const PLAYFUL_LINES = [
-  "Mình vừa lăn một vòng cổ vũ bạn đó. Không ai thấy đâu, nhưng rất chuyên nghiệp.",
-  "Piu piu! Mình bắn tia tập trung vào não học tiếng Anh của bạn rồi nè.",
-  "Nếu bạn học thêm 5 phút, mình sẽ tự phong mình là trợ lý siêu cấp.",
-  "Mình đang giữ coin và food rất cẩn thận. Cực kỳ nghiêm túc. Gần như vậy.",
-];
-
-function makeReply(input: string, petName: string) {
-  const text = input.toLowerCase();
-
-  if (text.includes("mệt") || text.includes("buồn") || text.includes("khó")) {
-    return `${petName} nghe thấy rồi. Mình không ép bạn đâu, mình chỉ rủ bạn làm một bước nhỏ: 3 phút thôi, rồi nghỉ cũng được.`;
-  }
-
-  if (text.includes("học") || text.includes("bài") || text.includes("english")) {
-    return `Tuyệt! ${petName} đề xuất: chọn một mục dễ nhất trước. Hoàn thành xong mình ăn mừng bằng một cú nhún linh thú.`;
-  }
-
-  if (text.includes("thưởng") || text.includes("coin") || text.includes("xp")) {
-    return `Có chứ! Hoàn thành bài học là có XP, coin và food. Mình đang đợi phần thưởng với vẻ mặt rất ngoan.`;
-  }
-
-  return `${petName} ở đây nè. Mình chưa phải AI siêu thông minh đâu, nhưng mình giỏi động viên và làm bạn cười khi học.`;
-}
-
 export default function FloatingPetCompanion() {
   const [pet, setPet] = useState<Pet | null>(null);
   const [bubbleOpen, setBubbleOpen] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [messageIndex, setMessageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const router = useRouter();
 
   const fetchPet = async () => {
     try {
@@ -113,9 +97,10 @@ export default function FloatingPetCompanion() {
       {
         id: Date.now(),
         from: "pet",
-        text: pet.mustChoosePet || !pet.isChosen
-          ? "Mình vẫn chưa thức tỉnh hoàn toàn. Chọn một linh thú để mình đồng hành với bạn nhé!"
-          : `Xin chào, mình là ${name}. Hôm nay mình sẽ đi theo cổ vũ bạn học tiếng Anh.`,
+        text:
+          pet.mustChoosePet || !pet.isChosen
+            ? "Mình vẫn chưa thức tỉnh hoàn toàn. Chọn một linh thú để mình đồng hành với bạn nhé!"
+            : `Xin chào, mình là ${name}. Hôm nay mình sẽ đi theo cổ vũ bạn học tiếng Anh.`,
       },
     ]);
   }, [pet, chatMessages.length]);
@@ -134,23 +119,41 @@ export default function FloatingPetCompanion() {
     ? `Bạn còn ${pet.daysLeftToChoose ?? 7} ngày để chọn. Quá hạn hệ thống sẽ chọn ngẫu nhiên.`
     : ENCOURAGEMENTS[messageIndex];
 
+  // Gọi API thật, dùng chung cho cả input tự do và quick action
+const callPetChat = async (payload: { content?: string; quickAction?: QuickActionKey }) => {
+  if (sending) return;
+  setSending(true);
+
+  if (payload.content) {
+    setChatMessages((current) => [
+      ...current,
+      { id: Date.now(), from: "user", text: payload.content! },
+    ]);
+  }
+
+  try {
+    const data = await sendChatMessage({ sessionId, ...payload });
+    setSessionId(data.sessionId);
+    setChatMessages((current) => [
+      ...current,
+      { id: Date.now() + 1, from: "pet", text: data.reply, action: data.action },
+    ]);
+    if (data.petStatus) {
+      setPet((current) => (current ? { ...current, ...data.petStatus } : current));
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Miu đang lag xíu, thử lại sau nhé";
+    setChatMessages((current) => [...current, { id: Date.now() + 2, from: "pet", text: message }]);
+  } finally {
+    setSending(false);
+  }
+};
+
   const sendMessage = () => {
     const text = chatInput.trim();
-    if (!text) return;
-
-    setChatMessages((current) => [
-      ...current,
-      { id: Date.now(), from: "user", text },
-      { id: Date.now() + 1, from: "pet", text: makeReply(text, petName) },
-    ]);
+    if (!text || sending) return;
     setChatInput("");
-  };
-
-  const addPetLine = (text: string) => {
-    setChatMessages((current) => [
-      ...current,
-      { id: Date.now(), from: "pet", text },
-    ]);
+    callPetChat({ content: text });
   };
 
   return (
@@ -222,8 +225,14 @@ export default function FloatingPetCompanion() {
       </div>
 
       {modalOpen && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/45 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-4xl overflow-hidden rounded-[34px] bg-white shadow-2xl">
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/45 px-4 backdrop-blur-sm"
+          onClick={() => setModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-4xl overflow-hidden rounded-[34px] bg-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="grid bg-gradient-to-br from-[#fff7ed] via-white to-[#eef6ff] md:grid-cols-[320px_1fr]">
               <div className="relative flex flex-col items-center justify-center overflow-hidden bg-[#1f2a44] p-8 text-white">
                 <div className="absolute -left-16 -top-16 h-40 w-40 rounded-full bg-white/10" />
@@ -274,35 +283,51 @@ export default function FloatingPetCompanion() {
                 <div className="mt-5 grid gap-3 sm:grid-cols-3">
                   <ActionButton
                     label="Động viên mình"
-                    onClick={() => addPetLine(ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)])}
+                    disabled={sending}
+                    onClick={() => callPetChat({ quickAction: "CHEER_UP" })}
                   />
                   <ActionButton
                     label="Nghịch một chút"
-                    onClick={() => addPetLine(PLAYFUL_LINES[Math.floor(Math.random() * PLAYFUL_LINES.length)])}
+                    disabled={sending}
+                    onClick={() => callPetChat({ quickAction: "BANTER" })}
                   />
                   <ActionButton
                     label="Gợi ý học nhanh"
-                    onClick={() => addPetLine("Mình gợi ý: học 1 từ mới, đặt 1 câu với từ đó, rồi tự thưởng một ngụm nước. Nhiệm vụ mini hoàn tất!")}
+                    disabled={sending}
+                    onClick={() => callPetChat({ quickAction: "QUICK_TIP" })}
                   />
                 </div>
 
                 <div className="mt-5 h-72 space-y-3 overflow-y-auto rounded-[24px] border border-[#ead8c2] bg-[#fffaf5] p-4">
                   {chatMessages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.from === "user" ? "justify-end" : "justify-start"}`}
-                    >
-                      <div
-                        className={`max-w-[82%] rounded-2xl px-4 py-3 text-sm font-bold leading-6 ${
-                          message.from === "user"
-                            ? "bg-[#ff6b00] text-white"
-                            : "bg-white text-[#1f2a44] shadow-sm"
-                        }`}
-                      >
-                        {message.text}
+  <div key={message.id} className={`flex flex-col ${message.from === "user" ? "items-end" : "items-start"}`}>
+    <div className={`max-w-[82%] rounded-2xl px-4 py-3 text-sm font-bold leading-6 ${
+      message.from === "user" ? "bg-[#ff6b00] text-white" : "bg-white text-[#1f2a44] shadow-sm"
+    }`}>
+      {message.text}
+    </div>
+
+    {message.action && (
+      <button
+        type="button"
+        onClick={() => {
+          setModalOpen(false);
+          router.push(message.action!.path);
+        }}
+        className="mt-2 rounded-xl bg-[#1f2a44] px-4 py-2 text-xs font-extrabold text-white hover:bg-[#2a3855]"
+      >
+        {message.action.label} →
+      </button>
+    )}
+  </div>
+))}
+                  {sending && (
+                    <div className="flex justify-start">
+                      <div className="max-w-[82%] rounded-2xl bg-white px-4 py-3 text-sm font-bold text-[#5b6b85] shadow-sm">
+                        {petName} đang gõ...
                       </div>
                     </div>
-                  ))}
+                  )}
                 </div>
 
                 <div className="mt-4 flex gap-2">
@@ -312,13 +337,15 @@ export default function FloatingPetCompanion() {
                     onKeyDown={(event) => {
                       if (event.key === "Enter") sendMessage();
                     }}
+                    disabled={sending}
                     placeholder="Nói gì đó với linh thú..."
-                    className="min-h-12 flex-1 rounded-2xl border border-[#ead8c2] px-4 font-bold text-[#1f2a44] outline-none focus:border-[#ff6b00]"
+                    className="min-h-12 flex-1 rounded-2xl border border-[#ead8c2] px-4 font-bold text-[#1f2a44] outline-none focus:border-[#ff6b00] disabled:opacity-60"
                   />
                   <button
                     type="button"
                     onClick={sendMessage}
-                    className="rounded-2xl bg-[#1f2a44] px-5 py-3 font-extrabold text-white"
+                    disabled={sending || !chatInput.trim()}
+                    className="rounded-2xl bg-[#1f2a44] px-5 py-3 font-extrabold text-white disabled:opacity-50"
                   >
                     Gửi
                   </button>
@@ -341,12 +368,21 @@ function MiniStat({ label, value }: { label: string; value: number }) {
   );
 }
 
-function ActionButton({ label, onClick }: { label: string; onClick: () => void }) {
+function ActionButton({
+  label,
+  onClick,
+  disabled,
+}: {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="rounded-2xl border border-[#ead8c2] bg-white px-4 py-3 text-sm font-extrabold text-[#1f2a44] transition hover:-translate-y-0.5 hover:border-[#ff6b00] hover:text-[#ff6b00]"
+      disabled={disabled}
+      className="rounded-2xl border border-[#ead8c2] bg-white px-4 py-3 text-sm font-extrabold text-[#1f2a44] transition hover:-translate-y-0.5 hover:border-[#ff6b00] hover:text-[#ff6b00] disabled:opacity-50 disabled:hover:translate-y-0"
     >
       {label}
     </button>
