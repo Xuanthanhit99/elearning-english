@@ -14,21 +14,19 @@ import {
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { Roles } from 'src/common/decorators/roles.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
 import type { Request, Response } from 'express';
 import { UserRole } from '@prisma/client';
 import { AuthGuard } from '@nestjs/passport';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { VocabularyJobService } from '../vocabulary-job/vocabulary-job.service';
-import { VocabularyService } from '../vocabulary/vocabulary.service';
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly vocabularyService: VocabularyService,
     private readonly vocabularyJobService: VocabularyJobService,
   ) {}
 
@@ -171,6 +169,7 @@ export class AuthController {
   }
 
   @Get('check-username')
+  @UseGuards(JwtAuthGuard)
   checkUsername(@Query('username') username: string, @Req() req) {
     return this.authService.checkUsername(username, req.user.id);
   }

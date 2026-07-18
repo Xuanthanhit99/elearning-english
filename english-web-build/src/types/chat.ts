@@ -1,11 +1,13 @@
 // types/chat.ts
-export type ChatRole = 'USER' | 'ASSISTANT';
-export type QuickActionKey = 'CHEER_UP' | 'BANTER' | 'QUICK_TIP';
+export type ChatRole = "USER" | "ASSISTANT";
+export type QuickActionKey = "CHEER_UP" | "BANTER" | "QUICK_TIP";
 
-type ChatMessage = {
-  id: number;
-  from: "user" | "pet";
-  text: string;
+export type ChatMessage = {
+  id?: string;
+  sessionId?: string;
+  role: ChatRole;
+  content: string;
+  createdAt?: string;
   action?: { path: string; label: string } | null;
 };
 

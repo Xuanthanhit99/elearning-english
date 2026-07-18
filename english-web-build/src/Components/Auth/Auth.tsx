@@ -186,11 +186,33 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
     message: "",
   });
   const [rememberMe, setRememberMe] = useState(false);
+  const [twoFactorRequired, setTwoFactorRequired] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [recoveryCode, setRecoveryCode] = useState("");
   const handleLogin = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
 
-      const res = await api.post("/auth/login", { email, password, rememberMe });
+      const res = await api.post("/auth/login", {
+        email,
+        password,
+        rememberMe,
+        ...(twoFactorRequired && otp.trim() ? { otp: otp.trim() } : {}),
+        ...(twoFactorRequired && recoveryCode.trim()
+          ? { recoveryCode: recoveryCode.trim() }
+          : {}),
+      });
+
+      if (res.data?.twoFactorRequired) {
+        setTwoFactorRequired(true);
+        setErrorModal({
+          open: true,
+          message:
+            res.data?.message ||
+            "Vui lòng nhập mã xác thực hai bước để tiếp tục.",
+        });
+        return;
+      }
 
       if (res.data.user.status !== "ACTIVE") {
         setErrorModal({
@@ -202,10 +224,12 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
       }
 
       window.location.href = "/";
-    } catch {
+    } catch (error: any) {
       setErrorModal({
         open: true,
-        message: "Không thể kết nối tới máy chủ. Vui lòng thử lại.",
+        message:
+          error?.response?.data?.message ||
+          "Không thể kết nối tới máy chủ. Vui lòng thử lại.",
       });
     }
   };
@@ -237,9 +261,33 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
           onChange={setPassword}
         />
 
+        {twoFactorRequired && (
+          <div className="space-y-4 rounded-2xl border border-orange-100 bg-orange-50/60 p-4">
+            <Input
+              label="Mã xác thực 2FA"
+              placeholder="Nhập mã 6 số"
+              value={otp}
+              onChange={setOtp}
+            />
+            <Input
+              label="Mã khôi phục"
+              placeholder="Dùng khi không mở được app xác thực"
+              value={recoveryCode}
+              onChange={setRecoveryCode}
+            />
+            <p className="text-xs font-bold text-[#8a5b26]">
+              Chỉ cần nhập một trong hai: mã 6 số hoặc mã khôi phục.
+            </p>
+          </div>
+        )}
+
         <div className="flex items-center justify-between gap-3 text-sm">
           <label className="flex items-center gap-2 font-bold text-[#5b6b85]">
-            <input type="checkbox" onChange={(e) => setRememberMe(e.target.checked)} checked={rememberMe}/>
+            <input
+              type="checkbox"
+              onChange={(e) => setRememberMe(e.target.checked)}
+              checked={rememberMe}
+            />
             Ghi nhớ đăng nhập
           </label>
 
@@ -486,13 +534,9 @@ function RegisterSuccessModal({
         <div className="bg-gradient-to-r from-[#ff961c] to-[#ff6b00] p-8 text-center text-white">
           <div className="animate-bounce text-6xl">🎉</div>
 
-          <h2 className="mt-4 text-3xl font-extrabold">
-            Đăng ký thành công!
-          </h2>
+          <h2 className="mt-4 text-3xl font-extrabold">Đăng ký thành công!</h2>
 
-          <p className="mt-2 text-white/90">
-            Chào mừng bạn đến với PoppyLingo
-          </p>
+          <p className="mt-2 text-white/90">Chào mừng bạn đến với PoppyLingo</p>
         </div>
 
         {/* Body */}
@@ -502,8 +546,8 @@ function RegisterSuccessModal({
           </div>
 
           <p className="mt-5 leading-7 text-[#5b6b85]">
-            Tài khoản của bạn đã được tạo thành công.
-            Hãy đăng nhập để bắt đầu hành trình học tiếng Anh.
+            Tài khoản của bạn đã được tạo thành công. Hãy đăng nhập để bắt đầu
+            hành trình học tiếng Anh.
           </p>
 
           <button

@@ -3,7 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
 import bcrypt from 'bcrypt';
@@ -17,8 +17,33 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UploadService } from '../upload/upload.service';
 import { Prisma } from '@prisma/client';
 import { AuthSessionService } from './auth-session.service';
+import { decryptSecret } from './two-factor-crypto.util';
 
 const REFRESH_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const ACCESS_COOKIE_MAX_AGE_MS = 15 * 60 * 1000;
+
+const authCookieOptions = (maxAge: number) => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax' as const,
+  path: '/',
+  maxAge,
+});
+
+const visibleCookieOptions = (maxAge: number) => ({
+  httpOnly: false,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax' as const,
+  path: '/',
+  maxAge,
+});
+
+const clearCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax' as const,
+  path: '/',
+};
 
 @Injectable()
 export class AuthService {
@@ -78,6 +103,25 @@ export class AuthService {
       throw new BadRequestException('Email hoặc mật khẩu không đúng');
     }
 
+    if (user.twoFactorSecret) {
+      if (!dto.otp && !dto.recoveryCode) {
+        return {
+          success: false,
+          twoFactorRequired: true,
+          message: 'Vui lòng nhập mã xác thực hai bước',
+        };
+      }
+
+      const twoFactorVerified = await this.verifyLoginSecondFactor(user.id, {
+        otp: dto.otp,
+        recoveryCode: dto.recoveryCode,
+      });
+
+      if (!twoFactorVerified) {
+        throw new UnauthorizedException('Mã xác thực hai bước không đúng');
+      }
+    }
+
     const payload = {
       sub: user.id,
       email: user.email,
@@ -109,30 +153,19 @@ export class AuthService {
       ipAddress: req.ip ?? req.socket?.remoteAddress ?? null,
     });
 
-    res.cookie('refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: REFRESH_COOKIE_MAX_AGE_MS,
-    });
+    res.cookie(
+      'refresh_token',
+      refreshToken,
+      authCookieOptions(REFRESH_COOKIE_MAX_AGE_MS),
+    );
 
-    res.cookie('access_token', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge,
-    });
+    res.cookie('access_token', accessToken, authCookieOptions(maxAge));
 
-    res.cookie('logged_in', 'true', {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge,
-    });
+    res.cookie('logged_in', 'true', visibleCookieOptions(maxAge));
 
     return {
+      success: true,
       message: 'Đăng nhập thành công',
-      accessToken: accessToken,
       user: {
         id: user.id,
         fullname: user.fullname,
@@ -196,8 +229,7 @@ export class AuthService {
       },
       {
         secret: process.env.JWT_ACCESS_SECRET,
-        expiresIn: (process.env.JWT_ACCESS_EXPIRES_IN ||
-          '15m') as StringValue,
+        expiresIn: (process.env.JWT_ACCESS_EXPIRES_IN || '15m') as StringValue,
       },
     );
 
@@ -214,29 +246,23 @@ export class AuthService {
       },
     );
 
-    res.cookie('access_token', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 15 * 60 * 1000,
-    });
+    res.cookie(
+      'access_token',
+      accessToken,
+      authCookieOptions(ACCESS_COOKIE_MAX_AGE_MS),
+    );
 
-    res.cookie('refresh_token', newRefreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: REFRESH_COOKIE_MAX_AGE_MS,
-    });
+    res.cookie(
+      'refresh_token',
+      newRefreshToken,
+      authCookieOptions(REFRESH_COOKIE_MAX_AGE_MS),
+    );
 
-    res.cookie('logged_in', 'true', {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 15 * 60 * 1000,
-    });
+    res.cookie(
+      'logged_in',
+      'true',
+      visibleCookieOptions(ACCESS_COOKIE_MAX_AGE_MS),
+    );
 
     return {
       success: true,
@@ -274,9 +300,9 @@ export class AuthService {
       }
     }
 
-    res.clearCookie('refresh_token');
-    res.clearCookie('access_token');
-    res.clearCookie('logged_in');
+    res.clearCookie('refresh_token', clearCookieOptions);
+    res.clearCookie('access_token', clearCookieOptions);
+    res.clearCookie('logged_in', { ...clearCookieOptions, httpOnly: false });
     return {
       message: 'Đăng xuất thành công',
     };
@@ -295,8 +321,6 @@ export class AuthService {
     if (!profile.email) {
       throw new BadRequestException('Không lấy được email từ tài khoản');
     }
-
-    console.log('dấdasa', 'ds');
 
     let dbUser = await this.prisma.user.findUnique({
       where: {
@@ -562,6 +586,69 @@ export class AuthService {
       username,
       available: !existed,
     };
+  }
+
+  private async verifyLoginSecondFactor(
+    userId: string,
+    credentials: { otp?: string; recoveryCode?: string },
+  ) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        twoFactorSecret: true,
+        twoFactorRecoveryCodes: true,
+      },
+    });
+
+    if (!user?.twoFactorSecret) {
+      return true;
+    }
+
+    if (credentials.otp) {
+      const { verifySync } = await import('otplib');
+
+      return verifySync({
+        token: credentials.otp,
+        secret: decryptSecret(user.twoFactorSecret),
+      }).valid;
+    }
+
+    if (credentials.recoveryCode) {
+      const matchedCode = await this.findMatchingRecoveryCode(
+        credentials.recoveryCode,
+        user.twoFactorRecoveryCodes,
+      );
+
+      if (!matchedCode) {
+        return false;
+      }
+
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          twoFactorRecoveryCodes: user.twoFactorRecoveryCodes.filter(
+            (code) => code !== matchedCode,
+          ),
+        },
+      });
+
+      return true;
+    }
+
+    return false;
+  }
+
+  private async findMatchingRecoveryCode(
+    recoveryCode: string,
+    hashedCodes: string[],
+  ) {
+    for (const hashedCode of hashedCodes) {
+      if (await bcrypt.compare(recoveryCode, hashedCode)) {
+        return hashedCode;
+      }
+    }
+
+    return null;
   }
 
   // users.service.ts

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { GeminiService } from '../gemini/gemini.service';
 
 type GeminiTopicItem = {
@@ -283,13 +283,19 @@ Format:
       const result = await this.geminiService.generateJson(prompt);
       items = Array.isArray(result) ? result : [];
     } catch (error: any) {
-      console.error('[VocabularyJob] Gemini topic generation failed:', error.message);
+      console.error(
+        '[VocabularyJob] Gemini topic generation failed:',
+        error.message,
+      );
     }
 
     const recent = new Set(
       params.recentTopicNames.map((name) => this.normalizeName(name)),
     );
-    const selected = new Map<string, Awaited<ReturnType<typeof this.upsertTopic>>>();
+    const selected = new Map<
+      string,
+      Awaited<ReturnType<typeof this.upsertTopic>>
+    >();
 
     for (const item of items) {
       const name = item.name?.trim();
@@ -338,7 +344,11 @@ Format:
     });
   }
 
-  private async ensureWordsForTopic(level: string, topicId: string, count: number) {
+  private async ensureWordsForTopic(
+    level: string,
+    topicId: string,
+    count: number,
+  ) {
     const topic = await this.prisma.wordTopic.findUnique({
       where: { id: topicId },
     });
@@ -392,11 +402,16 @@ Format:
       const result = await this.geminiService.generateJson(prompt);
       items = Array.isArray(result) ? result : [];
     } catch (error: any) {
-      console.error('[VocabularyJob] Gemini word generation failed:', error.message);
+      console.error(
+        '[VocabularyJob] Gemini word generation failed:',
+        error.message,
+      );
       return;
     }
 
-    const existing = new Set(existingWords.map((item) => this.normalizeName(item.word)));
+    const existing = new Set(
+      existingWords.map((item) => this.normalizeName(item.word)),
+    );
     const words = items
       .filter((item) => item.word?.trim())
       .filter((item) => {
