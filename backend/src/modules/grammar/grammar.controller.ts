@@ -8,10 +8,10 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { GrammarService } from './grammar.service';
 import { ReportGrammarQuestionDto } from './dto/report-grammar-question.dto';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { SubmitGrammarAnswerDto } from './dto/submit-grammar-answer.dto';
 
 @Controller('grammar')

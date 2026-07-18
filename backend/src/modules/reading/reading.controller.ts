@@ -8,8 +8,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ReadingService } from './reading.service';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { GetReadingArticlesQueryDto } from './dto/get-reading-articles.dto';
 import { GetReadingHistoryQueryDto } from './dto/get-reading-history.dto';
 

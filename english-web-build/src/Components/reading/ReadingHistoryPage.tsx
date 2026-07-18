@@ -7,7 +7,6 @@ import {
   Bell,
   BookOpen,
   BookText,
-  Calendar,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
@@ -28,7 +27,6 @@ import {
   Star,
   Trophy,
   Users,
-  XCircle,
 } from "lucide-react";
 import { api } from "@/src/lib/axios";
 
@@ -157,7 +155,7 @@ export default function ReadingHistoryPage() {
   }, [page, status, timeRange]);
 
   useEffect(() => {
-    fetchHistory();
+    void Promise.resolve().then(fetchHistory);
   }, [fetchHistory]);
 
   const pages = useMemo(() => {
@@ -276,9 +274,21 @@ export default function ReadingHistoryPage() {
             </div>
 
             <div className="flex items-center gap-6">
-              <TopStat icon={<Flame className="text-red-500" />} value="18" label="Streak" />
-              <TopStat icon={<Star className="text-yellow-500" />} value="2.450" label="XP hôm nay" />
-              <TopStat icon={<Gem className="text-cyan-500" />} value="5.230" label="Xu" />
+              <TopStat
+                icon={<Flame className="text-red-500" />}
+                value="18"
+                label="Streak"
+              />
+              <TopStat
+                icon={<Star className="text-yellow-500" />}
+                value="2.450"
+                label="XP hôm nay"
+              />
+              <TopStat
+                icon={<Gem className="text-cyan-500" />}
+                value="5.230"
+                label="Xu"
+              />
 
               <button onClick={() => router.push("/rewards")}>
                 <IconCircle>
@@ -296,7 +306,9 @@ export default function ReadingHistoryPage() {
           <div className="grid grid-cols-[1fr_430px] gap-7 p-8">
             <section>
               <div className="mb-6 flex items-center gap-2 text-sm font-semibold text-slate-500">
-                <button onClick={() => router.push("/reading")}>Đọc hiểu</button>
+                <button onClick={() => router.push("/reading")}>
+                  Đọc hiểu
+                </button>
                 <ChevronRight size={16} />
                 <span className="text-slate-900">History</span>
               </div>
@@ -473,7 +485,9 @@ export default function ReadingHistoryPage() {
                     <p className="text-4xl font-extrabold">
                       {data.summary.totalTimeText}
                     </p>
-                    <p className="mt-1 text-sm text-slate-500">Tổng thời gian</p>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Tổng thời gian
+                    </p>
                   </div>
 
                   <select
@@ -546,7 +560,7 @@ export default function ReadingHistoryPage() {
                 </div>
 
                 <button
-                  onClick={() => router.push("/reading/report")}
+                  onClick={() => router.push("/reading/articles")}
                   className="mt-6 w-full rounded-xl border border-violet-300 py-3 text-sm font-bold text-violet-600"
                 >
                   Xem báo cáo chi tiết

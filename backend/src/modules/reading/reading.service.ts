@@ -8,11 +8,11 @@ import {
   ReadingLevel,
 } from '@prisma/client';
 import { ReadingHomeResponse } from './dto/reading-home.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import {
   getCategoryAchievements,
   getFeaturedVocabularyByCategory,
-} from 'src/common/helpers/reading.hepler';
+} from '../../common/helpers/reading.hepler';
 import { GetReadingArticlesQueryDto } from './dto/get-reading-articles.dto';
 import { GetReadingHistoryQueryDto } from './dto/get-reading-history.dto';
 import { MissionV2ProgressService } from '../missions-v2/services/mission-v2-progress.service';
@@ -800,8 +800,8 @@ export class ReadingService {
   }
 
   async startReadingArticle(userId: string, articleId: string) {
-    const article = await this.prisma.readingArticle.findUnique({
-      where: { id: articleId },
+    const article = await this.prisma.readingArticle.findFirst({
+      where: { id: articleId, isPublished: true },
     });
 
     if (!article) {
@@ -1182,6 +1182,8 @@ export class ReadingService {
         skill: LearningSkill.READING,
         articleId: input.articleId,
         lessonId: input.articleId,
+        sourceId: input.articleId,
+        idempotencyKey: `reading:article:${input.articleId}:read-article`,
       });
 
       /*
@@ -1194,6 +1196,8 @@ export class ReadingService {
         skill: LearningSkill.READING,
         articleId: input.articleId,
         lessonId: input.articleId,
+        sourceId: input.articleId,
+        idempotencyKey: `reading:article:${input.articleId}:complete-lesson`,
       });
 
       /*
@@ -1206,6 +1210,8 @@ export class ReadingService {
         skill: LearningSkill.READING,
         articleId: input.articleId,
         lessonId: input.articleId,
+        sourceId: input.articleId,
+        idempotencyKey: `reading:article:${input.articleId}:study-lesson`,
       });
 
       /*
@@ -1220,6 +1226,8 @@ export class ReadingService {
           quizId: input.articleId,
           articleId: input.articleId,
           lessonId: input.articleId,
+          sourceId: input.articleId,
+          idempotencyKey: `reading:article:${input.articleId}:complete-quiz`,
         });
       }
 
@@ -1238,6 +1246,8 @@ export class ReadingService {
         studyMinutes: studiedMinutes,
         skill: LearningSkill.READING,
         articleId: input.articleId,
+        sourceId: input.articleId,
+        idempotencyKey: `reading:article:${input.articleId}:study-minutes`,
       });
 
       return true;
