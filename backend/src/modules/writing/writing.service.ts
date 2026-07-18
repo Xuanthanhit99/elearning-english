@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { CheckWritingDto } from './dro/check-writing.dto';
 
 @Injectable()
@@ -1103,6 +1103,10 @@ Rules:
       throw new NotFoundException('Không tìm thấy phiên luyện viết');
     }
 
+    if (session.isSubmitted) {
+      throw new BadRequestException('Bài Writing đã hoàn thành, không thể sửa bản nháp.');
+    }
+
     const wordCount = this.countWords(body.content);
 
     return this.prisma.writingSession.update({
@@ -1141,6 +1145,13 @@ Rules:
 
     if (!session) {
       throw new NotFoundException('Không tìm thấy phiên luyện viết');
+    }
+
+    if (session.isSubmitted) {
+      return {
+        sessionId: session.id,
+        resultUrl: `/writing/sessions/${session.id}/result`,
+      };
     }
 
     const content = body.content?.trim();

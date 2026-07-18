@@ -1,13 +1,12 @@
 import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import {
-  CefrLevel,
   LearningSkill,
   MissionV2Action,
   PlacementMethod,
 } from '@prisma/client';
 import { Job } from 'bullmq';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { MissionV2ProgressService } from '../missions-v2/services/mission-v2-progress.service';
 import {
   WRITING_PROCESSING_JOB,
@@ -73,6 +72,24 @@ export class WritingProcessor extends WorkerHost {
         throw new Error('WritingSession not found');
       }
 
+      if (session.isSubmitted && session.aiResult) {
+        await this.updateJob(processingJobId, {
+          status: 'COMPLETED',
+          step: 'COMPLETED',
+          progress: 100,
+          message: 'Bài Writing đã có kết quả.',
+          missionUpdated: processingJob.missionUpdated,
+          completedAt: new Date(),
+        });
+
+        return {
+          sessionId,
+          overallScore: session.overallScore ?? 0,
+          missionUpdated: processingJob.missionUpdated,
+          alreadyCompleted: true,
+        };
+      }
+
       const aiSettings = await this.settingsQuery.getAiSettings(userId);
 
       const evaluation = await this.ai.evaluate({
@@ -97,9 +114,13 @@ export class WritingProcessor extends WorkerHost {
         nextPractice: evaluation.nextPractice,
       });
 
-      await this.prisma.$transaction(async (tx) => {
-        await tx.writingSession.update({
-          where: { id: sessionId },
+      const completedNow = await this.prisma.$transaction(async (tx) => {
+        const updated = await tx.writingSession.updateMany({
+          where: {
+            id: sessionId,
+            userId,
+            isSubmitted: false,
+          },
           data: {
             content: processingJob.content,
             wordCount: processingJob.wordCount,
@@ -124,6 +145,10 @@ export class WritingProcessor extends WorkerHost {
             nextPracticeSuggestion: evaluation.nextPractice.reason,
           },
         });
+
+        if (updated.count === 0) {
+          return false;
+        }
 
         const lessons = await tx.writingLesson.findMany({
           where: {
@@ -187,7 +212,26 @@ export class WritingProcessor extends WorkerHost {
             source: PlacementMethod.MANUAL,
           },
         });
+
+        return true;
       });
+
+      if (!completedNow) {
+        await this.updateJob(processingJobId, {
+          status: 'COMPLETED',
+          step: 'COMPLETED',
+          progress: 100,
+          message: 'Bài Writing đã có kết quả.',
+          completedAt: new Date(),
+        });
+
+        return {
+          sessionId,
+          overallScore: evaluation.overallScore,
+          missionUpdated: processingJob.missionUpdated,
+          alreadyCompleted: true,
+        };
+      }
 
       await this.updateJob(processingJobId, {
         step: 'UPDATING_MISSIONS',
@@ -197,6 +241,7 @@ export class WritingProcessor extends WorkerHost {
 
       const missionUpdated = await this.updateMissions({
         userId,
+        sessionId: session.id,
         lessonId: session.lessonId,
         duration: processingJob.timeSpentSeconds,
       });
@@ -249,6 +294,7 @@ export class WritingProcessor extends WorkerHost {
 
   private async updateMissions(input: {
     userId: string;
+    sessionId: string;
     lessonId: string | null;
     duration: number;
   }) {
@@ -259,6 +305,8 @@ export class WritingProcessor extends WorkerHost {
         amount: 1,
         skill: LearningSkill.WRITING,
         lessonId: input.lessonId ?? undefined,
+        sourceId: input.sessionId,
+        idempotencyKey: `writing:${input.sessionId}:check-writing`,
       });
 
       await this.missionProgress.increase({
@@ -267,6 +315,8 @@ export class WritingProcessor extends WorkerHost {
         amount: 1,
         skill: LearningSkill.WRITING,
         lessonId: input.lessonId ?? undefined,
+        sourceId: input.sessionId,
+        idempotencyKey: `writing:${input.sessionId}:complete-lesson`,
       });
 
       await this.missionProgress.increase({
@@ -275,6 +325,8 @@ export class WritingProcessor extends WorkerHost {
         amount: 1,
         skill: LearningSkill.WRITING,
         lessonId: input.lessonId ?? undefined,
+        sourceId: input.sessionId,
+        idempotencyKey: `writing:${input.sessionId}:study-lesson`,
       });
 
       const minutes = Math.max(1, Math.ceil(input.duration / 60));
@@ -285,6 +337,8 @@ export class WritingProcessor extends WorkerHost {
         amount: minutes,
         studyMinutes: minutes,
         skill: LearningSkill.WRITING,
+        sourceId: input.sessionId,
+        idempotencyKey: `writing:${input.sessionId}:study-minutes`,
       });
 
       return true;

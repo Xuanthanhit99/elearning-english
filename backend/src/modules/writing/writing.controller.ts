@@ -11,8 +11,8 @@ import {
 } from '@nestjs/common';
 import { WritingService } from './writing.service';
 import { CheckWritingDto } from './dro/check-writing.dto';
-import { OptionalJwtGuard } from 'src/common/guards/optional-jwt.guard';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { OptionalJwtGuard } from '../../common/guards/optional-jwt.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { WritingProcessingService } from './writing-processing.service';
 import { WritingHistoryService } from './writing-history.service';
 
@@ -166,6 +166,12 @@ export class WritingController {
   @Post('sessions/:sessionId/retry')
   retryEssay(@Param('sessionId') sessionId: string, @Req() req: any) {
     return this.writingService.retryEssay(req.user.id, sessionId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('sessions/:sessionId/retry-processing')
+  retryProcessing(@Param('sessionId') sessionId: string, @Req() req: any) {
+    return this.writingProcessingService.retryProcessing(req.user.id, sessionId);
   }
 
   @UseGuards(JwtAuthGuard)

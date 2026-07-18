@@ -1,5 +1,5 @@
 export type WritingProcessingStatus = {
-  id: string;
+  id: string | null;
   sessionId: string;
   status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | string;
   step:
@@ -15,5 +15,7 @@ export type WritingProcessingStatus = {
   errorMessage?: string | null;
   startedAt?: string | null;
   completedAt?: string | null;
+  retryable?: boolean;
+  isStale?: boolean;
   resultUrl?: string | null;
 };

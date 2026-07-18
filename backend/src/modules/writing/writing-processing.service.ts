@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Queue } from 'bullmq';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import {
   WRITING_PROCESSING_JOB,
   WRITING_PROCESSING_QUEUE,
@@ -14,6 +14,8 @@ import { WritingSessionService } from './writing-session.service';
 
 @Injectable()
 export class WritingProcessingService {
+  private readonly staleProcessingMs = 15 * 60 * 1000;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly sessions: WritingSessionService,
@@ -42,18 +44,12 @@ export class WritingProcessingService {
       );
     }
 
-    const runningJob = await this.prisma.writingProcessingJob.findFirst({
-      where: {
-        userId: input.userId,
-        sessionId: session.id,
-        status: {
-          in: ['QUEUED', 'PROCESSING'],
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    const runningJob = await this.findRunningJob(input.userId, session.id);
 
-    if (runningJob) {
+    if (
+      runningJob &&
+      !this.isStale(runningJob.status, runningJob.startedAt ?? runningJob.updatedAt)
+    ) {
       return {
         sessionId: session.id,
         processingJobId: runningJob.id,
@@ -63,10 +59,7 @@ export class WritingProcessingService {
     }
 
     if (session.isSubmitted) {
-      const latest = await this.prisma.writingProcessingJob.findFirst({
-        where: { userId: input.userId, sessionId: session.id },
-        orderBy: { createdAt: 'desc' },
-      });
+      const latest = await this.findLatestJob(input.userId, session.id);
 
       return {
         sessionId: session.id,
@@ -74,7 +67,7 @@ export class WritingProcessingService {
         status: latest?.status ?? 'COMPLETED',
         processingUrl: `/writing/sessions/${session.id}/processing`,
         resultUrl:
-          latest?.status === 'COMPLETED'
+          latest?.status === 'COMPLETED' || session.aiResult
             ? `/writing/sessions/${session.id}/result`
             : null,
       };
@@ -129,14 +122,30 @@ export class WritingProcessingService {
   }
 
   async getStatus(userId: string, sessionId: string) {
-    const job = await this.prisma.writingProcessingJob.findFirst({
-      where: { userId, sessionId },
-      orderBy: { createdAt: 'desc' },
+    const session = await this.prisma.writingSession.findFirst({
+      where: { id: sessionId, userId },
+      select: {
+        id: true,
+        isSubmitted: true,
+        aiResult: true,
+      },
     });
 
+    if (!session) {
+      throw new NotFoundException('Không tìm thấy phiên luyện viết.');
+    }
+
+    const job = await this.findLatestJob(userId, sessionId);
+
     if (!job) {
+      if (session.isSubmitted && session.aiResult) {
+        return this.completedStatus(sessionId);
+      }
+
       throw new NotFoundException('Không tìm thấy tiến trình Writing.');
     }
+
+    const isStale = this.isStale(job.status, job.startedAt ?? job.updatedAt);
 
     return {
       id: job.id,
@@ -148,10 +157,90 @@ export class WritingProcessingService {
       errorMessage: job.errorMessage,
       startedAt: job.startedAt,
       completedAt: job.completedAt,
+      retryable: job.status === 'FAILED' || isStale,
+      isStale,
       resultUrl:
-        job.status === 'COMPLETED'
+        job.status === 'COMPLETED' || (session.isSubmitted && session.aiResult)
           ? `/writing/sessions/${sessionId}/result`
           : null,
+    };
+  }
+
+  async retryProcessing(userId: string, sessionId: string) {
+    const session = await this.sessions.getOwnedSession(userId, sessionId);
+
+    if (session.isSubmitted && session.aiResult) {
+      return {
+        sessionId: session.id,
+        status: 'COMPLETED',
+        resultUrl: `/writing/sessions/${session.id}/result`,
+      };
+    }
+
+    const latest = await this.findLatestJob(userId, sessionId);
+
+    if (
+      latest &&
+      latest.status !== 'FAILED' &&
+      !this.isStale(latest.status, latest.startedAt ?? latest.updatedAt)
+    ) {
+      return {
+        sessionId: session.id,
+        processingJobId: latest.id,
+        status: latest.status,
+        processingUrl: `/writing/sessions/${session.id}/processing`,
+      };
+    }
+
+    return this.submit({
+      userId,
+      sessionId,
+      content: session.content ?? '',
+      timeSpentSeconds: session.timeSpentSeconds,
+    });
+  }
+
+  private findRunningJob(userId: string, sessionId: string) {
+    return this.prisma.writingProcessingJob.findFirst({
+      where: {
+        userId,
+        sessionId,
+        status: {
+          in: ['QUEUED', 'PROCESSING'],
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  private findLatestJob(userId: string, sessionId: string) {
+    return this.prisma.writingProcessingJob.findFirst({
+      where: { userId, sessionId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  private isStale(status: string, updatedAt: Date) {
+    return (
+      status === 'PROCESSING' &&
+      Date.now() - updatedAt.getTime() > this.staleProcessingMs
+    );
+  }
+
+  private completedStatus(sessionId: string) {
+    return {
+      id: null,
+      sessionId,
+      status: 'COMPLETED',
+      step: 'COMPLETED',
+      progress: 100,
+      message: 'Bài Writing đã có kết quả.',
+      errorMessage: null,
+      startedAt: null,
+      completedAt: null,
+      retryable: false,
+      isStale: false,
+      resultUrl: `/writing/sessions/${sessionId}/result`,
     };
   }
 }

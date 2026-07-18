@@ -98,7 +98,10 @@ Rules:
 - Do not invent content not related to the essay.
 `;
 
-    const result = await this.model.generateContent(prompt);
+    const result = (await this.withTimeout(
+      this.model.generateContent(prompt),
+      Number(process.env.WRITING_GEMINI_TIMEOUT_MS ?? 45000),
+    )) as { response: { text(): string } };
     const parsed = this.parseJson(result.response.text());
     return this.normalize(parsed);
   }
@@ -163,7 +166,13 @@ Rules:
       );
     }
 
-    return JSON.parse(cleaned.slice(start, end + 1));
+    try {
+      return JSON.parse(cleaned.slice(start, end + 1));
+    } catch {
+      throw new InternalServerErrorException(
+        'Gemini response JSON could not be parsed',
+      );
+    }
   }
 
   private normalize(value: any): WritingEvaluationResult {
@@ -211,5 +220,23 @@ Rules:
         reason: String(value?.nextPractice?.reason ?? ''),
       },
     };
+  }
+
+  private async withTimeout<T>(promise: Promise<T>, timeoutMs: number) {
+    let timeout: NodeJS.Timeout | undefined;
+
+    try {
+      return await Promise.race([
+        promise,
+        new Promise<never>((_, reject) => {
+          timeout = setTimeout(
+            () => reject(new Error('Gemini evaluation timed out')),
+            timeoutMs,
+          );
+        }),
+      ]);
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
   }
 }

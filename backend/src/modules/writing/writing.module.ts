@@ -1,6 +1,6 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { PrismaModule } from 'src/prisma/prisma.module';
+import { PrismaModule } from '../../prisma/prisma.module';
 import { MissionsV2Module } from '../missions-v2/missions-v2.module';
 import { WritingController } from './writing.controller';
 import { WritingService } from './writing.service';

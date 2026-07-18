@@ -21,7 +21,7 @@ import {
   Timer,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type SessionData = {
   session: {
@@ -75,8 +75,6 @@ export default function WritingSessionPage() {
   const [submitting, setSubmitting] = useState(false);
   const [showSample, setShowSample] = useState(false);
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
   const wordCount = useMemo(() => {
     return content.trim().split(/\s+/).filter(Boolean).length;
   }, [content]);
@@ -85,6 +83,10 @@ export default function WritingSessionPage() {
     try {
       setError("");
       const res = await api.get(`/writing/sessions/${sessionId}`);
+      if (res.data.session?.isSubmitted) {
+        router.replace(`/writing/sessions/${sessionId}/result`);
+        return;
+      }
       setData(res.data);
       setContent(res.data.session.content || "");
       setTimeSpent(res.data.session.timeSpentSeconds || 0);
@@ -95,6 +97,8 @@ export default function WritingSessionPage() {
   }
 
   async function handleSave() {
+    if (saving || submitting) return;
+
     try {
       setSaving(true);
       setError("");
@@ -112,6 +116,8 @@ export default function WritingSessionPage() {
   }
 
   async function handleSubmit() {
+    if (submitting || saving) return;
+
     if (!content.trim()) {
       setError("Bạn cần nhập bài viết trước khi nộp.");
       return;
@@ -130,6 +136,11 @@ export default function WritingSessionPage() {
         content,
         timeSpentSeconds: timeSpent,
       });
+
+      if (res.data.resultUrl) {
+        router.push(res.data.resultUrl);
+        return;
+      }
 
       router.push(
         res.data.processingUrl || `/writing/sessions/${sessionId}/processing`,
@@ -247,7 +258,8 @@ export default function WritingSessionPage() {
                 <div className="flex gap-4">
                   <button
                     onClick={handleSave}
-                    className="flex h-12 items-center gap-2 rounded-xl border border-slate-300 bg-white px-7 font-bold text-violet-600"
+                    disabled={saving || submitting}
+                    className="flex h-12 items-center gap-2 rounded-xl border border-slate-300 bg-white px-7 font-bold text-violet-600 disabled:opacity-50"
                   >
                     <Save className="h-5 w-5" />
                     {saving ? "Saving..." : "Save Draft"}

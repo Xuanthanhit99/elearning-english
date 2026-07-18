@@ -11,8 +11,12 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getWritingProcessingStatus } from '@/src/lib/writing-processing-api';
+import {
+  getWritingProcessingStatus,
+  retryWritingProcessing,
+} from '@/src/lib/writing-processing-api';
 import type { WritingProcessingStatus } from '@/src/lib/writing-processing.types';
+import { getApiErrorMessage } from '@/src/lib/api-error';
 
 const meta = {
   SUBMITTED: { icon: FileText, title: 'Đã nhận bài viết' },
@@ -29,6 +33,8 @@ export default function WritingProcessingPage() {
   const sessionId = String(params.sessionId);
   const [status, setStatus] = useState<WritingProcessingStatus | null>(null);
   const [error, setError] = useState('');
+  const [retrying, setRetrying] = useState(false);
+  const [pollVersion, setPollVersion] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -58,7 +64,7 @@ export default function WritingProcessingPage() {
         }
       } catch (err) {
         if (cancelled) return;
-        setError(errorText(err, 'Không tải được trạng thái chấm bài.'));
+        setError(getApiErrorMessage(err, 'Không tải được trạng thái chấm bài.'));
         timer = window.setTimeout(poll, 3000);
       }
     }
@@ -69,14 +75,48 @@ export default function WritingProcessingPage() {
       cancelled = true;
       if (timer !== null) window.clearTimeout(timer);
     };
-  }, [router, sessionId]);
+  }, [router, sessionId, pollVersion]);
 
   const current = useMemo(
-    () => meta[(status?.step as keyof typeof meta) ?? 'SUBMITTED'] ?? meta.SUBMITTED,
+    () =>
+      meta[(status?.step as keyof typeof meta) ?? 'SUBMITTED'] ??
+      meta.SUBMITTED,
     [status],
   );
   const Icon = current.icon;
   const progress = Math.min(Math.max(status?.progress ?? 8, 0), 100);
+
+  async function handleRetryProcessing() {
+    try {
+      setRetrying(true);
+      setError('');
+      const result = await retryWritingProcessing(sessionId);
+
+      if (result.resultUrl) {
+        router.replace(result.resultUrl);
+        return;
+      }
+
+      setStatus((prev) => ({
+        id: result.processingJobId ?? prev?.id ?? '',
+        sessionId: result.sessionId,
+        status: result.status,
+        step:
+          result.status === 'QUEUED'
+            ? 'SUBMITTED'
+            : (prev?.step ?? 'SUBMITTED'),
+        progress: result.status === 'QUEUED' ? 10 : (prev?.progress ?? 10),
+        message: 'Đã gửi lại bài Writing để AI chấm điểm.',
+        retryable: false,
+        isStale: false,
+      }));
+      setPollVersion((value) => value + 1);
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Không gửi lại được bài Writing.'));
+    } finally {
+      setRetrying(false);
+    }
+  }
 
   return (
     <main className="grid min-h-screen place-items-center bg-gradient-to-br from-violet-50 via-white to-indigo-50 px-4 py-8">
@@ -90,7 +130,9 @@ export default function WritingProcessingPage() {
                 : 'bg-violet-100 text-violet-600'
           }`}
         >
-          {!status || status.status === 'QUEUED' || status.status === 'PROCESSING' ? (
+          {!status ||
+          status.status === 'QUEUED' ||
+          status.status === 'PROCESSING' ? (
             <LoaderCircle size={44} className="animate-spin" />
           ) : (
             <Icon size={44} />
@@ -148,29 +190,35 @@ export default function WritingProcessingPage() {
           <div className="mt-7 rounded-2xl border border-red-200 bg-red-50 p-5 text-left text-red-700">
             <p className="font-black">Không thể chấm bài viết</p>
             <p className="mt-2 text-sm">
-              {status?.errorMessage || error || 'Vui lòng thử nộp lại bài viết.'}
+              {status?.errorMessage ||
+                error ||
+                'Vui lòng thử nộp lại bài viết.'}
             </p>
-            <button
-              onClick={() => router.replace(`/writing/sessions/${sessionId}`)}
-              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 font-black text-white"
-            >
-              <PenLine size={18} />
-              Quay lại bài viết
-            </button>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {status?.retryable && (
+                <button
+                  onClick={handleRetryProcessing}
+                  disabled={retrying}
+                  className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-3 font-black text-white disabled:opacity-60"
+                >
+                  <LoaderCircle
+                    size={18}
+                    className={retrying ? 'animate-spin' : ''}
+                  />
+                  {retrying ? 'Đang gửi lại...' : 'Thử chấm lại'}
+                </button>
+              )}
+              <button
+                onClick={() => router.replace(`/writing/sessions/${sessionId}`)}
+                className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 font-black text-white"
+              >
+                <PenLine size={18} />
+                Quay lại bài viết
+              </button>
+            </div>
           </div>
         )}
       </section>
     </main>
   );
-}
-
-function errorText(error: unknown, fallback: string) {
-  const value = error as {
-    response?: { data?: { message?: string | string[] } };
-    message?: string;
-  };
-  const message = value.response?.data?.message;
-  return Array.isArray(message)
-    ? message.join(', ')
-    : message ?? value.message ?? fallback;
 }
