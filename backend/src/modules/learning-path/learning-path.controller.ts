@@ -1,12 +1,14 @@
 import {
   Controller,
   Get,
+  Param,
+  Post,
   Req,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { LearningPathAccessGuard } from '../learning-path-access/learning-path-access.guard';
 import { LearningPathService } from './learning-path.service';
 
@@ -37,6 +39,51 @@ export class LearningPathController {
       data:
         await this.learningPathService.getLearningPath(
           this.getUserId(req),
+        ),
+    };
+  }
+
+  @Post('lessons/:lessonId/start')
+  async startLesson(
+    @Req() req: AuthenticatedRequest,
+    @Param('lessonId') lessonId: string,
+  ) {
+    return {
+      success: true,
+      data:
+        await this.learningPathService.startLesson(
+          this.getUserId(req),
+          lessonId,
+        ),
+    };
+  }
+
+  @Get('lessons/:lessonId/resume')
+  async resumeLesson(
+    @Req() req: AuthenticatedRequest,
+    @Param('lessonId') lessonId: string,
+  ) {
+    return {
+      success: true,
+      data:
+        await this.learningPathService.resumeLesson(
+          this.getUserId(req),
+          lessonId,
+        ),
+    };
+  }
+
+  @Post('lessons/:lessonId/complete')
+  async completeLesson(
+    @Req() req: AuthenticatedRequest,
+    @Param('lessonId') lessonId: string,
+  ) {
+    return {
+      success: true,
+      data:
+        await this.learningPathService.completeLesson(
+          this.getUserId(req),
+          lessonId,
         ),
     };
   }

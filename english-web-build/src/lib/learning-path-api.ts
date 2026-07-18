@@ -1,10 +1,56 @@
 import { api } from "./axios";
 
+export type LearningPathLessonStatus =
+  | "LOCKED"
+  | "AVAILABLE"
+  | "IN_PROGRESS"
+  | "COMPLETED";
+
+export type LearningPathLesson = {
+  id: string;
+  title: string;
+  duration: number | null;
+  order: number;
+  sectionId: string;
+  sectionTitle: string;
+  courseId: string;
+  courseSlug: string;
+  status: LearningPathLessonStatus;
+  progressId: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  href: string;
+};
+
+export type LearningPathCourse = {
+  id: string;
+  courseId: string | null;
+  title: string;
+  slug: string | null;
+  thumbnail: string | null;
+  rating: number | null;
+  reviews: number | null;
+  lessonCount: number;
+  reason: string;
+  progressPercent: number;
+  completedLessons: number;
+  totalLessons: number;
+  available: boolean;
+  lessons: LearningPathLesson[];
+};
+
 export type LearningPathData = {
+  id: string;
   testId: string;
+  title: string;
   overallLevel: string;
   overallScore: number;
   generatedAt: string;
+  progressPercent: number;
+  completedLessons: number;
+  totalLessons: number;
+  currentLesson: LearningPathLesson | null;
+  nextLesson: LearningPathLesson | null;
   phases: Array<{
     id: string;
     phase: number;
@@ -32,6 +78,7 @@ export type LearningPathData = {
     lessonCount: number | null;
     reason: string;
   }>;
+  courses: LearningPathCourse[];
   skills: Array<{
     skill: string;
     score: number;
@@ -40,15 +87,51 @@ export type LearningPathData = {
   }>;
 };
 
+export type LearningPathLessonActionResult = {
+  lesson: LearningPathLesson;
+  learningPath: {
+    id: string;
+    progressPercent: number;
+    completedLessons: number;
+    totalLessons: number;
+    currentLesson: LearningPathLesson | null;
+    nextLesson: LearningPathLesson | null;
+  };
+};
+
 type ApiResponse<T> = {
   success: boolean;
   data: T;
 };
 
 export async function getLearningPath() {
+  const response = await api.get<ApiResponse<LearningPathData>>(
+    "/learning-path",
+  );
+
+  return response.data.data;
+}
+
+export async function startLearningPathLesson(lessonId: string) {
+  const response = await api.post<
+    ApiResponse<LearningPathLessonActionResult>
+  >(`/learning-path/lessons/${lessonId}/start`);
+
+  return response.data.data;
+}
+
+export async function resumeLearningPathLesson(lessonId: string) {
   const response = await api.get<
-    ApiResponse<LearningPathData>
-  >('/learning-path');
+    ApiResponse<LearningPathLessonActionResult>
+  >(`/learning-path/lessons/${lessonId}/resume`);
+
+  return response.data.data;
+}
+
+export async function completeLearningPathLesson(lessonId: string) {
+  const response = await api.post<
+    ApiResponse<LearningPathLessonActionResult>
+  >(`/learning-path/lessons/${lessonId}/complete`);
 
   return response.data.data;
 }

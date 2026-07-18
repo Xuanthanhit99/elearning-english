@@ -8,6 +8,7 @@ import {
   type CefrLevel,
 } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { LearningPathService } from '../learning-path/learning-path.service';
 import { MissionV2GeneratorService } from '../missions-v2/services/mission-v2-generator.service';
 import { SettingsQueryService } from '../settings/settings-query.service';
 
@@ -44,6 +45,7 @@ type DashboardPlacementResult = {
 export class DashboardService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly learningPathService: LearningPathService,
     private readonly missionGenerator: MissionV2GeneratorService,
     private readonly settingsQuery: SettingsQueryService,
   ) {}
@@ -63,6 +65,7 @@ export class DashboardService {
       pet,
       missions,
       notifications,
+      notificationUnreadCount,
       rewardTransactions,
       lessonProgress,
       vocabularyProgress,
@@ -108,6 +111,9 @@ export class DashboardService {
         where: { userId },
         orderBy: { createdAt: 'desc' },
         take: 5,
+      }),
+      this.prisma.notification.count({
+        where: { userId, isRead: false },
       }),
       this.prisma.missionRewardTransactionV2.findMany({
         where: { userId, createdAt: { gte: weekStart } },
@@ -259,6 +265,14 @@ export class DashboardService {
       writingSessions,
       speakingSessions,
     });
+    const learningPathDetail = await this.getLearningPathDetail(userId);
+    const learningPathCurrentLesson = learningPathDetail?.currentLesson
+      ? this.mapLearningPathLesson(learningPathDetail.currentLesson)
+      : null;
+    const mergedContinueLearning = [
+      ...continueLearning,
+      ...(learningPathCurrentLesson ? [learningPathCurrentLesson] : []),
+    ].slice(0, 5);
 
     return {
       user: {
@@ -309,7 +323,38 @@ export class DashboardService {
           }
         : null,
       todayMissions: this.mapMissions(missions),
-      learningPath: placementResult
+      missions: this.mapMissions(missions),
+      learningPath: learningPathDetail
+        ? {
+            id: learningPathDetail.id,
+            title: learningPathDetail.title,
+            overallLevel: learningPathDetail.overallLevel,
+            overallScore: Math.round(learningPathDetail.overallScore),
+            progressPercent: learningPathDetail.progressPercent,
+            completedLessons: learningPathDetail.completedLessons,
+            totalLessons: learningPathDetail.totalLessons,
+            currentLesson: learningPathDetail.currentLesson,
+            nextLesson: learningPathDetail.nextLesson,
+            currentPhase:
+              learningPathDetail.phases.find((phase) => phase.progress < 100) ??
+              learningPathDetail.phases.at(-1) ??
+              null,
+            phases: learningPathDetail.phases.map((phase) => ({
+              id: phase.id,
+              title: phase.title,
+              phase: phase.phase,
+              targetLevel: phase.targetLevel,
+              progress: phase.progress,
+            })),
+            recommendedCourses: learningPathDetail.courses.slice(0, 3).map((course) => ({
+              id: course.id,
+              title: course.title,
+              slug: course.slug,
+              lessonCount: course.lessonCount,
+              reason: course.reason,
+            })),
+          }
+        : placementResult
         ? {
             overallLevel: placementResult.overallLevel,
             overallScore: Math.round(placementResult.overallScore),
@@ -333,9 +378,9 @@ export class DashboardService {
             })),
           }
         : null,
-      currentLesson: continueLearning[0] ?? recommendedLesson,
+      currentLesson: mergedContinueLearning[0] ?? recommendedLesson,
       continueLearning: {
-        items: continueLearning,
+        items: mergedContinueLearning,
       },
       recommendedLesson,
       recommendations: this.buildRecommendations(recommendedLesson, placementResult),
@@ -399,6 +444,36 @@ export class DashboardService {
         createdAt: item.createdAt,
         href: '/notifications',
       })),
+      notificationUnreadCount,
+    };
+  }
+
+  private async getLearningPathDetail(userId: string) {
+    try {
+      return await this.learningPathService.getLearningPath(userId);
+    } catch {
+      return null;
+    }
+  }
+
+  private mapLearningPathLesson(lesson: {
+    id: string;
+    title: string;
+    sectionTitle: string;
+    status: string;
+    duration: number | null;
+    href: string;
+  }) {
+    return {
+      id: lesson.id,
+      type: 'LEARNING_PATH',
+      title: lesson.title,
+      subtitle: lesson.sectionTitle,
+      progressPercent: lesson.status === 'COMPLETED' ? 100 : 0,
+      updatedAt: new Date(),
+      href: lesson.href,
+      level: null,
+      estimatedMinutes: lesson.duration,
     };
   }
 
@@ -554,7 +629,7 @@ export class DashboardService {
         type: 'SPEAKING',
         title: item.lesson?.title ?? item.topic?.title ?? 'Luyện nói',
         subtitle: item.topic?.title ?? null,
-        progressPercent: 40,
+        progressPercent: 0,
         updatedAt: item.updatedAt,
         href: `/speaking/practice/${item.id}`,
       })),
@@ -563,7 +638,7 @@ export class DashboardService {
         type: 'READING',
         title: item.article.title,
         subtitle: `${item.article.readTime} phút`,
-        progressPercent: 35,
+        progressPercent: 0,
         updatedAt: item.startedAt,
         href: `/reading/articles/${item.article.slug}`,
       })),

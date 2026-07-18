@@ -1,5 +1,6 @@
 // src/lib/axios.ts
 import axios from "axios";
+import { attachNormalizedApiError } from "./api-error";
 
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002",
@@ -7,7 +8,27 @@ export const api = axios.create({
 });
 
 let isRefreshing = false;
-let refreshQueue: Array<() => void> = [];
+let refreshQueue: Array<{
+  resolve: () => void;
+  reject: (error: unknown) => void;
+}> = [];
+
+function rejectRefreshQueue(error: unknown) {
+  refreshQueue.forEach(({ reject }) => reject(error));
+  refreshQueue = [];
+}
+
+function resolveRefreshQueue() {
+  refreshQueue.forEach(({ resolve }) => resolve());
+  refreshQueue = [];
+}
+
+function redirectToLogin() {
+  if (typeof window === "undefined") return;
+  if (window.location.pathname.startsWith("/auth")) return;
+
+  window.location.href = "/auth";
+}
 
 api.interceptors.response.use(
   (response) => response,
@@ -24,8 +45,8 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       if (isRefreshing) {
-        await new Promise<void>((resolve) => {
-          refreshQueue.push(resolve);
+        await new Promise<void>((resolve, reject) => {
+          refreshQueue.push({ resolve, reject });
         });
         return api(originalRequest);
       }
@@ -34,17 +55,17 @@ api.interceptors.response.use(
 
       try {
         await api.post("/auth/refresh");
-        refreshQueue.forEach((resolve) => resolve());
-        refreshQueue = [];
+        resolveRefreshQueue();
         return api(originalRequest);
       } catch (refreshError) {
-        refreshQueue = [];
-        return Promise.reject(refreshError);
+        rejectRefreshQueue(refreshError);
+        redirectToLogin();
+        return Promise.reject(attachNormalizedApiError(refreshError as Error));
       } finally {
         isRefreshing = false;
       }
     }
 
-    return Promise.reject(error);
+    return Promise.reject(attachNormalizedApiError(error));
   },
 );

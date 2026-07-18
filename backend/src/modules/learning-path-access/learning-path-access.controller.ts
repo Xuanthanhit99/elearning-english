@@ -6,7 +6,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { LearningPathAccessService } from './learning-path-access.service';
 
 type AuthenticatedRequest = Request & {
