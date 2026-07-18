@@ -161,7 +161,7 @@ export default function LearningPathScreen() {
   }
 
   useEffect(() => {
-    void loadLearningPath();
+    void Promise.resolve().then(loadLearningPath);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -13,7 +13,7 @@ import {
   Prisma,
   WordProgressStatus,
 } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { CreateTopicDto } from './dto/create-topic.dto';
 import { SubmitReviewDto } from './dto/submit-review.dto';
 import { SubmitWeeklyTestDto } from './dto/submit-weekly-test.dto';
@@ -25,7 +25,7 @@ import {
   buildOptions,
   buildQuestion,
   pickQuestionType,
-} from 'src/common/helpers/questions.helper';
+} from '../../common/helpers/questions.helper';
 import { SubmitReviewSessionDto } from './dto/review-session-answer.dto';
 import { MissionV2ProgressService } from '../missions-v2/services/mission-v2-progress.service';
 import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
@@ -715,6 +715,7 @@ export class VocabularyService {
     topicId: string;
     level: string;
     limit: number;
+    excludeWordIds?: string[];
   }) {
     const learned = await this.prisma.userWordProgress.findMany({
       where: {
@@ -723,14 +724,19 @@ export class VocabularyService {
       select: { wordId: true },
     });
 
-    const learnedIds = learned.map((x) => x.wordId);
+    const excludedIds = Array.from(
+      new Set([
+        ...learned.map((x) => x.wordId),
+        ...(params.excludeWordIds || []),
+      ]),
+    );
 
     const findStrict = () =>
       this.prisma.word.findMany({
         where: {
           topicId: params.topicId,
           level: params.level,
-          id: { notIn: learnedIds },
+          id: { notIn: excludedIds },
         },
         orderBy: [{ difficulty: 'asc' }, { searchCount: 'asc' }],
         take: params.limit,
@@ -752,7 +758,7 @@ export class VocabularyService {
 
     const missing = params.limit - words.length;
 
-    const created = await this.generateWordsByGemini({
+    await this.generateWordsByGemini({
       topicId: params.topicId,
       level: params.level,
       count: missing + 10,
@@ -766,7 +772,7 @@ export class VocabularyService {
     const fallbackWords = await this.prisma.word.findMany({
       where: {
         topicId: params.topicId,
-        id: { notIn: learnedIds },
+        id: { notIn: excludedIds },
       },
       orderBy: [{ difficulty: 'asc' }, { searchCount: 'asc' }],
       take: params.limit,
@@ -1624,6 +1630,8 @@ Trả về định dạng JSON Array chuẩn theo mẫu:
       action: MissionV2Action.COMPLETE_LESSON,
       amount: 1,
       skill: LearningSkill.VOCABULARY,
+      sourceId: completedDay.id,
+      idempotencyKey: `vocabulary:daily:${completedDay.id}:complete-lesson`,
     });
 
     /*
@@ -1637,6 +1645,8 @@ Trả về định dạng JSON Array chuẩn theo mẫu:
       action: MissionV2Action.STUDY_LESSON,
       amount: 1,
       skill: LearningSkill.VOCABULARY,
+      sourceId: completedDay.id,
+      idempotencyKey: `vocabulary:daily:${completedDay.id}:study-lesson`,
     });
 
     await this.learningXp.publish({
@@ -1660,7 +1670,9 @@ Trả về định dạng JSON Array chuẩn theo mẫu:
   }
 
   async addExtraDailyVocabulary(userId: string, dayId: string, amount = 5) {
-    const safeAmount = Math.min(20, Math.max(5, Math.floor(amount)));
+    const safeAmount = [5, 10, 20].includes(Math.floor(amount))
+      ? Math.floor(amount)
+      : 5;
     const day = await this.prisma.userDailyVocabularyPlan.findFirst({
       where: {
         id: dayId,
@@ -1677,9 +1689,13 @@ Trả về định dạng JSON Array chuẩn theo mẫu:
       throw new NotFoundException('Không tìm thấy bài học hôm nay.');
     }
 
-    await this.fillTodayPlanWords(userId, day, day.words.length + safeAmount);
+    const addedWordIds = await this.fillTodayPlanWords(
+      userId,
+      day,
+      day.words.length + safeAmount,
+    );
 
-    return this.prisma.userDailyVocabularyPlan.update({
+    const updated = await this.prisma.userDailyVocabularyPlan.update({
       where: { id: dayId },
       data: {
         status: 'AVAILABLE',
@@ -1696,6 +1712,18 @@ Trả về định dạng JSON Array chuẩn theo mẫu:
         },
       },
     });
+
+    const addedWordIdSet = new Set(addedWordIds);
+
+    return {
+      ...updated,
+      completed: false,
+      requestedAmount: safeAmount,
+      addedCount: addedWordIds.length,
+      addedWords: updated.words.filter((item) =>
+        addedWordIdSet.has(item.wordId),
+      ),
+    };
   }
 
   async getLatestUserWeeklyPlan(userId: string) {
@@ -5527,11 +5555,15 @@ Rules:
     });
   }
 
-  private async fillTodayPlanWords(userId: string, day: any, required: number) {
+  private async fillTodayPlanWords(
+    userId: string,
+    day: any,
+    required: number,
+  ): Promise<string[]> {
     const existedIds = day.words.map((x) => x.wordId);
     const missingCount = Math.max(0, required - existedIds.length);
 
-    if (missingCount === 0) return;
+    if (missingCount === 0) return [];
 
     const words = await this.pickWordsForUser({
       userId,
@@ -5541,11 +5573,13 @@ Rules:
       level: day.level,
 
       limit: missingCount,
+
+      excludeWordIds: existedIds,
     });
 
     const missing = words.filter((x) => !existedIds.includes(x.id));
 
-    if (!missing.length) return;
+    if (!missing.length) return [];
 
     await this.prisma.userDailyVocabularyWord.createMany({
       data: missing.map((w, index) => ({
@@ -5558,6 +5592,8 @@ Rules:
 
       skipDuplicates: true,
     });
+
+    return missing.map((word) => word.id);
   }
 
   async rebuildUserWeeklyPlan(userId: string, planId: string) {

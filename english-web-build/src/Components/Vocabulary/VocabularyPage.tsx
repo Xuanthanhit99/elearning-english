@@ -47,6 +47,9 @@ type TodayVocabulary = {
   status?: string;
   topic?: { id: string; name: string; description?: string | null };
   words?: DailyWordItem[];
+  addedWords?: DailyWordItem[];
+  addedCount?: number;
+  requestedAmount?: number;
 };
 
 type WeeklyPlan = {
@@ -182,13 +185,21 @@ const getVisualTone = (word?: VocabularyWord | null) => {
     word?.meaningVi || ""
   } ${word?.topic?.name || ""}`.toLowerCase();
 
-  if (/(banana|apple|orange|rice|bread|coffee|food|fruit|eat|drink)/.test(text)) {
+  if (
+    /(banana|apple|orange|rice|bread|coffee|food|fruit|eat|drink)/.test(text)
+  ) {
     return { bg: "#f7e79a", fg: "#f59e0b", icon: "fruit" };
   }
-  if (/(environment|eco|green|recycle|conservation|tree|forest|nature|sustain)/.test(text)) {
+  if (
+    /(environment|eco|green|recycle|conservation|tree|forest|nature|sustain)/.test(
+      text,
+    )
+  ) {
     return { bg: "#dcfce7", fg: "#16a34a", icon: "leaf" };
   }
-  if (/(technology|computer|phone|internet|screen|software|digital)/.test(text)) {
+  if (
+    /(technology|computer|phone|internet|screen|software|digital)/.test(text)
+  ) {
     return { bg: "#dbeafe", fg: "#2563eb", icon: "tech" };
   }
   if (/(travel|hotel|airport|plane|ship|train|city|bus|car)/.test(text)) {
@@ -207,7 +218,9 @@ const getVisualTone = (word?: VocabularyWord | null) => {
 const buildVocabularySvg = (word?: VocabularyWord | null) => {
   const tone = getVisualTone(word);
   const label = escapeSvgText(word?.word || "word");
-  const meaning = escapeSvgText(word?.meaningVi || word?.meaningEn || "Vocabulary");
+  const meaning = escapeSvgText(
+    word?.meaningVi || word?.meaningEn || "Vocabulary",
+  );
   const initial = escapeSvgText((word?.word || "V").slice(0, 1).toUpperCase());
 
   const icons: Record<string, string> = {
@@ -304,8 +317,8 @@ export default function VocabularyPage() {
   const progressPercent = isTodayCompleted
     ? 100
     : totalWords
-    ? Math.round((learnedCount / totalWords) * 100)
-    : 0;
+      ? Math.round((learnedCount / totalWords) * 100)
+      : 0;
   const confidentCount = dailyWords.filter((item) =>
     ["KNOWN", "MASTERED"].includes(item.progress?.status || ""),
   ).length;
@@ -546,18 +559,35 @@ export default function VocabularyPage() {
 
   const addExtraWords = async (amount: number) => {
     if (!today?.id || today.locked) return;
+    const previousTotal = dailyWords.length;
     const res = await api.post(`/vocabulary/daily/${today.id}/extra`, {
       amount,
     });
+    const allWords: DailyWordItem[] = res.data?.words || [];
+    const addedWords: DailyWordItem[] = res.data?.addedWords || [];
+    const firstAddedWordId = addedWords[0]?.wordId;
+    const firstAddedIndex =
+      firstAddedWordId !== undefined
+        ? allWords.findIndex((item) => item.wordId === firstAddedWordId)
+        : previousTotal;
     setToday({ ...res.data, completed: false });
-    setDailyWords(res.data?.words || []);
-    setActiveIndex(Math.min(learnedCount, Math.max((res.data?.words?.length || 1) - 1, 0)));
+    setDailyWords(allWords);
+    const nextIndex = firstAddedIndex >= 0 ? firstAddedIndex : previousTotal;
+    setActiveIndex(Math.max(0, Math.min(nextIndex, allWords.length - 1)));
     setOpenModalProgress(false);
-    setMessage(c.messages.extraWordsAdded.replace("{amount}", String(amount)));
+    setMessage(
+      c.messages.extraWordsAdded.replace(
+        "{amount}",
+        String(res.data?.addedCount || amount),
+      ),
+    );
   };
 
   const submitCompletionReview = async (
-    reviews: Array<{ wordId: string; rating: "AGAIN" | "HARD" | "GOOD" | "EASY" }>,
+    reviews: Array<{
+      wordId: string;
+      rating: "AGAIN" | "HARD" | "GOOD" | "EASY";
+    }>,
   ) => {
     const res = await api.post("/vocabulary/flashcards/review", { reviews });
     await loadVocabulary();
@@ -592,87 +622,87 @@ export default function VocabularyPage() {
   return (
     <>
       <div className="grid gap-7 px-4 py-6 lg:px-8 xl:grid-cols-[minmax(0,1fr)_420px]">
-            <section className="min-w-0 space-y-4">
-              <div className="flex items-center gap-4">
-                <Link
-                  href="/courses"
-                  className="text-2xl font-black text-[#4f5790]"
-                >
-                  <AppIcon name="chevronLeft" bare size={24} />
-                </Link>
-                <h1 className="text-2xl font-black">{c.title}</h1>
-              </div>
+        <section className="min-w-0 space-y-4">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/courses"
+              className="text-2xl font-black text-[#4f5790]"
+            >
+              <AppIcon name="chevronLeft" bare size={24} />
+            </Link>
+            <h1 className="text-2xl font-black">{c.title}</h1>
+          </div>
 
-              {today?.locked ? (
-                <LockedNotice reason={today.reason} />
-              ) : (
-                <>
-                  <WordStudyCard
-                    activeIndex={activeIndex}
-                    completed={isTodayCompleted}
-                    item={currentItem}
-                    locked={isTodayCompleted}
-                    total={totalWords}
-                    word={currentWord}
-                    onFlashcard={openFlashcard}
-                    onKnown={() => markProgress("KNOWN")}
-                    onNotebook={toggleNotebook}
-                    onReview={() => markProgress("REVIEW")}
-                    onShare={() => setShareOpen(true)}
-                    onAudio={playAudio}
-                  />
-                  <WordPager
-                    activeIndex={activeIndex}
-                    completed={isTodayCompleted}
-                    nextItem={nextItem}
-                    previousItem={previousItem}
-                    total={totalWords}
-                    onComplete={completeToday}
-                    onNext={nextWord}
-                    onPrevious={() =>
-                      setActiveIndex((index) => Math.max(0, index - 1))
-                    }
-                  />
-                  <WordDetailTabs
-                    level={level}
-                    relations={inlineRelations}
-                    word={currentWord}
-                    onFlashcard={openFlashcard}
-                  />
-                  {message && (
-                    <div className="rounded-xl bg-[#ecfdf5] px-5 py-4 font-bold text-[#15803d]">
-                      {message}
-                    </div>
-                  )}
-                </>
-              )}
-            </section>
-
-            <aside className="space-y-6">
-              <StatsPanel
-                stats={stats}
-                fallbackLearned={
-                  weeklyPlan?.days?.flatMap((day) => day.words || []).length ||
-                  totalWords
+          {today?.locked ? (
+            <LockedNotice reason={today.reason} />
+          ) : (
+            <>
+              <WordStudyCard
+                activeIndex={activeIndex}
+                completed={isTodayCompleted}
+                item={currentItem}
+                locked={isTodayCompleted}
+                total={totalWords}
+                word={currentWord}
+                onFlashcard={openFlashcard}
+                onKnown={() => markProgress("KNOWN")}
+                onNotebook={toggleNotebook}
+                onReview={() => markProgress("REVIEW")}
+                onShare={() => setShareOpen(true)}
+                onAudio={playAudio}
+              />
+              <WordPager
+                activeIndex={activeIndex}
+                completed={isTodayCompleted}
+                nextItem={nextItem}
+                previousItem={previousItem}
+                total={totalWords}
+                onComplete={completeToday}
+                onNext={nextWord}
+                onPrevious={() =>
+                  setActiveIndex((index) => Math.max(0, index - 1))
                 }
-                notebookCount={notebookCount}
-                percent={progressPercent}
               />
-              <NotebookPanel
-                items={notebookItems}
-                currentWord={currentWord}
-                onSelectWord={openWordDetail}
+              <WordDetailTabs
+                level={level}
+                relations={inlineRelations}
+                word={currentWord}
+                onFlashcard={openFlashcard}
               />
-              <ReviewSuggestionPanel
-                suggestions={suggestions}
-                onSelectWord={openWordDetail}
-              />
-              <ChallengeCard
-                challenge={challenge}
-                onOpen={() => setShowChallenge(true)}
-                word={currentWord?.word}
-              />
-            </aside>
+              {message && (
+                <div className="rounded-xl bg-[#ecfdf5] px-5 py-4 font-bold text-[#15803d]">
+                  {message}
+                </div>
+              )}
+            </>
+          )}
+        </section>
+
+        <aside className="space-y-6">
+          <StatsPanel
+            stats={stats}
+            fallbackLearned={
+              weeklyPlan?.days?.flatMap((day) => day.words || []).length ||
+              totalWords
+            }
+            notebookCount={notebookCount}
+            percent={progressPercent}
+          />
+          <NotebookPanel
+            items={notebookItems}
+            currentWord={currentWord}
+            onSelectWord={openWordDetail}
+          />
+          <ReviewSuggestionPanel
+            suggestions={suggestions}
+            onSelectWord={openWordDetail}
+          />
+          <ChallengeCard
+            challenge={challenge}
+            onOpen={() => setShowChallenge(true)}
+            word={currentWord?.word}
+          />
+        </aside>
       </div>
 
       {detail && (
@@ -733,9 +763,7 @@ function LockedNotice({ reason }: { reason?: string }) {
   const c = vocab[locale];
   return (
     <section className="rounded-2xl border border-[#fed7aa] bg-[#fff7ed] p-5">
-      <h2 className="text-xl font-black text-[#c2410c]">
-        {c.locked.title}
-      </h2>
+      <h2 className="text-xl font-black text-[#c2410c]">{c.locked.title}</h2>
       <p className="mt-2 font-bold text-[#9a3412]">
         {reason || c.locked.defaultReason}
       </p>
@@ -778,14 +806,24 @@ export function TopBar({
           />
         </label>
         <div className="ml-auto flex items-center gap-3">
-          <TopMetric icon="fire" value="18" label={c.topBar.streak} tone="orange" />
+          <TopMetric
+            icon="fire"
+            value="18"
+            label={c.topBar.streak}
+            tone="orange"
+          />
           <TopMetric
             icon="star"
             value="2,450"
             label={c.topBar.xpToday}
             tone="yellow"
           />
-          <TopMetric icon="diamond" value="5,230" label={c.topBar.coins} tone="cyan" />
+          <TopMetric
+            icon="diamond"
+            value="5,230"
+            label={c.topBar.coins}
+            tone="cyan"
+          />
           <button className="relative flex h-11 w-11 items-center justify-center rounded-full border border-[#e8e9f5] bg-white text-xl">
             <AppIcon name="bell" bare size={20} className="text-[#6d35ff]" />
             <span className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 text-[10px] font-black text-white">
@@ -997,17 +1035,13 @@ function WordStudyCard(props: {
             {word?.partOfSpeech || c.studyCard.defaultPartOfSpeech}
           </span>
 
-          <h3 className="mt-6 text-lg font-black text-[#101733]">
-            {meaning}
-          </h3>
+          <h3 className="mt-6 text-lg font-black text-[#101733]">{meaning}</h3>
           <div className="mt-5 border-l-4 border-[#6d35ff] pl-4">
-            <p className="text-sm font-black text-[#6d35ff]">{c.studyCard.exampleLabel}</p>
-            <p className="mt-3 font-bold leading-7 text-[#101733]">
-              {example}
+            <p className="text-sm font-black text-[#6d35ff]">
+              {c.studyCard.exampleLabel}
             </p>
-            <p className="mt-1 text-sm font-bold text-[#7377a8]">
-              {exampleVi}
-            </p>
+            <p className="mt-3 font-bold leading-7 text-[#101733]">{example}</p>
+            <p className="mt-1 text-sm font-bold text-[#7377a8]">{exampleVi}</p>
           </div>
         </div>
 
@@ -1049,7 +1083,11 @@ function WordStudyCard(props: {
         <ActionButton
           active={Boolean(item?.inNotebook)}
           icon="plus"
-          label={item?.inNotebook ? c.studyCard.savedNotebook : c.studyCard.addNotebook}
+          label={
+            item?.inNotebook
+              ? c.studyCard.savedNotebook
+              : c.studyCard.addNotebook
+          }
           onClick={props.onNotebook}
         />
         <ActionButton
@@ -1070,12 +1108,19 @@ function WordStudyCard(props: {
           label={c.studyCard.review}
           onClick={props.onReview}
         />
-        <ActionButton icon="message" label={c.studyCard.share} onClick={props.onShare} />
+        <ActionButton
+          icon="message"
+          label={c.studyCard.share}
+          onClick={props.onShare}
+        />
       </div>
 
       <div className="border-t border-[#ece8fb] px-6 py-3 text-center text-sm font-black text-[#7377a8]">
         {c.studyCard.wordCounter
-          .replace("{current}", String(Math.min(props.activeIndex + 1, Math.max(total, 1))))
+          .replace(
+            "{current}",
+            String(Math.min(props.activeIndex + 1, Math.max(total, 1))),
+          )
           .replace("{total}", String(Math.max(total, 1)))}
       </div>
     </section>
@@ -1124,7 +1169,13 @@ function WordDetailTabs({
 }) {
   const { locale } = useTranslation();
   const c = vocab[locale];
-  const tabOrder = ["detail", "example", "synonym", "antonym", "related"] as const;
+  const tabOrder = [
+    "detail",
+    "example",
+    "synonym",
+    "antonym",
+    "related",
+  ] as const;
   const tabLabels: Record<(typeof tabOrder)[number], string> = {
     detail: c.tabs.detail,
     example: c.tabs.example,
@@ -1132,7 +1183,8 @@ function WordDetailTabs({
     antonym: c.tabs.antonym,
     related: c.tabs.relatedPhrase,
   };
-  const [activeTab, setActiveTab] = useState<(typeof tabOrder)[number]>("detail");
+  const [activeTab, setActiveTab] =
+    useState<(typeof tabOrder)[number]>("detail");
   const synonyms = word?.synonyms?.length
     ? word.synonyms
     : relations?.synonyms || [];
@@ -1144,17 +1196,15 @@ function WordDetailTabs({
   return (
     <section className="overflow-hidden rounded-2xl border border-[#ece8fb] bg-white shadow-sm">
       <div className="flex overflow-x-auto border-b border-[#ece8fb] text-sm font-black text-[#5e6391]">
-        {tabOrder.map(
-          (tabId) => (
-            <button
-              key={tabId}
-              onClick={() => setActiveTab(tabId)}
-              className={`min-w-fit px-7 py-4 ${activeTab === tabId ? "bg-[#f4f0ff] text-[#6d35ff]" : ""}`}
-            >
-              {tabLabels[tabId]}
-            </button>
-          ),
-        )}
+        {tabOrder.map((tabId) => (
+          <button
+            key={tabId}
+            onClick={() => setActiveTab(tabId)}
+            className={`min-w-fit px-7 py-4 ${activeTab === tabId ? "bg-[#f4f0ff] text-[#6d35ff]" : ""}`}
+          >
+            {tabLabels[tabId]}
+          </button>
+        ))}
       </div>
 
       {activeTab === "example" ? (
@@ -1186,89 +1236,104 @@ function WordDetailTabs({
           onFlashcard={onFlashcard}
         />
       ) : (
-      <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-        <div className="space-y-5 text-sm font-bold text-[#59627f]">
-          <InfoRow label={c.detailTab.wordType} value={word?.partOfSpeech || c.studyCard.defaultPartOfSpeech} />
-          <InfoRow
-            label={c.detailTab.level}
-            value={level}
-            badge={word?.difficulty ? `Độ khó ${word.difficulty}` : c.detailTab.mediumBadge}
-          />
-          <InfoRow
-            label={c.detailTab.topic}
-            value={word?.topic?.name || c.detailTab.defaultTopic}
-          />
+        <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="space-y-5 text-sm font-bold text-[#59627f]">
+            <InfoRow
+              label={c.detailTab.wordType}
+              value={word?.partOfSpeech || c.studyCard.defaultPartOfSpeech}
+            />
+            <InfoRow
+              label={c.detailTab.level}
+              value={level}
+              badge={
+                word?.difficulty
+                  ? `Độ khó ${word.difficulty}`
+                  : c.detailTab.mediumBadge
+              }
+            />
+            <InfoRow
+              label={c.detailTab.topic}
+              value={word?.topic?.name || c.detailTab.defaultTopic}
+            />
 
-          <div>
-            <p className="font-black text-[#101733]">{c.detailTab.wordFamily}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {(synonyms.length ? synonyms : [word?.word || "environment"])
-                .slice(0, 4)
-                .map((item: string) => (
-                  <span
-                    key={item}
-                    className="rounded-lg bg-[#efe9ff] px-3 py-1.5 text-xs font-black text-[#6d35ff]"
-                  >
-                    {item}
-                  </span>
-                ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="font-black text-[#101733]">{c.detailTab.collocations}</p>
-            <ul className="mt-3 list-disc space-y-2 pl-5">
-              {(sameTopic.length
-                ? sameTopic.slice(0, 3).map((item: VocabularyWord) => item.word)
-                : [
-                    `learn ${word?.word || "vocabulary"}`,
-                    `use ${word?.word || "it"} naturally`,
-                    `review ${word?.word || "it"} later`,
-                  ]
-              ).map((item: string) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </div>
-
-          {antonyms.length > 0 && (
             <div>
-              <p className="font-black text-[#101733]">{c.detailTab.antonyms}</p>
+              <p className="font-black text-[#101733]">
+                {c.detailTab.wordFamily}
+              </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                {antonyms.slice(0, 4).map((item: string) => (
-                  <span
-                    key={item}
-                    className="rounded-lg bg-[#fff1f2] px-3 py-1.5 text-xs font-black text-[#e11d48]"
-                  >
-                    {item}
-                  </span>
-                ))}
+                {(synonyms.length ? synonyms : [word?.word || "environment"])
+                  .slice(0, 4)
+                  .map((item: string) => (
+                    <span
+                      key={item}
+                      className="rounded-lg bg-[#efe9ff] px-3 py-1.5 text-xs font-black text-[#6d35ff]"
+                    >
+                      {item}
+                    </span>
+                  ))}
               </div>
             </div>
-          )}
-        </div>
 
-        <div className="rounded-2xl bg-[#f7f5ff] p-6">
-          <p className="font-black text-[#101733]">{c.detailTab.memoTitle}</p>
-          <p className="mt-4 text-sm font-bold leading-6 text-[#27245f]">
-            {c.detailTab.memoText.replace("{word}", word?.word || "word")}
-          </p>
-          <div className="mt-8 flex items-end gap-5">
-            <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-3xl bg-white text-[#f97316] shadow-sm">
-              <AppIcon name="paw" bare size={72} />
+            <div>
+              <p className="font-black text-[#101733]">
+                {c.detailTab.collocations}
+              </p>
+              <ul className="mt-3 list-disc space-y-2 pl-5">
+                {(sameTopic.length
+                  ? sameTopic
+                      .slice(0, 3)
+                      .map((item: VocabularyWord) => item.word)
+                  : [
+                      `learn ${word?.word || "vocabulary"}`,
+                      `use ${word?.word || "it"} naturally`,
+                      `review ${word?.word || "it"} later`,
+                    ]
+                ).map((item: string) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
             </div>
-            <div className="rounded-2xl bg-white p-4 text-sm font-bold leading-6 text-[#101733] shadow-sm">
-              {c.detailTab.flashcardTip}
-              <button
-                onClick={onFlashcard}
-                className="mt-4 block rounded-xl bg-[#6d35ff] px-5 py-3 text-sm font-black text-white"
-              >
-                {c.detailTab.learnWithFlashcard}
-              </button>
+
+            {antonyms.length > 0 && (
+              <div>
+                <p className="font-black text-[#101733]">
+                  {c.detailTab.antonyms}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {antonyms.slice(0, 4).map((item: string) => (
+                    <span
+                      key={item}
+                      className="rounded-lg bg-[#fff1f2] px-3 py-1.5 text-xs font-black text-[#e11d48]"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-2xl bg-[#f7f5ff] p-6">
+            <p className="font-black text-[#101733]">{c.detailTab.memoTitle}</p>
+            <p className="mt-4 text-sm font-bold leading-6 text-[#27245f]">
+              {c.detailTab.memoText.replace("{word}", word?.word || "word")}
+            </p>
+            <div className="mt-8 flex items-end gap-5">
+              <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-3xl bg-white text-[#f97316] shadow-sm">
+                <AppIcon name="paw" bare size={72} />
+              </div>
+              <div className="rounded-2xl bg-white p-4 text-sm font-bold leading-6 text-[#101733] shadow-sm">
+                {c.detailTab.flashcardTip}
+                <button
+                  onClick={onFlashcard}
+                  className="mt-4 block rounded-xl bg-[#6d35ff] px-5 py-3 text-sm font-black text-white"
+                >
+                  {c.detailTab.learnWithFlashcard}
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
       )}
     </section>
   );
@@ -1303,22 +1368,31 @@ function ExampleTabContent({
     "Công ty này cam kết phát triển bền vững.",
   ];
   const family = (
-    word?.synonyms?.length ? word.synonyms : sameTopic.map((item: VocabularyWord) => item.word)
+    word?.synonyms?.length
+      ? word.synonyms
+      : sameTopic.map((item: VocabularyWord) => item.word)
   ).slice(0, 3);
 
   return (
     <div className="grid gap-6 p-5 lg:grid-cols-[210px_minmax(0,1fr)]">
       <aside className="space-y-5 text-sm font-bold text-[#4f5790]">
-        <ExampleMeta label={c.detailTab.wordType} value={word?.partOfSpeech || "adjective (tính từ)"} />
         <ExampleMeta
-          action={word?.audio ? () => new Audio(word.audio || "").play() : undefined}
+          label={c.detailTab.wordType}
+          value={word?.partOfSpeech || "adjective (tính từ)"}
+        />
+        <ExampleMeta
+          action={
+            word?.audio ? () => new Audio(word.audio || "").play() : undefined
+          }
           label={c.exampleTab.phonetic}
           value={word?.phonetic || "/səˈsteɪ.nə.bəl/"}
         />
         <ExampleMeta
           badge={level}
           label={c.detailTab.level}
-          value={word?.difficulty ? `Độ khó ${word.difficulty}` : "Trung cấp cao"}
+          value={
+            word?.difficulty ? `Độ khó ${word.difficulty}` : "Trung cấp cao"
+          }
         />
         <ExampleMeta
           icon="leaf"
@@ -1343,7 +1417,9 @@ function ExampleTabContent({
         </div>
 
         <div>
-          <p className="font-black text-[#101733]">{c.detailTab.collocations}</p>
+          <p className="font-black text-[#101733]">
+            {c.detailTab.collocations}
+          </p>
           <ul className="mt-3 list-disc space-y-2 pl-4 text-xs leading-5">
             {(sameTopic.length
               ? sameTopic.slice(0, 4).map((item: VocabularyWord) => item.word)
@@ -1377,7 +1453,9 @@ function ExampleTabContent({
             <p className="mt-3 text-sm font-bold text-[#4f5790]">
               {word?.phonetic || "/səˈsteɪ.nə.bəl/"}
             </p>
-            <p className="mt-5 text-sm font-black text-[#101733]">{c.exampleTab.meaning}</p>
+            <p className="mt-5 text-sm font-black text-[#101733]">
+              {c.exampleTab.meaning}
+            </p>
             <p className="mt-2 max-w-xl text-sm font-bold leading-6 text-[#4f5790]">
               {word?.meaningVi ||
                 word?.meaningEn ||
@@ -1398,7 +1476,12 @@ function ExampleTabContent({
                 }}
               />
             ) : (
-              <AppIcon name="leaf" bare size={64} className="text-emerald-600" />
+              <AppIcon
+                name="leaf"
+                bare
+                size={64}
+                className="text-emerald-600"
+              />
             )}
           </div>
         </div>
@@ -1545,7 +1628,10 @@ function SynonymTabContent({
           <div>
             <h4 className="text-xl font-black">{c.synonymTab.title}</h4>
             <p className="mt-1 text-sm font-bold text-[#69708b]">
-              {c.synonymTab.subtitle.replace("{word}", word?.word || "sustainable")}
+              {c.synonymTab.subtitle.replace(
+                "{word}",
+                word?.word || "sustainable",
+              )}
             </p>
           </div>
           <button className="inline-flex items-center gap-2 rounded-xl border border-[#e8e9f5] px-4 py-2 text-sm font-black text-[#6d35ff]">
@@ -1593,7 +1679,12 @@ function SynonymTabContent({
                       }}
                     />
                   ) : (
-                    <AppIcon name="leaf" bare size={28} className="text-emerald-600" />
+                    <AppIcon
+                      name="leaf"
+                      bare
+                      size={28}
+                      className="text-emerald-600"
+                    />
                   )}
                 </div>
               </div>
@@ -1725,7 +1816,10 @@ function AntonymTabContent({
         <div className="mb-5">
           <h4 className="text-xl font-black">{c.antonymTab.title}</h4>
           <p className="mt-1 text-sm font-bold text-[#69708b]">
-            {c.antonymTab.subtitle.replace("{word}", word?.word || "sustainable")}
+            {c.antonymTab.subtitle.replace(
+              "{word}",
+              word?.word || "sustainable",
+            )}
           </p>
         </div>
 
@@ -1764,7 +1858,12 @@ function AntonymTabContent({
                       }}
                     />
                   ) : (
-                    <AppIcon name={item.icon} bare size={26} className="text-red-500" />
+                    <AppIcon
+                      name={item.icon}
+                      bare
+                      size={26}
+                      className="text-red-500"
+                    />
                   )}
                 </div>
               </div>
@@ -1914,7 +2013,10 @@ function buildRelatedPhrases(
   sameTopic: VocabularyWord[],
 ): Array<{ phrase: string; meaning: string; example: string }> {
   const clean = word.toLowerCase();
-  const presets: Record<string, Array<{ phrase: string; meaning: string; example: string }>> = {
+  const presets: Record<
+    string,
+    Array<{ phrase: string; meaning: string; example: string }>
+  > = {
     sustainable: [
       {
         phrase: "sustainable development",
@@ -1949,7 +2051,8 @@ function buildRelatedPhrases(
       {
         phrase: "environmentally sustainable",
         meaning: "bền vững về môi trường",
-        example: "This product is made with environmentally sustainable materials.",
+        example:
+          "This product is made with environmentally sustainable materials.",
       },
       {
         phrase: "financially sustainable",
@@ -2021,7 +2124,9 @@ function buildSynonymExample(value: string) {
     lasting: "They built a lasting partnership.",
     enduring: "Enduring habits lead to success.",
   };
-  return examples[value.toLowerCase()] || `Try using ${value} in your own sentence.`;
+  return (
+    examples[value.toLowerCase()] || `Try using ${value} in your own sentence.`
+  );
 }
 
 function buildAntonymMeaning(value: string) {
@@ -2043,7 +2148,9 @@ function buildAntonymExample(value: string) {
     unsustainable: "Rapid population growth is unsustainable.",
     wasteful: "It is wasteful to leave the lights on all day.",
   };
-  return examples[value.toLowerCase()] || `Try using ${value} in your own sentence.`;
+  return (
+    examples[value.toLowerCase()] || `Try using ${value} in your own sentence.`
+  );
 }
 
 function ExampleMeta({
@@ -2091,7 +2198,9 @@ function highlightWord(text: string, word?: string) {
   return (
     <>
       {text.slice(0, index)}
-      <span className="text-[#6d35ff]">{text.slice(index, index + word.length)}</span>
+      <span className="text-[#6d35ff]">
+        {text.slice(index, index + word.length)}
+      </span>
       {text.slice(index + word.length)}
     </>
   );
@@ -2181,7 +2290,12 @@ function WordPager({
               {nextItem?.word?.word || c.pager.none}
             </span>
           </span>
-          <AppIcon name="chevronRight" bare size={20} className="text-[#6d35ff]" />
+          <AppIcon
+            name="chevronRight"
+            bare
+            size={20}
+            className="text-[#6d35ff]"
+          />
         </button>
       )}
     </section>
@@ -2405,18 +2519,18 @@ function WeeklyTopics({ plan }: { plan: WeeklyPlan | null }) {
   ] as const;
 
   const dayLabelMap: Record<number, string> = {
-  0: "Chủ nhật",
-  2: "Thứ 2",
-  3: "Thứ 3",
-  4: "Thứ 4",
-  5: "Thứ 5",
-  6: "Thứ 6",
-  7: "Thứ 7",
-};
+    0: "Chủ nhật",
+    2: "Thứ 2",
+    3: "Thứ 3",
+    4: "Thứ 4",
+    5: "Thứ 5",
+    6: "Thứ 6",
+    7: "Thứ 7",
+  };
 
-const getDayLabel = (dayOfWeek: number) => {
-  return dayLabelMap[dayOfWeek] || `T${dayOfWeek}`;
-};
+  const getDayLabel = (dayOfWeek: number) => {
+    return dayLabelMap[dayOfWeek] || `T${dayOfWeek}`;
+  };
 
   const days = plan?.days?.length
     ? plan.days.map(
@@ -2491,10 +2605,26 @@ function StatsPanel({
           </div>
         </div>
         <div className="space-y-4 text-sm font-bold text-[#59627f]">
-          <ProgressLegend color="#7c3aed" label={c.statsPanel.learned} value={`${learned} ${c.statsPanel.unit}`} />
-          <ProgressLegend color="#22c55e" label={c.statsPanel.toMastered} value={`${mastered} ${c.statsPanel.unit}`} />
-          <ProgressLegend color="#ef4444" label={c.statsPanel.toReview} value={`${reviewDue} ${c.statsPanel.unit}`} />
-          <ProgressLegend color="#6d35ff" label={c.statsPanel.notebook} value={`${stats?.notebookWords || notebookCount} ${c.statsPanel.unit}`} />
+          <ProgressLegend
+            color="#7c3aed"
+            label={c.statsPanel.learned}
+            value={`${learned} ${c.statsPanel.unit}`}
+          />
+          <ProgressLegend
+            color="#22c55e"
+            label={c.statsPanel.toMastered}
+            value={`${mastered} ${c.statsPanel.unit}`}
+          />
+          <ProgressLegend
+            color="#ef4444"
+            label={c.statsPanel.toReview}
+            value={`${reviewDue} ${c.statsPanel.unit}`}
+          />
+          <ProgressLegend
+            color="#6d35ff"
+            label={c.statsPanel.notebook}
+            value={`${stats?.notebookWords || notebookCount} ${c.statsPanel.unit}`}
+          />
         </div>
       </div>
     </Panel>
@@ -2535,7 +2665,12 @@ function NotebookPanel({
 }) {
   const { locale } = useTranslation();
   const c = vocab[locale];
-  const dateLocales: Record<Locale, string> = { vi: "vi-VN", en: "en-US", zh: "zh-CN", de: "de-DE" };
+  const dateLocales: Record<Locale, string> = {
+    vi: "vi-VN",
+    en: "en-US",
+    zh: "zh-CN",
+    de: "de-DE",
+  };
   const list = items.length
     ? items.slice(0, 3)
     : currentWord
@@ -2563,12 +2698,21 @@ function NotebookPanel({
                   {item.createdAt
                     ? c.notebookPanel.addedOn.replace(
                         "{date}",
-                        new Date(item.createdAt).toLocaleDateString(dateLocales[locale]),
+                        new Date(item.createdAt).toLocaleDateString(
+                          dateLocales[locale],
+                        ),
                       )
-                    : item.word.meaningVi || item.word.meaningEn || c.notebookPanel.defaultLabel}
+                    : item.word.meaningVi ||
+                      item.word.meaningEn ||
+                      c.notebookPanel.defaultLabel}
                 </span>
               </span>
-              <AppIcon name="notebook" bare size={18} className="text-[#6d35ff]" />
+              <AppIcon
+                name="notebook"
+                bare
+                size={18}
+                className="text-[#6d35ff]"
+              />
             </button>
           ))
         ) : (
@@ -2611,7 +2755,10 @@ function ReviewSuggestionPanel({
                 {item.word}
               </span>
               <span className="block text-xs font-bold text-[#7377a8]">
-                {item.meaningVi || item.meaningEn || item.status || c.reviewSuggestion.defaultMeta}
+                {item.meaningVi ||
+                  item.meaningEn ||
+                  item.status ||
+                  c.reviewSuggestion.defaultMeta}
               </span>
             </span>
           </button>
@@ -2642,7 +2789,10 @@ function ChallengeCard({
           {challenge?.locked
             ? challenge.reason
             : challenge?.prompt ||
-              c.challengeCard.defaultPrompt.replace("{word}", challenge?.word || word || "vocabulary")}
+              c.challengeCard.defaultPrompt.replace(
+                "{word}",
+                challenge?.word || word || "vocabulary",
+              )}
         </p>
       </div>
       <div className="mt-5 flex items-center gap-3 text-sm font-black text-[#7377a8]">
@@ -2707,8 +2857,14 @@ function DetailModal({
         </p>
       </div>
       <div className="mt-5 grid gap-4 md:grid-cols-2">
-        <InfoList title={c.detailModal.synonyms} items={relations?.synonyms || []} />
-        <InfoList title={c.detailModal.antonyms} items={relations?.antonyms || []} />
+        <InfoList
+          title={c.detailModal.synonyms}
+          items={relations?.synonyms || []}
+        />
+        <InfoList
+          title={c.detailModal.antonyms}
+          items={relations?.antonyms || []}
+        />
       </div>
       <div className="mt-5">
         <h3 className="font-black">{c.detailModal.sameTopic}</h3>
@@ -2746,7 +2902,9 @@ function FlashcardModal({
     <Modal onClose={onClose}>
       <div className="text-center">
         <p className="text-sm font-black uppercase text-[#6d35ff]">
-          {c.flashcardModal.counter.replace("{index}", String(index)).replace("{total}", String(total))}
+          {c.flashcardModal.counter
+            .replace("{index}", String(index))
+            .replace("{total}", String(total))}
         </p>
         <h2 className="mt-3 text-5xl font-black">{flashcard.front}</h2>
         <p className="mt-3 text-xl font-bold text-[#69708b]">
@@ -2887,7 +3045,11 @@ function ChallengeModal({
               className="rounded-2xl border border-[#e8e9f5] p-4"
             >
               <h3 className="font-black">
-                {c.challengeModal.questionLabel.replace("{n}", String(index + 1))}: {question.prompt}
+                {c.challengeModal.questionLabel.replace(
+                  "{n}",
+                  String(index + 1),
+                )}
+                : {question.prompt}
               </h3>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {question.options.map((option) => (
@@ -3055,14 +3217,19 @@ function LessonCompletedModal({
   onFinish: () => void;
   onLearnExtra: (amount: number) => void;
   onSubmitReview: (
-    reviews: Array<{ wordId: string; rating: "AGAIN" | "HARD" | "GOOD" | "EASY" }>,
+    reviews: Array<{
+      wordId: string;
+      rating: "AGAIN" | "HARD" | "GOOD" | "EASY";
+    }>,
   ) => Promise<any>;
   words: DailyWordItem[];
   wordsLearned: number;
 }) {
   const { locale } = useTranslation();
   const c = vocab[locale];
-  const [mode, setMode] = useState<"summary" | "review" | "reviewDone" | "explore">("summary");
+  const [mode, setMode] = useState<
+    "summary" | "review" | "reviewDone" | "explore"
+  >("summary");
   const [reviewIndex, setReviewIndex] = useState(0);
   const [reviewInput, setReviewInput] = useState("");
   const [reviewAnswers, setReviewAnswers] = useState<
@@ -3084,8 +3251,16 @@ function LessonCompletedModal({
   const currentReviewItem = reviewWords[reviewIndex];
   const currentReviewWord = currentReviewItem?.word;
   const currentReviewMode = reviewIndex % 5;
-  const meaningOptions = buildReviewOptions(reviewWords, currentReviewWord, "meaning");
-  const wordOptions = buildReviewOptions(reviewWords, currentReviewWord, "word");
+  const meaningOptions = buildReviewOptions(
+    reviewWords,
+    currentReviewWord,
+    "meaning",
+  );
+  const wordOptions = buildReviewOptions(
+    reviewWords,
+    currentReviewWord,
+    "word",
+  );
 
   const answerReview = async (rating: "AGAIN" | "HARD" | "GOOD" | "EASY") => {
     if (!currentReviewWord?.id || submittingReview) return;
@@ -3122,158 +3297,199 @@ function LessonCompletedModal({
   if (mode === "review") {
     if (!currentReviewWord) return null;
 
-      return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/55 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-[560px] rounded-[28px] bg-white p-6 shadow-2xl">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm font-black text-violet-600">
-                  {c.completedModal.reviewCounter
-                    .replace("{index}", String(reviewIndex + 1))
-                    .replace("{total}", String(reviewWords.length))}
-                </p>
-                <h2 className="mt-2 text-2xl font-extrabold text-slate-950">
-                  {c.completedModal.reviewModes[currentReviewMode]}
-                </h2>
-              </div>
-              <button onClick={() => setMode("summary")} className="rounded-full bg-slate-100 p-2">
-                <X size={18} />
-              </button>
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/55 px-4 backdrop-blur-sm">
+        <div className="w-full max-w-[560px] rounded-[28px] bg-white p-6 shadow-2xl">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-black text-violet-600">
+                {c.completedModal.reviewCounter
+                  .replace("{index}", String(reviewIndex + 1))
+                  .replace("{total}", String(reviewWords.length))}
+              </p>
+              <h2 className="mt-2 text-2xl font-extrabold text-slate-950">
+                {c.completedModal.reviewModes[currentReviewMode]}
+              </h2>
             </div>
-
-            <div className="mt-6 rounded-2xl bg-violet-50 p-5">
-              {currentReviewMode === 0 && (
-                <>
-                  <p className="text-4xl font-black text-violet-700">{currentReviewWord.word}</p>
-                  <p className="mt-3 text-lg font-bold text-slate-700">
-                    {currentReviewWord.meaningVi || currentReviewWord.meaningEn}
-                  </p>
-                  <p className="mt-3 text-sm font-semibold text-slate-500">
-                    {currentReviewWord.example || "Try using this word in your own sentence."}
-                  </p>
-                </>
-              )}
-
-              {currentReviewMode === 1 && (
-                <>
-                  <p className="text-sm font-bold text-slate-500">{c.completedModal.chooseCorrectMeaning}</p>
-                  <p className="mt-2 text-3xl font-black text-violet-700">{currentReviewWord.word}</p>
-                  <div className="mt-5 grid gap-2">
-                    {meaningOptions.map((option) => (
-                      <button
-                        key={option}
-                        onClick={() =>
-                          void answerReview(
-                            option === (currentReviewWord.meaningVi || currentReviewWord.meaningEn)
-                              ? "GOOD"
-                              : "AGAIN",
-                          )
-                        }
-                        className="rounded-xl border border-violet-100 bg-white px-4 py-3 text-left text-sm font-bold hover:bg-violet-100"
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-
-              {currentReviewMode === 2 && (
-                <>
-                  <p className="text-sm font-bold text-slate-500">{c.completedModal.typeWordMeaning}</p>
-                  <p className="mt-2 text-xl font-black text-slate-900">
-                    {currentReviewWord.meaningVi || currentReviewWord.meaningEn}
-                  </p>
-                  <input
-                    value={reviewInput}
-                    onChange={(event) => setReviewInput(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") submitTypedReview();
-                    }}
-                    className="mt-5 w-full rounded-xl border border-violet-100 px-4 py-3 font-bold outline-none focus:border-violet-500"
-                    placeholder={c.completedModal.typeWordPlaceholder}
-                  />
-                </>
-              )}
-
-              {currentReviewMode === 3 && (
-                <>
-                  <button
-                    onClick={() => currentReviewWord.audio && new Audio(currentReviewWord.audio).play()}
-                    className="rounded-xl bg-violet-600 px-5 py-3 font-black text-white"
-                  >
-                    {c.completedModal.listenAndChoose}
-                  </button>
-                  <p className="mt-3 text-sm font-bold text-slate-500">
-                    {c.completedModal.listenNoAudioFallback} {currentReviewWord.meaningVi || currentReviewWord.meaningEn}
-                  </p>
-                  <div className="mt-5 grid grid-cols-2 gap-2">
-                    {wordOptions.map((option) => (
-                      <button
-                        key={option}
-                        onClick={() => void answerReview(option === currentReviewWord.word ? "GOOD" : "AGAIN")}
-                        className="rounded-xl border border-violet-100 bg-white px-4 py-3 text-sm font-bold hover:bg-violet-100"
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-
-              {currentReviewMode === 4 && (
-                <>
-                  <p className="text-sm font-bold text-slate-500">{c.completedModal.fillMissingWord}</p>
-                  <p className="mt-2 text-lg font-black text-slate-900">
-                    {blankReviewWord(currentReviewWord.example, currentReviewWord.word)}
-                  </p>
-                  <input
-                    value={reviewInput}
-                    onChange={(event) => setReviewInput(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") submitTypedReview();
-                    }}
-                    className="mt-5 w-full rounded-xl border border-violet-100 px-4 py-3 font-bold outline-none focus:border-violet-500"
-                    placeholder={c.completedModal.fillMissingPlaceholder}
-                  />
-                </>
-              )}
-            </div>
-
-            {[2, 4].includes(currentReviewMode) ? (
-              <button
-                onClick={submitTypedReview}
-                className="mt-5 w-full rounded-xl bg-violet-600 py-3 font-black text-white"
-              >
-                {c.completedModal.check}
-              </button>
-            ) : currentReviewMode === 0 ? (
-              <div className="mt-5 grid grid-cols-3 gap-2">
-                <button onClick={() => void answerReview("AGAIN")} className="rounded-xl bg-red-50 py-3 font-black text-red-600">
-                  {c.completedModal.forgot}
-                </button>
-                <button onClick={() => void answerReview("HARD")} className="rounded-xl bg-amber-50 py-3 font-black text-amber-600">
-                  {c.completedModal.hard}
-                </button>
-                <button onClick={() => void answerReview("GOOD")} className="rounded-xl bg-emerald-50 py-3 font-black text-emerald-600">
-                  {c.completedModal.remembered}
-                </button>
-              </div>
-            ) : null}
+            <button
+              onClick={() => setMode("summary")}
+              className="rounded-full bg-slate-100 p-2"
+            >
+              <X size={18} />
+            </button>
           </div>
+
+          <div className="mt-6 rounded-2xl bg-violet-50 p-5">
+            {currentReviewMode === 0 && (
+              <>
+                <p className="text-4xl font-black text-violet-700">
+                  {currentReviewWord.word}
+                </p>
+                <p className="mt-3 text-lg font-bold text-slate-700">
+                  {currentReviewWord.meaningVi || currentReviewWord.meaningEn}
+                </p>
+                <p className="mt-3 text-sm font-semibold text-slate-500">
+                  {currentReviewWord.example ||
+                    "Try using this word in your own sentence."}
+                </p>
+              </>
+            )}
+
+            {currentReviewMode === 1 && (
+              <>
+                <p className="text-sm font-bold text-slate-500">
+                  {c.completedModal.chooseCorrectMeaning}
+                </p>
+                <p className="mt-2 text-3xl font-black text-violet-700">
+                  {currentReviewWord.word}
+                </p>
+                <div className="mt-5 grid gap-2">
+                  {meaningOptions.map((option) => (
+                    <button
+                      key={option}
+                      onClick={() =>
+                        void answerReview(
+                          option ===
+                            (currentReviewWord.meaningVi ||
+                              currentReviewWord.meaningEn)
+                            ? "GOOD"
+                            : "AGAIN",
+                        )
+                      }
+                      className="rounded-xl border border-violet-100 bg-white px-4 py-3 text-left text-sm font-bold hover:bg-violet-100"
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {currentReviewMode === 2 && (
+              <>
+                <p className="text-sm font-bold text-slate-500">
+                  {c.completedModal.typeWordMeaning}
+                </p>
+                <p className="mt-2 text-xl font-black text-slate-900">
+                  {currentReviewWord.meaningVi || currentReviewWord.meaningEn}
+                </p>
+                <input
+                  value={reviewInput}
+                  onChange={(event) => setReviewInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") submitTypedReview();
+                  }}
+                  className="mt-5 w-full rounded-xl border border-violet-100 px-4 py-3 font-bold outline-none focus:border-violet-500"
+                  placeholder={c.completedModal.typeWordPlaceholder}
+                />
+              </>
+            )}
+
+            {currentReviewMode === 3 && (
+              <>
+                <button
+                  onClick={() =>
+                    currentReviewWord.audio &&
+                    new Audio(currentReviewWord.audio).play()
+                  }
+                  className="rounded-xl bg-violet-600 px-5 py-3 font-black text-white"
+                >
+                  {c.completedModal.listenAndChoose}
+                </button>
+                <p className="mt-3 text-sm font-bold text-slate-500">
+                  {c.completedModal.listenNoAudioFallback}{" "}
+                  {currentReviewWord.meaningVi || currentReviewWord.meaningEn}
+                </p>
+                <div className="mt-5 grid grid-cols-2 gap-2">
+                  {wordOptions.map((option) => (
+                    <button
+                      key={option}
+                      onClick={() =>
+                        void answerReview(
+                          option === currentReviewWord.word ? "GOOD" : "AGAIN",
+                        )
+                      }
+                      className="rounded-xl border border-violet-100 bg-white px-4 py-3 text-sm font-bold hover:bg-violet-100"
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {currentReviewMode === 4 && (
+              <>
+                <p className="text-sm font-bold text-slate-500">
+                  {c.completedModal.fillMissingWord}
+                </p>
+                <p className="mt-2 text-lg font-black text-slate-900">
+                  {blankReviewWord(
+                    currentReviewWord.example,
+                    currentReviewWord.word,
+                  )}
+                </p>
+                <input
+                  value={reviewInput}
+                  onChange={(event) => setReviewInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") submitTypedReview();
+                  }}
+                  className="mt-5 w-full rounded-xl border border-violet-100 px-4 py-3 font-bold outline-none focus:border-violet-500"
+                  placeholder={c.completedModal.fillMissingPlaceholder}
+                />
+              </>
+            )}
+          </div>
+
+          {[2, 4].includes(currentReviewMode) ? (
+            <button
+              onClick={submitTypedReview}
+              className="mt-5 w-full rounded-xl bg-violet-600 py-3 font-black text-white"
+            >
+              {c.completedModal.check}
+            </button>
+          ) : currentReviewMode === 0 ? (
+            <div className="mt-5 grid grid-cols-3 gap-2">
+              <button
+                onClick={() => void answerReview("AGAIN")}
+                className="rounded-xl bg-red-50 py-3 font-black text-red-600"
+              >
+                {c.completedModal.forgot}
+              </button>
+              <button
+                onClick={() => void answerReview("HARD")}
+                className="rounded-xl bg-amber-50 py-3 font-black text-amber-600"
+              >
+                {c.completedModal.hard}
+              </button>
+              <button
+                onClick={() => void answerReview("GOOD")}
+                className="rounded-xl bg-emerald-50 py-3 font-black text-emerald-600"
+              >
+                {c.completedModal.remembered}
+              </button>
+            </div>
+          ) : null}
         </div>
-      );
+      </div>
+    );
   }
 
   if (mode === "reviewDone") {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/55 px-4 backdrop-blur-sm">
         <div className="w-full max-w-[480px] rounded-[28px] bg-white p-7 text-center shadow-2xl">
-          <h2 className="text-3xl font-extrabold text-violet-600">{c.completedModal.reviewDoneTitle}</h2>
+          <h2 className="text-3xl font-extrabold text-violet-600">
+            {c.completedModal.reviewDoneTitle}
+          </h2>
           <p className="mt-3 font-bold text-slate-600">
             {c.completedModal.reviewDoneDesc
               .replace("{remembered}", String(reviewResult?.remembered || 0))
-              .replace("{total}", String(reviewResult?.total || reviewWords.length))}
+              .replace(
+                "{total}",
+                String(reviewResult?.total || reviewWords.length),
+              )}
           </p>
           <button
             onClick={onFinish}
@@ -3385,7 +3601,9 @@ function LessonCompletedModal({
             </div>
 
             <div>
-              <p className="font-bold text-violet-700">{c.completedModal.tomorrowTitle}</p>
+              <p className="font-bold text-violet-700">
+                {c.completedModal.tomorrowTitle}
+              </p>
               <p className="text-sm text-slate-600">
                 {c.completedModal.tomorrowDesc}
               </p>
@@ -3413,7 +3631,10 @@ function LessonCompletedModal({
                   onClick={() => onLearnExtra(amount)}
                   className="rounded-xl border border-violet-100 bg-white py-3 text-sm font-bold text-violet-700 hover:bg-violet-50"
                 >
-                  {c.completedModal.learnMore.replace("{amount}", String(amount))}
+                  {c.completedModal.learnMore.replace(
+                    "{amount}",
+                    String(amount),
+                  )}
                 </button>
               ))}
             </div>

@@ -10,9 +10,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { VocabularyService } from './vocabulary.service';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { Roles } from 'src/common/decorators/roles.decorator';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { CreateWordDto } from './dto/create-word.dto';
 import { CreateTopicDto } from './dto/create-topic.dto';
 import { UpdateLearningProfileDto } from './dto/update-learning-profile.dto';

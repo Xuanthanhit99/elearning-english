@@ -43,7 +43,7 @@ export default function LearningPathLessonPage() {
   }
 
   useEffect(() => {
-    void loadLesson();
+    void Promise.resolve().then(loadLesson);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lessonId]);
 
