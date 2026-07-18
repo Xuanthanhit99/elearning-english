@@ -86,6 +86,37 @@ export const settingsApi = {
   update: async (payload: Partial<Settings>) =>
     unwrap<Settings>(await api.patch('/settings', toWritableSettings(payload))),
 
+  getNotifications: async () =>
+    unwrap<Pick<
+      Settings,
+      | 'dailyReminderEnabled'
+      | 'dailyReminderTime'
+      | 'missionReminder'
+      | 'friendActivity'
+      | 'clubNotification'
+      | 'leaderboardNotification'
+      | 'aiFeedbackNotification'
+      | 'emailNotification'
+      | 'pushNotification'
+    >>(await api.get('/settings/notifications')),
+
+  updateNotifications: async (
+    payload: Partial<
+      Pick<
+        Settings,
+        | 'dailyReminderEnabled'
+        | 'dailyReminderTime'
+        | 'missionReminder'
+        | 'friendActivity'
+        | 'clubNotification'
+        | 'leaderboardNotification'
+        | 'aiFeedbackNotification'
+        | 'emailNotification'
+        | 'pushNotification'
+      >
+    >,
+  ) => unwrap<Settings>(await api.patch('/settings/notifications', payload)),
+
   resetSection: async (section: string) =>
     unwrap<Settings>(await api.post('/settings/reset-section', { section })),
 

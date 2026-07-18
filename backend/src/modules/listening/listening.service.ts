@@ -1,18 +1,25 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { LearningSkill, MissionV2Action, Prisma } from '@prisma/client';
+import { createHash } from 'crypto';
+import type Redis from 'ioredis';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GeminiService } from '../gemini/gemini.service';
 import { MissionV2ProgressService } from '../missions-v2/services/mission-v2-progress.service';
+import { ListeningAudioBackfillService } from '../listening-job/listening-audio-backfill.service';
+import { ListeningJobService } from '../listening-job/listening-job.service';
+import { RateListeningSessionDto } from './dto/rate-listening-session.dto';
 import { StartListeningDto } from './dto/start-listening.dto';
 import { SubmitListeningAnswerDto } from './dto/submit-listening-answer.dto';
 import { ListeningTtsService } from './listening-tts.service';
 import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
+import { LISTENING_REDIS } from './listening-redis.provider';
 
 type ListeningOption = {
   label: string;
@@ -38,6 +45,9 @@ export class ListeningService {
     private readonly missionV2ProgressService: MissionV2ProgressService,
     private readonly listeningTtsService: ListeningTtsService,
     private readonly learningXp: LearningXpPublisher,
+    private readonly listeningJobService: ListeningJobService,
+    private readonly listeningAudioBackfillService: ListeningAudioBackfillService,
+    @Inject(LISTENING_REDIS) private readonly redis: Redis,
   ) {}
 
   async getHome(userId: string) {
@@ -559,38 +569,55 @@ export class ListeningService {
 
     const studiedMinutes = Math.max(1, Math.ceil(totalTimeSpent / 60));
 
-    const missionUpdated = await this.updateListeningMissions({
-      userId,
-      sessionId,
-      score,
-      studiedMinutes,
-    });
+    /*
+     * Không trả Mission/XP nếu user finish mà chưa trả lời/skip câu
+     * nào (gọi finish ngay sau start). Tránh farm reward bằng session rỗng.
+     * Session vẫn được đánh dấu COMPLETED (đã commit ở transaction trên)
+     * để không bị kẹt IN_PROGRESS mãi, nhưng không phát thưởng.
+     */
+    const attempted = correct + wrong + skipped;
+
+    const missionUpdated =
+      attempted > 0
+        ? await this.updateListeningMissions({
+            userId,
+            sessionId,
+            score,
+            studiedMinutes,
+          })
+        : false;
 
     const completed = await this.getOwnedSession(userId, sessionId);
 
-    try {
-      await this.learningXp.publish({
-        activity: 'LISTENING_COMPLETED',
-        userId,
-        sourceId: completed.id,
-        score: completed.score,
-        completionRate: completed.score,
-        metadata: {
-          sessionId: completed.id,
-          topic: completed.topic,
-          level: completed.level,
-          totalQuestions: completed.total,
-          correctAnswers: completed.correct,
-          wrongAnswers: completed.wrong,
-          skippedAnswers: completed.skipped,
-          xpEarned: completed.xpEarned,
-          coinsEarned: completed.coinsEarned,
-        },
-      });
-    } catch (error) {
-      this.logger.error(
-        `Listening XP publish failed: ${completed.id}`,
-        error instanceof Error ? error.stack : String(error),
+    if (attempted > 0) {
+      try {
+        await this.learningXp.publish({
+          activity: 'LISTENING_COMPLETED',
+          userId,
+          sourceId: completed.id,
+          score: completed.score,
+          completionRate: completed.score,
+          metadata: {
+            sessionId: completed.id,
+            topic: completed.topic,
+            level: completed.level,
+            totalQuestions: completed.total,
+            correctAnswers: completed.correct,
+            wrongAnswers: completed.wrong,
+            skippedAnswers: completed.skipped,
+            xpEarned: completed.xpEarned,
+            coinsEarned: completed.coinsEarned,
+          },
+        });
+      } catch (error) {
+        this.logger.error(
+          `Listening XP publish failed: ${completed.id}`,
+          error instanceof Error ? error.stack : String(error),
+        );
+      }
+    } else {
+      this.logger.warn(
+        `Listening session finished with zero attempted questions, reward skipped: ${completed.id}`,
       );
     }
 
@@ -649,6 +676,9 @@ export class ListeningService {
         totalTimeSpent,
         totalTimeText: this.formatDuration(totalTimeSpent),
         completedAt: session.completedAt,
+        rating: session.rating ?? null,
+        ratingComment: session.ratingComment ?? null,
+        ratedAt: session.ratedAt ?? null,
       },
       questions: session.answer.map((answer, index) => ({
         id: answer.questionId,
@@ -708,12 +738,19 @@ export class ListeningService {
   async rateSession(
     userId: string,
     sessionId: string,
-    body: {
-      rating: number;
-      comment?: string;
-    },
+    body: RateListeningSessionDto,
   ) {
     const session = await this.getOwnedSession(userId, sessionId);
+
+    /*
+     * Chỉ cho rate khi bài đã hoàn thành, tránh rating một session
+     * đang IN_PROGRESS (session có thể còn thay đổi kết quả).
+     */
+    if (session.status !== 'COMPLETED') {
+      throw new ForbiddenException(
+        'Chỉ có thể đánh giá sau khi hoàn thành bài luyện nghe',
+      );
+    }
 
     const rating = Math.max(
       1,
@@ -850,22 +887,27 @@ export class ListeningService {
         wrong: session.wrong,
         skipped: session.skipped,
       },
-      questions: session.answer.map((answer, index) => ({
-        ...this.toQuestionPayload(answer.question, index + 1),
-        answered: answer.selectedAnswer !== null || answer.isSkipped,
-        selectedAnswer: answer.selectedAnswer,
-        isCorrect: answer.isCorrect,
-        isSkipped: answer.isSkipped,
-        isFlagged: answer.isFlagged,
-        explanation:
-          answer.selectedAnswer !== null || answer.isSkipped
-            ? answer.question.explanation
-            : null,
-        correctAnswer:
-          answer.selectedAnswer !== null || answer.isSkipped
-            ? answer.question.correctAnswer
-            : null,
-      })),
+      questions: session.answer.map((answer, index) => {
+        const revealed = answer.selectedAnswer !== null || answer.isSkipped;
+
+        return {
+          ...this.toQuestionPayload(answer.question, index + 1),
+          answered: revealed,
+          selectedAnswer: answer.selectedAnswer,
+          isCorrect: answer.isCorrect,
+          isSkipped: answer.isSkipped,
+          isFlagged: answer.isFlagged,
+          /*
+           * BẢO MẬT: transcript/explanation/correctAnswer chỉ được trả
+           * về sau khi câu hỏi đã được trả lời hoặc skip. Trước đó
+           * toQuestionPayload() không còn set các field này (xem dưới),
+           * nên FE không nhận được đáp án/ngữ liệu trước khi submit.
+           */
+          transcript: revealed ? answer.question.transcript : null,
+          explanation: revealed ? answer.question.explanation : null,
+          correctAnswer: revealed ? answer.question.correctAnswer : null,
+        };
+      }),
     };
   }
 
@@ -875,15 +917,53 @@ export class ListeningService {
     topic: string;
     questions: any[];
   }) {
-    const session = await this.prismaService.listeningSession.create({
-      data: {
-        userId: params.userId,
-        level: params.level,
-        topic: params.topic,
-        total: params.questions.length,
-        status: 'IN_PROGRESS',
-      },
-    });
+    let session: { id: string };
+
+    try {
+      session = await this.prismaService.listeningSession.create({
+        data: {
+          userId: params.userId,
+          level: params.level,
+          topic: params.topic,
+          total: params.questions.length,
+          status: 'IN_PROGRESS',
+        },
+      });
+    } catch (error) {
+      /*
+       * Race condition: 2 request start() đồng thời cùng
+       * (userId, level, topic) có thể cùng đi qua check "existing IN_PROGRESS"
+       * (không thấy gì) rồi cùng insert. Sau khi migration
+       * 20260719120000_add_listening_active_session_unique được apply,
+       * request thua cuộc sẽ nhận P2002 ở đây thay vì tạo session trùng.
+       * Xử lý: coi request thua là "resume" session vừa được request kia
+       * tạo, KHÔNG throw lỗi cho user.
+       *
+       * Lưu ý: nếu migration trên CHƯA được apply (xem mục Prisma
+       * Migration Status trong report), catch này sẽ không bao giờ
+       * trigger vì DB chưa có unique index — hành vi giữ nguyên như cũ,
+       * không có gì bị phá vỡ.
+       */
+      if (this.isUniqueConstraintError(error)) {
+        const existing = await this.prismaService.listeningSession.findFirst({
+          where: {
+            userId: params.userId,
+            level: params.level,
+            topic: params.topic,
+            status: 'IN_PROGRESS',
+          },
+          orderBy: {
+            startedAt: 'desc',
+          },
+        });
+
+        if (existing) {
+          return this.getSessionPayload(params.userId, existing.id);
+        }
+      }
+
+      throw error;
+    }
 
     await this.prismaService.listeningSessionAnswer.createMany({
       data: params.questions.map((question) => ({
@@ -899,6 +979,15 @@ export class ListeningService {
     });
 
     return this.getSessionPayload(params.userId, session.id);
+  }
+
+  private isUniqueConstraintError(error: unknown): boolean {
+    return (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      (error as { code?: string }).code === 'P2002'
+    );
   }
 
   private async getOwnedSession(userId: string, sessionId: string) {
@@ -1288,6 +1377,23 @@ export class ListeningService {
     return answers.map((answer) => answer.questionId);
   }
 
+  /**
+   * Stage 6D.1: KHÔNG còn gọi Gemini/TTS đồng bộ không giới hạn trong
+   * request user. Chiến lược mới:
+   *  - Nếu đã đủ câu hỏi active: chỉ enqueue backfill audio async (nếu
+   *    có câu thiếu audioUrl), KHÔNG chờ, KHÔNG gọi TTS ở đây.
+   *  - Nếu thiếu câu hỏi nhưng đã có sẵn ít nhất 1 câu (existed > 0):
+   *    enqueue job sinh thêm (async, chạy nền), request hiện tại phục
+   *    vụ với số câu đang có (ít hơn `limit` yêu cầu) thay vì block.
+   *  - Nếu hoàn toàn chưa có câu nào cho (level, topic) — cold start —
+   *    mới cho phép một fallback đồng bộ GIỚI HẠN NGHIÊM NGẶT
+   *    (tối đa `COLD_START_FALLBACK_CAP` = 3 câu, 1 lần gọi Gemini,
+   *    tối đa 3 lần gọi TTS), có cooldown để tránh nhiều request đồng
+   *    thời cùng trigger fallback lặp lại.
+   */
+  private static readonly COLD_START_FALLBACK_CAP = 3;
+  private static readonly COLD_START_LOCK_TTL_SECONDS = 60;
+
   private async ensureQuestions(params: {
     level: string;
     topic: string;
@@ -1301,27 +1407,151 @@ export class ListeningService {
       },
     });
 
-    if (existed >= params.limit) {
-      await this.ensureMissingAudio(params.level, params.topic);
+    const shortfall = Math.max(0, params.limit - existed);
 
+    if (shortfall === 0) {
+      this.enqueueMissingAudioAsync(params.level, params.topic);
       return;
     }
 
+    /*
+     * Luôn enqueue job sinh dữ liệu bất đồng bộ cho phần thiếu, dù có
+     * dùng fallback đồng bộ bên dưới hay không — đây là nguồn bổ sung
+     * dữ liệu chính thức (BullMQ, có validate/hash/dedupe riêng, xem
+     * ListeningJobProcessor). jobId ổn định theo ngày nên nhiều request
+     * cùng lúc không tạo nhiều job trùng.
+     */
+    this.enqueueShortfallAsync(params.level, params.topic, shortfall);
+
+    if (existed > 0) {
+      /*
+       * Đã có sẵn dữ liệu (dù chưa đủ `limit`) — phục vụ ngay với số
+       * câu hiện có, không block request chờ sinh thêm.
+       */
+      return;
+    }
+
+    await this.coldStartSynchronousFallback(params.level, params.topic);
+  }
+
+  private enqueueShortfallAsync(level: string, topic: string, count: number) {
+    const jobDate = new Date().toISOString().slice(0, 10);
+    const jobId = `listening-shortfall-${level}-${this.slugify(topic)}-${jobDate}`;
+
+    this.listeningJobService
+      .enqueueGeneration({
+        totalNeed: Math.min(count, 50),
+        batchSize: Math.min(count, 5) || 1,
+        configs: [{ level, topic }],
+        jobId,
+      })
+      .catch((error) => {
+        this.logger.error(
+          `Enqueue Listening shortfall generation failed: level=${level}, topic=${topic}`,
+          error instanceof Error ? error.stack : String(error),
+        );
+      });
+  }
+
+  private enqueueMissingAudioAsync(level: string, topic: string) {
+    this.listeningAudioBackfillService
+      .enqueueMissingAudio(10)
+      .catch((error) => {
+        this.logger.error(
+          `Enqueue Listening audio backfill failed: level=${level}, topic=${topic}`,
+          error instanceof Error ? error.stack : String(error),
+        );
+      });
+  }
+
+  /**
+   * Stage 6D.3: SỬA LỖI HIGH từ 6D.1/6D.2 — cooldown trước đây dùng
+   * `Map` in-memory trên instance service, chỉ đúng khi chạy 1
+   * backend process. Nhiều replica sẽ có `Map` riêng, mất tác dụng
+   * giới hạn chung. Giờ dùng Redis `SET key value NX EX ttl` — atomic
+   * thật (không tách GET-rồi-SET), TTL đúng 60 giây theo rule cũ,
+   * dùng chung Redis instance của backend.
+   *
+   * Key không dùng trực tiếp `topic` (free text người dùng nhập qua
+   * `StartListeningDto.topic`) mà qua `slugify()` + hash nếu quá dài,
+   * để không đưa raw user input thẳng vào Redis key namespace.
+   */
+  private coldStartLockKey(level: string, topic: string): string {
+    const slug = this.slugify(topic) || 'unknown';
+    const scopedTopic =
+      slug.length > 60
+        ? createHash('sha1').update(slug).digest('hex').slice(0, 16)
+        : slug;
+
+    return `listening:cold-start-lock:${level}:${scopedTopic}`;
+  }
+
+  private async tryAcquireColdStartLock(
+    level: string,
+    topic: string,
+  ): Promise<boolean> {
+    const key = this.coldStartLockKey(level, topic);
+
+    try {
+      const result = await this.redis.set(
+        key,
+        '1',
+        'EX',
+        ListeningService.COLD_START_LOCK_TTL_SECONDS,
+        'NX',
+      );
+
+      return result === 'OK';
+    } catch (error) {
+      /*
+       * Redis lỗi/unavailable: KHÔNG cho phép fallback chạy (an toàn
+       * = deny, không phải allow) để tránh nhiều instance cùng lúc
+       * không có gì chặn lại và cùng gọi Gemini/TTS không giới hạn.
+       * Job async (enqueueShortfallAsync) vẫn hoạt động bình thường
+       * vì không phụ thuộc Redis lock này (BullMQ tự có Redis riêng
+       * và dedupe theo jobId).
+       */
+      this.logger.error(
+        `Listening cold-start Redis lock check failed (treat as NOT acquired): level=${level}, topic=${topic}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+
+      return false;
+    }
+  }
+
+  private async coldStartSynchronousFallback(level: string, topic: string) {
+    const acquired = await this.tryAcquireColdStartLock(level, topic);
+
+    if (!acquired) {
+      this.logger.warn(
+        `Listening cold start fallback skipped (lock not acquired: cooldown active, another instance running, or Redis unavailable): level=${level}, topic=${topic}`,
+      );
+      return;
+    }
+
+    const cap = ListeningService.COLD_START_FALLBACK_CAP;
+
+    this.logger.warn(
+      `Listening cold start fallback triggered: level=${level}, topic=${topic}, cap=${cap}`,
+    );
+
     const generated = await this.generateQuestionsByGemini({
-      ...params,
-      count: params.limit - existed,
+      level,
+      topic,
+      count: cap,
     });
 
     const fallback =
       generated.length > 0
         ? generated
-        : this.buildFallbackQuestions(params.level, params.topic, params.limit);
+        : this.buildFallbackQuestions(level, topic, cap);
 
     const existedQuestions =
       await this.prismaService.listeningQuestion.findMany({
         where: {
-          level: params.level,
-          topic: params.topic,
+          level,
+          topic,
         },
         select: {
           question: true,
@@ -1344,7 +1574,7 @@ export class ListeningService {
         existedSet.add(key);
         return true;
       })
-      .slice(0, params.limit - existed);
+      .slice(0, cap);
 
     for (const item of valid) {
       const audioUrl = await this.listeningTtsService.createAudioFromTranscript(
@@ -1353,8 +1583,8 @@ export class ListeningService {
 
       await this.prismaService.listeningQuestion.create({
         data: {
-          level: params.level,
-          topic: params.topic,
+          level,
+          topic,
           audioUrl: audioUrl ?? '',
           transcript: item.transcript!,
           question: item.question!,
@@ -1366,47 +1596,18 @@ export class ListeningService {
         },
       });
     }
+
+    this.logger.log(
+      `Listening cold start fallback done: level=${level}, topic=${topic}, created=${valid.length}`,
+    );
   }
 
-  private async ensureMissingAudio(level: string, topic: string) {
-    const questions = await this.prismaService.listeningQuestion.findMany({
-      where: {
-        level,
-        topic,
-        isActive: true,
-        OR: [
-          {
-            audioUrl: '',
-          },
-          {
-            audioUrl: '',
-          },
-        ],
-      },
-      take: 10,
-    });
-
-    for (const question of questions) {
-      if (!question.transcript) {
-        continue;
-      }
-      const audioUrl = await this.listeningTtsService.createAudioFromTranscript(
-        question.transcript,
-      );
-
-      if (!audioUrl) {
-        continue;
-      }
-
-      await this.prismaService.listeningQuestion.update({
-        where: {
-          id: question.id,
-        },
-        data: {
-          audioUrl,
-        },
-      });
-    }
+  private slugify(value: string) {
+    return value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   }
 
   private async generateQuestionsByGemini(params: {
@@ -1468,10 +1669,14 @@ Format:
       topic: question.topic,
       audioUrl: question.audioUrl,
       /*
-       * Không trả transcript trước khi answer ở UI production.
-       * Hiện vẫn giữ trong payload để tương thích frontend cũ.
+       * BẢO MẬT (Stage 6D.1): transcript là ngữ liệu có thể lộ đáp án
+       * (câu hỏi hỏi ý chính/chi tiết của transcript). Mặc định null ở
+       * đây; getSessionPayload() sẽ set lại transcript thật khi câu
+       * hỏi đã answered/skipped. submitAnswer()/skipQuestion() response
+       * (gọi riêng, không qua hàm này) vẫn trả transcript ngay sau khi
+       * trả lời vì lúc đó user đã hoàn tất câu đó.
        */
-      transcript: question.transcript,
+      transcript: null,
       duration: question.duration,
       question: question.question,
       options: question.options,

@@ -16,8 +16,13 @@ export type NotificationItem = {
   message: string;
   type: NotificationType;
   href: string;
+  eventType?: string | null;
+  priority?: "LOW" | "NORMAL" | "HIGH" | string;
   isRead: boolean;
   read: boolean;
+  readAt?: string | null;
+  archivedAt?: string | null;
+  expiresAt?: string | null;
   createdAt: string;
 };
 
@@ -47,17 +52,20 @@ export async function getUnreadNotificationCount() {
 }
 
 export async function markNotificationRead(id: string) {
-  const res = await api.post<NotificationItem>("/notifications/read", { id });
+  const res = await api.patch<NotificationItem>(`/notifications/${id}/read`);
   return res.data;
 }
 
 export async function markAllNotificationsRead() {
-  const res = await api.post<{ count: number }>("/notifications/read-all");
+  const res = await api.patch<{ count: number }>("/notifications/read-all");
   return res.data;
 }
 
-export async function deleteNotification(id: string) {
-  const res = await api.delete<{ deleted: boolean; id: string }>(`/notifications/${id}`);
+export async function archiveNotification(id: string) {
+  const res = await api.patch<{ archived: boolean; id: string }>(
+    `/notifications/${id}/archive`,
+  );
   return res.data;
 }
 
+export const deleteNotification = archiveNotification;

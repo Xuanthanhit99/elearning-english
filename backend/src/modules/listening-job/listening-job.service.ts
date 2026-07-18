@@ -87,12 +87,20 @@ export class ListeningJobService {
   }
 
   /**
-   * Dùng để chạy tay từ service/controller/admin command nếu cần.
+   * Dùng để chạy tay từ service/controller/admin command nếu cần, và
+   * (Stage 6D.1) để ListeningService enqueue phần câu hỏi còn thiếu
+   * thay vì tự gọi Gemini/TTS đồng bộ trong request user.
+   *
+   * `jobId` optional: khi truyền vào, job dùng jobId ổn định
+   * (`${jobId}-${queued}`) để nhiều request đồng thời cùng thiếu dữ
+   * liệu cho cùng level/topic sẽ dedupe qua BullMQ thay vì enqueue
+   * nhiều job trùng nhau trong cùng ngày.
    */
   async enqueueGeneration(input?: {
     totalNeed?: number;
     batchSize?: number;
     configs?: ListeningGenerationConfig[];
+    jobId?: string;
   }) {
     const totalNeed = Math.max(1, input?.totalNeed ?? 20);
     const batchSize = Math.min(Math.max(1, input?.batchSize ?? 5), 10);
@@ -113,6 +121,7 @@ export class ListeningJobService {
           count,
         },
         {
+          ...(input?.jobId ? { jobId: `${input.jobId}-${queued}` } : {}),
           attempts: 4,
           backoff: {
             type: 'exponential',

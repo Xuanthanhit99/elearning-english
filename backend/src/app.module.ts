@@ -58,8 +58,8 @@ import { MissionsV2Module } from './modules/missions-v2/missions-v2.module';
 import { LessonBuilderModule } from './modules/lesson-builder/lesson-builder.module';
 import { ListeningJobModule } from './modules/listening-job/listening-job.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 import { CommunitySocialModule } from './modules/community-social/community-social.module';
+import { getStaticRootDir } from './config/static-assets.config';
 import { CommunityClubModule } from './modules/community-club/community-club.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { CommunityClubPermissionModule } from './modules/community-club/community-club-permission.module';
@@ -87,7 +87,14 @@ import { ChatSessionModule } from './modules/chat-session/chat-session.module';
       }),
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), 'public'),
+      /*
+       * Stage 6D.3: dùng chung getStaticRootDir() với
+       * listening-tts.service.ts (qua static-assets.config.ts) để nơi
+       * ghi audio Listening và nơi static server phục vụ file LUÔN
+       * khớp nhau. Mặc định không đổi (`<cwd>/public`) nếu không set
+       * env `STATIC_ROOT_DIR`.
+       */
+      rootPath: getStaticRootDir(),
       serveRoot: '/',
     }),
     EventEmitterModule.forRoot({

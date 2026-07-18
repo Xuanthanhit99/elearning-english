@@ -34,7 +34,7 @@ export class LeaderboardCookieAuthService {
       userId?: string;
       role?: string;
     }>(token, {
-      secret: process.env.JWT_SECRET,
+      secret: process.env.JWT_ACCESS_SECRET || 'english_access_secret_key',
     });
 
     const userId = payload.sub ?? payload.id ?? payload.userId;

@@ -88,5 +88,16 @@ export class NotificationScheduler implements OnModuleInit {
         removeOnFail: 50,
       },
     );
+
+    await this.queue.add(
+      NotificationJobName.CLEANUP,
+      {},
+      {
+        jobId: 'notifications:cleanup',
+        repeat: { pattern: '30 3 * * *' },
+        removeOnComplete: 20,
+        removeOnFail: 50,
+      },
+    );
   }
 }

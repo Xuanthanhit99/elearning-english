@@ -1,0 +1,59 @@
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { Socket } from 'socket.io';
+
+export type NotificationSocketUser = {
+  id: string;
+  role?: string;
+};
+
+@Injectable()
+export class NotificationCookieAuthService {
+  constructor(private readonly jwtService: JwtService) {}
+
+  authenticate(client: Socket): NotificationSocketUser {
+    const cookieHeader = client.handshake.headers.cookie;
+
+    if (!cookieHeader) {
+      throw new UnauthorizedException('Missing authentication cookie.');
+    }
+
+    const token = this.parseCookies(cookieHeader).access_token;
+
+    if (!token) {
+      throw new UnauthorizedException('Missing access token cookie.');
+    }
+
+    const payload = this.jwtService.verify<{
+      sub?: string;
+      id?: string;
+      userId?: string;
+      role?: string;
+    }>(token, {
+      secret: process.env.JWT_ACCESS_SECRET || 'english_access_secret_key',
+    });
+
+    const userId = payload.sub ?? payload.id ?? payload.userId;
+
+    if (!userId) {
+      throw new UnauthorizedException('Access token does not contain user id.');
+    }
+
+    return {
+      id: userId,
+      role: payload.role,
+    };
+  }
+
+  private parseCookies(cookieHeader: string) {
+    return Object.fromEntries(
+      cookieHeader
+        .split(';')
+        .map((item) => {
+          const [key, ...rest] = item.trim().split('=');
+          return [key, decodeURIComponent(rest.join('='))];
+        })
+        .filter(([key]) => Boolean(key)),
+    );
+  }
+}

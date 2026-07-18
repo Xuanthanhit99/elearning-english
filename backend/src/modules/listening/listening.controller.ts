@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { RateListeningSessionDto } from './dto/rate-listening-session.dto';
 import { StartListeningDto } from './dto/start-listening.dto';
 import { SubmitListeningAnswerDto } from './dto/submit-listening-answer.dto';
 import { ListeningService } from './listening.service';
@@ -114,13 +115,9 @@ export class ListeningController {
   rateSession(
     @CurrentUser() user: { id: string },
     @Param('sessionId') sessionId: string,
-    @Body()
-    body: {
-      rating: number;
-      comment?: string;
-    },
+    @Body() dto: RateListeningSessionDto,
   ) {
-    return this.listeningService.rateSession(user.id, sessionId, body);
+    return this.listeningService.rateSession(user.id, sessionId, dto);
   }
 
   @Post('sessions/:sessionId/retry')

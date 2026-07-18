@@ -3,6 +3,10 @@ import textToSpeech from '@google-cloud/text-to-speech';
 import { createHash } from 'crypto';
 import { promises as fs } from 'fs';
 import { join } from 'path';
+import {
+  getListeningAudioDir,
+  getListeningAudioUrlPrefix,
+} from '../../config/static-assets.config';
 
 @Injectable()
 export class ListeningTtsService {
@@ -21,15 +25,29 @@ export class ListeningTtsService {
       .digest('hex')
       .slice(0, 24);
 
-    const directory = join(process.cwd(), 'public', 'listening-audio');
+    /*
+     * Stage 6D.3: SỬA LỖI HIGH từ 6D.1/6D.2 — trước đây thư mục ghi
+     * audio đọc từ env `LISTENING_AUDIO_STORAGE_DIR` (đường dẫn tuyệt
+     * đối tự do) hoàn toàn tách biệt với `ServeStaticModule.forRoot()`
+     * (app.module.ts, lúc đó hard-code `public/`), nên đổi env kia
+     * không làm URL trả về đúng nữa (404 dù file tồn tại). Giờ cả 2
+     * phía dùng chung `static-assets.config.ts`:
+     *   - `getStaticRootDir()`  -> ServeStaticModule.forRoot() (app.module.ts)
+     *   - `getListeningAudioDir()` = staticRoot + subdir -> nơi ghi file ở đây
+     *   - `getListeningAudioUrlPrefix()` = "/" + subdir -> URL trả về
+     * Ghi/serve/URL luôn nhất quán theo đúng 1 cặp env
+     * `STATIC_ROOT_DIR` + `LISTENING_AUDIO_SUBDIR` (subdir, KHÔNG phải
+     * absolute path, nên không thể tự thoát ra ngoài static root nữa).
+     * Mặc định không đổi hành vi cũ nếu không set env.
+     */
+    const directory = getListeningAudioDir();
 
     const filename = `${hash}.mp3`;
     const filepath = join(directory, filename);
     const backendPublicUrl =
       process.env.BACKEND_PUBLIC_URL ?? 'http://localhost:3002';
 
-    const publicUrl = `${backendPublicUrl}/listening-audio/${filename}`;
-    // const publicUrl = `/listening-audio/${filename}`;
+    const publicUrl = `${backendPublicUrl}${getListeningAudioUrlPrefix()}/${filename}`;
 
     try {
       await fs.mkdir(directory, {

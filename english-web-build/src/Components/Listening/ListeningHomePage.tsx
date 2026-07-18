@@ -56,7 +56,6 @@ export default function ListeningHomePage() {
         ListeningHomeResponse | ApiEnvelope<ListeningHomeResponse>
       >("/listening/home");
 
-      // await api.post("/admin/listening-jobs/backfill-audio", { limit: 205 });
       setData(unwrap(response.data));
     } catch (requestError) {
       setError(

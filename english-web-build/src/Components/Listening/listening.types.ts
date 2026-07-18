@@ -142,6 +142,9 @@ export type ListeningResultResponse = {
     totalTimeSpent: number;
     totalTimeText: string;
     completedAt: string | null;
+    rating?: number | null;
+    ratingComment?: string | null;
+    ratedAt?: string | null;
   };
   questions: Array<{
     id: string;

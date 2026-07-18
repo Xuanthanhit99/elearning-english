@@ -1,0 +1,97 @@
+-- Stage 6D.1: chống race condition tạo 2 ListeningSession IN_PROGRESS
+-- cùng lúc cho cùng (userId, level, topic) khi 2 request start đồng thời.
+--
+-- Đây là PARTIAL UNIQUE INDEX (chỉ áp dụng khi status = 'IN_PROGRESS'),
+-- Prisma schema DSL hiện không biểu diễn được unique index có WHERE
+-- clause nên không có `@@unique` tương ứng trong schema.prisma — đây là
+-- pattern chuẩn khi cần partial unique index với Prisma (viết migration
+-- SQL tay). `npx prisma validate`/`format`/`generate` không bị ảnh hưởng
+-- vì các lệnh đó chỉ kiểm tra schema.prisma, không đối chiếu migration.
+--
+-- QUAN TRỌNG: migration này CHƯA được apply ở bất kỳ database nào tính
+-- tới Stage 6D.3 (đúng yêu cầu "không tự apply migration nếu chưa xác
+-- định chính xác database hiện tại là development an toàn"). Vì CHƯA
+-- apply, migration này được SỬA TRỰC TIẾP ở Stage 6D.3 (không tạo
+-- migration nối tiếp) để xử lý vấn đề nullable columns phát hiện ở
+-- Stage 6D.2. Cần apply bằng `npx prisma migrate deploy` (staging/
+-- production) hoặc `npx prisma migrate dev` (development đã xác nhận
+-- an toàn) ở Chặng 8, sau khi đã xử lý cùng lúc với 3 migration đang
+-- pending khác.
+--
+-- Phụ thuộc: phải chạy SAU 20260718090000_add_mission_progress_event_v2
+-- (migration liền trước theo thời gian) và sau các migration Listening
+-- đã có (20260703032153_add_listening và các bản fix liên quan), vì
+-- migration này thao tác trực tiếp trên bảng "ListeningSession" do các
+-- migration đó tạo ra.
+--
+-- =============================================================
+-- STAGE 6D.3 — XỬ LÝ NULLABLE level/topic (COALESCE sentinel)
+-- =============================================================
+-- `ListeningSession.level` và `.topic` là String? (nullable) trong
+-- schema.prisma. Trong PostgreSQL, mỗi NULL được coi là khác biệt với
+-- NULL khác trong (partial) unique index thông thường — nên một index
+-- kiểu `UNIQUE ("userId","level","topic") WHERE status='IN_PROGRESS'`
+-- đơn thuần sẽ KHÔNG chặn được duplicate nếu level/topic là NULL.
+--
+-- Toàn bộ code tạo session hiện tại (backend/src/modules/listening/
+-- listening.service.ts: startPractice/continueSession/retrySession)
+-- luôn resolve level/topic về chuỗi non-null trước khi insert (có
+-- fallback `?? 'B1'` / `getDailyListeningTopic(...)`), nên NULL không
+-- xảy ra trong luồng hiện tại — nhưng để index thật sự đáng tin cậy
+-- ngay cả khi có code path khác (script backfill, thao tác DB tay,
+-- thay đổi tương lai) tạo ra NULL, dùng COALESCE với sentinel riêng
+-- cho từng cột (Hướng B trong các phương án đã cân nhắc):
+--
+--   COALESCE("level", '__NULL_LEVEL__')
+--   COALESCE("topic", '__NULL_TOPIC__')
+--
+-- Sentinel dùng tiền tố/hậu tố "__" và toàn chữ hoa, không trùng định
+-- dạng dữ liệu thật (level luôn là 1 trong 6 mã ngắn A1/A2/B1/B2/C1/C2;
+-- topic là chuỗi do Gemini/người dùng nhập, không có tiền lệ chứa
+-- "__NULL_TOPIC__"). Dùng 2 sentinel KHÁC NHAU cho level và topic để
+-- tránh trường hợp lý thuyết 1 cột NULL + cột kia trùng đúng sentinel
+-- của cột đầu.
+--
+-- Vì đây là expression index (không phải index trên cột trần), query
+-- fallback P2002 trong `createSessionPayload()` (dùng Prisma
+-- `findFirst({ where: { userId, level, topic, status: 'IN_PROGRESS' } })`)
+-- KHÔNG cần đổi — Prisma `where: { level: null }` map đúng sang
+-- `"level" IS NULL` ở tầng SQL, và PostgreSQL vẫn dùng được expression
+-- index này để đánh giá điều kiện tương đương (dù không trực tiếp seek
+-- qua index cho NULL lookup, DB vẫn trả kết quả đúng — chỉ ảnh hưởng
+-- hiệu năng, không ảnh hưởng tính đúng đắn). Trong thực tế, code hiện
+-- tại không bao giờ query với level/topic NULL vì không bao giờ tạo
+-- session như vậy.
+--
+-- Trước khi apply ở production, cần kiểm tra không có dữ liệu hiện tại
+-- vi phạm constraint (SAU KHI áp COALESCE) — nếu có, CREATE UNIQUE INDEX
+-- sẽ FAIL. Dry-run:
+--   SELECT COALESCE("level", '__NULL_LEVEL__') AS level_key,
+--          COALESCE("topic", '__NULL_TOPIC__') AS topic_key,
+--          "userId",
+--          COUNT(*) AS active_count,
+--          array_agg("id") AS session_ids,
+--          array_agg("startedAt") AS started_at_list
+--   FROM "ListeningSession"
+--   WHERE "status" = 'IN_PROGRESS'
+--   GROUP BY "userId", level_key, topic_key
+--   HAVING COUNT(*) > 1;
+--
+-- Nếu có row, cần dọn dữ liệu trước khi apply migration này (giữ lại 1
+-- bản mỗi nhóm — ưu tiên bản có updatedAt/startedAt mới nhất hoặc có
+-- nhiều answers hơn — và set các bản dư sang "status" khác
+-- 'IN_PROGRESS'). LƯU Ý: cột "status" là String tự do (không phải
+-- enum), toàn bộ code hiện tại chỉ thực sự dùng 2 giá trị:
+-- 'IN_PROGRESS' và 'COMPLETED'. Chỉ dùng giá trị status khác (vd
+-- 'ABANDONED') nếu đã có logic xử lý giá trị đó ở tầng ứng dụng — hiện
+-- CHƯA có, nên cách an toàn nhất khi cleanup là set về 'COMPLETED' nếu
+-- hợp lý về nghiệp vụ, hoặc liên hệ đội phát triển trước khi tự đặt
+-- giá trị status mới.
+
+CREATE UNIQUE INDEX "ListeningSession_active_userId_level_topic_key"
+    ON "ListeningSession" (
+        "userId",
+        (COALESCE("level", '__NULL_LEVEL__')),
+        (COALESCE("topic", '__NULL_TOPIC__'))
+    )
+    WHERE "status" = 'IN_PROGRESS';

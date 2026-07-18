@@ -112,7 +112,20 @@ export default function SettingsPage() {
     setSaving(true);
     setMessage('');
     try {
-      const updated = await settingsApi.update(settings);
+      const updated =
+        activeTab === 'notifications'
+          ? await settingsApi.updateNotifications({
+              dailyReminderEnabled: settings.dailyReminderEnabled,
+              dailyReminderTime: settings.dailyReminderTime,
+              missionReminder: settings.missionReminder,
+              friendActivity: settings.friendActivity,
+              clubNotification: settings.clubNotification,
+              leaderboardNotification: settings.leaderboardNotification,
+              aiFeedbackNotification: settings.aiFeedbackNotification,
+              emailNotification: settings.emailNotification,
+              pushNotification: settings.pushNotification,
+            })
+          : await settingsApi.update(settings);
       setSettings(updated);
       setMessage(t('settings.savedMessage'));
     } catch (error) {

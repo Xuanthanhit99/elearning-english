@@ -54,6 +54,11 @@ export class NotificationsController {
     return this.notificationService.delete(req.user.id, id);
   }
 
+  @Patch(':id/archive')
+  archive(@Param('id') id: string, @Req() req: any) {
+    return this.notificationService.archive(req.user.id, id);
+  }
+
   @Patch(':id/read')
   markAsReadLegacy(@Param('id') id: string, @Req() req: any) {
     return this.notificationService.markAsRead(req.user.id, id);

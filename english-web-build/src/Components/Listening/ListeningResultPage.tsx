@@ -54,7 +54,14 @@ export default function ListeningResultPage({
         ListeningResultResponse | ApiEnvelope<ListeningResultResponse>
       >(`/listening/sessions/${sessionId}/result`);
 
-      setData(unwrap(response.data));
+      const result = unwrap(response.data);
+
+      setData(result);
+
+      if (result.summary.rating) {
+        setRating(result.summary.rating);
+        setRatingSent(true);
+      }
 
       const cached = sessionStorage.getItem(
         `listening-finish:${sessionId}`,
@@ -363,7 +370,10 @@ export default function ListeningResultPage({
                     {[1, 2, 3, 4, 5].map((item) => (
                       <button
                         key={item}
-                        onClick={() => setRating(item)}
+                        onClick={() => {
+                          setRating(item);
+                          setRatingSent(false);
+                        }}
                         className={
                           item <= rating
                             ? "text-yellow-400"
@@ -386,7 +396,7 @@ export default function ListeningResultPage({
                     className="mt-4 w-full rounded-xl bg-violet-600 py-3 font-black text-white disabled:opacity-50"
                   >
                     {ratingSent
-                      ? "Đã gửi đánh giá"
+                      ? "Đã gửi đánh giá · Bấm sao để sửa"
                       : "Gửi đánh giá"}
                   </button>
                 </section>

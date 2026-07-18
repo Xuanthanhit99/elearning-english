@@ -4,8 +4,12 @@
 
 import { api } from "@/src/lib/axios";
 import NotificationDrawer from "@/src/Components/Notifications/NotificationDrawer";
-import { getUnreadNotificationCount } from "@/src/lib/notifications-api";
+import {
+  connectNotificationSocket,
+  disconnectNotificationSocket,
+} from "@/src/lib/notification-socket";
 import { useAuthStore } from "@/src/store/authStore";
+import { useNotificationStore } from "@/src/store/notificationStore";
 import { settingsApi } from "@/src/lib/settings-api";
 import { useTranslation } from "@/src/hooks/useTranslation";
 import LanguageSwitcher from "./LanguageSwitcher";
@@ -50,7 +54,10 @@ export default function AppHeader({
   const profileRef = useRef<HTMLDivElement | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const unreadNotifications = useNotificationStore((state) => state.unreadCount);
+  const refreshUnread = useNotificationStore((state) => state.refreshUnread);
+  const loadNotifications = useNotificationStore((state) => state.load);
+  const clearNotifications = useNotificationStore((state) => state.clear);
 
   const displayUser = user as
     | (typeof user & {
@@ -88,20 +95,25 @@ export default function AppHeader({
 
     async function loadUnread() {
       try {
-        const count = await getUnreadNotificationCount();
-        if (active) setUnreadNotifications(count);
+        if (active) await refreshUnread();
       } catch {
-        if (active) setUnreadNotifications(0);
+        if (active) clearNotifications();
       }
     }
 
     void loadUnread();
-    const timer = window.setInterval(loadUnread, 30000);
+    void loadNotifications(1);
+    connectNotificationSocket();
+    const onFocus = () => {
+      void loadUnread();
+      void loadNotifications(1);
+    };
+    window.addEventListener("focus", onFocus);
     return () => {
       active = false;
-      window.clearInterval(timer);
+      window.removeEventListener("focus", onFocus);
     };
-  }, []);
+  }, [clearNotifications, loadNotifications, refreshUnread]);
 
   async function persistPreference(payload: { language?: string; theme?: string }) {
     if (!user) return;
@@ -119,6 +131,8 @@ export default function AppHeader({
       console.error(error);
     } finally {
       setUser(null);
+      disconnectNotificationSocket();
+      clearNotifications();
       setProfileOpen(false);
       router.push("/auth");
     }
@@ -246,7 +260,6 @@ export default function AppHeader({
       <NotificationDrawer
         open={notificationsOpen}
         onClose={() => setNotificationsOpen(false)}
-        onUnreadChange={setUnreadNotifications}
       />
     </header>
   );

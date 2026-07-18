@@ -7,6 +7,7 @@ import { ListeningService } from './listening.service';
 import { ListeningTtsService } from './listening-tts.service';
 import { ListeningJobModule } from '../listening-job/listening-job.module';
 import { LearningXpModule } from '../learning-xp/learning-xp.module';
+import { ListeningRedisProvider } from './listening-redis.provider';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { LearningXpModule } from '../learning-xp/learning-xp.module';
     LearningXpModule,
   ],
   controllers: [ListeningController],
-  providers: [ListeningService, ListeningTtsService],
+  providers: [ListeningService, ListeningTtsService, ListeningRedisProvider],
   exports: [ListeningService],
 })
 export class ListeningModule {}

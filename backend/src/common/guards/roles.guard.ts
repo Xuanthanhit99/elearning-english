@@ -20,6 +20,13 @@ export class RolesGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    return requiredRoles.includes(user.role);
+    /*
+     * Stage 6D.1: user.role có thể undefined nếu guard này vô tình
+     * được dùng mà không có JwtAuthGuard đứng trước (request.user chưa
+     * được set) — trước đây `user.role` sẽ throw TypeError (500) thay
+     * vì từ chối rõ ràng (403). Dùng optional chaining để luôn trả
+     * false an toàn thay vì crash.
+     */
+    return Boolean(user?.role) && requiredRoles.includes(user.role);
   }
 }

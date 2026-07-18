@@ -9,10 +9,14 @@ import { CreateCourseDto } from './dto/create-course.dto';
 import { createSlug } from 'src/common/utils/slug.util';
 import { CourseStatus, UserRole } from '@prisma/client';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class CoursesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async create(teacherId: string, dto: CreateCourseDto) {
     const slug = `${createSlug(dto.title)}-${Date.now()}`;
@@ -239,13 +243,12 @@ export class CoursesService {
     if (!course) {
       throw new NotFoundException('Không tìm thấy khóa học');
     }
-
-    await this.prisma.notification.create({
-      data: {
-        userId: course.teacherId,
-        title: 'Khóa học đã được duyệt',
-        message: `Khóa học "${course.title}" đã được public.`,
-      },
+    await this.notifications.createFromPayload({
+      userId: course.teacherId,
+      type: 'SYSTEM',
+      title: 'Khoa hoc da duoc duyet',
+      message: `Khoa hoc "${course.title}" da duoc public.`,
+      href: '/courses',
     });
 
     return this.prisma.course.update({
