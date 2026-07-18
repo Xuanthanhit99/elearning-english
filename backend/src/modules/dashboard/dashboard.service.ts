@@ -127,7 +127,12 @@ export class DashboardService {
       }),
       this.prisma.userWordProgress.findMany({
         where: { userId },
-        select: { status: true, learnedAt: true, masteredAt: true, updatedAt: true },
+        select: {
+          status: true,
+          learnedAt: true,
+          masteredAt: true,
+          updatedAt: true,
+        },
       }),
       this.prisma.grammarLessonProgress.findMany({
         where: { userId },
@@ -145,7 +150,10 @@ export class DashboardService {
         take: 20,
       }),
       this.prisma.listeningSession.findMany({
-        where: { userId, OR: [{ completedAt: { not: null } }, { status: 'COMPLETED' }] },
+        where: {
+          userId,
+          OR: [{ completedAt: { not: null } }, { status: 'COMPLETED' }],
+        },
         orderBy: { completedAt: 'desc' },
         take: 10,
       }),
@@ -160,7 +168,9 @@ export class DashboardService {
       }),
       this.prisma.readingSession.findMany({
         where: { userId, isCompleted: true, completedAt: { not: null } },
-        include: { article: { select: { title: true, slug: true, readTime: true } } },
+        include: {
+          article: { select: { title: true, slug: true, readTime: true } },
+        },
         orderBy: { completedAt: 'desc' },
         take: 10,
       }),
@@ -195,7 +205,9 @@ export class DashboardService {
       }),
       this.prisma.readingSession.findMany({
         where: { userId, isCompleted: false },
-        include: { article: { select: { title: true, slug: true, readTime: true } } },
+        include: {
+          article: { select: { title: true, slug: true, readTime: true } },
+        },
         orderBy: { startedAt: 'desc' },
         take: 3,
       }),
@@ -249,14 +261,18 @@ export class DashboardService {
       readingInProgress,
       writingDrafts,
     });
-    const skillProgress = await this.buildSkillProgress(userId, placementResult, {
-      vocabularyProgress,
-      grammarProgress,
-      listeningSessions,
-      speakingSessions,
-      readingSessions,
-      writingSessions,
-    });
+    const skillProgress = await this.buildSkillProgress(
+      userId,
+      placementResult,
+      {
+        vocabularyProgress,
+        grammarProgress,
+        listeningSessions,
+        speakingSessions,
+        readingSessions,
+        writingSessions,
+      },
+    );
     const weeklyActivity = this.buildWeeklyActivity(weekDays, {
       rewardTransactions,
       lessonProgress,
@@ -346,44 +362,54 @@ export class DashboardService {
               targetLevel: phase.targetLevel,
               progress: phase.progress,
             })),
-            recommendedCourses: learningPathDetail.courses.slice(0, 3).map((course) => ({
-              id: course.id,
-              title: course.title,
-              slug: course.slug,
-              lessonCount: course.lessonCount,
-              reason: course.reason,
-            })),
+            recommendedCourses: learningPathDetail.courses
+              .slice(0, 3)
+              .map((course) => ({
+                id: course.id,
+                title: course.title,
+                slug: course.slug,
+                lessonCount: course.lessonCount,
+                reason: course.reason,
+              })),
           }
         : placementResult
-        ? {
-            overallLevel: placementResult.overallLevel,
-            overallScore: Math.round(placementResult.overallScore),
-            progressPercent: this.average(placementResult.phases.map((phase) => phase.progress)),
-            currentPhase: placementResult.phases.find((phase) => phase.progress < 100) ??
-              placementResult.phases.at(-1) ??
-              null,
-            phases: placementResult.phases.map((phase) => ({
-              id: phase.id,
-              title: phase.title,
-              phase: phase.phase,
-              targetLevel: phase.targetLevel,
-              progress: phase.progress,
-            })),
-            recommendedCourses: placementResult.courses.slice(0, 3).map((course) => ({
-              id: course.id,
-              title: course.title,
-              slug: course.slug,
-              lessonCount: course.lessonCount,
-              reason: course.reason,
-            })),
-          }
-        : null,
+          ? {
+              overallLevel: placementResult.overallLevel,
+              overallScore: Math.round(placementResult.overallScore),
+              progressPercent: this.average(
+                placementResult.phases.map((phase) => phase.progress),
+              ),
+              currentPhase:
+                placementResult.phases.find((phase) => phase.progress < 100) ??
+                placementResult.phases.at(-1) ??
+                null,
+              phases: placementResult.phases.map((phase) => ({
+                id: phase.id,
+                title: phase.title,
+                phase: phase.phase,
+                targetLevel: phase.targetLevel,
+                progress: phase.progress,
+              })),
+              recommendedCourses: placementResult.courses
+                .slice(0, 3)
+                .map((course) => ({
+                  id: course.id,
+                  title: course.title,
+                  slug: course.slug,
+                  lessonCount: course.lessonCount,
+                  reason: course.reason,
+                })),
+            }
+          : null,
       currentLesson: mergedContinueLearning[0] ?? recommendedLesson,
       continueLearning: {
         items: mergedContinueLearning,
       },
       recommendedLesson,
-      recommendations: this.buildRecommendations(recommendedLesson, placementResult),
+      recommendations: this.buildRecommendations(
+        recommendedLesson,
+        placementResult,
+      ),
       quickActions: [
         {
           id: 'daily-learn',
@@ -544,16 +570,24 @@ export class DashboardService {
     return null;
   }
 
-  private mapMissions(missions: Awaited<ReturnType<typeof this.prisma.userMissionV2.findMany>>) {
-    const today = missions.filter((mission) => mission.type === MissionV2Type.DAILY);
+  private mapMissions(
+    missions: Awaited<ReturnType<typeof this.prisma.userMissionV2.findMany>>,
+  ) {
+    const today = missions.filter(
+      (mission) => mission.type === MissionV2Type.DAILY,
+    );
     const isCompleted = (status: MissionV2Status) =>
-      status === MissionV2Status.COMPLETED || status === MissionV2Status.CLAIMED;
+      status === MissionV2Status.COMPLETED ||
+      status === MissionV2Status.CLAIMED;
 
     return {
       summary: {
-        completed: today.filter((mission) => isCompleted(mission.status)).length,
+        completed: today.filter((mission) => isCompleted(mission.status))
+          .length,
         total: today.length,
-        claimable: today.filter((mission) => mission.status === MissionV2Status.COMPLETED).length,
+        claimable: today.filter(
+          (mission) => mission.status === MissionV2Status.COMPLETED,
+        ).length,
       },
       items: today.map((mission) => ({
         id: mission.id,
@@ -564,7 +598,10 @@ export class DashboardService {
         skill: mission.skill,
         progress: mission.progress,
         target: mission.target,
-        progressPercent: Math.min(100, Math.round((mission.progress / Math.max(mission.target, 1)) * 100)),
+        progressPercent: Math.min(
+          100,
+          Math.round((mission.progress / Math.max(mission.target, 1)) * 100),
+        ),
         status: mission.status,
         completed: isCompleted(mission.status),
         reward: {
@@ -619,7 +656,8 @@ export class DashboardService {
           type: 'LISTENING',
           title: item.topic ? `Luyện nghe: ${item.topic}` : 'Luyện nghe',
           subtitle: item.level,
-          progressPercent: item.total > 0 ? Math.round((answered / item.total) * 100) : 0,
+          progressPercent:
+            item.total > 0 ? Math.round((answered / item.total) * 100) : 0,
           updatedAt: item.startedAt,
           href: `/listening/practice/${item.id}`,
         };
@@ -647,12 +685,15 @@ export class DashboardService {
         type: 'WRITING',
         title: item.lesson.title,
         subtitle: item.lesson.topic.title,
-        progressPercent: item.wordCount > 0 ? Math.min(90, Math.max(20, item.wordCount)) : 15,
+        progressPercent:
+          item.wordCount > 0 ? Math.min(90, Math.max(20, item.wordCount)) : 15,
         updatedAt: item.updatedAt,
         href: `/writing/sessions/${item.id}`,
       })),
     ]
-      .sort((left, right) => right.updatedAt.getTime() - left.updatedAt.getTime())
+      .sort(
+        (left, right) => right.updatedAt.getTime() - left.updatedAt.getTime(),
+      )
       .slice(0, 5)
       .map((item) => ({
         ...item,
@@ -693,7 +734,7 @@ export class DashboardService {
               href: recommendedLesson.href,
               meta: recommendedLesson.estimatedMinutes
                 ? `${recommendedLesson.estimatedMinutes} phút`
-                : recommendedLesson.level ?? null,
+                : (recommendedLesson.level ?? null),
             },
           ]
         : []),
@@ -705,12 +746,23 @@ export class DashboardService {
     userId: string,
     placementResult: DashboardPlacementResult,
     data: {
-      vocabularyProgress: Array<{ status: string; learnedAt: Date | null; masteredAt: Date | null; updatedAt: Date }>;
+      vocabularyProgress: Array<{
+        status: string;
+        learnedAt: Date | null;
+        masteredAt: Date | null;
+        updatedAt: Date;
+      }>;
       grammarProgress: Array<{ completed: boolean; score: number }>;
       listeningSessions: Array<{ score: number; completedAt: Date | null }>;
-      speakingSessions: Array<{ overallScore: number; finishedAt: Date | null }>;
+      speakingSessions: Array<{
+        overallScore: number;
+        finishedAt: Date | null;
+      }>;
       readingSessions: Array<{ accuracy: number; completedAt: Date | null }>;
-      writingSessions: Array<{ overallScore: number | null; submittedAt: Date | null }>;
+      writingSessions: Array<{
+        overallScore: number | null;
+        submittedAt: Date | null;
+      }>;
     },
   ) {
     const placementScores = new Map(
@@ -725,16 +777,32 @@ export class DashboardService {
     );
 
     const totals = {
-      [LearningSkill.VOCABULARY]: this.vocabularyPercent(data.vocabularyProgress),
-      [LearningSkill.GRAMMAR]: this.average(data.grammarProgress.map((item) => item.score)),
-      [LearningSkill.LISTENING]: this.average(data.listeningSessions.map((item) => item.score)),
-      [LearningSkill.SPEAKING]: this.average(data.speakingSessions.map((item) => item.overallScore)),
-      [LearningSkill.READING]: this.average(data.readingSessions.map((item) => item.accuracy)),
-      [LearningSkill.WRITING]: this.average(data.writingSessions.map((item) => item.overallScore ?? 0)),
+      [LearningSkill.VOCABULARY]: this.vocabularyPercent(
+        data.vocabularyProgress,
+      ),
+      [LearningSkill.GRAMMAR]: this.average(
+        data.grammarProgress.map((item) => item.score),
+      ),
+      [LearningSkill.LISTENING]: this.average(
+        data.listeningSessions.map((item) => item.score),
+      ),
+      [LearningSkill.SPEAKING]: this.average(
+        data.speakingSessions.map((item) => item.overallScore),
+      ),
+      [LearningSkill.READING]: this.average(
+        data.readingSessions.map((item) => item.accuracy),
+      ),
+      [LearningSkill.WRITING]: this.average(
+        data.writingSessions.map((item) => item.overallScore ?? 0),
+      ),
     };
 
-    const userSkillLevels = await this.prisma.userSkillLevel.findMany({ where: { userId } });
-    const levels = new Map(userSkillLevels.map((item) => [item.skill, item.level]));
+    const userSkillLevels = await this.prisma.userSkillLevel.findMany({
+      where: { userId },
+    });
+    const levels = new Map(
+      userSkillLevels.map((item) => [item.skill, item.level]),
+    );
 
     return SKILLS.map((skill) => {
       const placement = placementScores.get(skill.key);
@@ -752,7 +820,13 @@ export class DashboardService {
   }
 
   private buildRecentSessions(data: {
-    listeningSessions: Array<{ id: string; topic: string | null; level: string | null; score: number; completedAt: Date | null }>;
+    listeningSessions: Array<{
+      id: string;
+      topic: string | null;
+      level: string | null;
+      score: number;
+      completedAt: Date | null;
+    }>;
     speakingSessions: Array<{
       id: string;
       overallScore: number;
@@ -771,13 +845,21 @@ export class DashboardService {
       id: string;
       overallScore: number | null;
       submittedAt: Date | null;
-      lesson: { title: string; slug: string; topic: { title: string; slug: string } };
+      lesson: {
+        title: string;
+        slug: string;
+        topic: { title: string; slug: string };
+      };
     }>;
     grammarProgress: Array<{
       id: string;
       score: number;
       completedAt: Date | null;
-      lesson: { title: string; slug: string; topic: { title: string; slug: string } };
+      lesson: {
+        title: string;
+        slug: string;
+        topic: { title: string; slug: string };
+      };
     }>;
     lessonProgress: Array<{
       id: string;
@@ -854,7 +936,9 @@ export class DashboardService {
           id: item.id,
           type: 'LESSON',
           title: item.lesson.title,
-          subtitle: item.lesson.duration ? `${item.lesson.duration} phút` : null,
+          subtitle: item.lesson.duration
+            ? `${item.lesson.duration} phút`
+            : null,
           score: null,
           status: item.completed ? 'COMPLETED' : 'IN_PROGRESS',
           completedAt: item.completedAt as Date,
@@ -863,7 +947,10 @@ export class DashboardService {
     ];
 
     return sessions
-      .sort((left, right) => right.completedAt.getTime() - left.completedAt.getTime())
+      .sort(
+        (left, right) =>
+          right.completedAt.getTime() - left.completedAt.getTime(),
+      )
       .slice(0, 8);
   }
 
@@ -871,10 +958,20 @@ export class DashboardService {
     days: Date[],
     data: {
       rewardTransactions: Array<{ createdAt: Date; xp: number }>;
-      lessonProgress: Array<{ createdAt: Date; completedAt: Date | null; lesson: { duration: number | null } }>;
+      lessonProgress: Array<{
+        createdAt: Date;
+        completedAt: Date | null;
+        lesson: { duration: number | null };
+      }>;
       listeningSessions: Array<{ completedAt: Date | null }>;
-      readingSessions: Array<{ completedAt: Date | null; article: { readTime: number } }>;
-      writingSessions: Array<{ submittedAt: Date | null; timeSpentSeconds: number }>;
+      readingSessions: Array<{
+        completedAt: Date | null;
+        article: { readTime: number };
+      }>;
+      writingSessions: Array<{
+        submittedAt: Date | null;
+        timeSpentSeconds: number;
+      }>;
       speakingSessions: Array<{ finishedAt: Date | null; duration: number }>;
     },
   ) {
@@ -886,48 +983,115 @@ export class DashboardService {
       const genericLessons = data.lessonProgress.filter(
         (item) => item.completedAt && this.dateKey(item.completedAt) === key,
       );
-      const listening = data.listeningSessions.filter((item) => item.completedAt && this.dateKey(item.completedAt) === key);
-      const reading = data.readingSessions.filter((item) => item.completedAt && this.dateKey(item.completedAt) === key);
-      const writing = data.writingSessions.filter((item) => item.submittedAt && this.dateKey(item.submittedAt) === key);
-      const speaking = data.speakingSessions.filter((item) => item.finishedAt && this.dateKey(item.finishedAt) === key);
+      const listening = data.listeningSessions.filter(
+        (item) => item.completedAt && this.dateKey(item.completedAt) === key,
+      );
+      const reading = data.readingSessions.filter(
+        (item) => item.completedAt && this.dateKey(item.completedAt) === key,
+      );
+      const writing = data.writingSessions.filter(
+        (item) => item.submittedAt && this.dateKey(item.submittedAt) === key,
+      );
+      const speaking = data.speakingSessions.filter(
+        (item) => item.finishedAt && this.dateKey(item.finishedAt) === key,
+      );
 
       const minutes =
-        genericLessons.reduce((sum, item) => sum + (item.lesson.duration ?? 0), 0) +
+        genericLessons.reduce(
+          (sum, item) => sum + (item.lesson.duration ?? 0),
+          0,
+        ) +
         reading.reduce((sum, item) => sum + item.article.readTime, 0) +
-        writing.reduce((sum, item) => sum + Math.round(item.timeSpentSeconds / 60), 0) +
+        writing.reduce(
+          (sum, item) => sum + Math.round(item.timeSpentSeconds / 60),
+          0,
+        ) +
         speaking.reduce((sum, item) => sum + Math.round(item.duration / 60), 0);
 
       return {
         date: key,
         label: day.toLocaleDateString('vi-VN', { weekday: 'short' }),
         xp,
-        lessons: genericLessons.length + listening.length + reading.length + writing.length + speaking.length,
+        lessons:
+          genericLessons.length +
+          listening.length +
+          reading.length +
+          writing.length +
+          speaking.length,
         minutes,
       };
     });
   }
 
   private buildAnalytics(data: {
-    weeklyActivity: Array<{ date: string; label: string; xp: number; lessons: number; minutes: number }>;
-    skillProgress: Array<{ key: LearningSkill; label: string; percent: number; level?: CefrLevel | null; href: string }>;
+    weeklyActivity: Array<{
+      date: string;
+      label: string;
+      xp: number;
+      lessons: number;
+      minutes: number;
+    }>;
+    skillProgress: Array<{
+      key: LearningSkill;
+      label: string;
+      percent: number;
+      level?: CefrLevel | null;
+      href: string;
+    }>;
     currentStreak: number;
-    missions: Array<{ status: MissionV2Status; type: MissionV2Type; progress: number; target: number; rewardXp: number }>;
-    placementResult: { progressPercent?: number; phases?: Array<{ progress: number }> } | null;
-    vocabularyProgress: Array<{ status: string; learnedAt: Date | null; masteredAt: Date | null; updatedAt: Date }>;
-    grammarProgress: Array<{ completed: boolean; score: number; updatedAt: Date }>;
+    missions: Array<{
+      status: MissionV2Status;
+      type: MissionV2Type;
+      progress: number;
+      target: number;
+      rewardXp: number;
+    }>;
+    placementResult: {
+      progressPercent?: number;
+      phases?: Array<{ progress: number }>;
+    } | null;
+    vocabularyProgress: Array<{
+      status: string;
+      learnedAt: Date | null;
+      masteredAt: Date | null;
+      updatedAt: Date;
+    }>;
+    grammarProgress: Array<{
+      completed: boolean;
+      score: number;
+      updatedAt: Date;
+    }>;
     listeningSessions: Array<{ score: number; completedAt: Date | null }>;
     speakingSessions: Array<{ overallScore: number; finishedAt: Date | null }>;
     readingSessions: Array<{ accuracy: number; completedAt: Date | null }>;
-    writingSessions: Array<{ overallScore: number | null; submittedAt: Date | null; timeSpentSeconds: number }>;
+    writingSessions: Array<{
+      overallScore: number | null;
+      submittedAt: Date | null;
+      timeSpentSeconds: number;
+    }>;
   }) {
-    const completedMissionCount = data.missions.filter((mission) =>
-      mission.status === MissionV2Status.COMPLETED || mission.status === MissionV2Status.CLAIMED,
+    const completedMissionCount = data.missions.filter(
+      (mission) =>
+        mission.status === MissionV2Status.COMPLETED ||
+        mission.status === MissionV2Status.CLAIMED,
     ).length;
-    const totalStudyMinutes = data.weeklyActivity.reduce((sum, item) => sum + item.minutes, 0);
+    const totalStudyMinutes = data.weeklyActivity.reduce(
+      (sum, item) => sum + item.minutes,
+      0,
+    );
     const totalXp = data.weeklyActivity.reduce((sum, item) => sum + item.xp, 0);
-    const totalLessons = data.weeklyActivity.reduce((sum, item) => sum + item.lessons, 0);
-    const strongestSkill = [...data.skillProgress].sort((left, right) => right.percent - left.percent)[0] ?? null;
-    const weakestSkill = [...data.skillProgress].sort((left, right) => left.percent - right.percent)[0] ?? null;
+    const totalLessons = data.weeklyActivity.reduce(
+      (sum, item) => sum + item.lessons,
+      0,
+    );
+    const strongestSkill =
+      [...data.skillProgress].sort(
+        (left, right) => right.percent - left.percent,
+      )[0] ?? null;
+    const weakestSkill =
+      [...data.skillProgress].sort(
+        (left, right) => left.percent - right.percent,
+      )[0] ?? null;
     const learningPathPercent = data.placementResult?.phases
       ? this.average(data.placementResult.phases.map((phase) => phase.progress))
       : 0;
@@ -944,34 +1108,64 @@ export class DashboardService {
       skillBreakdown: {
         vocabulary: {
           percent: this.vocabularyPercent(data.vocabularyProgress),
-          learned: data.vocabularyProgress.filter((item) => item.learnedAt || item.masteredAt || item.status !== 'NEW').length,
-          mastered: data.vocabularyProgress.filter((item) => item.masteredAt || item.status === 'MASTERED').length,
+          learned: data.vocabularyProgress.filter(
+            (item) =>
+              item.learnedAt || item.masteredAt || item.status !== 'NEW',
+          ).length,
+          mastered: data.vocabularyProgress.filter(
+            (item) => item.masteredAt || item.status === 'MASTERED',
+          ).length,
         },
         grammar: {
           percent: this.average(data.grammarProgress.map((item) => item.score)),
-          completed: data.grammarProgress.filter((item) => item.completed).length,
+          completed: data.grammarProgress.filter((item) => item.completed)
+            .length,
         },
         reading: {
-          percent: this.average(data.readingSessions.map((item) => item.accuracy)),
-          completed: data.readingSessions.filter((item) => item.completedAt).length,
+          percent: this.average(
+            data.readingSessions.map((item) => item.accuracy),
+          ),
+          completed: data.readingSessions.filter((item) => item.completedAt)
+            .length,
         },
         listening: {
-          percent: this.average(data.listeningSessions.map((item) => item.score)),
-          completed: data.listeningSessions.filter((item) => item.completedAt).length,
+          percent: this.average(
+            data.listeningSessions.map((item) => item.score),
+          ),
+          completed: data.listeningSessions.filter((item) => item.completedAt)
+            .length,
         },
         speaking: {
-          percent: this.average(data.speakingSessions.map((item) => item.overallScore)),
-          completed: data.speakingSessions.filter((item) => item.finishedAt).length,
+          percent: this.average(
+            data.speakingSessions.map((item) => item.overallScore),
+          ),
+          completed: data.speakingSessions.filter((item) => item.finishedAt)
+            .length,
         },
         writing: {
-          percent: this.average(data.writingSessions.map((item) => item.overallScore ?? 0)),
-          completed: data.writingSessions.filter((item) => item.submittedAt).length,
+          percent: this.average(
+            data.writingSessions.map((item) => item.overallScore ?? 0),
+          ),
+          completed: data.writingSessions.filter((item) => item.submittedAt)
+            .length,
         },
       },
       charts: {
-        weeklyXp: data.weeklyActivity.map((item) => ({ date: item.date, label: item.label, value: item.xp })),
-        weeklyStudyTime: data.weeklyActivity.map((item) => ({ date: item.date, label: item.label, value: item.minutes })),
-        weeklyLessons: data.weeklyActivity.map((item) => ({ date: item.date, label: item.label, value: item.lessons })),
+        weeklyXp: data.weeklyActivity.map((item) => ({
+          date: item.date,
+          label: item.label,
+          value: item.xp,
+        })),
+        weeklyStudyTime: data.weeklyActivity.map((item) => ({
+          date: item.date,
+          label: item.label,
+          value: item.minutes,
+        })),
+        weeklyLessons: data.weeklyActivity.map((item) => ({
+          date: item.date,
+          label: item.label,
+          value: item.lessons,
+        })),
         skills: data.skillProgress.map((skill) => ({
           key: skill.key,
           label: skill.label,
@@ -982,10 +1176,19 @@ export class DashboardService {
       aiReport: {
         title: this.buildAiReportTitle(strongestSkill, weakestSkill),
         strongestSkill: strongestSkill
-          ? { key: strongestSkill.key, label: strongestSkill.label, percent: strongestSkill.percent }
+          ? {
+              key: strongestSkill.key,
+              label: strongestSkill.label,
+              percent: strongestSkill.percent,
+            }
           : null,
         focusSkill: weakestSkill
-          ? { key: weakestSkill.key, label: weakestSkill.label, percent: weakestSkill.percent, href: weakestSkill.href }
+          ? {
+              key: weakestSkill.key,
+              label: weakestSkill.label,
+              percent: weakestSkill.percent,
+              href: weakestSkill.href,
+            }
           : null,
         insights: [
           totalStudyMinutes > 0
@@ -1007,7 +1210,8 @@ export class DashboardService {
           : {
               title: 'Bắt đầu bài học đầu tiên',
               href: '/learn',
-              reason: 'Chưa đủ dữ liệu để phân tích, hãy hoàn thành một bài học để AI đưa ra gợi ý chính xác hơn.',
+              reason:
+                'Chưa đủ dữ liệu để phân tích, hãy hoàn thành một bài học để AI đưa ra gợi ý chính xác hơn.',
             },
       },
     };
@@ -1029,16 +1233,28 @@ export class DashboardService {
     return 'Bạn đang tiến bộ ổn định';
   }
 
-  private vocabularyPercent(items: Array<{ status: string; learnedAt: Date | null; masteredAt: Date | null }>) {
+  private vocabularyPercent(
+    items: Array<{
+      status: string;
+      learnedAt: Date | null;
+      masteredAt: Date | null;
+    }>,
+  ) {
     if (!items.length) return 0;
-    const learned = items.filter((item) => item.learnedAt || item.masteredAt || item.status !== 'NEW').length;
+    const learned = items.filter(
+      (item) => item.learnedAt || item.masteredAt || item.status !== 'NEW',
+    ).length;
     return Math.round((learned / items.length) * 100);
   }
 
   private average(values: number[]) {
-    const usable = values.filter((value) => Number.isFinite(value) && value > 0);
+    const usable = values.filter(
+      (value) => Number.isFinite(value) && value > 0,
+    );
     if (!usable.length) return 0;
-    return Math.round(usable.reduce((sum, value) => sum + value, 0) / usable.length);
+    return Math.round(
+      usable.reduce((sum, value) => sum + value, 0) / usable.length,
+    );
   }
 
   private getLastDays(count: number, end: Date) {

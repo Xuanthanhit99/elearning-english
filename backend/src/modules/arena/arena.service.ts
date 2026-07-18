@@ -70,14 +70,14 @@ export class ArenaService {
     apiKey: process.env.GEMINI_API_KEY,
   });
 
-async generateQuestions(input: {
-  skill: string;
-  level: string;
-  questionSet: string;
-  count: number;
-}) {
-  try {
-    const prompt = `
+  async generateQuestions(input: {
+    skill: string;
+    level: string;
+    questionSet: string;
+    count: number;
+  }) {
+    try {
+      const prompt = `
 Generate ${input.count} English learning arena questions.
 
 Config:
@@ -94,20 +94,20 @@ Rules:
 - Do not return markdown.
 `;
 
-    const res = await this.ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-      },
-    });
+      const res = await this.ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+        },
+      });
 
-    return JSON.parse(res.text ?? '[]');
-  } catch (error) {
-    console.error('Gemini generate questions failed:', error);
-    throw new BadRequestException('Không tạo được câu hỏi từ AI');
+      return JSON.parse(res.text ?? '[]');
+    } catch (error) {
+      console.error('Gemini generate questions failed:', error);
+      throw new BadRequestException('Không tạo được câu hỏi từ AI');
+    }
   }
-}
 
   // private buildQuestions(skill: string, topic: string, difficulty: string) {
   //   const pool = QUESTION_BANK.filter((item) => skill === 'Mixed' || item.skill === skill || item.skill === 'Mixed');
@@ -470,44 +470,44 @@ Rules:
     await this.prisma.arenaQueue.deleteMany({ where: { userId } });
     return { ok: true };
   }
-private async beginRoomCountdown(room: any) {
-  const countdownEndsAt = new Date(Date.now() + 5000);
+  private async beginRoomCountdown(room: any) {
+    const countdownEndsAt = new Date(Date.now() + 5000);
 
-  const match =
-    room.matches[0] ||
-    (await this.prisma.arenaMatch.create({
-      data: { roomId: room.id },
-    }));
+    const match =
+      room.matches[0] ||
+      (await this.prisma.arenaMatch.create({
+        data: { roomId: room.id },
+      }));
 
-  const existingQuestionCount = await this.prisma.arenaQuestion.count({
-    where: { matchId: match.id },
-  });
+    const existingQuestionCount = await this.prisma.arenaQuestion.count({
+      where: { matchId: match.id },
+    });
 
-  if (existingQuestionCount === 0) {
-    const questions = await this.buildQuestions(
-      room.skill,
-      room.topic,
-      room.difficulty,
-    );
+    if (existingQuestionCount === 0) {
+      const questions = await this.buildQuestions(
+        room.skill,
+        room.topic,
+        room.difficulty,
+      );
 
-    await this.prisma.arenaQuestion.createMany({
-      data: questions.map((question) => ({
-        ...question,
-        matchId: match.id,
-      })),
+      await this.prisma.arenaQuestion.createMany({
+        data: questions.map((question) => ({
+          ...question,
+          matchId: match.id,
+        })),
+      });
+    }
+
+    await this.prisma.arenaParticipant.updateMany({
+      where: { roomId: room.id },
+      data: { score: 0, correct: 0, wrong: 0 },
+    });
+
+    await this.prisma.arenaRoom.update({
+      where: { id: room.id },
+      data: { status: 'PLAYING', countdownEndsAt },
     });
   }
-
-  await this.prisma.arenaParticipant.updateMany({
-    where: { roomId: room.id },
-    data: { score: 0, correct: 0, wrong: 0 },
-  });
-
-  await this.prisma.arenaRoom.update({
-    where: { id: room.id },
-    data: { status: 'PLAYING', countdownEndsAt },
-  });
-}
 
   async startRoom(userId: string, roomId: string) {
     const room = await this.prisma.arenaRoom.findUnique({

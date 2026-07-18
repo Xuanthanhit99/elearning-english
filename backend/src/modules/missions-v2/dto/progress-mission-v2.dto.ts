@@ -1,7 +1,4 @@
-import {
-  LearningSkill,
-  MissionV2Action,
-} from '@prisma/client';
+import { LearningSkill, MissionV2Action } from '@prisma/client';
 import {
   IsEnum,
   IsInt,
@@ -39,6 +36,14 @@ export class ProgressMissionV2Dto {
   @IsOptional()
   @IsString()
   courseId?: string;
+
+  @IsOptional()
+  @IsString()
+  sourceId?: string;
+
+  @IsOptional()
+  @IsString()
+  idempotencyKey?: string;
 
   @IsOptional()
   @IsInt()

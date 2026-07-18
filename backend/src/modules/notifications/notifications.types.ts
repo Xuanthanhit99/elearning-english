@@ -15,4 +15,3 @@ export type CreateNotificationInput = {
   type?: NotificationType;
   href?: string;
 };
-

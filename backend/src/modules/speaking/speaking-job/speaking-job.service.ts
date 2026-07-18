@@ -39,7 +39,7 @@ export class SpeakingJobService {
 
   // Chạy mỗi ngày lúc 2h sáng
   @Cron('0 2 * * *')
-// @Cron('*/5 * * * *')
+  // @Cron('*/5 * * * *')
   async generateDailySpeakingData() {
     this.logger.log('Start generate speaking data');
 

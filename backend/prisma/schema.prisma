@@ -2427,6 +2427,21 @@ model MissionRewardTransactionV2 {
   @@index([userId, createdAt])
 }
 
+model MissionProgressEventV2 {
+  id             String          @id @default(uuid())
+  userId         String
+  action         MissionV2Action
+  idempotencyKey String          @unique
+  amount         Int             @default(1)
+  skill          LearningSkill?
+  lessonId       String?
+  sourceId       String?
+  createdAt      DateTime        @default(now())
+
+  @@index([userId, action, createdAt])
+  @@index([sourceId])
+}
+
 model UserListeningProgress {
   id                 String    @id @default(uuid())
   userId             String    @unique

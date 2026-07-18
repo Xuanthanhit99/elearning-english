@@ -507,7 +507,9 @@ Quy tắc:
     return {
       title: String(input?.title || title),
       duration: Number(input?.duration) || 15,
-      learningGoal: String(input?.learningGoal || 'Nắm nội dung chính của bài.'),
+      learningGoal: String(
+        input?.learningGoal || 'Nắm nội dung chính của bài.',
+      ),
       vocabulary: Array.isArray(input?.vocabulary) ? input.vocabulary : [],
       grammar: Array.isArray(input?.grammar) ? input.grammar : [],
       dialogue: Array.isArray(input?.dialogue) ? input.dialogue : [],
@@ -529,7 +531,8 @@ Quy tắc:
       description:
         'Lộ trình cá nhân hóa giúp bạn học từ vựng, mẫu câu, nghe, nói và ôn tập từng ngày.',
       level: dto.level || 'A1',
-      estimatedMinutes: (dto.dailyMinutes || 30) * Math.min(dto.totalDays || 7, 14),
+      estimatedMinutes:
+        (dto.dailyMinutes || 30) * Math.min(dto.totalDays || 7, 14),
       modules: [
         {
           title: 'Module 1: Foundation',
@@ -596,8 +599,16 @@ Quy tắc:
         },
       ],
       dialogue: [
-        { speaker: 'A', line: 'What is your goal?', vi: 'Mục tiêu của bạn là gì?' },
-        { speaker: 'B', line: 'I want to speak English.', vi: 'Tôi muốn nói tiếng Anh.' },
+        {
+          speaker: 'A',
+          line: 'What is your goal?',
+          vi: 'Mục tiêu của bạn là gì?',
+        },
+        {
+          speaker: 'B',
+          line: 'I want to speak English.',
+          vi: 'Tôi muốn nói tiếng Anh.',
+        },
       ],
       listeningScript:
         'I study English every day. I practice new words and short sentences.',

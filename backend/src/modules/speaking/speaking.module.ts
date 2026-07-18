@@ -9,7 +9,12 @@ import { LearningXpModule } from '../learning-xp/learning-xp.module';
 import { SettingsModule } from '../settings/settings.module';
 
 @Module({
-  imports: [SpeakingPracticeModule, SpeakingProcessingModule, LearningXpModule, SettingsModule],
+  imports: [
+    SpeakingPracticeModule,
+    SpeakingProcessingModule,
+    LearningXpModule,
+    SettingsModule,
+  ],
   controllers: [SpeakingController],
   providers: [SpeakingService, SpeakingJobService, PrismaService],
   exports: [SpeakingService],

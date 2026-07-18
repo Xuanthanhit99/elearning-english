@@ -19,10 +19,7 @@ export interface LearningXpRule {
   maxBonusXp: number;
 }
 
-export const LEARNING_XP_RULES: Record<
-  LearningActivityCode,
-  LearningXpRule
-> = {
+export const LEARNING_XP_RULES: Record<LearningActivityCode, LearningXpRule> = {
   SPEAKING_COMPLETED: {
     sourceType: XpSourceType.SPEAKING,
     skill: LearningSkill.SPEAKING,

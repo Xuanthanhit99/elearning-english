@@ -900,21 +900,9 @@ Format:
     }
 
     const question = await this.generateSpeakingQuestion({
-      topicTitle: session
-        ? session.topic
-          ? (session.topic.title as string)
-          : ''
-        : '',
-      lessonTitle: session
-        ? session.lesson
-          ? (session.lesson.title as string)
-          : ''
-        : '',
-      level: session
-        ? session.lesson
-          ? (session.lesson.level as string)
-          : ''
-        : '',
+      topicTitle: session ? (session.topic ? session.topic.title : '') : '',
+      lessonTitle: session ? (session.lesson ? session.lesson.title : '') : '',
+      level: session ? (session.lesson ? session.lesson.level : '') : '',
     });
 
     return {
@@ -1194,8 +1182,7 @@ Format:
           question: dto.question,
           expectedText: dto.expectedText,
           transcript,
-          level:
-            session && session.lesson ? (session.lesson.level as string) : '',
+          level: session && session.lesson ? session.lesson.level : '',
         });
 
     const normalizedEvaluation = this.normalizeEvaluation(evaluation);

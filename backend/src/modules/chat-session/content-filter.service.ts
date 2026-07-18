@@ -9,11 +9,11 @@ const BLOCKED_PATTERNS: RegExp[] = [
 @Injectable()
 export class ContentFilterService {
   isUserInputSafe(text: string): boolean {
-    return !BLOCKED_PATTERNS.some(p => p.test(text));
+    return !BLOCKED_PATTERNS.some((p) => p.test(text));
   }
 
   // Lọc luôn cả output của AI phòng khi model "lệch kịch bản"
   isAiOutputSafe(text: string): boolean {
-    return !BLOCKED_PATTERNS.some(p => p.test(text));
+    return !BLOCKED_PATTERNS.some((p) => p.test(text));
   }
 }

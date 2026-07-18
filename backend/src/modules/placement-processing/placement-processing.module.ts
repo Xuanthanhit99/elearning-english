@@ -18,7 +18,7 @@ export const PLACEMENT_PROCESSING_QUEUE = 'placement-processing';
     BullModule.registerQueue({
       name: 'placement-processing',
     }),
-    LearningXpModule
+    LearningXpModule,
   ],
   controllers: [PlacementProcessingController],
   providers: [PlacementProcessingService, PlacementProcessingProcessor],

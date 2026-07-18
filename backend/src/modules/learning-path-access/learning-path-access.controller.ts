@@ -20,27 +20,18 @@ type AuthenticatedRequest = Request & {
 @Controller('learning-path')
 @UseGuards(JwtAuthGuard)
 export class LearningPathAccessController {
-  constructor(
-    private readonly accessService: LearningPathAccessService,
-  ) {}
+  constructor(private readonly accessService: LearningPathAccessService) {}
 
   @Get('access')
-  async getAccess(
-    @Req() req: AuthenticatedRequest,
-  ) {
+  async getAccess(@Req() req: AuthenticatedRequest) {
     return {
       success: true,
-      data: await this.accessService.resolve(
-        this.getUserId(req),
-      ),
+      data: await this.accessService.resolve(this.getUserId(req)),
     };
   }
 
   private getUserId(req: AuthenticatedRequest) {
-    const userId =
-      req.user?.id ??
-      req.user?.userId ??
-      req.user?.sub;
+    const userId = req.user?.id ?? req.user?.userId ?? req.user?.sub;
 
     if (!userId) {
       throw new UnauthorizedException(

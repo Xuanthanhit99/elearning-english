@@ -20,26 +20,18 @@ export function mapLeaderboardEntries(
 ) {
   return entries.map((entry) => ({
     rank: entry.rank,
-    previousRank:
-      entry.previousRank ?? null,
+    previousRank: entry.previousRank ?? null,
     periodXp: entry.periodXp,
     zone: entry.zone ?? 'SAFE',
     promoted: Boolean(entry.promoted),
     relegated: Boolean(entry.relegated),
-    isCurrentUser:
-      entry.user.id === currentUserId,
+    isCurrentUser: entry.user.id === currentUserId,
     user: {
       id: entry.user.id,
-      displayName:
-        entry.user.username ??
-        entry.user.fullname ??
-        'Người học',
-      username:
-        entry.user.username ?? null,
-      avatarUrl:
-        entry.user.avatar ?? null,
-      level:
-        entry.user.level ?? null,
+      displayName: entry.user.username ?? entry.user.fullname ?? 'Người học',
+      username: entry.user.username ?? null,
+      avatarUrl: entry.user.avatar ?? null,
+      level: entry.user.level ?? null,
     },
   }));
 }

@@ -101,5 +101,4 @@ export class GrammarController {
   ) {
     return this.grammarService.saveLessonNote(user.id, lessonId, body.note);
   }
-
 }

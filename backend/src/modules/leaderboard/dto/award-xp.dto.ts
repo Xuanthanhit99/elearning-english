@@ -1,5 +1,13 @@
 import { LearningSkill, XpSourceType } from '@prisma/client';
-import { IsEnum, IsInt, IsObject, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsObject,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class AwardXpDto {
   @IsString()

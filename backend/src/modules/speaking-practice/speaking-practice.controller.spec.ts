@@ -9,7 +9,9 @@ describe('SpeakingPracticeController', () => {
       controllers: [SpeakingPracticeController],
     }).compile();
 
-    controller = module.get<SpeakingPracticeController>(SpeakingPracticeController);
+    controller = module.get<SpeakingPracticeController>(
+      SpeakingPracticeController,
+    );
   });
 
   it('should be defined', () => {

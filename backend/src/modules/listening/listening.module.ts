@@ -9,7 +9,13 @@ import { ListeningJobModule } from '../listening-job/listening-job.module';
 import { LearningXpModule } from '../learning-xp/learning-xp.module';
 
 @Module({
-  imports: [PrismaModule, GeminiModule, MissionsV2Module, ListeningJobModule, LearningXpModule],
+  imports: [
+    PrismaModule,
+    GeminiModule,
+    MissionsV2Module,
+    ListeningJobModule,
+    LearningXpModule,
+  ],
   controllers: [ListeningController],
   providers: [ListeningService, ListeningTtsService],
   exports: [ListeningService],

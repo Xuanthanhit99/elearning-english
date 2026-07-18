@@ -40,7 +40,7 @@ export class CoursesController {
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
   async get(@Param('id') id: string, @Req() req: any) {
     const a = await this.coursesService.findOne(id, req.user);
-    console.log("first", a);
+    console.log('first', a);
     return this.coursesService.findOne(id, req.user);
   }
 

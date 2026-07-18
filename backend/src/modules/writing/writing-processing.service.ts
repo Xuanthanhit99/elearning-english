@@ -85,8 +85,7 @@ export class WritingProcessingService {
       data: {
         content,
         wordCount,
-        timeSpentSeconds:
-          input.timeSpentSeconds ?? session.timeSpentSeconds,
+        timeSpentSeconds: input.timeSpentSeconds ?? session.timeSpentSeconds,
         isSubmitted: false,
       },
     });
@@ -101,8 +100,7 @@ export class WritingProcessingService {
         message: 'Đã nhận bài viết. Đang chờ AI chấm điểm.',
         content,
         wordCount,
-        timeSpentSeconds:
-          input.timeSpentSeconds ?? session.timeSpentSeconds,
+        timeSpentSeconds: input.timeSpentSeconds ?? session.timeSpentSeconds,
       },
     });
 

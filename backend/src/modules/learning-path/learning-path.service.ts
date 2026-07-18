@@ -6,15 +6,23 @@ import {
 } from '@nestjs/common';
 import {
   CourseStatus,
+  MissionV2Action,
+  MissionV2Status,
   PlacementResultStatus,
+  Prisma,
+  XpSourceType,
 } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { XpService } from '../leaderboard/xp.service';
 
-type PathLessonStatus =
-  | 'LOCKED'
-  | 'AVAILABLE'
-  | 'IN_PROGRESS'
-  | 'COMPLETED';
+const LESSON_REWARD = {
+  userXp: 20,
+  petXp: 30,
+  coins: 12,
+  food: 1,
+};
+
+type PathLessonStatus = 'LOCKED' | 'AVAILABLE' | 'IN_PROGRESS' | 'COMPLETED';
 
 type PathLesson = {
   id: string;
@@ -34,7 +42,10 @@ type PathLesson = {
 
 @Injectable()
 export class LearningPathService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly xpService: XpService,
+  ) {}
 
   async getLearningPath(userId: string) {
     const result = await this.getReadyPlacementResult(userId);
@@ -55,14 +66,12 @@ export class LearningPathService {
       lessons.find((lesson) => lesson.status === 'IN_PROGRESS') ??
       lessons.find((lesson) => lesson.status === 'AVAILABLE') ??
       null;
-    const nextLesson =
-      currentLesson
-        ? lessons.find(
-            (lesson) =>
-              lesson.status !== 'COMPLETED' &&
-              lesson.id !== currentLesson.id,
-          ) ?? null
-        : null;
+    const nextLesson = currentLesson
+      ? (lessons.find(
+          (lesson) =>
+            lesson.status !== 'COMPLETED' && lesson.id !== currentLesson.id,
+        ) ?? null)
+      : null;
 
     return {
       id: result.id,
@@ -148,31 +157,342 @@ export class LearningPathService {
       );
     }
 
-    if (lesson.status !== 'COMPLETED') {
-      const completedAt = new Date();
+    if (lesson.status === 'COMPLETED') {
+      const current = await this.getLessonActionResult(userId, lessonId);
+      return {
+        ...current,
+        alreadyCompleted: true,
+        rewards: this.emptyRewardSummary(false, true),
+      };
+    }
 
-      await this.prisma.lessonProgress.upsert({
-        where: {
-          userId_lessonId: {
+    const idempotencyKey = `learning:LESSON_COMPLETED:${lesson.id}`;
+    const completedAt = new Date();
+
+    const rewardResult = await this.xpService.awardXpWithSideEffects(
+      {
+        userId,
+        sourceType: XpSourceType.LESSON,
+        sourceId: lesson.id,
+        baseXp: LESSON_REWARD.userXp,
+        bonusXp: 0,
+        idempotencyKey,
+        reason: 'Hoan thanh bai hoc trong Learning Path',
+        metadata: {
+          pathLessonId: lesson.id,
+          courseId: lesson.courseId,
+          courseSlug: lesson.courseSlug,
+          sectionId: lesson.sectionId,
+          sectionTitle: lesson.sectionTitle,
+          completedAt: completedAt.toISOString(),
+        },
+      },
+      async (tx) => {
+        await tx.lessonProgress.upsert({
+          where: {
+            userId_lessonId: {
+              userId,
+              lessonId,
+            },
+          },
+          create: {
             userId,
             lessonId,
+            courseId: lesson.courseId,
+            completed: true,
+            completedAt,
           },
-        },
-        create: {
+          update: {
+            completed: true,
+            completedAt,
+          },
+        });
+
+        const missionUpdates = await this.applyLessonMissionProgress(
+          tx,
           userId,
-          lessonId,
-          courseId: lesson.courseId,
-          completed: true,
+          lesson,
           completedAt,
-        },
-        update: {
-          completed: true,
+        );
+        const pet = await this.applyPetLessonReward(
+          tx,
+          userId,
+          lesson.id,
           completedAt,
+        );
+
+        return {
+          missionUpdates,
+          pet,
+        };
+      },
+    );
+
+    const current = await this.getLessonActionResult(userId, lessonId);
+    const sideEffect = rewardResult.sideEffectResult;
+    const leaderboardSynced =
+      'entry' in rewardResult && Boolean(rewardResult.entry);
+
+    return {
+      ...current,
+      alreadyCompleted: rewardResult.duplicated,
+      rewards: rewardResult.duplicated
+        ? this.emptyRewardSummary(false, true)
+        : {
+            applied: true,
+            xp: rewardResult.transaction.finalXp,
+            coins: sideEffect?.pet.coins ?? 0,
+            streak: sideEffect?.pet.streak ?? {
+              current: null,
+              best: null,
+              changed: false,
+            },
+            missionUpdates: sideEffect?.missionUpdates ?? [],
+            pet: {
+              changed: Boolean(sideEffect?.pet.changed),
+            },
+            leaderboard: {
+              queued: leaderboardSynced,
+              synced: leaderboardSynced,
+            },
+          },
+    };
+  }
+
+  private async applyLessonMissionProgress(
+    tx: Prisma.TransactionClient,
+    userId: string,
+    lesson: PathLesson,
+    completedAt: Date,
+  ) {
+    const missions = await tx.userMissionV2.findMany({
+      where: {
+        userId,
+        action: MissionV2Action.COMPLETE_LESSON,
+        status: MissionV2Status.ACTIVE,
+        OR: [
+          {
+            expiresAt: null,
+          },
+          {
+            expiresAt: {
+              gt: completedAt,
+            },
+          },
+        ],
+      },
+    });
+
+    const updates: Array<{
+      missionId: string;
+      progress: number;
+      target: number;
+      status: MissionV2Status;
+    }> = [];
+
+    for (const mission of missions) {
+      if (mission.lessonId && mission.lessonId !== lesson.id) {
+        continue;
+      }
+
+      if (mission.courseId && mission.courseId !== lesson.courseId) {
+        continue;
+      }
+
+      const progress = Math.min(mission.progress + 1, mission.target);
+      const completed = progress >= mission.target;
+
+      const updated = await tx.userMissionV2.update({
+        where: { id: mission.id },
+        data: {
+          progress,
+          status: completed
+            ? MissionV2Status.COMPLETED
+            : MissionV2Status.ACTIVE,
+          completedAt: completed ? completedAt : null,
         },
+      });
+
+      updates.push({
+        missionId: updated.id,
+        progress: updated.progress,
+        target: updated.target,
+        status: updated.status,
       });
     }
 
-    return this.getLessonActionResult(userId, lessonId);
+    return updates;
+  }
+
+  private async applyPetLessonReward(
+    tx: Prisma.TransactionClient,
+    userId: string,
+    lessonId: string,
+    completedAt: Date,
+  ) {
+    const existingReward = await tx.petReward.findUnique({
+      where: {
+        userId_lessonId: {
+          userId,
+          lessonId,
+        },
+      },
+    });
+    const pet = await this.getOrCreatePetInTransaction(tx, userId, completedAt);
+
+    if (existingReward) {
+      return {
+        changed: false,
+        coins: 0,
+        streak: {
+          current: pet.streak,
+          best: pet.bestStreak,
+          changed: false,
+        },
+      };
+    }
+
+    const nextStreak = this.nextStreak(
+      pet.lastStudyDate,
+      pet.streak,
+      completedAt,
+    );
+    const streakChanged = nextStreak !== pet.streak;
+
+    await tx.petReward.create({
+      data: {
+        userId,
+        lessonId,
+        xp: LESSON_REWARD.petXp,
+        coins: LESSON_REWARD.coins,
+        food: LESSON_REWARD.food,
+      },
+    });
+
+    const updatedPet = await tx.petProfile.update({
+      where: { userId },
+      data: {
+        xp: { increment: LESSON_REWARD.petXp },
+        coins: { increment: LESSON_REWARD.coins },
+        food: { increment: LESSON_REWARD.food },
+        hp: this.clamp(pet.hp + 4),
+        energy: this.clamp(pet.energy - 8),
+        happiness: this.clamp(pet.happiness + 6),
+        hunger: this.clamp(pet.hunger - 5),
+        streak: nextStreak,
+        bestStreak: Math.max(pet.bestStreak, nextStreak),
+        completedLessons: { increment: 1 },
+        lastStudyDate: completedAt,
+      },
+    });
+
+    await tx.userXpProfile.upsert({
+      where: { userId },
+      create: {
+        userId,
+        currentStreak: nextStreak,
+        longestStreak: nextStreak,
+      },
+      update: {
+        currentStreak: nextStreak,
+        longestStreak: Math.max(pet.bestStreak, nextStreak),
+      },
+    });
+
+    return {
+      changed: true,
+      coins: LESSON_REWARD.coins,
+      streak: {
+        current: updatedPet.streak,
+        best: updatedPet.bestStreak,
+        changed: streakChanged,
+      },
+    };
+  }
+
+  private async getOrCreatePetInTransaction(
+    tx: Prisma.TransactionClient,
+    userId: string,
+    now: Date,
+  ) {
+    const existing = await tx.petProfile.findUnique({ where: { userId } });
+
+    if (existing) {
+      return existing;
+    }
+
+    const chooseDeadline = new Date(now);
+    chooseDeadline.setDate(chooseDeadline.getDate() + 7);
+
+    return tx.petProfile.create({
+      data: {
+        userId,
+        petType: 'pending',
+        petName: 'Chua chon',
+        chooseDeadline,
+      },
+    });
+  }
+
+  private emptyRewardSummary(applied: boolean, alreadyProcessed: boolean) {
+    return {
+      applied,
+      alreadyProcessed,
+      xp: 0,
+      coins: 0,
+      streak: {
+        current: null,
+        best: null,
+        changed: false,
+      },
+      missionUpdates: [],
+      pet: {
+        changed: false,
+      },
+      leaderboard: {
+        queued: false,
+        synced: false,
+      },
+    };
+  }
+
+  private clamp(value: number) {
+    return Math.min(100, Math.max(0, value));
+  }
+
+  private startOfDay(date: Date) {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  }
+
+  private isSameDay(left: Date | null, right: Date) {
+    if (!left) return false;
+
+    return this.startOfDay(left).getTime() === this.startOfDay(right).getTime();
+  }
+
+  private isYesterday(left: Date | null, right: Date) {
+    if (!left) return false;
+
+    const yesterday = this.startOfDay(right);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    return this.startOfDay(left).getTime() === yesterday.getTime();
+  }
+
+  private nextStreak(
+    lastStudyDate: Date | null,
+    currentStreak: number,
+    now: Date,
+  ) {
+    if (this.isSameDay(lastStudyDate, now)) {
+      return currentStreak;
+    }
+
+    if (this.isYesterday(lastStudyDate, now)) {
+      return currentStreak + 1;
+    }
+
+    return 1;
   }
 
   private async getReadyPlacementResult(userId: string) {
@@ -278,7 +598,9 @@ export class LearningPathService {
       : [];
 
     const courseById = new Map(courses.map((course) => [course.id, course]));
-    const courseBySlug = new Map(courses.map((course) => [course.slug, course]));
+    const courseBySlug = new Map(
+      courses.map((course) => [course.slug, course]),
+    );
     let unlocked = true;
 
     return recommendations.map((recommendation) => {
@@ -394,9 +716,7 @@ export class LearningPathService {
       .find((item) => item.id === lessonId);
 
     if (!lesson) {
-      throw new BadRequestException(
-        'Khong the cap nhat trang thai bai hoc.',
-      );
+      throw new BadRequestException('Khong the cap nhat trang thai bai hoc.');
     }
 
     return {

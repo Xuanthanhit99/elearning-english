@@ -38,10 +38,7 @@ export class PlacementDashboardController {
     return {
       success: true,
       message: 'Đã tạo phiên Placement Test mới.',
-      data: await this.service.retake(
-        this.getUserId(req),
-        dto.force ?? false,
-      ),
+      data: await this.service.retake(this.getUserId(req), dto.force ?? false),
     };
   }
 

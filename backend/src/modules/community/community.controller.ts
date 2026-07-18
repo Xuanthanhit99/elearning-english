@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { CommunityService } from './community.service';
 import { CreateCommunityCommentDto } from './dto/create-community-comment.dto';
 import { CreateCommunityPostDto } from './dto/create-community-post.dto';
@@ -32,7 +43,11 @@ export class CommunityController {
   }
 
   @Patch('posts/:postId')
-  updatePost(@Req() req: any, @Param('postId') postId: string, @Body() dto: UpdateCommunityPostDto) {
+  updatePost(
+    @Req() req: any,
+    @Param('postId') postId: string,
+    @Body() dto: UpdateCommunityPostDto,
+  ) {
     return this.service.updatePost(this.userId(req), postId, dto);
   }
 
@@ -42,12 +57,20 @@ export class CommunityController {
   }
 
   @Post('posts/:postId/comments')
-  createComment(@Req() req: any, @Param('postId') postId: string, @Body() dto: CreateCommunityCommentDto) {
+  createComment(
+    @Req() req: any,
+    @Param('postId') postId: string,
+    @Body() dto: CreateCommunityCommentDto,
+  ) {
     return this.service.createComment(this.userId(req), postId, dto);
   }
 
   @Post('posts/:postId/reactions')
-  react(@Req() req: any, @Param('postId') postId: string, @Body() dto: ReactCommunityPostDto) {
+  react(
+    @Req() req: any,
+    @Param('postId') postId: string,
+    @Body() dto: ReactCommunityPostDto,
+  ) {
     return this.service.reactPost(this.userId(req), postId, dto.type);
   }
 

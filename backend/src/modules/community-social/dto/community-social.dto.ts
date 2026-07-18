@@ -10,7 +10,13 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
-import { CommunityClubPrivacy, CommunityChallengeStatus, CommunityChallengeAudience, CommunityChallengeType, CommunityChallengeBadge } from '@prisma/client';
+import {
+  CommunityClubPrivacy,
+  CommunityChallengeStatus,
+  CommunityChallengeAudience,
+  CommunityChallengeType,
+  CommunityChallengeBadge,
+} from '@prisma/client';
 
 export class GetCommunityCommentsDto {
   @IsOptional()
@@ -91,7 +97,7 @@ export class CreateCommunityChallengeDto {
   challengeType?: CommunityChallengeType;
 
   @IsOptional()
-  @IsEnum(CommunityChallengeAudience )
+  @IsEnum(CommunityChallengeAudience)
   audience?: CommunityChallengeAudience;
 
   @IsOptional()

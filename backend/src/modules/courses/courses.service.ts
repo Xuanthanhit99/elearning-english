@@ -24,7 +24,7 @@ export class CoursesService {
         slug,
         description: dto.description,
         thumbnail: dto.thumbnail,
-        level: dto.level as string,
+        level: dto.level,
         price: dto.price || 0,
         status: CourseStatus.DRAFT,
       },

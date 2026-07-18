@@ -48,17 +48,28 @@ export class LeaderboardService {
       return {
         ...this.emptyResponse(),
         period: season,
-        message: 'Bạn chưa tham gia bảng xếp hạng tuần này. Hoàn thành một bài học để tham gia.',
+        message:
+          'Bạn chưa tham gia bảng xếp hạng tuần này. Hoàn thành một bài học để tham gia.',
       };
     }
 
-    return this.readGroup(season, entry.groupId, userId, query.page ?? 1, query.limit ?? 30);
+    return this.readGroup(
+      season,
+      entry.groupId,
+      userId,
+      query.page ?? 1,
+      query.limit ?? 30,
+    );
   }
 
   async getMonthly(userId: string, query: LeaderboardQueryDto) {
     const now = new Date();
-    const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-    const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+    const start = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
+    );
+    const end = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1),
+    );
 
     const rows = await this.prisma.xpTransaction.groupBy({
       by: ['userId'],
@@ -69,10 +80,18 @@ export class LeaderboardService {
       skip: ((query.page ?? 1) - 1) * (query.limit ?? 30),
     });
 
-    return this.hydrateAggregate(rows, userId, { type: 'MONTHLY', startsAt: start, endsAt: end });
+    return this.hydrateAggregate(rows, userId, {
+      type: 'MONTHLY',
+      startsAt: start,
+      endsAt: end,
+    });
   }
 
-  async getSkill(userId: string, skill: LearningSkill, query: LeaderboardQueryDto) {
+  async getSkill(
+    userId: string,
+    skill: LearningSkill,
+    query: LeaderboardQueryDto,
+  ) {
     const season = await this.activeSeason(LeaderboardPeriodType.WEEKLY);
     if (!season) return this.emptyResponse();
 
@@ -122,7 +141,9 @@ export class LeaderboardService {
     });
 
     if (!membership) {
-      throw new ForbiddenException('Bạn không phải thành viên của câu lạc bộ này.');
+      throw new ForbiddenException(
+        'Bạn không phải thành viên của câu lạc bộ này.',
+      );
     }
 
     const members = await this.prisma.communityClubMember.findMany({
@@ -146,7 +167,11 @@ export class LeaderboardService {
       skip: ((query.page ?? 1) - 1) * (query.limit ?? 30),
     });
 
-    return this.hydrateAggregate(rows, userId, { ...season, scope: 'CLUB', clubId });
+    return this.hydrateAggregate(rows, userId, {
+      ...season,
+      scope: 'CLUB',
+      clubId,
+    });
   }
 
   async getMe(userId: string) {
@@ -209,7 +234,10 @@ export class LeaderboardService {
     return this.prisma.$transaction(async (tx) => {
       const updated = await tx.userLeaderboardReward.update({
         where: { id: assignment.id },
-        data: { status: LeaderboardRewardStatus.CLAIMED, claimedAt: new Date() },
+        data: {
+          status: LeaderboardRewardStatus.CLAIMED,
+          claimedAt: new Date(),
+        },
       });
 
       const value = assignment.reward.rewardValue as Record<string, number>;
@@ -228,13 +256,16 @@ export class LeaderboardService {
     });
   }
 
-  async updatePrivacy(userId: string, data: {
-    optedOut?: boolean;
-    showOnline?: boolean;
-    showStreak?: boolean;
-    useNickname?: boolean;
-    leaderboardName?: string | null;
-  }) {
+  async updatePrivacy(
+    userId: string,
+    data: {
+      optedOut?: boolean;
+      showOnline?: boolean;
+      showStreak?: boolean;
+      useNickname?: boolean;
+      leaderboardName?: string | null;
+    },
+  ) {
     return this.prisma.userXpProfile.upsert({
       where: { userId },
       create: { userId, ...data },
@@ -250,7 +281,12 @@ export class LeaderboardService {
     limit: number,
   ) {
     const key = weeklyRedisKey(season.id, groupId);
-    let rankedIds = await this.redis.zrevrange(key, (page - 1) * limit, page * limit - 1, 'WITHSCORES');
+    let rankedIds = await this.redis.zrevrange(
+      key,
+      (page - 1) * limit,
+      page * limit - 1,
+      'WITHSCORES',
+    );
 
     if (!rankedIds.length) {
       const dbEntries = await this.prisma.leaderboardEntry.findMany({
@@ -262,7 +298,12 @@ export class LeaderboardService {
           key,
           ...dbEntries.flatMap((row) => [row.periodXp, row.userId]),
         );
-        rankedIds = await this.redis.zrevrange(key, (page - 1) * limit, page * limit - 1, 'WITHSCORES');
+        rankedIds = await this.redis.zrevrange(
+          key,
+          (page - 1) * limit,
+          page * limit - 1,
+          'WITHSCORES',
+        );
       }
     }
 
@@ -294,9 +335,15 @@ export class LeaderboardService {
 
     const currentRank = await this.redis.zrevrank(key, userId);
     const currentScore = Number((await this.redis.zscore(key, userId)) ?? 0);
-    const above = currentRank && currentRank > 0
-      ? await this.redis.zrevrange(key, currentRank - 1, currentRank - 1, 'WITHSCORES')
-      : [];
+    const above =
+      currentRank && currentRank > 0
+        ? await this.redis.zrevrange(
+            key,
+            currentRank - 1,
+            currentRank - 1,
+            'WITHSCORES',
+          )
+        : [];
 
     const entries = pairs.map((pair, index) => {
       const rank = (page - 1) * limit + index + 1;
@@ -306,30 +353,43 @@ export class LeaderboardService {
         periodXp: pair.score,
         zone: this.zoneForRank(rank),
         isCurrentUser: pair.userId === userId,
-        user: user ? {
-          id: user.id,
-          displayName:
-            user.xpProfile?.useNickname && user.xpProfile.leaderboardName
-              ? user.xpProfile.leaderboardName
-              : user.fullname,
-          username: user.username,
-          avatarUrl: user.avatar,
-          level: user.level,
-          cefrLevel: user.englishLevel,
-          streak: user.xpProfile?.showStreak ? user.xpProfile.currentStreak : null,
-        } : null,
+        user: user
+          ? {
+              id: user.id,
+              displayName:
+                user.xpProfile?.useNickname && user.xpProfile.leaderboardName
+                  ? user.xpProfile.leaderboardName
+                  : user.fullname,
+              username: user.username,
+              avatarUrl: user.avatar,
+              level: user.level,
+              cefrLevel: user.englishLevel,
+              streak: user.xpProfile?.showStreak
+                ? user.xpProfile.currentStreak
+                : null,
+            }
+          : null,
       };
     });
 
     return {
       period: season,
       groupId,
-      league: entries.length ? (await this.prisma.leaderboardGroup.findUnique({ where: { id: groupId } }))?.league : null,
+      league: entries.length
+        ? (
+            await this.prisma.leaderboardGroup.findUnique({
+              where: { id: groupId },
+            })
+          )?.league
+        : null,
       config: LEAGUE_CONFIG,
       currentUser: {
         rank: currentRank === null ? null : currentRank + 1,
         periodXp: currentScore,
-        xpToNextRank: above.length >= 2 ? Math.max(0, Number(above[1]) - currentScore + 1) : 0,
+        xpToNextRank:
+          above.length >= 2
+            ? Math.max(0, Number(above[1]) - currentScore + 1)
+            : 0,
         zone: currentRank === null ? null : this.zoneForRank(currentRank + 1),
       },
       entries,
@@ -347,7 +407,14 @@ export class LeaderboardService {
   private async hydrateAggregate(rows: any[], userId: string, period: any) {
     const users = await this.prisma.user.findMany({
       where: { id: { in: rows.map((r) => r.userId) } },
-      select: { id: true, fullname: true, username: true, avatar: true, level: true, englishLevel: true },
+      select: {
+        id: true,
+        fullname: true,
+        username: true,
+        avatar: true,
+        level: true,
+        englishLevel: true,
+      },
     });
     const map = new Map(users.map((u) => [u.id, u]));
     const entries = rows.map((r, index) => ({

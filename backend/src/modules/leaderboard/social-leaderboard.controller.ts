@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { SocialLeaderboardService } from './social-leaderboard.service';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 
@@ -51,10 +60,7 @@ export class SocialLeaderboardController {
   }
 
   @Post('challenges/:challengeId/accept')
-  accept(
-    @Req() req: any,
-    @Param('challengeId') challengeId: string,
-  ) {
+  accept(@Req() req: any, @Param('challengeId') challengeId: string) {
     return this.service.acceptChallenge(req.user.id, challengeId);
   }
 }

@@ -268,7 +268,8 @@ Rules:
         avgScore,
         dayStreak: pet?.streak ?? 0,
         xpToday: todayRewards.reduce((sum, item) => sum + item.xp, 0),
-        gems: pet?.coins ?? todayRewards.reduce((sum, item) => sum + item.coins, 0),
+        gems:
+          pet?.coins ?? todayRewards.reduce((sum, item) => sum + item.coins, 0),
       },
       todayPractice: [
         {

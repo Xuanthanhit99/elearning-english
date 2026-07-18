@@ -214,9 +214,7 @@ export class ReadingJobService {
           articleId: article.id,
           word: String(item.word),
           meaning: String(item.meaning),
-          partOfSpeech: item.partOfSpeech
-            ? String(item.partOfSpeech)
-            : null,
+          partOfSpeech: item.partOfSpeech ? String(item.partOfSpeech) : null,
           example: item.example ? String(item.example) : null,
         }));
 

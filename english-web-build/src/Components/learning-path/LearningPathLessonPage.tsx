@@ -3,9 +3,11 @@
 import {
   ArrowLeft,
   CheckCircle2,
+  Coins,
   Clock,
   Loader2,
   RefreshCcw,
+  Star,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -203,6 +205,55 @@ export default function LearningPathLessonPage() {
             ) : null}
           </div>
         </section>
+
+        {data.rewards ? (
+          <section className="rounded-[30px] border border-violet-100 bg-white p-6 shadow-sm">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-2xl font-black text-slate-950">
+                  {data.rewards.applied ? "Phan thuong vua nhan" : "Bai hoc da duoc xu ly"}
+                </h2>
+                <p className="mt-1 text-sm font-semibold text-slate-500">
+                  {data.rewards.applied
+                    ? "Tien do, nhiem vu va diem cua ban da duoc dong bo tu backend."
+                    : "Lan goi nay khong cong lai XP, coins hay streak."}
+                </p>
+              </div>
+              {data.rewards.leaderboard.queued ? (
+                <span className="rounded-full bg-violet-50 px-4 py-2 text-sm font-black text-violet-700">
+                  Leaderboard da dong bo
+                </span>
+              ) : null}
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-4">
+              <div className="rounded-2xl bg-amber-50 p-4">
+                <Star className="mb-2 text-amber-600" size={20} />
+                <p className="text-2xl font-black text-amber-700">+{data.rewards.xp}</p>
+                <p className="text-xs font-bold text-slate-500">XP</p>
+              </div>
+              <div className="rounded-2xl bg-yellow-50 p-4">
+                <Coins className="mb-2 text-yellow-600" size={20} />
+                <p className="text-2xl font-black text-yellow-700">+{data.rewards.coins}</p>
+                <p className="text-xs font-bold text-slate-500">Coins</p>
+              </div>
+              <div className="rounded-2xl bg-emerald-50 p-4">
+                <CheckCircle2 className="mb-2 text-emerald-600" size={20} />
+                <p className="text-2xl font-black text-emerald-700">
+                  {data.rewards.missionUpdates.length}
+                </p>
+                <p className="text-xs font-bold text-slate-500">Mission cap nhat</p>
+              </div>
+              <div className="rounded-2xl bg-violet-50 p-4">
+                <RefreshCcw className="mb-2 text-violet-600" size={20} />
+                <p className="text-2xl font-black text-violet-700">
+                  {data.rewards.streak.current ?? "-"}
+                </p>
+                <p className="text-xs font-bold text-slate-500">Streak hien tai</p>
+              </div>
+            </div>
+          </section>
+        ) : null}
       </div>
     </main>
   );

@@ -6,6 +6,6 @@ import { LearningXpModule } from '../learning-xp/learning-xp.module';
 @Module({
   imports: [LearningXpModule],
   controllers: [QuizzesController],
-  providers: [QuizzesService]
+  providers: [QuizzesService],
 })
 export class QuizzesModule {}

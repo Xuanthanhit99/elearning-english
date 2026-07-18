@@ -4,6 +4,6 @@ import { TeacherDashboardService } from './teacher-dashboard.service';
 
 @Module({
   controllers: [TeacherDashboardController],
-  providers: [TeacherDashboardService]
+  providers: [TeacherDashboardService],
 })
 export class TeacherDashboardModule {}

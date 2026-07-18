@@ -34,9 +34,7 @@ type AuthRequest = Request & {
 @Controller('community')
 @UseGuards(JwtAuthGuard)
 export class CommunityClubController {
-  constructor(
-    private readonly service: CommunityClubService,
-  ) {}
+  constructor(private readonly service: CommunityClubService) {}
 
   private userId(req: AuthRequest) {
     const id = req.user?.id ?? req.user?.userId ?? req.user?.sub;
@@ -47,18 +45,12 @@ export class CommunityClubController {
   }
 
   @Post('follows/:userId')
-  follow(
-    @Req() req: AuthRequest,
-    @Param('userId') userId: string,
-  ) {
+  follow(@Req() req: AuthRequest, @Param('userId') userId: string) {
     return this.service.followUser(this.userId(req), userId);
   }
 
   @Delete('follows/:userId')
-  unfollow(
-    @Req() req: AuthRequest,
-    @Param('userId') userId: string,
-  ) {
+  unfollow(@Req() req: AuthRequest, @Param('userId') userId: string) {
     return this.service.unfollowUser(this.userId(req), userId);
   }
 
@@ -73,18 +65,12 @@ export class CommunityClubController {
   }
 
   @Post('clubs')
-  createClub(
-    @Req() req: AuthRequest,
-    @Body() dto: CreateClubDto,
-  ) {
+  createClub(@Req() req: AuthRequest, @Body() dto: CreateClubDto) {
     return this.service.createClub(this.userId(req), dto);
   }
 
   @Get('clubs/:clubId')
-  getClub(
-    @Req() req: AuthRequest,
-    @Param('clubId') clubId: string,
-  ) {
+  getClub(@Req() req: AuthRequest, @Param('clubId') clubId: string) {
     return this.service.getClub(this.userId(req), clubId);
   }
 
@@ -94,26 +80,16 @@ export class CommunityClubController {
     @Param('clubId') clubId: string,
     @Body() body: { message?: string },
   ) {
-    return this.service.joinClub(
-      this.userId(req),
-      clubId,
-      body.message,
-    );
+    return this.service.joinClub(this.userId(req), clubId, body.message);
   }
 
   @Delete('clubs/:clubId/leave')
-  leaveClub(
-    @Req() req: AuthRequest,
-    @Param('clubId') clubId: string,
-  ) {
+  leaveClub(@Req() req: AuthRequest, @Param('clubId') clubId: string) {
     return this.service.leaveClub(this.userId(req), clubId);
   }
 
   @Get('clubs/:clubId/members')
-  members(
-    @Req() req: AuthRequest,
-    @Param('clubId') clubId: string,
-  ) {
+  members(@Req() req: AuthRequest, @Param('clubId') clubId: string) {
     return this.service.getMembers(this.userId(req), clubId);
   }
 
@@ -138,11 +114,7 @@ export class CommunityClubController {
     @Param('clubId') clubId: string,
     @Param('memberId') memberId: string,
   ) {
-    return this.service.removeMember(
-      this.userId(req),
-      clubId,
-      memberId,
-    );
+    return this.service.removeMember(this.userId(req), clubId, memberId);
   }
 
   @Get('clubs/:clubId/posts')
@@ -151,11 +123,7 @@ export class CommunityClubController {
     @Param('clubId') clubId: string,
     @Query('cursor') cursor?: string,
   ) {
-    return this.service.getClubPosts(
-      this.userId(req),
-      clubId,
-      cursor,
-    );
+    return this.service.getClubPosts(this.userId(req), clubId, cursor);
   }
 
   @Post('clubs/:clubId/posts')
@@ -164,11 +132,7 @@ export class CommunityClubController {
     @Param('clubId') clubId: string,
     @Body() dto: CreateClubPostDto,
   ) {
-    return this.service.createClubPost(
-      this.userId(req),
-      clubId,
-      dto,
-    );
+    return this.service.createClubPost(this.userId(req), clubId, dto);
   }
 
   @Get('clubs/:clubId/messages')
@@ -177,11 +141,7 @@ export class CommunityClubController {
     @Param('clubId') clubId: string,
     @Query('cursor') cursor?: string,
   ) {
-    return this.service.getMessages(
-      this.userId(req),
-      clubId,
-      cursor,
-    );
+    return this.service.getMessages(this.userId(req), clubId, cursor);
   }
 
   @Post('clubs/:clubId/messages')
@@ -190,18 +150,11 @@ export class CommunityClubController {
     @Param('clubId') clubId: string,
     @Body() dto: CreateClubMessageDto,
   ) {
-    return this.service.sendMessage(
-      this.userId(req),
-      clubId,
-      dto,
-    );
+    return this.service.sendMessage(this.userId(req), clubId, dto);
   }
 
   @Get('clubs/:clubId/events')
-  events(
-    @Req() req: AuthRequest,
-    @Param('clubId') clubId: string,
-  ) {
+  events(@Req() req: AuthRequest, @Param('clubId') clubId: string) {
     return this.service.getEvents(this.userId(req), clubId);
   }
 
@@ -211,11 +164,7 @@ export class CommunityClubController {
     @Param('clubId') clubId: string,
     @Body() dto: CreateClubEventDto,
   ) {
-    return this.service.createEvent(
-      this.userId(req),
-      clubId,
-      dto,
-    );
+    return this.service.createEvent(this.userId(req), clubId, dto);
   }
 
   @Post('clubs/:clubId/events/:eventId/attend')
@@ -224,18 +173,11 @@ export class CommunityClubController {
     @Param('clubId') clubId: string,
     @Param('eventId') eventId: string,
   ) {
-    return this.service.attendEvent(
-      this.userId(req),
-      clubId,
-      eventId,
-    );
+    return this.service.attendEvent(this.userId(req), clubId, eventId);
   }
 
   @Get('clubs/:clubId/resources')
-  resources(
-    @Req() req: AuthRequest,
-    @Param('clubId') clubId: string,
-  ) {
+  resources(@Req() req: AuthRequest, @Param('clubId') clubId: string) {
     return this.service.getResources(this.userId(req), clubId);
   }
 
@@ -245,10 +187,6 @@ export class CommunityClubController {
     @Param('clubId') clubId: string,
     @Body() dto: CreateClubResourceDto,
   ) {
-    return this.service.createResource(
-      this.userId(req),
-      clubId,
-      dto,
-    );
+    return this.service.createResource(this.userId(req), clubId, dto);
   }
 }

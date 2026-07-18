@@ -9,7 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { ProgressMissionV2Dto } from './dto/progress-mission-v2.dto';
 import { MissionV2ProgressService } from './services/mission-v2-progress.service';
 import { MissionV2QueryService } from './services/mission-v2-query.service';

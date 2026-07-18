@@ -3763,7 +3763,7 @@ Rules:
     const totalStudySeconds =
       listeningTimes.reduce((sum, item) => sum + (item.timeSpent || 0), 0) +
       (completedLessons as any[]).reduce(
-        (sum, item) => sum + ((item.lesson as any)?.duration || 0) * 60,
+        (sum, item) => sum + (item.lesson?.duration || 0) * 60,
         0,
       );
     const studyHours = Math.floor(totalStudySeconds / 3600);

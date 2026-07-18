@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Socket } from 'socket.io';
 
@@ -12,22 +9,16 @@ export type LeaderboardSocketUser = {
 
 @Injectable()
 export class LeaderboardCookieAuthService {
-  constructor(
-    private readonly jwtService: JwtService,
-  ) {}
+  constructor(private readonly jwtService: JwtService) {}
 
   authenticate(client: Socket): LeaderboardSocketUser {
-    const cookieHeader =
-      client.handshake.headers.cookie;
+    const cookieHeader = client.handshake.headers.cookie;
 
     if (!cookieHeader) {
-      throw new UnauthorizedException(
-        'Không tìm thấy cookie xác thực.',
-      );
+      throw new UnauthorizedException('Không tìm thấy cookie xác thực.');
     }
 
-    const cookies =
-      this.parseCookies(cookieHeader);
+    const cookies = this.parseCookies(cookieHeader);
 
     const token = cookies.access_token;
 
@@ -37,25 +28,19 @@ export class LeaderboardCookieAuthService {
       );
     }
 
-    const payload =
-      this.jwtService.verify<{
-        sub?: string;
-        id?: string;
-        userId?: string;
-        role?: string;
-      }>(token, {
-        secret: process.env.JWT_SECRET,
-      });
+    const payload = this.jwtService.verify<{
+      sub?: string;
+      id?: string;
+      userId?: string;
+      role?: string;
+    }>(token, {
+      secret: process.env.JWT_SECRET,
+    });
 
-    const userId =
-      payload.sub ??
-      payload.id ??
-      payload.userId;
+    const userId = payload.sub ?? payload.id ?? payload.userId;
 
     if (!userId) {
-      throw new UnauthorizedException(
-        'Token không chứa user id.',
-      );
+      throw new UnauthorizedException('Token không chứa user id.');
     }
 
     return {
@@ -69,19 +54,11 @@ export class LeaderboardCookieAuthService {
       cookieHeader
         .split(';')
         .map((item) => {
-          const [key, ...rest] =
-            item.trim().split('=');
+          const [key, ...rest] = item.trim().split('=');
 
-          return [
-            key,
-            decodeURIComponent(
-              rest.join('='),
-            ),
-          ];
+          return [key, decodeURIComponent(rest.join('='))];
         })
-        .filter(
-          ([key]) => Boolean(key),
-        ),
+        .filter(([key]) => Boolean(key)),
     );
   }
 }

@@ -21,9 +21,7 @@ type AuthenticatedRequest = Request & {
 @Controller('placement/session')
 @UseGuards(JwtAuthGuard)
 export class PlacementSessionController {
-  constructor(
-    private readonly sessionService: PlacementSessionService,
-  ) {}
+  constructor(private readonly sessionService: PlacementSessionService) {}
 
   @Post('start')
   async start(
@@ -32,10 +30,7 @@ export class PlacementSessionController {
   ) {
     return {
       success: true,
-      data: await this.sessionService.startOrResume(
-        this.getUserId(req),
-        dto,
-      ),
+      data: await this.sessionService.startOrResume(this.getUserId(req), dto),
     };
   }
 
@@ -46,10 +41,7 @@ export class PlacementSessionController {
   ) {
     return {
       success: true,
-      data: await this.sessionService.startRetake(
-        this.getUserId(req),
-        dto,
-      ),
+      data: await this.sessionService.startRetake(this.getUserId(req), dto),
     };
   }
 
@@ -57,9 +49,7 @@ export class PlacementSessionController {
   async active(@Req() req: AuthenticatedRequest) {
     return {
       success: true,
-      data: await this.sessionService.getActiveSession(
-        this.getUserId(req),
-      ),
+      data: await this.sessionService.getActiveSession(this.getUserId(req)),
     };
   }
 
@@ -81,9 +71,7 @@ export class PlacementSessionController {
     const id = req.user?.id ?? req.user?.userId ?? req.user?.sub;
 
     if (!id) {
-      throw new UnauthorizedException(
-        'Không xác định được người dùng.',
-      );
+      throw new UnauthorizedException('Không xác định được người dùng.');
     }
 
     return id;

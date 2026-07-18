@@ -4,6 +4,6 @@ import { CourseLandingService } from './course-landing.service';
 
 @Module({
   controllers: [CourseLandingController],
-  providers: [CourseLandingService]
+  providers: [CourseLandingService],
 })
 export class CourseLandingModule {}

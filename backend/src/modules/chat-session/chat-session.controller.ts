@@ -8,8 +8,8 @@ import { CreateMessageDto } from './dto/create-message.dto';
 @Controller('chat-session')
 @UseGuards(JwtAuthGuard)
 export class ChatSessionController {
-  constructor(private chatService: ChatSessionService){}
-@Throttle({ default: { limit: 15, ttl: 60_000 } }) // 15 tin/phút/user
+  constructor(private chatService: ChatSessionService) {}
+  @Throttle({ default: { limit: 15, ttl: 60_000 } }) // 15 tin/phút/user
   @Post('message')
   send(@CurrentUser() user, @Body() dto: CreateMessageDto) {
     return this.chatService.sendMessage(user.id, dto);

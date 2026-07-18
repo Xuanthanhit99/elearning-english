@@ -685,7 +685,7 @@ export class PlacementTestService {
       }
 
       if (item && typeof item === 'object' && !Array.isArray(item)) {
-        const object = item as Prisma.JsonObject;
+        const object = item;
 
         return {
           key:

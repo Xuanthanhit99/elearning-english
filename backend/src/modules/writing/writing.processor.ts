@@ -175,14 +175,14 @@ export class WritingProcessor extends WorkerHost {
             },
           },
           update: {
-            level: session.lesson.level as CefrLevel,
+            level: session.lesson.level,
             score: evaluation.overallScore,
             source: PlacementMethod.MANUAL,
           },
           create: {
             userId,
             skill: LearningSkill.WRITING,
-            level: session.lesson.level as CefrLevel,
+            level: session.lesson.level,
             score: evaluation.overallScore,
             source: PlacementMethod.MANUAL,
           },

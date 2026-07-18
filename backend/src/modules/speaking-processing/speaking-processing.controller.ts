@@ -17,9 +17,7 @@ import { SpeakingProcessingService } from './speaking-processing.service';
 @Controller('speaking')
 @UseGuards(JwtAuthGuard)
 export class SpeakingProcessingController {
-  constructor(
-    private readonly service: SpeakingProcessingService,
-  ) {}
+  constructor(private readonly service: SpeakingProcessingService) {}
 
   @Post('sessions/:sessionId/upload')
   @UseInterceptors(
@@ -45,24 +43,12 @@ export class SpeakingProcessingController {
   }
 
   @Get('sessions/:sessionId/status')
-  status(
-    @Req() req: any,
-    @Param('sessionId') sessionId: string,
-  ) {
-    return this.service.getStatus(
-      req.user.id,
-      sessionId,
-    );
+  status(@Req() req: any, @Param('sessionId') sessionId: string) {
+    return this.service.getStatus(req.user.id, sessionId);
   }
 
   @Get('sessions/:sessionId/result')
-  result(
-    @Req() req: any,
-    @Param('sessionId') sessionId: string,
-  ) {
-    return this.service.getResult(
-      req.user.id,
-      sessionId,
-    );
+  result(@Req() req: any, @Param('sessionId') sessionId: string) {
+    return this.service.getResult(req.user.id, sessionId);
   }
 }

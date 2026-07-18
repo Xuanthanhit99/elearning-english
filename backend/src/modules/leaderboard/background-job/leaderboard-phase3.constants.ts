@@ -1,13 +1,8 @@
-import {
-  LeaderboardZone,
-  LeagueTier,
-} from '@prisma/client';
+import { LeaderboardZone, LeagueTier } from '@prisma/client';
 
-export const LEADERBOARD_WEEKLY_CLOSE_QUEUE =
-  'leaderboard-weekly-close';
+export const LEADERBOARD_WEEKLY_CLOSE_QUEUE = 'leaderboard-weekly-close';
 
-export const LEADERBOARD_WEEKLY_CLOSE_JOB =
-  'close-expired-weekly-season';
+export const LEADERBOARD_WEEKLY_CLOSE_JOB = 'close-expired-weekly-season';
 
 export const LEAGUE_ORDER: LeagueTier[] = [
   LeagueTier.BRONZE,
@@ -25,10 +20,7 @@ export type LeagueRule = {
   maxMembers: number;
 };
 
-export const LEAGUE_RULES: Record<
-  LeagueTier,
-  LeagueRule
-> = {
+export const LEAGUE_RULES: Record<LeagueTier, LeagueRule> = {
   [LeagueTier.BRONZE]: {
     promotionCount: 10,
     relegationCount: 0,
@@ -75,19 +67,14 @@ export function resolveZone(input: {
 
   if (
     rule.promotionCount > 0 &&
-    input.rank <=
-      Math.min(rule.promotionCount, input.total)
+    input.rank <= Math.min(rule.promotionCount, input.total)
   ) {
     return LeaderboardZone.PROMOTION;
   }
 
-  const relegationStart =
-    input.total - rule.relegationCount + 1;
+  const relegationStart = input.total - rule.relegationCount + 1;
 
-  if (
-    rule.relegationCount > 0 &&
-    input.rank >= Math.max(1, relegationStart)
-  ) {
+  if (rule.relegationCount > 0 && input.rank >= Math.max(1, relegationStart)) {
     return LeaderboardZone.RELEGATION;
   }
 

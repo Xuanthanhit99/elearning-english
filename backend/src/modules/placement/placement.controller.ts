@@ -30,7 +30,10 @@ type AuthenticatedRequest = Request & {
 @Controller('placement')
 @UseGuards(JwtAuthGuard)
 export class PlacementController {
-  constructor(private placementService: PlacementService,private retakeService: PlacementRetakeService) {}
+  constructor(
+    private placementService: PlacementService,
+    private retakeService: PlacementRetakeService,
+  ) {}
 
   @Get('home')
   async getHome(@Req() req: AuthenticatedRequest) {
@@ -42,7 +45,6 @@ export class PlacementController {
     };
   }
 
-
   @Post('retake')
   async retake(
     @Req() req: AuthenticatedRequest,
@@ -50,8 +52,7 @@ export class PlacementController {
   ) {
     return {
       success: true,
-      message:
-        'Đã chuẩn bị bài kiểm tra mới.',
+      message: 'Đã chuẩn bị bài kiểm tra mới.',
       data: await this.retakeService.retake(
         this.getUserId(req),
         dto.force ?? false,
@@ -111,15 +112,10 @@ export class PlacementController {
   }
 
   @Get('retake/status')
-  async getRetakeStatus(
-    @Req() req: AuthenticatedRequest,
-  ) {
+  async getRetakeStatus(@Req() req: AuthenticatedRequest) {
     return {
       success: true,
-      data:
-        await this.retakeService.getRetakeStatus(
-          this.getUserId(req),
-        ),
+      data: await this.retakeService.getRetakeStatus(this.getUserId(req)),
     };
   }
 }

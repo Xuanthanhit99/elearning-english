@@ -9,11 +9,7 @@ export class CommunitySocialGateway {
     this.gateway.emitUser(userId, event, payload);
   }
 
-  emitConversation(
-    conversationId: string,
-    event: string,
-    payload: unknown,
-  ) {
+  emitConversation(conversationId: string, event: string, payload: unknown) {
     this.gateway.emitConversation(conversationId, event, payload);
   }
 }

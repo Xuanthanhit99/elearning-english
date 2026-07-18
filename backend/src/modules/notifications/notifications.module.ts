@@ -9,7 +9,10 @@ import { NotificationsService } from './notifications.service';
 import { NotificationsSettingsListener } from './settings-updated.listener';
 
 @Module({
-  imports: [PrismaModule, BullModule.registerQueue({ name: NOTIFICATIONS_QUEUE })],
+  imports: [
+    PrismaModule,
+    BullModule.registerQueue({ name: NOTIFICATIONS_QUEUE }),
+  ],
   controllers: [NotificationsController],
   providers: [
     NotificationsService,

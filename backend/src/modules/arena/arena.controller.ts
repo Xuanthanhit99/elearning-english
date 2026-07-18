@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { ArenaService } from './arena.service';
 import { CreateArenaRoomDto } from './dto/create-arena-room.dto';
@@ -30,10 +38,13 @@ export class ArenaController {
   }
 
   @Post('rooms/:roomId/join')
-  joinRoom(@Req() req: any, @Param('roomId') roomId: string, @Body() dto: JoinArenaRoomDto) {
+  joinRoom(
+    @Req() req: any,
+    @Param('roomId') roomId: string,
+    @Body() dto: JoinArenaRoomDto,
+  ) {
     return this.arenaService.joinRoom(req.user.id, roomId, dto);
   }
-
 
   @Post('queue')
   enterQueue(@Req() req: any, @Body() dto: QueueArenaDto) {
@@ -56,7 +67,11 @@ export class ArenaController {
   }
 
   @Post('rooms/:roomId/ready')
-  setReady(@Req() req: any, @Param('roomId') roomId: string, @Body() dto: SetArenaReadyDto) {
+  setReady(
+    @Req() req: any,
+    @Param('roomId') roomId: string,
+    @Body() dto: SetArenaReadyDto,
+  ) {
     return this.arenaService.setReady(req.user.id, roomId, dto);
   }
 
@@ -66,10 +81,13 @@ export class ArenaController {
   }
 
   @Post('rooms/:roomId/events')
-  createEvent(@Req() req: any, @Param('roomId') roomId: string, @Body() dto: CreateArenaEventDto) {
+  createEvent(
+    @Req() req: any,
+    @Param('roomId') roomId: string,
+    @Body() dto: CreateArenaEventDto,
+  ) {
     return this.arenaService.createEvent(req.user.id, roomId, dto);
   }
-
 
   @Post('rooms/:roomId/questions/:questionId/answer')
   submitAnswer(
@@ -82,7 +100,11 @@ export class ArenaController {
   }
 
   @Post('rooms/:roomId/finish')
-  finishMatch(@Req() req: any, @Param('roomId') roomId: string, @Body() dto: FinishArenaMatchDto) {
+  finishMatch(
+    @Req() req: any,
+    @Param('roomId') roomId: string,
+    @Body() dto: FinishArenaMatchDto,
+  ) {
     return this.arenaService.finishMatch(req.user.id, roomId, dto);
   }
 }

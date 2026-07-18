@@ -6,10 +6,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import {
-  Server,
-  Socket,
-} from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import {
   LeaderboardCookieAuthService,
   LeaderboardSocketUser,
@@ -24,51 +21,33 @@ type AuthenticatedSocket = Socket & {
 @WebSocketGateway({
   namespace: '/leaderboard',
   cors: {
-    origin:
-      process.env.FRONTEND_URL ??
-      'http://localhost:3000',
+    origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
     credentials: true,
   },
 })
-export class LeaderboardRealtimeGateway
-  implements OnGatewayConnection
-{
+export class LeaderboardRealtimeGateway implements OnGatewayConnection {
   @WebSocketServer()
   server!: Server;
 
-  constructor(
-    private readonly auth:
-      LeaderboardCookieAuthService,
-  ) {}
+  constructor(private readonly auth: LeaderboardCookieAuthService) {}
 
-  handleConnection(
-    client: AuthenticatedSocket,
-  ) {
+  handleConnection(client: AuthenticatedSocket) {
     try {
-      const user =
-        this.auth.authenticate(client);
+      const user = this.auth.authenticate(client);
 
       client.data.user = user;
 
-      client.join(
-        `leaderboard:user:${user.id}`,
-      );
+      client.join(`leaderboard:user:${user.id}`);
     } catch {
-      client.emit(
-        'leaderboard:unauthorized',
-        {
-          message:
-            'Phiên đăng nhập không hợp lệ.',
-        },
-      );
+      client.emit('leaderboard:unauthorized', {
+        message: 'Phiên đăng nhập không hợp lệ.',
+      });
 
       client.disconnect(true);
     }
   }
 
-  @SubscribeMessage(
-    'leaderboard:join-group',
-  )
+  @SubscribeMessage('leaderboard:join-group')
   joinGroup(
     @ConnectedSocket()
     client: AuthenticatedSocket,
@@ -83,9 +62,7 @@ export class LeaderboardRealtimeGateway
       };
     }
 
-    client.join(
-      `leaderboard:group:${body.groupId}`,
-    );
+    client.join(`leaderboard:group:${body.groupId}`);
 
     return {
       joined: true,
@@ -93,9 +70,7 @@ export class LeaderboardRealtimeGateway
     };
   }
 
-  @SubscribeMessage(
-    'leaderboard:leave-group',
-  )
+  @SubscribeMessage('leaderboard:leave-group')
   leaveGroup(
     @ConnectedSocket()
     client: AuthenticatedSocket,
@@ -104,9 +79,7 @@ export class LeaderboardRealtimeGateway
       groupId: string;
     },
   ) {
-    client.leave(
-      `leaderboard:group:${body.groupId}`,
-    );
+    client.leave(`leaderboard:group:${body.groupId}`);
 
     return {
       left: true,
@@ -114,46 +87,25 @@ export class LeaderboardRealtimeGateway
     };
   }
 
-  emitGroupUpdated(
-    groupId: string,
-    payload: unknown,
-  ) {
+  emitGroupUpdated(groupId: string, payload: unknown) {
     this.server
       .to(`leaderboard:group:${groupId}`)
-      .emit(
-        'leaderboard:group-updated',
-        payload,
-      );
+      .emit('leaderboard:group-updated', payload);
   }
 
-  emitWeeklyResult(
-    userId: string,
-    payload: unknown,
-  ) {
+  emitWeeklyResult(userId: string, payload: unknown) {
     this.server
       .to(`leaderboard:user:${userId}`)
-      .emit(
-        'leaderboard:weekly-result',
-        payload,
-      );
+      .emit('leaderboard:weekly-result', payload);
   }
 
-  emitRewardAvailable(
-    userId: string,
-    payload: unknown,
-  ) {
+  emitRewardAvailable(userId: string, payload: unknown) {
     this.server
       .to(`leaderboard:user:${userId}`)
-      .emit(
-        'leaderboard:reward-available',
-        payload,
-      );
+      .emit('leaderboard:reward-available', payload);
   }
 
   emitSeasonStarted(payload: unknown) {
-    this.server.emit(
-      'leaderboard:season-started',
-      payload,
-    );
+    this.server.emit('leaderboard:season-started', payload);
   }
 }

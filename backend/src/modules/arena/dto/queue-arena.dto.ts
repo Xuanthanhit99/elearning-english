@@ -10,6 +10,14 @@ export class QueueArenaDto {
   @IsIn(['A1', 'A2', 'B1', 'B2', 'C1', 'Mixed'])
   difficulty: string;
 
-  @IsIn(['Animals', 'Business', 'Travel', 'IELTS', 'TOEIC', 'Conversation', 'Daily life'])
+  @IsIn([
+    'Animals',
+    'Business',
+    'Travel',
+    'IELTS',
+    'TOEIC',
+    'Conversation',
+    'Daily life',
+  ])
   topic: string;
 }

@@ -10,9 +10,7 @@ import {
 @Injectable()
 export class LeaderboardWeeklyCloseScheduler {
   constructor(
-    @InjectQueue(
-      LEADERBOARD_WEEKLY_CLOSE_QUEUE,
-    )
+    @InjectQueue(LEADERBOARD_WEEKLY_CLOSE_QUEUE)
     private readonly queue: Queue,
   ) {}
 
@@ -22,15 +20,13 @@ export class LeaderboardWeeklyCloseScheduler {
    */
   @Cron('0 */5 * * * *')
   async scheduleWeeklyClose() {
-    const fiveMinuteBucket =
-      Math.floor(Date.now() / 300000);
+    const fiveMinuteBucket = Math.floor(Date.now() / 300000);
 
     await this.queue.add(
       LEADERBOARD_WEEKLY_CLOSE_JOB,
       {},
       {
-        jobId:
-          `leaderboard-weekly-close-${fiveMinuteBucket}`,
+        jobId: `leaderboard-weekly-close-${fiveMinuteBucket}`,
         attempts: 5,
         backoff: {
           type: 'exponential',

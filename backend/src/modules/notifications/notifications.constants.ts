@@ -9,4 +9,3 @@ export enum NotificationJobName {
 
 export const userDailyReminderJobId = (userId: string) =>
   `notifications:daily-reminder:${userId}`;
-

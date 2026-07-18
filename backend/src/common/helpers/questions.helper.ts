@@ -39,7 +39,11 @@ export const buildAnswer = (type: string, word: any) => {
 
 const shuffle = <T>(arr: T[]) => [...arr].sort(() => Math.random() - 0.5);
 
-export const buildOptions = async (prisma: any, type: string, wordId: string) => {
+export const buildOptions = async (
+  prisma: any,
+  type: string,
+  wordId: string,
+) => {
   if (type !== 'MULTIPLE_CHOICE') return [];
 
   const current = await prisma.word.findUnique({

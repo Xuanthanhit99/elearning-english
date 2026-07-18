@@ -1,7 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
 import { promises as fs } from 'fs';
 import { extname, join } from 'path';
@@ -29,8 +26,7 @@ export class SpeakingAudioStorageService {
     }
 
     const extension =
-      extname(file.originalname) ||
-      this.extensionFromMime(file.mimetype);
+      extname(file.originalname) || this.extensionFromMime(file.mimetype);
 
     const hash = createHash('sha256')
       .update(file.buffer)
@@ -38,11 +34,7 @@ export class SpeakingAudioStorageService {
       .slice(0, 32);
 
     const filename = `${hash}${extension}`;
-    const directory = join(
-      process.cwd(),
-      'public',
-      'speaking-audio',
-    );
+    const directory = join(process.cwd(), 'public', 'speaking-audio');
     const filepath = join(directory, filename);
 
     await fs.mkdir(directory, {
@@ -56,8 +48,7 @@ export class SpeakingAudioStorageService {
     }
 
     const baseUrl = (
-      process.env.BACKEND_PUBLIC_URL ??
-      'http://localhost:3002'
+      process.env.BACKEND_PUBLIC_URL ?? 'http://localhost:3002'
     ).replace(/\/$/, '');
 
     return {

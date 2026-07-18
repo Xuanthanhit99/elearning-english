@@ -6,20 +6,21 @@ import {
   MissionV2Status,
   PlacementResultStatus,
 } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../../prisma/prisma.service';
 import { MissionV2PeriodService } from './mission-v2-period.service';
 import { MissionV2TemplateService } from './mission-v2-template.service';
 import { SettingsQueryService } from '../../settings/settings-query.service';
-import { EnergyModeService, EnergyModeAssessment } from '../../settings/energy-mode.service';
+import {
+  EnergyModeService,
+  EnergyModeAssessment,
+} from '../../settings/energy-mode.service';
 
 @Injectable()
 export class MissionV2GeneratorService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly periods:
-      MissionV2PeriodService,
-    private readonly templates:
-      MissionV2TemplateService,
+    private readonly periods: MissionV2PeriodService,
+    private readonly templates: MissionV2TemplateService,
     private readonly settingsQuery: SettingsQueryService,
     private readonly energyMode: EnergyModeService,
   ) {}
@@ -27,63 +28,61 @@ export class MissionV2GeneratorService {
   async ensureCurrentMissions(userId: string) {
     await this.templates.ensureDefaultTemplates();
 
-    const learningSettings = await this.settingsQuery.getLearningSettings(userId);
+    const learningSettings =
+      await this.settingsQuery.getLearningSettings(userId);
     const energyAssessment = await this.energyMode.assess(userId);
 
-    const result =
-      await this.prisma.placementResult.findFirst({
-        where: {
-          userId,
-          status:
-            PlacementResultStatus.READY,
-          phases: {
-            some: {},
+    const result = await this.prisma.placementResult.findFirst({
+      where: {
+        userId,
+        status: PlacementResultStatus.READY,
+        phases: {
+          some: {},
+        },
+      },
+      orderBy: {
+        generatedAt: 'desc',
+      },
+      select: {
+        id: true,
+        phases: {
+          orderBy: {
+            phase: 'asc',
+          },
+          select: {
+            id: true,
+            phase: true,
+            title: true,
+            progress: true,
           },
         },
-        orderBy: {
-          generatedAt: 'desc',
-        },
-        select: {
-          id: true,
-          phases: {
-            orderBy: {
-              phase: 'asc',
-            },
-            select: {
-              id: true,
-              phase: true,
-              title: true,
-              progress: true,
-            },
+        priorities: {
+          orderBy: {
+            priority: 'asc',
           },
-          priorities: {
-            orderBy: {
-              priority: 'asc',
-            },
-            take: 3,
-            select: {
-              skill: true,
-              priority: true,
-              reason: true,
-            },
+          take: 3,
+          select: {
+            skill: true,
+            priority: true,
+            reason: true,
           },
         },
-      });
+      },
+    });
 
-    const templates =
-      await this.prisma.missionTemplateV2.findMany({
-        where: {
-          isActive: true,
+    const templates = await this.prisma.missionTemplateV2.findMany({
+      where: {
+        isActive: true,
+      },
+      orderBy: [
+        {
+          type: 'asc',
         },
-        orderBy: [
-          {
-            type: 'asc',
-          },
-          {
-            priority: 'desc',
-          },
-        ],
-      });
+        {
+          priority: 'desc',
+        },
+      ],
+    });
 
     for (const template of templates) {
       await this.ensureOne(
@@ -99,61 +98,45 @@ export class MissionV2GeneratorService {
   private async ensureOne(
     userId: string,
     template: MissionTemplateV2,
-    result:
-      | {
-          id: string;
-          phases: Array<{
-            id: string;
-            phase: number;
-            title: string;
-            progress: number;
-          }>;
-          priorities: Array<{
-            skill: LearningSkill;
-            priority: number;
-            reason: string;
-          }>;
-        }
-      | null,
+    result: {
+      id: string;
+      phases: Array<{
+        id: string;
+        phase: number;
+        title: string;
+        progress: number;
+      }>;
+      priorities: Array<{
+        skill: LearningSkill;
+        priority: number;
+        reason: string;
+      }>;
+    } | null,
     learningSettings: Awaited<
       ReturnType<SettingsQueryService['getLearningSettings']>
     >,
     energyAssessment: EnergyModeAssessment,
   ) {
-    const period = this.periods.getPeriod(
-      template.type,
-    );
+    const period = this.periods.getPeriod(template.type);
 
     const currentPhase =
-      result?.phases.find(
-        (item) => item.progress < 100,
-      ) ??
+      result?.phases.find((item) => item.progress < 100) ??
       result?.phases[0] ??
       null;
 
-    const topPriority =
-      result?.priorities[0] ?? null;
+    const topPriority = result?.priorities[0] ?? null;
 
-    if (
-      template.scope !== MissionV2Scope.GLOBAL &&
-      !result
-    ) {
+    if (template.scope !== MissionV2Scope.GLOBAL && !result) {
       return;
     }
 
     let title = template.title;
     let description = template.description;
     let skill = template.skill;
-    let learningPathPhaseId:
-      | string
-      | null = null;
+    let learningPathPhaseId: string | null = null;
 
-    if (
-      template.code ===
-      'V2_DAILY_CURRENT_LESSON'
-    ) {
-      learningPathPhaseId =
-        currentPhase?.id ?? null;
+    if (template.code === 'V2_DAILY_CURRENT_LESSON') {
+      learningPathPhaseId = currentPhase?.id ?? null;
 
       if (currentPhase) {
         title = `Hoàn thành bài học trong ${currentPhase.title}`;
@@ -161,10 +144,7 @@ export class MissionV2GeneratorService {
       }
     }
 
-    if (
-      template.code ===
-      'V2_DAILY_PRIORITY_SKILL'
-    ) {
+    if (template.code === 'V2_DAILY_PRIORITY_SKILL') {
       // Placement priority wins when available; otherwise fall back to the
       // user's own Settings preference so missions still feel personalized
       // before a placement test has ever run.
@@ -185,21 +165,24 @@ export class MissionV2GeneratorService {
           : template.description);
     }
 
-    const target = this.resolveTarget(template, learningSettings, energyAssessment);
+    const target = this.resolveTarget(
+      template,
+      learningSettings,
+      energyAssessment,
+    );
 
-    const existing =
-      await this.prisma.userMissionV2.findFirst({
-        where: {
-          userId,
-          templateId: template.id,
-          periodKey: period.periodKey,
-          learningPathPhaseId,
-          lessonId: null,
-        },
-        select: {
-          id: true,
-        },
-      });
+    const existing = await this.prisma.userMissionV2.findFirst({
+      where: {
+        userId,
+        templateId: template.id,
+        periodKey: period.periodKey,
+        learningPathPhaseId,
+        lessonId: null,
+      },
+      select: {
+        id: true,
+      },
+    });
 
     if (existing) {
       return;
@@ -218,17 +201,12 @@ export class MissionV2GeneratorService {
         action: template.action,
         target,
         rewardXp: template.rewardXp,
-        rewardCoins:
-          template.rewardCoins,
-        rewardFood:
-          template.rewardFood,
-        rewardEnergy:
-          template.rewardEnergy,
-        rewardHappiness:
-          template.rewardHappiness,
+        rewardCoins: template.rewardCoins,
+        rewardFood: template.rewardFood,
+        rewardEnergy: template.rewardEnergy,
+        rewardHappiness: template.rewardHappiness,
         skill,
-        placementResultId:
-          result?.id ?? null,
+        placementResultId: result?.id ?? null,
         learningPathPhaseId,
         startsAt: period.startsAt,
         expiresAt: period.expiresAt,
@@ -267,16 +245,16 @@ export class MissionV2GeneratorService {
 
     const multiplier = challengeMultiplier[learningSettings.challengeMode] ?? 1;
 
-    const scaledTarget = Math.max(1, Math.round(template.defaultTarget * multiplier));
+    const scaledTarget = Math.max(
+      1,
+      Math.round(template.defaultTarget * multiplier),
+    );
 
     return this.energyMode.applyToTarget(scaledTarget, energyAssessment);
   }
 
   private skillLabel(skill: LearningSkill) {
-    const labels: Record<
-      LearningSkill,
-      string
-    > = {
+    const labels: Record<LearningSkill, string> = {
       VOCABULARY: 'Từ vựng',
       GRAMMAR: 'Ngữ pháp',
       LISTENING: 'Nghe',

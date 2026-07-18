@@ -153,7 +153,7 @@ import { ChatSessionModule } from './modules/chat-session/chat-session.module';
     LeaderboardModule,
     SettingsModule,
     PlacementSessionModule,
-    ChatSessionModule
+    ChatSessionModule,
   ],
   providers: [
     GeminiService,

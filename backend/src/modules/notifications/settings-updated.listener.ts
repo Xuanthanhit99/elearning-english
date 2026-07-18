@@ -3,7 +3,11 @@ import { OnEvent } from '@nestjs/event-emitter';
 import type { SettingsUpdatedEvent } from '../settings/events/settings-updated.event';
 import { NotificationScheduler } from './notifications.scheduler';
 
-const REMINDER_FIELDS = ['dailyReminderEnabled', 'dailyReminderTime', 'timezone'];
+const REMINDER_FIELDS = [
+  'dailyReminderEnabled',
+  'dailyReminderTime',
+  'timezone',
+];
 
 @Injectable()
 export class NotificationsSettingsListener {

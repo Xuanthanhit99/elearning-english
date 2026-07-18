@@ -4,6 +4,6 @@ import { LearningService } from './learning.service';
 
 @Module({
   controllers: [LearningController],
-  providers: [LearningService]
+  providers: [LearningService],
 })
 export class LearningModule {}

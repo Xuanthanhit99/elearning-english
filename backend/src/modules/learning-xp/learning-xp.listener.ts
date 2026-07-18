@@ -34,10 +34,7 @@ export class LearningXpListener {
         skill: rule.skill,
         baseXp: rule.baseXp,
         bonusXp,
-        idempotencyKey: this.idempotencyKey(
-          event.activity,
-          event.sourceId,
-        ),
+        idempotencyKey: this.idempotencyKey(event.activity, event.sourceId),
         reason: this.reason(event.activity),
         metadata: {
           ...event.metadata,
@@ -62,29 +59,17 @@ export class LearningXpListener {
     if (maxBonusXp <= 0) return 0;
 
     const safeScore = Math.max(0, Math.min(score ?? 0, 100));
-    const safeCompletion = Math.max(
-      0,
-      Math.min(completionRate ?? 100, 100),
-    );
+    const safeCompletion = Math.max(0, Math.min(completionRate ?? 100, 100));
 
     const scoreFactor =
-      safeScore >= 95
-        ? 1
-        : safeScore >= 85
-          ? 0.7
-          : safeScore >= 75
-            ? 0.4
-            : 0;
+      safeScore >= 95 ? 1 : safeScore >= 85 ? 0.7 : safeScore >= 75 ? 0.4 : 0;
 
     const completionFactor = safeCompletion / 100;
 
     return Math.round(maxBonusXp * scoreFactor * completionFactor);
   }
 
-  private idempotencyKey(
-    activity: LearningActivityCode,
-    sourceId: string,
-  ) {
+  private idempotencyKey(activity: LearningActivityCode, sourceId: string) {
     return `learning:${activity}:${sourceId}`;
   }
 

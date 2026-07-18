@@ -10,7 +10,7 @@ import { SettingsModule } from '../settings/settings.module';
 
 @Module({
   imports: [PrismaModule, NotificationsModule, SettingsModule, CommunityModule],
-  controllers: [CommunitySocialController,CommunityUploadController],
+  controllers: [CommunitySocialController, CommunityUploadController],
   providers: [CommunitySocialService, CommunitySocialGateway],
   exports: [CommunitySocialService, CommunitySocialGateway],
 })

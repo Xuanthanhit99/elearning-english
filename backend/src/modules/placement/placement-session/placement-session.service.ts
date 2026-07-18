@@ -64,10 +64,9 @@ export class PlacementSessionService {
           mode: active.mode,
           level: active.level,
           status: active.status,
-          totalQuestions:
-            await this.prisma.placementTestQuestion.count({
-              where: { testId: active.id },
-            }),
+          totalQuestions: await this.prisma.placementTestQuestion.count({
+            where: { testId: active.id },
+          }),
           nextUrl: `/placement/test/${active.id}`,
         };
       }
@@ -81,15 +80,12 @@ export class PlacementSessionService {
       mode: input.mode ?? ModeType.ADAPTIVE,
       level:
         input.mode === ModeType.LEVEL_BASED
-          ? input.level ?? CefrLevel.A1
+          ? (input.level ?? CefrLevel.A1)
           : null,
     });
   }
 
-  async startRetake(
-    userId: string,
-    input: Omit<StartInput, 'forceNew'> = {},
-  ) {
+  async startRetake(userId: string, input: Omit<StartInput, 'forceNew'> = {}) {
     await this.assertUserExists(userId);
     await this.abandonActiveSessions(userId);
 
@@ -97,7 +93,7 @@ export class PlacementSessionService {
       mode: input.mode ?? ModeType.ADAPTIVE,
       level:
         input.mode === ModeType.LEVEL_BASED
-          ? input.level ?? CefrLevel.A1
+          ? (input.level ?? CefrLevel.A1)
           : null,
     });
   }
@@ -132,13 +128,14 @@ export class PlacementSessionService {
     const selected: PlacementQuestion[] = [];
 
     for (const item of this.buildQuestionPlan(test.mode, test.level)) {
-      const questions =
-        await this.questionBankService.ensurePlacementQuestions({
+      const questions = await this.questionBankService.ensurePlacementQuestions(
+        {
           skill: item.skill,
           level: item.level,
           type: item.type,
           requiredCount: item.count,
-        });
+        },
+      );
 
       selected.push(...questions);
     }
@@ -188,10 +185,9 @@ export class PlacementSessionService {
       hasActiveSession: true,
       session: {
         ...active,
-        totalQuestions:
-          await this.prisma.placementTestQuestion.count({
-            where: { testId: active.id },
-          }),
+        totalQuestions: await this.prisma.placementTestQuestion.count({
+          where: { testId: active.id },
+        }),
         nextUrl: `/placement/test/${active.id}`,
       },
     };
@@ -208,9 +204,7 @@ export class PlacementSessionService {
     }
 
     if (test.userId !== userId) {
-      throw new BadRequestException(
-        'Bạn không có quyền thay đổi phiên này.',
-      );
+      throw new BadRequestException('Bạn không có quyền thay đổi phiên này.');
     }
 
     if (test.status === PlacementTestStatus.IN_PROGRESS) {
@@ -233,9 +227,7 @@ export class PlacementSessionService {
     input: { mode: ModeType; level: CefrLevel | null },
   ) {
     if (input.mode === ModeType.LEVEL_BASED && !input.level) {
-      throw new BadRequestException(
-        'LEVEL_BASED yêu cầu level A1-C2.',
-      );
+      throw new BadRequestException('LEVEL_BASED yêu cầu level A1-C2.');
     }
 
     const test = await this.prisma.placementTest.create({
@@ -272,10 +264,9 @@ export class PlacementSessionService {
         mode: test.mode,
         level: test.level,
         status: test.status,
-        totalQuestions:
-          await this.prisma.placementTestQuestion.count({
-            where: { testId: test.id },
-          }),
+        totalQuestions: await this.prisma.placementTestQuestion.count({
+          where: { testId: test.id },
+        }),
         nextUrl: `/placement/test/${test.id}`,
       };
     } catch (error) {
@@ -345,22 +336,78 @@ export class PlacementSessionService {
       const level = selectedLevel ?? CefrLevel.A1;
 
       return [
-        this.plan(LearningSkill.VOCABULARY, level, PlacementQuestionType.MULTIPLE_CHOICE, 6),
-        this.plan(LearningSkill.GRAMMAR, level, PlacementQuestionType.MULTIPLE_CHOICE, 6),
-        this.plan(LearningSkill.LISTENING, level, PlacementQuestionType.LISTENING, 5),
-        this.plan(LearningSkill.READING, level, PlacementQuestionType.READING, 5),
-        this.plan(LearningSkill.SPEAKING, level, PlacementQuestionType.SPEAKING, 1),
-        this.plan(LearningSkill.WRITING, level, PlacementQuestionType.WRITING, 1),
+        this.plan(
+          LearningSkill.VOCABULARY,
+          level,
+          PlacementQuestionType.MULTIPLE_CHOICE,
+          6,
+        ),
+        this.plan(
+          LearningSkill.GRAMMAR,
+          level,
+          PlacementQuestionType.MULTIPLE_CHOICE,
+          6,
+        ),
+        this.plan(
+          LearningSkill.LISTENING,
+          level,
+          PlacementQuestionType.LISTENING,
+          5,
+        ),
+        this.plan(
+          LearningSkill.READING,
+          level,
+          PlacementQuestionType.READING,
+          5,
+        ),
+        this.plan(
+          LearningSkill.SPEAKING,
+          level,
+          PlacementQuestionType.SPEAKING,
+          1,
+        ),
+        this.plan(
+          LearningSkill.WRITING,
+          level,
+          PlacementQuestionType.WRITING,
+          1,
+        ),
       ];
     }
 
     return [
-      ...this.multiLevelPlan(LearningSkill.VOCABULARY, PlacementQuestionType.MULTIPLE_CHOICE, [2, 2, 1, 1]),
-      ...this.multiLevelPlan(LearningSkill.GRAMMAR, PlacementQuestionType.MULTIPLE_CHOICE, [2, 2, 1, 1]),
-      ...this.multiLevelPlan(LearningSkill.LISTENING, PlacementQuestionType.LISTENING, [1, 2, 1, 1]),
-      ...this.multiLevelPlan(LearningSkill.READING, PlacementQuestionType.READING, [1, 2, 1, 1]),
-      this.plan(LearningSkill.SPEAKING, CefrLevel.A2, PlacementQuestionType.SPEAKING, 1),
-      this.plan(LearningSkill.WRITING, CefrLevel.A2, PlacementQuestionType.WRITING, 1),
+      ...this.multiLevelPlan(
+        LearningSkill.VOCABULARY,
+        PlacementQuestionType.MULTIPLE_CHOICE,
+        [2, 2, 1, 1],
+      ),
+      ...this.multiLevelPlan(
+        LearningSkill.GRAMMAR,
+        PlacementQuestionType.MULTIPLE_CHOICE,
+        [2, 2, 1, 1],
+      ),
+      ...this.multiLevelPlan(
+        LearningSkill.LISTENING,
+        PlacementQuestionType.LISTENING,
+        [1, 2, 1, 1],
+      ),
+      ...this.multiLevelPlan(
+        LearningSkill.READING,
+        PlacementQuestionType.READING,
+        [1, 2, 1, 1],
+      ),
+      this.plan(
+        LearningSkill.SPEAKING,
+        CefrLevel.A2,
+        PlacementQuestionType.SPEAKING,
+        1,
+      ),
+      this.plan(
+        LearningSkill.WRITING,
+        CefrLevel.A2,
+        PlacementQuestionType.WRITING,
+        1,
+      ),
     ];
   }
 
@@ -369,17 +416,10 @@ export class PlacementSessionService {
     type: PlacementQuestionType,
     counts: [number, number, number, number],
   ): PlanItem[] {
-    const levels = [
-      CefrLevel.A1,
-      CefrLevel.A2,
-      CefrLevel.B1,
-      CefrLevel.B2,
-    ];
+    const levels = [CefrLevel.A1, CefrLevel.A2, CefrLevel.B1, CefrLevel.B2];
 
     return levels
-      .map((level, index) =>
-        this.plan(skill, level, type, counts[index]),
-      )
+      .map((level, index) => this.plan(skill, level, type, counts[index]))
       .filter((item) => item.count > 0);
   }
 

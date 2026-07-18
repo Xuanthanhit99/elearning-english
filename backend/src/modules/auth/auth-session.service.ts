@@ -70,7 +70,9 @@ export class AuthSessionService {
     });
 
     if (!session || session.revokedAt || session.userId !== pointer.userId) {
-      await this.redis.del(refreshSessionRedisKey(oldJti)).catch(() => undefined);
+      await this.redis
+        .del(refreshSessionRedisKey(oldJti))
+        .catch(() => undefined);
       return null;
     }
 
@@ -122,7 +124,9 @@ export class AuthSessionService {
     await Promise.all(
       sessions
         .filter((session) => session.refreshTokenId)
-        .map((session) => this.invalidateByJti(session.refreshTokenId as string)),
+        .map((session) =>
+          this.invalidateByJti(session.refreshTokenId as string),
+        ),
     );
   }
 
@@ -136,7 +140,9 @@ export class AuthSessionService {
   }
 
   private async getPointer(jti: string): Promise<SessionPointer | null> {
-    const raw = await this.redis.get(refreshSessionRedisKey(jti)).catch(() => null);
+    const raw = await this.redis
+      .get(refreshSessionRedisKey(jti))
+      .catch(() => null);
     if (!raw) return null;
 
     try {
@@ -177,7 +183,8 @@ export class AuthSessionService {
             : null;
 
     const isMobile = /mobile/i.test(ua);
-    const deviceName = [browser, os].filter(Boolean).join(' on ') ||
+    const deviceName =
+      [browser, os].filter(Boolean).join(' on ') ||
       (isMobile ? 'Mobile device' : 'Unknown device');
 
     return { deviceName, browser, os };

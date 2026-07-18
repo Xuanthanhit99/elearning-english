@@ -19,9 +19,7 @@ describe('SpeakingProcessingService', () => {
           useValue: {},
         },
         {
-          provide: getQueueToken(
-            SPEAKING_PROCESSING_QUEUE,
-          ),
+          provide: getQueueToken(SPEAKING_PROCESSING_QUEUE),
           useValue: {
             add: jest.fn(),
           },
@@ -29,8 +27,6 @@ describe('SpeakingProcessingService', () => {
       ],
     }).compile();
 
-    expect(
-      module.get(SpeakingProcessingService),
-    ).toBeDefined();
+    expect(module.get(SpeakingProcessingService)).toBeDefined();
   });
 });

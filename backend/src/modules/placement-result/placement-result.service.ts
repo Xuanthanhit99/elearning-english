@@ -261,7 +261,7 @@ export class PlacementResultService {
   }
 
   private cefrToEnglishLevel(level: CefrLevel): EnglishLevel {
-    return EnglishLevel[level as keyof typeof EnglishLevel];
+    return EnglishLevel[level];
   }
 
   async getResult(userId: string, testId: string) {

@@ -35,7 +35,10 @@ export class CommunityProcessor extends WorkerHost {
   }
 
   private async createCommentNotification(data: Record<string, string>) {
-    const post = await this.prisma.communityPost.findUnique({ where: { id: data.postId }, select: { authorId: true } });
+    const post = await this.prisma.communityPost.findUnique({
+      where: { id: data.postId },
+      select: { authorId: true },
+    });
     if (!post || post.authorId === data.actorId) return;
 
     const notification = await this.prisma.communityNotification.create({
@@ -60,7 +63,10 @@ export class CommunityProcessor extends WorkerHost {
   }
 
   private async createReactionNotification(data: Record<string, string>) {
-    const post = await this.prisma.communityPost.findUnique({ where: { id: data.postId }, select: { authorId: true } });
+    const post = await this.prisma.communityPost.findUnique({
+      where: { id: data.postId },
+      select: { authorId: true },
+    });
     if (!post || post.authorId === data.actorId) return;
 
     const notification = await this.prisma.communityNotification.create({
@@ -106,11 +112,21 @@ export class CommunityProcessor extends WorkerHost {
   private async recalculatePostScore(postId: string) {
     const post = await this.prisma.communityPost.findUnique({
       where: { id: postId },
-      select: { reactionsCount: true, commentsCount: true, bookmarksCount: true },
+      select: {
+        reactionsCount: true,
+        commentsCount: true,
+        bookmarksCount: true,
+      },
     });
     if (!post) return;
-    const score = post.reactionsCount * 2 + post.commentsCount * 3 + post.bookmarksCount * 4;
-    await this.prisma.communityPost.update({ where: { id: postId }, data: { score } });
+    const score =
+      post.reactionsCount * 2 +
+      post.commentsCount * 3 +
+      post.bookmarksCount * 4;
+    await this.prisma.communityPost.update({
+      where: { id: postId },
+      data: { score },
+    });
     this.logger.debug(`Updated score for ${postId}: ${score}`);
   }
 }

@@ -97,6 +97,31 @@ export type LearningPathLessonActionResult = {
     currentLesson: LearningPathLesson | null;
     nextLesson: LearningPathLesson | null;
   };
+  alreadyCompleted?: boolean;
+  rewards?: {
+    applied: boolean;
+    alreadyProcessed?: boolean;
+    xp: number;
+    coins: number;
+    streak: {
+      current: number | null;
+      best: number | null;
+      changed: boolean;
+    };
+    missionUpdates: Array<{
+      missionId: string;
+      progress: number;
+      target: number;
+      status: string;
+    }>;
+    pet: {
+      changed: boolean;
+    };
+    leaderboard: {
+      queued: boolean;
+      synced?: boolean;
+    };
+  };
 };
 
 type ApiResponse<T> = {

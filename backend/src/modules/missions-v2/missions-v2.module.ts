@@ -12,7 +12,12 @@ import { LearningXpModule } from '../learning-xp/learning-xp.module';
 import { SettingsModule } from '../settings/settings.module';
 
 @Module({
-  imports: [PrismaModule, NotificationsModule, LearningXpModule, SettingsModule],
+  imports: [
+    PrismaModule,
+    NotificationsModule,
+    LearningXpModule,
+    SettingsModule,
+  ],
   controllers: [MissionsV2Controller],
   providers: [
     MissionV2PeriodService,

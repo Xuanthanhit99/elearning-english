@@ -1,4 +1,8 @@
-﻿import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+﻿import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CarePetDto } from './dto/care-pet.dto';
 import { UpsertPetDto } from './dto/upsert-pet.dto';
@@ -59,7 +63,11 @@ export class PetsService {
   }
 
   private async finalizeRandomPetIfExpired(pet: any) {
-    if (pet.isChosen || !pet.chooseDeadline || pet.chooseDeadline > new Date()) {
+    if (
+      pet.isChosen ||
+      !pet.chooseDeadline ||
+      pet.chooseDeadline > new Date()
+    ) {
       return pet;
     }
 
@@ -90,7 +98,9 @@ export class PetsService {
   }
 
   private async getOrCreatePet(userId: string) {
-    const existing = await this.prisma.petProfile.findUnique({ where: { userId } });
+    const existing = await this.prisma.petProfile.findUnique({
+      where: { userId },
+    });
     if (existing) return this.finalizeRandomPetIfExpired(existing);
 
     return this.prisma.petProfile.create({
@@ -105,7 +115,9 @@ export class PetsService {
 
   async getMyPet(userId: string) {
     const pet = await this.getOrCreatePet(userId);
-    const rewardCount = await this.prisma.petReward.count({ where: { userId } });
+    const rewardCount = await this.prisma.petReward.count({
+      where: { userId },
+    });
 
     return this.decoratePet(pet, rewardCount);
   }
@@ -141,11 +153,14 @@ export class PetsService {
   async careForPet(userId: string, dto: CarePetDto) {
     const pet = await this.getOrCreatePet(userId);
     if (!pet.isChosen) {
-      throw new BadRequestException('Bạn cần chọn thú cưng trước khi chăm sóc.');
+      throw new BadRequestException(
+        'Bạn cần chọn thú cưng trước khi chăm sóc.',
+      );
     }
 
     if (dto.action === 'feed') {
-      if (pet.food <= 0) throw new BadRequestException('Bạn chưa có food để cho ăn');
+      if (pet.food <= 0)
+        throw new BadRequestException('Bạn chưa có food để cho ăn');
       return this.decoratePet(
         await this.prisma.petProfile.update({
           where: { userId },
@@ -160,7 +175,8 @@ export class PetsService {
     }
 
     if (dto.action === 'play') {
-      if (pet.energy < 10) throw new BadRequestException('Thú cưng cần nghỉ ngơi trước khi chơi');
+      if (pet.energy < 10)
+        throw new BadRequestException('Thú cưng cần nghỉ ngơi trước khi chơi');
       return this.decoratePet(
         await this.prisma.petProfile.update({
           where: { userId },
@@ -174,7 +190,8 @@ export class PetsService {
     }
 
     if (dto.action === 'clean') {
-      if (pet.coins < 2) throw new BadRequestException('Bạn cần ít nhất 2 coin để vệ sinh');
+      if (pet.coins < 2)
+        throw new BadRequestException('Bạn cần ít nhất 2 coin để vệ sinh');
       return this.decoratePet(
         await this.prisma.petProfile.update({
           where: { userId },
@@ -199,7 +216,9 @@ export class PetsService {
   }
 
   async rewardLesson(userId: string, lessonId: string) {
-    const lesson = await this.prisma.lesson.findUnique({ where: { id: lessonId } });
+    const lesson = await this.prisma.lesson.findUnique({
+      where: { id: lessonId },
+    });
     if (!lesson) throw new NotFoundException('Không tìm thấy bài học');
 
     const pet = await this.getOrCreatePet(userId);

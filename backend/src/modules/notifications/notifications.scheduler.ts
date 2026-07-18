@@ -12,7 +12,9 @@ import type { CreateNotificationInput } from './notifications.types';
 export class NotificationScheduler implements OnModuleInit {
   private readonly logger = new Logger(NotificationScheduler.name);
 
-  constructor(@InjectQueue(NOTIFICATIONS_QUEUE) private readonly queue: Queue) {}
+  constructor(
+    @InjectQueue(NOTIFICATIONS_QUEUE) private readonly queue: Queue,
+  ) {}
 
   /**
    * Called whenever a user's dailyReminderEnabled/dailyReminderTime/timezone
@@ -41,7 +43,9 @@ export class NotificationScheduler implements OnModuleInit {
     const minute = Number(minuteStr);
 
     if (Number.isNaN(hour) || Number.isNaN(minute)) {
-      this.logger.warn(`Invalid dailyReminderTime for userId=${userId}: ${settings.time}`);
+      this.logger.warn(
+        `Invalid dailyReminderTime for userId=${userId}: ${settings.time}`,
+      );
       return;
     }
 
@@ -49,7 +53,8 @@ export class NotificationScheduler implements OnModuleInit {
       userId,
       type: 'LEARNING_REMINDER',
       title: 'Nhắc học hôm nay',
-      message: 'Đã đến giờ học theo lịch bạn đặt trong Cài đặt. Cùng hoàn thành mục tiêu hôm nay nhé!',
+      message:
+        'Đã đến giờ học theo lịch bạn đặt trong Cài đặt. Cùng hoàn thành mục tiêu hôm nay nhé!',
       href: '/dashboard',
     };
 
@@ -85,4 +90,3 @@ export class NotificationScheduler implements OnModuleInit {
     );
   }
 }
-

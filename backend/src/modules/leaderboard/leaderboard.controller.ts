@@ -76,7 +76,8 @@ export class LeaderboardController {
   @Patch('privacy')
   updatePrivacy(
     @Req() req: any,
-    @Body() body: {
+    @Body()
+    body: {
       optedOut?: boolean;
       showOnline?: boolean;
       showStreak?: boolean;

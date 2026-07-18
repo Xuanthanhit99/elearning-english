@@ -24,9 +24,6 @@ import { ListeningJobService } from './listening-job.service';
     ListeningAudioBackfillService,
     ListeningTtsService,
   ],
-  exports: [
-    ListeningJobService,
-    ListeningAudioBackfillService,
-  ],
+  exports: [ListeningJobService, ListeningAudioBackfillService],
 })
 export class ListeningJobModule {}

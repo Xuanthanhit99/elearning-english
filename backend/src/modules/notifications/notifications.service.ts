@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateNotificationInput, NotificationType } from './notifications.types';
+import { PrismaService } from '../../prisma/prisma.service';
+import {
+  CreateNotificationInput,
+  NotificationType,
+} from './notifications.types';
 
 @Injectable()
 export class NotificationsService {
@@ -39,7 +42,11 @@ export class NotificationsService {
       return this.toDto(existed);
     }
 
-    return this.create(input.userId, title, this.formatMessage(input.message, input.href));
+    return this.create(
+      input.userId,
+      title,
+      this.formatMessage(input.message, input.href),
+    );
   }
 
   async findMyNotifications(
@@ -61,7 +68,9 @@ export class NotificationsService {
         take: limit,
       }),
       this.prismaService.notification.count({ where }),
-      this.prismaService.notification.count({ where: { userId, isRead: false } }),
+      this.prismaService.notification.count({
+        where: { userId, isRead: false },
+      }),
     ]);
 
     return {
@@ -77,7 +86,9 @@ export class NotificationsService {
   }
 
   getUnreadCount(userId: string) {
-    return this.prismaService.notification.count({ where: { userId, isRead: false } });
+    return this.prismaService.notification.count({
+      where: { userId, isRead: false },
+    });
   }
 
   async markAsRead(userId: string, id: string) {
@@ -130,13 +141,31 @@ export class NotificationsService {
 
   private inferType(title: string, message: string): NotificationType {
     const text = `${title} ${message}`.toLowerCase();
-    if (text.includes('mission') || text.includes('nhiem vu') || text.includes('nhiệm vụ')) return 'MISSION';
-    if (text.includes('achievement') || text.includes('thanh tich') || text.includes('thành tích')) return 'ACHIEVEMENT';
+    if (
+      text.includes('mission') ||
+      text.includes('nhiem vu') ||
+      text.includes('nhiệm vụ')
+    )
+      return 'MISSION';
+    if (
+      text.includes('achievement') ||
+      text.includes('thanh tich') ||
+      text.includes('thành tích')
+    )
+      return 'ACHIEVEMENT';
     if (text.includes('weekly') || text.includes('tuần')) return 'WEEKLY_GOAL';
-    if (text.includes('daily') || text.includes('hôm nay') || text.includes('mục tiêu')) return 'DAILY_GOAL';
-    if (text.includes('learning path') || text.includes('lộ trình')) return 'LEARNING_PATH';
-    if (text.includes('community') || text.includes('cộng đồng')) return 'COMMUNITY';
-    if (text.includes('reminder') || text.includes('nhắc')) return 'LEARNING_REMINDER';
+    if (
+      text.includes('daily') ||
+      text.includes('hôm nay') ||
+      text.includes('mục tiêu')
+    )
+      return 'DAILY_GOAL';
+    if (text.includes('learning path') || text.includes('lộ trình'))
+      return 'LEARNING_PATH';
+    if (text.includes('community') || text.includes('cộng đồng'))
+      return 'COMMUNITY';
+    if (text.includes('reminder') || text.includes('nhắc'))
+      return 'LEARNING_REMINDER';
     return 'SYSTEM';
   }
 
@@ -187,4 +216,3 @@ export class NotificationsService {
     };
   }
 }
-

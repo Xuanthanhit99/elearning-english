@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { UserRole, XpSourceType } from '@prisma/client';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -19,7 +27,9 @@ export class LeaderboardAdminController {
   @Get('seasons')
   getSeasons() {
     return this.prisma.leaderboardSeason.findMany({
-      include: { groups: { include: { _count: { select: { entries: true } } } } },
+      include: {
+        groups: { include: { _count: { select: { entries: true } } } },
+      },
       orderBy: { startsAt: 'desc' },
       take: 30,
     });
@@ -50,9 +60,27 @@ export class LeaderboardAdminController {
   @Post('seed-rewards')
   async seedRewards() {
     const rewards = [
-      { minRank: 1, maxRank: 1, title: 'Nhà vô địch tuần', rewardType: 'BUNDLE', rewardValue: { xp: 250, coins: 500 } },
-      { minRank: 2, maxRank: 3, title: 'Top 3 tuần', rewardType: 'BUNDLE', rewardValue: { xp: 150, coins: 300 } },
-      { minRank: 4, maxRank: 10, title: 'Top 10 tuần', rewardType: 'BUNDLE', rewardValue: { xp: 75, coins: 150 } },
+      {
+        minRank: 1,
+        maxRank: 1,
+        title: 'Nhà vô địch tuần',
+        rewardType: 'BUNDLE',
+        rewardValue: { xp: 250, coins: 500 },
+      },
+      {
+        minRank: 2,
+        maxRank: 3,
+        title: 'Top 3 tuần',
+        rewardType: 'BUNDLE',
+        rewardValue: { xp: 150, coins: 300 },
+      },
+      {
+        minRank: 4,
+        maxRank: 10,
+        title: 'Top 10 tuần',
+        rewardType: 'BUNDLE',
+        rewardValue: { xp: 75, coins: 150 },
+      },
     ];
     for (const reward of rewards) {
       await this.prisma.leaderboardReward.create({ data: reward });

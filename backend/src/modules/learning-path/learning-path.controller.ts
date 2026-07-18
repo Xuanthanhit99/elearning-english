@@ -21,25 +21,15 @@ type AuthenticatedRequest = Request & {
 };
 
 @Controller('learning-path')
-@UseGuards(
-  JwtAuthGuard,
-  LearningPathAccessGuard,
-)
+@UseGuards(JwtAuthGuard, LearningPathAccessGuard)
 export class LearningPathController {
-  constructor(
-    private readonly learningPathService: LearningPathService,
-  ) {}
+  constructor(private readonly learningPathService: LearningPathService) {}
 
   @Get()
-  async getLearningPath(
-    @Req() req: AuthenticatedRequest,
-  ) {
+  async getLearningPath(@Req() req: AuthenticatedRequest) {
     return {
       success: true,
-      data:
-        await this.learningPathService.getLearningPath(
-          this.getUserId(req),
-        ),
+      data: await this.learningPathService.getLearningPath(this.getUserId(req)),
     };
   }
 
@@ -50,11 +40,10 @@ export class LearningPathController {
   ) {
     return {
       success: true,
-      data:
-        await this.learningPathService.startLesson(
-          this.getUserId(req),
-          lessonId,
-        ),
+      data: await this.learningPathService.startLesson(
+        this.getUserId(req),
+        lessonId,
+      ),
     };
   }
 
@@ -65,11 +54,10 @@ export class LearningPathController {
   ) {
     return {
       success: true,
-      data:
-        await this.learningPathService.resumeLesson(
-          this.getUserId(req),
-          lessonId,
-        ),
+      data: await this.learningPathService.resumeLesson(
+        this.getUserId(req),
+        lessonId,
+      ),
     };
   }
 
@@ -80,19 +68,15 @@ export class LearningPathController {
   ) {
     return {
       success: true,
-      data:
-        await this.learningPathService.completeLesson(
-          this.getUserId(req),
-          lessonId,
-        ),
+      data: await this.learningPathService.completeLesson(
+        this.getUserId(req),
+        lessonId,
+      ),
     };
   }
 
   private getUserId(req: AuthenticatedRequest) {
-    const userId =
-      req.user?.id ??
-      req.user?.userId ??
-      req.user?.sub;
+    const userId = req.user?.id ?? req.user?.userId ?? req.user?.sub;
 
     if (!userId) {
       throw new UnauthorizedException(

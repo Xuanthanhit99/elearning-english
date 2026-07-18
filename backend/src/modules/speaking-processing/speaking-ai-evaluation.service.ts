@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { SpeakingEvaluationResult } from './speaking-processing.types';
 
@@ -11,19 +8,13 @@ export class SpeakingAiEvaluationService {
 
   constructor() {
     if (!process.env.GEMINI_API_KEY) {
-      throw new Error(
-        'Missing GEMINI_API_KEY',
-      );
+      throw new Error('Missing GEMINI_API_KEY');
     }
 
-    const genAI = new GoogleGenerativeAI(
-      process.env.GEMINI_API_KEY,
-    );
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
     this.model = genAI.getGenerativeModel({
-      model:
-        process.env.SPEAKING_GEMINI_MODEL ??
-        'gemini-2.5-flash',
+      model: process.env.SPEAKING_GEMINI_MODEL ?? 'gemini-2.5-flash',
     });
   }
 
@@ -34,16 +25,10 @@ export class SpeakingAiEvaluationService {
     level: string;
     speechConfidence: number;
   }): Promise<SpeakingEvaluationResult> {
-    const transcript =
-      input.transcript.trim();
+    const transcript = input.transcript.trim();
 
-    if (
-      !transcript ||
-      transcript.split(/\s+/).length < 3
-    ) {
-      return this.emptyResult(
-        'Không phát hiện đủ nội dung nói để chấm điểm.',
-      );
+    if (!transcript || transcript.split(/\s+/).length < 3) {
+      return this.emptyResult('Không phát hiện đủ nội dung nói để chấm điểm.');
     }
 
     const prompt = `
@@ -98,19 +83,14 @@ Format:
   }
 }`;
 
-    const result =
-      await this.model.generateContent(prompt);
+    const result = await this.model.generateContent(prompt);
 
-    const parsed = this.parseJson(
-      result.response.text(),
-    );
+    const parsed = this.parseJson(result.response.text());
 
     return this.normalize(parsed);
   }
 
-  private emptyResult(
-    feedback: string,
-  ): SpeakingEvaluationResult {
+  private emptyResult(feedback: string): SpeakingEvaluationResult {
     return {
       overallScore: 0,
       pronunciation: 0,
@@ -120,17 +100,13 @@ Format:
       confidence: 0,
       correctedText: '',
       feedback,
-      suggestions: [
-        'Hãy nói ít nhất một câu hoàn chỉnh và thử lại.',
-      ],
+      suggestions: ['Hãy nói ít nhất một câu hoàn chỉnh và thử lại.'],
       mistakes: [],
       improvedVersion: '',
       nextPractice: {
         focusSkill: 'PRONUNCIATION',
-        title:
-          'Luyện phát âm câu ngắn',
-        reason:
-          'Bài nói hiện tại chưa đủ dữ liệu để đánh giá.',
+        title: 'Luyện phát âm câu ngắn',
+        reason: 'Bài nói hiện tại chưa đủ dữ liệu để đánh giá.',
       },
     };
   }
@@ -150,14 +126,10 @@ Format:
       );
     }
 
-    return JSON.parse(
-      cleaned.slice(start, end + 1),
-    );
+    return JSON.parse(cleaned.slice(start, end + 1));
   }
 
-  private normalize(
-    value: any,
-  ): SpeakingEvaluationResult {
+  private normalize(value: any): SpeakingEvaluationResult {
     const score = (input: unknown) => {
       const number = Number(input ?? 0);
 
@@ -165,10 +137,7 @@ Format:
         return 0;
       }
 
-      return Math.max(
-        0,
-        Math.min(100, Math.round(number)),
-      );
+      return Math.max(0, Math.min(100, Math.round(number)));
     };
 
     const allowedMistakes = new Set([
@@ -180,70 +149,32 @@ Format:
     ]);
 
     return {
-      overallScore: score(
-        value?.overallScore,
-      ),
-      pronunciation: score(
-        value?.pronunciation,
-      ),
+      overallScore: score(value?.overallScore),
+      pronunciation: score(value?.pronunciation),
       fluency: score(value?.fluency),
       grammar: score(value?.grammar),
-      vocabulary: score(
-        value?.vocabulary,
-      ),
-      confidence: score(
-        value?.confidence,
-      ),
-      correctedText: String(
-        value?.correctedText ?? '',
-      ),
-      feedback: String(
-        value?.feedback ?? '',
-      ),
-      suggestions: Array.isArray(
-        value?.suggestions,
-      )
+      vocabulary: score(value?.vocabulary),
+      confidence: score(value?.confidence),
+      correctedText: String(value?.correctedText ?? ''),
+      feedback: String(value?.feedback ?? ''),
+      suggestions: Array.isArray(value?.suggestions)
         ? value.suggestions.map(String)
         : [],
-      mistakes: Array.isArray(
-        value?.mistakes,
-      )
+      mistakes: Array.isArray(value?.mistakes)
         ? value.mistakes
             .map((item: any) => ({
-              type: allowedMistakes.has(
-                item?.type,
-              )
-                ? item.type
-                : 'CONTENT',
-              original: String(
-                item?.original ?? '',
-              ),
-              corrected: String(
-                item?.corrected ?? '',
-              ),
-              explanation: String(
-                item?.explanation ?? '',
-              ),
+              type: allowedMistakes.has(item?.type) ? item.type : 'CONTENT',
+              original: String(item?.original ?? ''),
+              corrected: String(item?.corrected ?? ''),
+              explanation: String(item?.explanation ?? ''),
             }))
             .slice(0, 20)
         : [],
-      improvedVersion: String(
-        value?.improvedVersion ?? '',
-      ),
+      improvedVersion: String(value?.improvedVersion ?? ''),
       nextPractice: {
-        focusSkill: String(
-          value?.nextPractice
-            ?.focusSkill ??
-            'PRONUNCIATION',
-        ),
-        title: String(
-          value?.nextPractice?.title ??
-            'Luyện nói tiếp theo',
-        ),
-        reason: String(
-          value?.nextPractice?.reason ??
-            '',
-        ),
+        focusSkill: String(value?.nextPractice?.focusSkill ?? 'PRONUNCIATION'),
+        title: String(value?.nextPractice?.title ?? 'Luyện nói tiếp theo'),
+        reason: String(value?.nextPractice?.reason ?? ''),
       },
     };
   }

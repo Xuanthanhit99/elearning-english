@@ -9,7 +9,9 @@ describe('PlacementResultController', () => {
       controllers: [PlacementResultController],
     }).compile();
 
-    controller = module.get<PlacementResultController>(PlacementResultController);
+    controller = module.get<PlacementResultController>(
+      PlacementResultController,
+    );
   });
 
   it('should be defined', () => {

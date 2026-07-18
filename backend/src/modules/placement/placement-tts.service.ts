@@ -27,18 +27,11 @@ export class PlacementTtsService {
       );
     }
 
-    const filename = this.createFilename(
-      normalizedScript,
-      cacheKey,
-    );
+    const filename = this.createFilename(normalizedScript, cacheKey);
 
     const relativePath = `/uploads/placement-audio/${filename}`;
 
-    const directory = join(
-      process.cwd(),
-      'uploads',
-      'placement-audio',
-    );
+    const directory = join(process.cwd(), 'uploads', 'placement-audio');
 
     const absolutePath = join(directory, filename);
 
@@ -53,44 +46,32 @@ export class PlacementTtsService {
       return relativePath;
     }
 
-    const audioBuffer =
-      await this.callGoogleTextToSpeech(normalizedScript);
+    const audioBuffer = await this.callGoogleTextToSpeech(normalizedScript);
 
     await writeFile(absolutePath, audioBuffer);
 
     return relativePath;
   }
 
-  private async callGoogleTextToSpeech(
-    text: string,
-  ): Promise<Buffer> {
+  private async callGoogleTextToSpeech(text: string): Promise<Buffer> {
     try {
       const [response] = await this.client.synthesizeSpeech({
         input: {
           text,
         },
         voice: {
-          languageCode:
-            process.env.GOOGLE_TTS_LANGUAGE_CODE ?? 'en-US',
-          name:
-            process.env.GOOGLE_TTS_VOICE_NAME ??
-            'en-US-Neural2-F',
+          languageCode: process.env.GOOGLE_TTS_LANGUAGE_CODE ?? 'en-US',
+          name: process.env.GOOGLE_TTS_VOICE_NAME ?? 'en-US-Neural2-F',
         },
         audioConfig: {
           audioEncoding: 'MP3',
-          speakingRate: Number(
-            process.env.GOOGLE_TTS_SPEAKING_RATE ?? 0.9,
-          ),
-          pitch: Number(
-            process.env.GOOGLE_TTS_PITCH ?? 0,
-          ),
+          speakingRate: Number(process.env.GOOGLE_TTS_SPEAKING_RATE ?? 0.9),
+          pitch: Number(process.env.GOOGLE_TTS_PITCH ?? 0),
         },
       });
 
       if (!response.audioContent) {
-        throw new Error(
-          'Google Text-to-Speech không trả về audioContent.',
-        );
+        throw new Error('Google Text-to-Speech không trả về audioContent.');
       }
 
       return Buffer.isBuffer(response.audioContent)
@@ -108,10 +89,7 @@ export class PlacementTtsService {
     }
   }
 
-  private createFilename(
-    script: string,
-    cacheKey?: string,
-  ): string {
+  private createFilename(script: string, cacheKey?: string): string {
     const hash = createHash('sha256')
       .update(cacheKey ?? script)
       .digest('hex');

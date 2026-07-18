@@ -16,7 +16,9 @@ describe('LearningPathAccessController', () => {
       ],
     }).compile();
 
-    controller = module.get<LearningPathAccessController>(LearningPathAccessController);
+    controller = module.get<LearningPathAccessController>(
+      LearningPathAccessController,
+    );
   });
 
   it('should be defined', () => {

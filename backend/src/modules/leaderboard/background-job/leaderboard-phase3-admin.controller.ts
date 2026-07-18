@@ -9,9 +9,7 @@ import { LeaderboardWeeklyCloseService } from './leaderboard-weekly-close.servic
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class LeaderboardPhase3AdminController {
-  constructor(
-    private readonly weeklyClose: LeaderboardWeeklyCloseService,
-  ) {}
+  constructor(private readonly weeklyClose: LeaderboardWeeklyCloseService) {}
 
   @Post('close-expired-week')
   closeExpiredWeek() {

@@ -77,11 +77,7 @@ export class ReadingController {
       selected: string;
     },
   ) {
-    return this.readingService.answerReadingQuestion(
-      user.id,
-      sessionId,
-      body,
-    );
+    return this.readingService.answerReadingQuestion(user.id, sessionId, body);
   }
 
   @Post('sessions/:sessionId/submit')
@@ -89,10 +85,7 @@ export class ReadingController {
     @CurrentUser() user: { id: string },
     @Param('sessionId') sessionId: string,
   ) {
-    return this.readingService.submitReadingSession(
-      user.id,
-      sessionId,
-    );
+    return this.readingService.submitReadingSession(user.id, sessionId);
   }
 
   @Get('sessions/:sessionId/result')

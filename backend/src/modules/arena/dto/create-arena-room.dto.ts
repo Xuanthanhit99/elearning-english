@@ -1,4 +1,13 @@
-﻿import { IsBoolean, IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+﻿import {
+  IsBoolean,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export class CreateArenaRoomDto {
   @IsString()
@@ -47,7 +56,15 @@ export class CreateArenaRoomDto {
   @IsIn(['A1', 'A2', 'B1', 'B2', 'C1', 'Mixed'])
   difficulty: string;
 
-  @IsIn(['Animals', 'Business', 'Travel', 'IELTS', 'TOEIC', 'Conversation', 'Daily life'])
+  @IsIn([
+    'Animals',
+    'Business',
+    'Travel',
+    'IELTS',
+    'TOEIC',
+    'Conversation',
+    'Daily life',
+  ])
   topic: string;
 
   @IsOptional()

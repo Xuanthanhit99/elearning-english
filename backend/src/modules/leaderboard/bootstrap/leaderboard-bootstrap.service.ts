@@ -8,7 +8,10 @@ import {
   Prisma,
 } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { LEAGUE_ORDER, LEAGUE_RULES } from '../background-job/leaderboard-phase3.constants';
+import {
+  LEAGUE_ORDER,
+  LEAGUE_RULES,
+} from '../background-job/leaderboard-phase3.constants';
 
 @Injectable()
 export class LeaderboardBootstrapService implements OnApplicationBootstrap {
@@ -22,7 +25,10 @@ export class LeaderboardBootstrapService implements OnApplicationBootstrap {
       await this.assignMissingProfiles();
       await this.recoverStuckCalculatingSeasons();
     } catch (error) {
-      this.logger.error('Leaderboard bootstrap failed', error instanceof Error ? error.stack : String(error));
+      this.logger.error(
+        'Leaderboard bootstrap failed',
+        error instanceof Error ? error.stack : String(error),
+      );
     }
   }
 
@@ -45,28 +51,31 @@ export class LeaderboardBootstrapService implements OnApplicationBootstrap {
     }
 
     const { startsAt, endsAt } = this.currentUtcWeek(now);
-    const season = await this.prisma.$transaction(async (tx) => {
-      const existed = await tx.leaderboardSeason.findFirst({
-        where: { periodType: LeaderboardPeriodType.WEEKLY, startsAt, endsAt },
-      });
-      if (existed) {
-        return tx.leaderboardSeason.update({
-          where: { id: existed.id },
-          data: { status: LeaderboardSeasonStatus.ACTIVE, isActive: true },
+    const season = await this.prisma.$transaction(
+      async (tx) => {
+        const existed = await tx.leaderboardSeason.findFirst({
+          where: { periodType: LeaderboardPeriodType.WEEKLY, startsAt, endsAt },
         });
-      }
-      return tx.leaderboardSeason.create({
-        data: {
-          name: `Bảng xếp hạng tuần ${startsAt.toISOString().slice(0, 10)}`,
-          periodType: LeaderboardPeriodType.WEEKLY,
-          startsAt,
-          endsAt,
-          status: LeaderboardSeasonStatus.ACTIVE,
-          isActive: true,
-          metadata: { generatedBy: 'leaderboard-bootstrap' },
-        },
-      });
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+        if (existed) {
+          return tx.leaderboardSeason.update({
+            where: { id: existed.id },
+            data: { status: LeaderboardSeasonStatus.ACTIVE, isActive: true },
+          });
+        }
+        return tx.leaderboardSeason.create({
+          data: {
+            name: `Bảng xếp hạng tuần ${startsAt.toISOString().slice(0, 10)}`,
+            periodType: LeaderboardPeriodType.WEEKLY,
+            startsAt,
+            endsAt,
+            status: LeaderboardSeasonStatus.ACTIVE,
+            isActive: true,
+            metadata: { generatedBy: 'leaderboard-bootstrap' },
+          },
+        });
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+    );
 
     await this.ensureSeasonGroups(season.id);
     return { created: true, season };
@@ -81,7 +90,11 @@ export class LeaderboardBootstrapService implements OnApplicationBootstrap {
     const profiles = await this.prisma.userXpProfile.findMany({
       where: { optedOut: false },
       select: { id: true, userId: true, currentLeague: true, totalXp: true },
-      orderBy: [{ currentLeague: 'asc' }, { totalXp: 'desc' }, { userId: 'asc' }],
+      orderBy: [
+        { currentLeague: 'asc' },
+        { totalXp: 'desc' },
+        { userId: 'asc' },
+      ],
     });
 
     let groups = 0;
@@ -89,10 +102,20 @@ export class LeaderboardBootstrapService implements OnApplicationBootstrap {
     for (const league of LEAGUE_ORDER) {
       const members = profiles.filter((p) => p.currentLeague === league);
       const maxMembers = LEAGUE_RULES[league].maxMembers;
-      for (let offset = 0, groupNumber = 1; offset < members.length; offset += maxMembers, groupNumber++) {
+      for (
+        let offset = 0, groupNumber = 1;
+        offset < members.length;
+        offset += maxMembers, groupNumber++
+      ) {
         const chunk = members.slice(offset, offset + maxMembers);
         const group = await this.prisma.leaderboardGroup.create({
-          data: { seasonId, scope: LeaderboardScopeType.GLOBAL, league, groupNumber, maxMembers },
+          data: {
+            seasonId,
+            scope: LeaderboardScopeType.GLOBAL,
+            league,
+            groupNumber,
+            maxMembers,
+          },
         });
         groups++;
         const result = await this.prisma.leaderboardEntry.createMany({
@@ -139,7 +162,8 @@ export class LeaderboardBootstrapService implements OnApplicationBootstrap {
       },
       data: { status: LeaderboardSeasonStatus.ACTIVE, isActive: true },
     });
-    if (result.count) this.logger.warn(`Recovered ${result.count} stuck season(s).`);
+    if (result.count)
+      this.logger.warn(`Recovered ${result.count} stuck season(s).`);
     return { recovered: result.count };
   }
 
@@ -148,7 +172,11 @@ export class LeaderboardBootstrapService implements OnApplicationBootstrap {
     profile: { id: string; userId: string; currentLeague: LeagueTier },
   ) {
     const groups = await this.prisma.leaderboardGroup.findMany({
-      where: { seasonId, scope: LeaderboardScopeType.GLOBAL, league: profile.currentLeague },
+      where: {
+        seasonId,
+        scope: LeaderboardScopeType.GLOBAL,
+        league: profile.currentLeague,
+      },
       include: { _count: { select: { entries: true } } },
       orderBy: { groupNumber: 'asc' },
     });
@@ -181,7 +209,9 @@ export class LeaderboardBootstrapService implements OnApplicationBootstrap {
   }
 
   private currentUtcWeek(value: Date) {
-    const date = new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
+    const date = new Date(
+      Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()),
+    );
     const day = date.getUTCDay() || 7;
     const startsAt = new Date(date);
     startsAt.setUTCDate(startsAt.getUTCDate() - day + 1);

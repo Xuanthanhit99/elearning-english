@@ -9,7 +9,9 @@ describe('TeacherDashboardController', () => {
       controllers: [TeacherDashboardController],
     }).compile();
 
-    controller = module.get<TeacherDashboardController>(TeacherDashboardController);
+    controller = module.get<TeacherDashboardController>(
+      TeacherDashboardController,
+    );
   });
 
   it('should be defined', () => {

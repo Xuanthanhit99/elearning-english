@@ -35,10 +35,7 @@ export class CommunityUploadController {
         const allowed = file.mimetype.startsWith('image/');
 
         if (!allowed) {
-          callback(
-            new BadRequestException('Chỉ hỗ trợ file ảnh'),
-            false,
-          );
+          callback(new BadRequestException('Chỉ hỗ trợ file ảnh'), false);
           return;
         }
 
@@ -46,16 +43,12 @@ export class CommunityUploadController {
       },
     }),
   )
-  upload(
-    @UploadedFile() file: Express.Multer.File,
-    @Req() req: Request,
-  ) {
+  upload(@UploadedFile() file: Express.Multer.File, @Req() req: Request) {
     if (!file) {
       throw new BadRequestException('Không nhận được file ảnh');
     }
 
-    const configuredBaseUrl =
-      process.env.API_PUBLIC_URL?.replace(/\/$/, '');
+    const configuredBaseUrl = process.env.API_PUBLIC_URL?.replace(/\/$/, '');
 
     const requestBaseUrl = `${req.protocol}://${req.get('host')}`;
 

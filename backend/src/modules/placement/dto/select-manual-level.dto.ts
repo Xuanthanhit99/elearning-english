@@ -7,4 +7,3 @@ export class SelectManualLevelDto {
   })
   level: CefrLevel;
 }
-

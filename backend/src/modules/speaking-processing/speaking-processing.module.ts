@@ -4,9 +4,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { MissionsV2Module } from '../missions-v2/missions-v2.module';
 import { SpeakingAiEvaluationService } from './speaking-ai-evaluation.service';
 import { SpeakingAudioStorageService } from './speaking-audio-storage.service';
-import {
-  SPEAKING_PROCESSING_QUEUE,
-} from './speaking-processing.constants';
+import { SPEAKING_PROCESSING_QUEUE } from './speaking-processing.constants';
 import { SpeakingProcessingController } from './speaking-processing.controller';
 import { SpeakingProcessingProcessor } from './speaking-processing.processor';
 import { SpeakingProcessingService } from './speaking-processing.service';
@@ -20,9 +18,7 @@ import { SpeakingSpeechToTextService } from './speaking-speech-to-text.service';
       name: SPEAKING_PROCESSING_QUEUE,
     }),
   ],
-  controllers: [
-    SpeakingProcessingController,
-  ],
+  controllers: [SpeakingProcessingController],
   providers: [
     SpeakingProcessingService,
     SpeakingProcessingProcessor,
@@ -30,8 +26,6 @@ import { SpeakingSpeechToTextService } from './speaking-speech-to-text.service';
     SpeakingSpeechToTextService,
     SpeakingAiEvaluationService,
   ],
-  exports: [
-    SpeakingProcessingService,
-  ],
+  exports: [SpeakingProcessingService],
 })
 export class SpeakingProcessingModule {}

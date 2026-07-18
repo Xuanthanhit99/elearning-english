@@ -1,7 +1,10 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { NOTIFICATIONS_QUEUE, NotificationJobName } from './notifications.constants';
+import { PrismaService } from '../../prisma/prisma.service';
+import {
+  NOTIFICATIONS_QUEUE,
+  NotificationJobName,
+} from './notifications.constants';
 import { NotificationsService } from './notifications.service';
 import { CreateNotificationInput } from './notifications.types';
 
@@ -16,7 +19,9 @@ export class NotificationsProcessor extends WorkerHost {
 
   async process(job: Job<CreateNotificationInput | Record<string, never>>) {
     if (job.name === NotificationJobName.CREATE) {
-      return this.notificationsService.createFromPayload(job.data as CreateNotificationInput);
+      return this.notificationsService.createFromPayload(
+        job.data as CreateNotificationInput,
+      );
     }
 
     if (job.name === NotificationJobName.USER_DAILY_REMINDER) {
@@ -101,7 +106,8 @@ export class NotificationsProcessor extends WorkerHost {
         userId: user.id,
         type: 'WEEKLY_GOAL',
         title: 'Mục tiêu tuần mới',
-        message: 'Tuần mới đã bắt đầu. Kiểm tra mission và lộ trình học để giữ nhịp tiến bộ nhé.',
+        message:
+          'Tuần mới đã bắt đầu. Kiểm tra mission và lộ trình học để giữ nhịp tiến bộ nhé.',
         href: '/missions',
       });
       created++;
@@ -110,4 +116,3 @@ export class NotificationsProcessor extends WorkerHost {
     return { created };
   }
 }
-

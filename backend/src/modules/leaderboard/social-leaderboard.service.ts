@@ -324,63 +324,59 @@ export class SocialLeaderboardService {
     }
   }
 
-private async buildLeaderboard(
-  participantIds: string[],
-  currentUserId: string,
-  xpRows: Array<{
-    userId: string;
-    _sum: {
-      finalXp: number | null;
-    };
-  }>,
-  period: unknown,
-  message?: string,
-) {
-  if (!participantIds.length) {
-    return {
-      period,
-      currentUser: null,
-      entries: [],
-      message,
-    };
-  }
+  private async buildLeaderboard(
+    participantIds: string[],
+    currentUserId: string,
+    xpRows: Array<{
+      userId: string;
+      _sum: {
+        finalXp: number | null;
+      };
+    }>,
+    period: unknown,
+    message?: string,
+  ) {
+    if (!participantIds.length) {
+      return {
+        period,
+        currentUser: null,
+        entries: [],
+        message,
+      };
+    }
 
-  const xpMap = new Map<string, number>(
-    xpRows.map((row) => [
-      row.userId,
-      row._sum.finalXp ?? 0,
-    ]),
-  );
+    const xpMap = new Map<string, number>(
+      xpRows.map((row) => [row.userId, row._sum.finalXp ?? 0]),
+    );
 
-  /*
-   * Query User riêng.
-   *
-   * Không select xpProfile vì schema User hiện tại
-   * chưa có relation xpProfile trong Prisma Client.
-   */
-  const users = await this.prisma.user.findMany({
-    where: {
-      id: {
-        in: participantIds,
+    /*
+     * Query User riêng.
+     *
+     * Không select xpProfile vì schema User hiện tại
+     * chưa có relation xpProfile trong Prisma Client.
+     */
+    const users = await this.prisma.user.findMany({
+      where: {
+        id: {
+          in: participantIds,
+        },
       },
-    },
-    select: {
-      id: true,
-      fullname: true,
-      username: true,
-      avatar: true,
-      level: true,
-      englishLevel: true,
-    },
-  });
+      select: {
+        id: true,
+        fullname: true,
+        username: true,
+        avatar: true,
+        level: true,
+        englishLevel: true,
+      },
+    });
 
-  /*
-   * Query UserXpProfile riêng, tránh phụ thuộc vào:
-   *
-   * user.xpProfile
-   */
-  const profiles =
-    await this.prisma.userXpProfile.findMany({
+    /*
+     * Query UserXpProfile riêng, tránh phụ thuộc vào:
+     *
+     * user.xpProfile
+     */
+    const profiles = await this.prisma.userXpProfile.findMany({
       where: {
         userId: {
           in: participantIds,
@@ -396,24 +392,20 @@ private async buildLeaderboard(
       },
     });
 
-  const profileMap = new Map(
-    profiles.map((profile) => [
-      profile.userId,
-      profile,
-    ]),
-  );
+    const profileMap = new Map(
+      profiles.map((profile) => [profile.userId, profile]),
+    );
 
-  /*
-   * Xác định người nào đã nhận XP hôm nay.
-   *
-   * Không cần field User.lastActiveDate.
-   */
-  const todayStart = new Date();
+    /*
+     * Xác định người nào đã nhận XP hôm nay.
+     *
+     * Không cần field User.lastActiveDate.
+     */
+    const todayStart = new Date();
 
-  todayStart.setHours(0, 0, 0, 0);
+    todayStart.setHours(0, 0, 0, 0);
 
-  const todayTransactions =
-    await this.prisma.xpTransaction.findMany({
+    const todayTransactions = await this.prisma.xpTransaction.findMany({
       where: {
         userId: {
           in: participantIds,
@@ -432,78 +424,63 @@ private async buildLeaderboard(
       distinct: ['userId'],
     });
 
-  const learnedTodayIds = new Set(
-    todayTransactions.map(
-      (transaction) => transaction.userId,
-    ),
-  );
+    const learnedTodayIds = new Set(
+      todayTransactions.map((transaction) => transaction.userId),
+    );
 
-  const entries = users
-    .filter((user) => {
-      const profile = profileMap.get(user.id);
+    const entries = users
+      .filter((user) => {
+        const profile = profileMap.get(user.id);
 
-      return !profile?.optedOut;
-    })
-    .map((user) => {
-      const profile = profileMap.get(user.id);
+        return !profile?.optedOut;
+      })
+      .map((user) => {
+        const profile = profileMap.get(user.id);
 
-      const displayName =
-        profile?.useNickname &&
-        profile.leaderboardName
-          ? profile.leaderboardName
-          : user.fullname;
+        const displayName =
+          profile?.useNickname && profile.leaderboardName
+            ? profile.leaderboardName
+            : user.fullname;
 
-      return {
-        periodXp: Math.max(
-          0,
-          xpMap.get(user.id) ?? 0,
-        ),
+        return {
+          periodXp: Math.max(0, xpMap.get(user.id) ?? 0),
 
-        user: {
-          id: user.id,
-          displayName,
-          username: user.username,
-          avatarUrl: user.avatar,
-          level: user.level,
-          cefrLevel: user.englishLevel,
+          user: {
+            id: user.id,
+            displayName,
+            username: user.username,
+            avatarUrl: user.avatar,
+            level: user.level,
+            cefrLevel: user.englishLevel,
 
-          streak: profile?.showStreak
-            ? profile.currentStreak
-            : null,
+            streak: profile?.showStreak ? profile.currentStreak : null,
 
-          learnedToday:
-            learnedTodayIds.has(user.id),
-        },
-      };
-    })
-    .sort((a, b) => {
-      if (b.periodXp !== a.periodXp) {
-        return b.periodXp - a.periodXp;
-      }
+            learnedToday: learnedTodayIds.has(user.id),
+          },
+        };
+      })
+      .sort((a, b) => {
+        if (b.periodXp !== a.periodXp) {
+          return b.periodXp - a.periodXp;
+        }
 
-      return a.user.displayName.localeCompare(
-        b.user.displayName,
-        'vi',
-      );
-    })
-    .map((entry, index) => ({
-      ...entry,
-      rank: index + 1,
-    }));
+        return a.user.displayName.localeCompare(b.user.displayName, 'vi');
+      })
+      .map((entry, index) => ({
+        ...entry,
+        rank: index + 1,
+      }));
 
-  return {
-    period,
+    return {
+      period,
 
-    currentUser:
-      entries.find(
-        (entry) =>
-          entry.user.id === currentUserId,
-      ) ?? null,
+      currentUser:
+        entries.find((entry) => entry.user.id === currentUserId) ?? null,
 
-    entries,
-    message,
-  };
-}
+      entries,
+      message,
+    };
+  }
 
   private async getFriendIds(userId: string) {
     const rows = await this.prisma.communityFriendship.findMany({

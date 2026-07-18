@@ -21,8 +21,7 @@ export class UpdateProfileDto {
   @MinLength(4)
   @MaxLength(30)
   @Matches(/^[a-zA-Z0-9_]+$/, {
-    message:
-      'Username chỉ được chứa chữ cái, số và dấu gạch dưới (_)',
+    message: 'Username chỉ được chứa chữ cái, số và dấu gạch dưới (_)',
   })
   username?: string;
 
@@ -54,5 +53,4 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   learningGoal?: string;
-
 }

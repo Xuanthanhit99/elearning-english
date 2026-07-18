@@ -59,32 +59,19 @@ export class MissionV2PeriodService {
   private toIsoWeekKey(date: Date) {
     const target = new Date(date);
 
-    target.setDate(
-      target.getDate() +
-        3 -
-        ((target.getDay() + 6) % 7),
-    );
+    target.setDate(target.getDate() + 3 - ((target.getDay() + 6) % 7));
 
-    const firstThursday = new Date(
-      target.getFullYear(),
-      0,
-      4,
-    );
+    const firstThursday = new Date(target.getFullYear(), 0, 4);
 
     const week =
       1 +
       Math.round(
-        ((target.getTime() -
-          firstThursday.getTime()) /
-          86400000 -
+        ((target.getTime() - firstThursday.getTime()) / 86400000 -
           3 +
-          ((firstThursday.getDay() + 6) %
-            7)) /
+          ((firstThursday.getDay() + 6) % 7)) /
           7,
       );
 
-    return `${target.getFullYear()}-W${String(
-      week,
-    ).padStart(2, '0')}`;
+    return `${target.getFullYear()}-W${String(week).padStart(2, '0')}`;
   }
 }
