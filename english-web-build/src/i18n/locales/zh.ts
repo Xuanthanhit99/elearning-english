@@ -50,6 +50,7 @@ const zh: Dictionary = {
     reading: "阅读",
     writing: "写作",
     groupExplore: "探索",
+    discover: "内容发现",
     community: "社区",
     studyRooms: "学习室",
     missions: "任务",

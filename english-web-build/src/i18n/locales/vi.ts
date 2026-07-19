@@ -50,6 +50,7 @@ const vi: Dictionary = {
     reading: "Đọc",
     writing: "Viết",
     groupExplore: "Khám phá",
+    discover: "Khám phá nội dung",
     community: "Cộng đồng",
     studyRooms: "Phòng học",
     missions: "Nhiệm vụ",

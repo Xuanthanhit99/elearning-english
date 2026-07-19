@@ -71,6 +71,7 @@ import { PlacementSessionModule } from './modules/placement/placement-session/pl
 import { ChatSessionModule } from './modules/chat-session/chat-session.module';
 import { AchievementsModule } from './modules/achievements/achievements.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { SearchModule } from './modules/search/search.module';
 
 @Module({
   imports: [
@@ -165,6 +166,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     ChatSessionModule,
     AchievementsModule,
     AnalyticsModule,
+    SearchModule,
   ],
   providers: [
     GeminiService,

@@ -50,6 +50,7 @@ const de: Dictionary = {
     reading: "Lesen",
     writing: "Schreiben",
     groupExplore: "Entdecken",
+    discover: "Entdecken",
     community: "Community",
     studyRooms: "Lernräume",
     missions: "Missionen",

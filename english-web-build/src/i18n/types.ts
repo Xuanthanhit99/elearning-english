@@ -68,6 +68,7 @@ export type Dictionary = {
     reading: string;
     writing: string;
     groupExplore: string;
+    discover: string;
     community: string;
     studyRooms: string;
     missions: string;

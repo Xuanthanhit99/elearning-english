@@ -11,6 +11,7 @@ import {
 import { useAuthStore } from "@/src/store/authStore";
 import { useNotificationStore } from "@/src/store/notificationStore";
 import { settingsApi } from "@/src/lib/settings-api";
+import { getSearchSuggestions, Suggestion } from "@/src/lib/search-api";
 import { useTranslation } from "@/src/hooks/useTranslation";
 import LanguageSwitcher from "./LanguageSwitcher";
 import ThemeToggle from "./ThemeToggle";
@@ -18,6 +19,7 @@ import {
   Bell,
   ChevronDown,
   Flame,
+  Loader2,
   LogOut,
   Menu,
   Search,
@@ -28,6 +30,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { FormEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 
 type AppHeaderProps = {
@@ -52,8 +55,13 @@ export default function AppHeader({
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
   const profileRef = useRef<HTMLDivElement | null>(null);
+  const searchRef = useRef<HTMLFormElement | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const unreadNotifications = useNotificationStore((state) => state.unreadCount);
   const refreshUnread = useNotificationStore((state) => state.refreshUnread);
   const loadNotifications = useNotificationStore((state) => state.load);
@@ -84,11 +92,46 @@ export default function AppHeader({
       ) {
         setProfileOpen(false);
       }
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
+        setSuggestionsOpen(false);
+      }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const normalized = searchQuery.trim();
+    let active = true;
+
+    if (normalized.length < 2) {
+      return;
+    }
+
+    const handle = window.setTimeout(() => {
+      getSearchSuggestions(normalized, 6)
+        .then((result) => {
+          if (!active) return;
+          setSuggestions(result.suggestions);
+          setSuggestionsOpen(true);
+        })
+        .catch(() => {
+          if (active) setSuggestions([]);
+        })
+        .finally(() => {
+          if (active) setSuggestionsLoading(false);
+        });
+    }, 220);
+
+    return () => {
+      active = false;
+      window.clearTimeout(handle);
+    };
+  }, [searchQuery]);
 
   useEffect(() => {
     let active = true;
@@ -138,6 +181,14 @@ export default function AppHeader({
     }
   }
 
+  function submitSearch(event?: FormEvent<HTMLFormElement>) {
+    event?.preventDefault();
+    const normalized = searchQuery.trim();
+    if (normalized.length < 2) return;
+    setSuggestionsOpen(false);
+    router.push(`/search?q=${encodeURIComponent(normalized)}`);
+  }
+
   return (
     <header
       className={[
@@ -165,17 +216,75 @@ export default function AppHeader({
           </p>
         </div>
 
-        <label className="relative min-w-0 flex-1 lg:max-w-[520px]">
+        <form
+          ref={searchRef}
+          onSubmit={submitSearch}
+          className="relative min-w-0 flex-1 lg:max-w-[520px]"
+        >
           <Search
             aria-hidden
             className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 sm:left-4"
             size={18}
           />
           <input
+            value={searchQuery}
+            onChange={(event) => {
+              const value = event.target.value;
+              setSearchQuery(value);
+              if (value.trim().length >= 2) {
+                setSuggestionsLoading(true);
+              } else {
+                setSuggestions([]);
+                setSuggestionsOpen(false);
+                setSuggestionsLoading(false);
+              }
+            }}
+            onFocus={() => {
+              if (suggestions.length > 0) setSuggestionsOpen(true);
+            }}
             className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-10 pr-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-violet-400 focus:bg-white sm:pl-11 sm:pr-4 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
             placeholder={t("header.searchPlaceholder")}
+            aria-label={t("header.searchPlaceholder")}
           />
-        </label>
+          {suggestionsLoading && (
+            <Loader2
+              aria-hidden
+              className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-violet-500"
+            />
+          )}
+          {suggestionsOpen && suggestions.length > 0 && (
+            <div
+              id="global-search-suggestions"
+              role="listbox"
+              className="absolute left-0 right-0 top-12 z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
+            >
+              {suggestions.map((item) => (
+                <Link
+                  key={`${item.type}:${item.id}`}
+                  href={item.href}
+                  role="option"
+                  onClick={() => setSuggestionsOpen(false)}
+                  className="flex items-center justify-between gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-violet-50 hover:text-violet-700 dark:text-slate-200 dark:hover:bg-violet-950/40"
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate font-black">{item.title}</span>
+                    <span className="block truncate text-xs text-slate-400">
+                      {item.subtitle ?? item.type}
+                    </span>
+                  </span>
+                  <Search size={15} className="shrink-0 text-slate-300" />
+                </Link>
+              ))}
+              <button
+                type="button"
+                onClick={() => submitSearch()}
+                className="flex w-full items-center justify-center border-t border-slate-100 px-4 py-3 text-sm font-black text-violet-700"
+              >
+                Search all results
+              </button>
+            </div>
+          )}
+        </form>
 
         <div className="hidden items-center gap-2 md:flex">
           <HeaderStat icon={<Flame size={18} />} label={t("header.streak")} value={streak} />

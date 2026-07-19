@@ -74,6 +74,7 @@ function buildGroups(t: (key: string) => string): SidebarGroup[] {
     {
       title: t("sidebar.groupExplore"),
       items: [
+        { label: t("sidebar.discover"), href: "/discover", icon: Compass },
         { label: t("sidebar.community"), href: "/community", icon: Users },
         { label: t("sidebar.studyRooms"), href: "/study-rooms", icon: MessageCircle },
         { label: t("sidebar.missions"), href: "/missions", icon: Trophy },
