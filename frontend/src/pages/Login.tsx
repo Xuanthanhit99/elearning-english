@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
-import { setAccessToken, setCurrentUser } from "../api/tokenStore";
+import { setCurrentUser } from "../api/tokenStore";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -17,7 +17,6 @@ export default function Login() {
     try {
       const res = await axiosClient.post("/auth/login", form);
 
-      setAccessToken(res.data.accessToken);
       setCurrentUser(res.data.user);
 
       if (res.data.user.role === "ADMIN") {
@@ -34,9 +33,6 @@ export default function Login() {
       alert(error.response?.data?.message || "Đăng nhập thất bại");
     }
   };
-
-  console.log("first")
-
   return (
     <form onSubmit={handleLogin}>
       <h2>Đăng nhập</h2>

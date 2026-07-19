@@ -1,6 +1,6 @@
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { authApi } from "./api/authApi";
-import { clearAccessToken } from "./api/tokenStore";
+import { clearCurrentUser } from "./api/tokenStore";
 import NotificationBell from "./components/NotificationBell";
 
 export default function TeacherLayout() {
@@ -9,7 +9,7 @@ export default function TeacherLayout() {
   const handleLogout = async () => {
     await authApi.logout();
 
-    clearAccessToken();
+    clearCurrentUser();
 
     navigate("/login");
   };

@@ -16,12 +16,13 @@ import { AuthTwoFactorService } from './auth-two-factor.service';
 import { TwoFactorController } from './two-factor.controller';
 import { AUTH_REDIS } from './auth.constants';
 import { AuditLogModule } from '../audit-log/audit-log.module';
+import { getJwtModuleSecret } from './auth-secrets.util';
 
 @Global()
 @Module({
   imports: [
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'english_secret_key',
+      secret: getJwtModuleSecret(),
       signOptions: {
         expiresIn: (process.env.JWT_EXPIRES_IN || '1d') as StringValue,
       },

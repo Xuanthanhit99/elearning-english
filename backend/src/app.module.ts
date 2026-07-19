@@ -72,6 +72,7 @@ import { ChatSessionModule } from './modules/chat-session/chat-session.module';
 import { AchievementsModule } from './modules/achievements/achievements.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { SearchModule } from './modules/search/search.module';
+import { HealthController } from './health.controller';
 
 @Module({
   imports: [
@@ -175,7 +176,7 @@ import { SearchModule } from './modules/search/search.module';
     QuestionGenerationLockService,
     LearningPathService,
   ],
-  controllers: [GeminiController],
+  controllers: [GeminiController, HealthController],
   // controllers: [AppController],
   // providers: [AppService],
 })

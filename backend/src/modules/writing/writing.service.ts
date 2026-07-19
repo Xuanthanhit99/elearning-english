@@ -21,7 +21,6 @@ export class WritingService {
   }
 
   async checkWriting(dto: CheckWritingDto, userId?: string) {
-    console.log(process.env.GEMINI_API_KEY);
     const text = dto.text?.trim();
 
     if (!text) {

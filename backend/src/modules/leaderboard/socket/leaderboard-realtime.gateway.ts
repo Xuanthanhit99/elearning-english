@@ -11,6 +11,7 @@ import {
   LeaderboardCookieAuthService,
   LeaderboardSocketUser,
 } from './leaderboard-cookie-auth.service';
+import { getAllowedOrigins } from '../../../config/cors.config';
 
 type AuthenticatedSocket = Socket & {
   data: {
@@ -21,7 +22,7 @@ type AuthenticatedSocket = Socket & {
 @WebSocketGateway({
   namespace: '/leaderboard',
   cors: {
-    origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
+    origin: getAllowedOrigins(),
     credentials: true,
   },
 })

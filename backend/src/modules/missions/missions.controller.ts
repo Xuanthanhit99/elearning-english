@@ -11,7 +11,7 @@ import { MissionsService } from './missions.service';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { RolesGuard } from 'src/common/guards/roles.guard';
-import { MissionAction, MissionType } from '@prisma/client';
+import { MissionAction, MissionType, UserRole } from '@prisma/client';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Controller('missions')
@@ -31,7 +31,7 @@ export class MissionsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(UserRole.ADMIN)
   @Post()
   createMission(@Body() body: any) {
     return this.missionsService.createMission({

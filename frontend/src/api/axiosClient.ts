@@ -1,19 +1,12 @@
 import axios from "axios";
-import { clearAccessToken, getAccessToken, setAccessToken } from "./tokenStore";
+import { clearCurrentUser } from "./tokenStore";
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? "http://localhost:3000" : "");
 
 const axiosClient = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: API_BASE_URL,
   withCredentials: true,
-});
-
-axiosClient.interceptors.request.use((config) => {
-  const token = getAccessToken();
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
 });
 
 axiosClient.interceptors.response.use(
@@ -25,19 +18,11 @@ axiosClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const res = await axios.post(
-          "http://localhost:3000/auth/refresh",
-          {},
-          { withCredentials: true },
-        );
-
-        setAccessToken(res.data.accessToken);
-
-        originalRequest.headers.Authorization = `Bearer ${res.data.accessToken}`;
+        await axios.post(`${API_BASE_URL}/auth/refresh`, {}, { withCredentials: true });
 
         return axiosClient(originalRequest);
       } catch {
-        clearAccessToken();
+        clearCurrentUser();
         window.location.href = "/login";
       }
     }

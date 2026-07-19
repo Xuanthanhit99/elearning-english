@@ -11,8 +11,10 @@ import {
 } from '@nestjs/common';
 import { VocabularyService } from './vocabulary.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { UserRole } from '@prisma/client';
 import { CreateWordDto } from './dto/create-word.dto';
 import { CreateTopicDto } from './dto/create-topic.dto';
 import { UpdateLearningProfileDto } from './dto/update-learning-profile.dto';
@@ -277,22 +279,22 @@ export class VocabularyController {
   }
 
   @Post('topics')
-  @UseGuards(JwtAuthGuard)
-  @Roles('ADMIN')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   createTopic(@Body() dto: CreateTopicDto) {
     return this.vocabularyService.createTopic(dto);
   }
 
   @Post('words')
-  @UseGuards(JwtAuthGuard)
-  @Roles('ADMIN')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   createWord(@Body() dto: CreateWordDto) {
     return this.vocabularyService.createWord(dto);
   }
 
   @Post('generate-words')
-  @UseGuards(JwtAuthGuard)
-  @Roles('ADMIN')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   generateWords(
     @Body()
     body: {

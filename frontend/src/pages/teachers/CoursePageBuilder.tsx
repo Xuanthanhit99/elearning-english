@@ -305,6 +305,7 @@ export default function CoursePageBuilder() {
         <button onClick={addImageBlock}>+ Image</button>
 
         <button onClick={addVideoBlock}>+ Video</button>
+        <button onClick={addTeacherBlock}>+ Teacher</button>
         <button onClick={addCurriculumBlock}>+ Curriculum</button>
         <button onClick={addBuyButtonBlock}>+ Buy Button</button>
         <button onClick={handleBuyCourse}>

@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Socket } from 'socket.io';
+import { getJwtAccessSecret } from '../auth/auth-secrets.util';
 
 export type NotificationSocketUser = {
   id: string;
@@ -30,7 +31,7 @@ export class NotificationCookieAuthService {
       userId?: string;
       role?: string;
     }>(token, {
-      secret: process.env.JWT_ACCESS_SECRET || 'english_access_secret_key',
+      secret: getJwtAccessSecret(),
     });
 
     const userId = payload.sub ?? payload.id ?? payload.userId;

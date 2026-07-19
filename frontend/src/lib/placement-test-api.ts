@@ -1,4 +1,4 @@
-import api from '@/src/lib/api';
+import api from '../api/axiosClient';
 
 export type LearningSkill =
   | 'VOCABULARY'

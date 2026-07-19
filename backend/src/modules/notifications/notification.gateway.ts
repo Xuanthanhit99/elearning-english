@@ -10,6 +10,7 @@ import {
   NotificationCookieAuthService,
   NotificationSocketUser,
 } from './notification-cookie-auth.service';
+import { getAllowedOrigins } from '../../config/cors.config';
 
 type AuthenticatedNotificationSocket = Socket & {
   data: {
@@ -20,7 +21,7 @@ type AuthenticatedNotificationSocket = Socket & {
 @WebSocketGateway({
   namespace: '/notifications',
   cors: {
-    origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
+    origin: getAllowedOrigins(),
     credentials: true,
   },
 })

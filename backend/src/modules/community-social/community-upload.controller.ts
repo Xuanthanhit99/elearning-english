@@ -4,6 +4,7 @@ import {
   Post,
   Req,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -11,8 +12,10 @@ import type { Request } from 'express';
 import { randomUUID } from 'node:crypto';
 import { extname } from 'node:path';
 import { diskStorage } from 'multer';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
 @Controller('community')
+@UseGuards(JwtAuthGuard)
 export class CommunityUploadController {
   @Post('uploads')
   @UseInterceptors(

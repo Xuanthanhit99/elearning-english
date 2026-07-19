@@ -1,7 +1,7 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import axiosClient from "../api/axiosClient";
-import { setAccessToken, setCurrentUser } from "../api/tokenStore";
+import { clearCurrentUser, setCurrentUser } from "../api/tokenStore";
 
 export default function AuthLoader({
   children,
@@ -12,12 +12,13 @@ export default function AuthLoader({
 
   useEffect(() => {
     axiosClient
-      .post("/auth/refresh")
+      .get("/auth/me")
       .then((res) => {
-        setAccessToken(res.data.accessToken);
-        setCurrentUser(res.data.user);
+        setCurrentUser(res.data);
       })
-      .catch(() => {})
+      .catch(() => {
+        clearCurrentUser();
+      })
       .finally(() => setLoading(false));
   }, []);
 

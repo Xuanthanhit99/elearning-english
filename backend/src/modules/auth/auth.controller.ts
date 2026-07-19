@@ -23,6 +23,12 @@ import { AuthGuard } from '@nestjs/passport';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { VocabularyJobService } from '../vocabulary-job/vocabulary-job.service';
+import {
+  ACCESS_COOKIE_MAX_AGE_MS,
+  REFRESH_COOKIE_MAX_AGE_MS,
+  authCookieOptions,
+  visibleCookieOptions,
+} from './auth-cookie.util';
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -82,25 +88,21 @@ export class AuthController {
   async googleCallback(@Req() req: any, @Res() res: Response) {
     try {
       const result = await this.authService.socialLogin(req.user, req);
-      res.cookie('refresh_token', result.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-
-      res.cookie('access_token', result.accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 15 * 60 * 1000,
-      });
-      res.cookie('logged_in', 'true', {
-        httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 15 * 60 * 1000,
-      });
+      res.cookie(
+        'refresh_token',
+        result.refreshToken,
+        authCookieOptions(REFRESH_COOKIE_MAX_AGE_MS),
+      );
+      res.cookie(
+        'access_token',
+        result.accessToken,
+        authCookieOptions(ACCESS_COOKIE_MAX_AGE_MS),
+      );
+      res.cookie(
+        'logged_in',
+        'true',
+        visibleCookieOptions(ACCESS_COOKIE_MAX_AGE_MS),
+      );
       return res.redirect(
         `${process.env.FRONTEND_URL}/auth/callback?status=success`,
       );
@@ -120,25 +122,21 @@ export class AuthController {
   async facebookCallback(@Req() req: any, @Res() res: Response) {
     try {
       const result = await this.authService.socialLogin(req.user, req);
-      res.cookie('refresh_token', result.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-
-      res.cookie('access_token', result.accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 15 * 60 * 1000,
-      });
-      res.cookie('logged_in', 'true', {
-        httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 15 * 60 * 1000,
-      });
+      res.cookie(
+        'refresh_token',
+        result.refreshToken,
+        authCookieOptions(REFRESH_COOKIE_MAX_AGE_MS),
+      );
+      res.cookie(
+        'access_token',
+        result.accessToken,
+        authCookieOptions(ACCESS_COOKIE_MAX_AGE_MS),
+      );
+      res.cookie(
+        'logged_in',
+        'true',
+        visibleCookieOptions(ACCESS_COOKIE_MAX_AGE_MS),
+      );
       return res.redirect(
         `${process.env.FRONTEND_URL}/auth/callback?status=success`,
       );
@@ -175,8 +173,8 @@ export class AuthController {
   }
 
   @Post('jobs/generate-weekly-pool')
-  @UseGuards(JwtAuthGuard)
-  @Roles('ADMIN')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   generateWeeklyPool() {
     return this.vocabularyJobService.generateWeeklyTopicPools();
   }

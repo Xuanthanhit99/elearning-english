@@ -4,6 +4,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
 import { AuthSessionService } from './auth-session.service';
 import { AuthService } from './auth.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -16,6 +17,7 @@ describe('AuthService', () => {
         { provide: JwtService, useValue: {} },
         { provide: UploadService, useValue: {} },
         { provide: AuthSessionService, useValue: {} },
+        { provide: AuditLogService, useValue: { record: jest.fn() } },
       ],
     }).compile();
 

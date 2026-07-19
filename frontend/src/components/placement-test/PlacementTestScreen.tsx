@@ -15,23 +15,20 @@ import {
   Loader2,
   Mic2,
   PencilLine,
-  RefreshCw,
-  ShieldCheck,
   SkipForward,
   Sparkles,
   Trophy,
   Type,
 } from 'lucide-react';
-import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   answerPlacementQuestion,
   flagPlacementQuestion,
   getPlacementTest,
-  LearningSkill,
-  PlacementTestScreenData,
+  type LearningSkill,
+  type PlacementTestScreenData,
   skipPlacementQuestion,
-} from '@/src/lib/placement-test-api';
+} from '../../lib/placement-test-api';
 
 const skillMeta: Record<
   LearningSkill,
@@ -125,9 +122,11 @@ export default function PlacementTestScreen({
   useEffect(() => {
     if (!data) return;
 
+    const currentData = data;
+
     function handleKeyDown(event: KeyboardEvent) {
       const key = event.key.toUpperCase();
-      const option = data.currentQuestion.options.find(
+      const option = currentData.currentQuestion.options.find(
         (item) => item.key.toUpperCase() === key,
       );
 
@@ -381,11 +380,10 @@ export default function PlacementTestScreen({
 
           <div className="mt-8 flex items-end gap-2 rounded-2xl bg-violet-50 p-3">
             <div className="relative h-28 w-24 shrink-0">
-              <Image
+              <img
                 src="/images/placement/poppy-cheer.png"
                 alt="Poppy cổ vũ"
-                fill
-                className="object-contain object-bottom"
+                className="h-full w-full object-contain object-bottom"
               />
             </div>
             <div className="pb-3">

@@ -77,8 +77,8 @@ export class UploadController {
     );
 
     return {
-      url: result.secuce_url,
-      publicId: result.pulic_id,
+      url: result.secure_url,
+      publicId: result.public_id,
       type: 'VIDEO',
     };
   }

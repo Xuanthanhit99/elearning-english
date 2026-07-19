@@ -15,35 +15,18 @@ import * as nodemailer from 'nodemailer';
 import { randomUUID } from 'crypto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UploadService } from '../upload/upload.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserRole, UserStatus } from '@prisma/client';
 import { AuthSessionService } from './auth-session.service';
 import { decryptSecret } from './two-factor-crypto.util';
-
-const REFRESH_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
-const ACCESS_COOKIE_MAX_AGE_MS = 15 * 60 * 1000;
-
-const authCookieOptions = (maxAge: number) => ({
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
-  path: '/',
-  maxAge,
-});
-
-const visibleCookieOptions = (maxAge: number) => ({
-  httpOnly: false,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
-  path: '/',
-  maxAge,
-});
-
-const clearCookieOptions = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
-  path: '/',
-};
+import { AuditLogService } from '../audit-log/audit-log.service';
+import {
+  ACCESS_COOKIE_MAX_AGE_MS,
+  REFRESH_COOKIE_MAX_AGE_MS,
+  authCookieOptions,
+  clearAuthCookieOptions,
+  visibleCookieOptions,
+} from './auth-cookie.util';
+import { getJwtAccessSecret, getJwtRefreshSecret } from './auth-secrets.util';
 
 @Injectable()
 export class AuthService {
@@ -52,6 +35,7 @@ export class AuthService {
     private jwtService: JwtService,
     private uploadService: UploadService,
     private authSessionService: AuthSessionService,
+    private auditLogService: AuditLogService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -70,7 +54,8 @@ export class AuthService {
         fullname: dto.fullName,
         email: dto.email,
         password: hashedPassword,
-        role: dto.role,
+        role: UserRole.STUDENT,
+        status: UserStatus.ACTIVE,
       },
       select: {
         id: true,
@@ -103,6 +88,12 @@ export class AuthService {
       throw new BadRequestException('Email hoặc mật khẩu không đúng');
     }
 
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException(
+        'Tài khoản hiện không được phép đăng nhập',
+      );
+    }
+
     if (user.twoFactorSecret) {
       if (!dto.otp && !dto.recoveryCode) {
         return {
@@ -124,7 +115,6 @@ export class AuthService {
 
     const payload = {
       sub: user.id,
-      email: user.email,
       role: user.role,
     };
 
@@ -135,13 +125,13 @@ export class AuthService {
     const jti = randomUUID();
 
     const accessToken = await this.jwtService.signAsync(payload, {
-      secret: process.env.JWT_ACCESS_SECRET,
+      secret: getJwtAccessSecret(),
       expiresIn: (process.env.JWT_ACCESS_EXPIRES_IN || '15m') as StringValue,
     });
     const refreshToken = await this.jwtService.signAsync(
       { ...payload, jti },
       {
-        secret: process.env.JWT_REFRESH_SECRET,
+        secret: getJwtRefreshSecret(),
         expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as StringValue,
       },
     );
@@ -151,6 +141,18 @@ export class AuthService {
       jti,
       userAgent: req.headers?.['user-agent'],
       ipAddress: req.ip ?? req.socket?.remoteAddress ?? null,
+    });
+
+    await this.auditLogService.record({
+      userId: user.id,
+      action: 'AUTH_LOGIN_SUCCESS',
+      changedFields: ['session'],
+      metadata: {
+        userAgent: req.headers?.['user-agent'] ?? null,
+        ipAddress: req.ip ?? req.socket?.remoteAddress ?? null,
+      },
+      ipAddress: req.ip ?? req.socket?.remoteAddress ?? null,
+      userAgent: req.headers?.['user-agent'],
     });
 
     res.cookie(
@@ -181,10 +183,10 @@ export class AuthService {
       throw new UnauthorizedException('Không có refresh token');
     }
 
-    let payload: { sub: string; email: string; role: string; jti?: string };
+    let payload: { sub: string; role: string; jti?: string };
     try {
       payload = await this.jwtService.verifyAsync(refreshToken, {
-        secret: process.env.JWT_REFRESH_SECRET,
+        secret: getJwtRefreshSecret(),
       });
     } catch {
       throw new UnauthorizedException('Refresh token không hợp lệ');
@@ -212,6 +214,12 @@ export class AuthService {
       throw new UnauthorizedException('Người dùng không tồn tại');
     }
 
+    if (dbUser.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException(
+        'Tài khoản hiện không được phép làm mới phiên',
+      );
+    }
+
     const newJti = randomUUID();
     const rotated = await this.authSessionService.rotate(payload.jti, newJti);
 
@@ -224,11 +232,10 @@ export class AuthService {
     const accessToken = await this.jwtService.signAsync(
       {
         sub: dbUser.id,
-        email: dbUser.email,
         role: dbUser.role,
       },
       {
-        secret: process.env.JWT_ACCESS_SECRET,
+        secret: getJwtAccessSecret(),
         expiresIn: (process.env.JWT_ACCESS_EXPIRES_IN || '15m') as StringValue,
       },
     );
@@ -236,12 +243,11 @@ export class AuthService {
     const newRefreshToken = await this.jwtService.signAsync(
       {
         sub: dbUser.id,
-        email: dbUser.email,
         role: dbUser.role,
         jti: newJti,
       },
       {
-        secret: process.env.JWT_REFRESH_SECRET,
+        secret: getJwtRefreshSecret(),
         expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as StringValue,
       },
     );
@@ -263,6 +269,13 @@ export class AuthService {
       'true',
       visibleCookieOptions(ACCESS_COOKIE_MAX_AGE_MS),
     );
+
+    await this.auditLogService.record({
+      userId: dbUser.id,
+      action: 'AUTH_REFRESH_ROTATED',
+      changedFields: ['session'],
+      metadata: { oldJti: payload.jti, newJti },
+    });
 
     return {
       success: true,
@@ -286,7 +299,7 @@ export class AuthService {
         const payload = await this.jwtService.verifyAsync<{
           sub: string;
           jti?: string;
-        }>(refreshToken, { secret: process.env.JWT_REFRESH_SECRET });
+        }>(refreshToken, { secret: getJwtRefreshSecret() });
 
         if (payload?.jti) {
           await this.authSessionService.invalidateByJti(payload.jti);
@@ -294,15 +307,21 @@ export class AuthService {
             where: { userId: payload.sub, refreshTokenId: payload.jti },
             data: { revokedAt: new Date() },
           });
+          await this.auditLogService.record({
+            userId: payload.sub,
+            action: 'AUTH_LOGOUT',
+            changedFields: ['session'],
+            metadata: { jti: payload.jti },
+          });
         }
       } catch {
         // Token already invalid/expired — nothing left to revoke.
       }
     }
 
-    res.clearCookie('refresh_token', clearCookieOptions);
-    res.clearCookie('access_token', clearCookieOptions);
-    res.clearCookie('logged_in', { ...clearCookieOptions, httpOnly: false });
+    res.clearCookie('refresh_token', clearAuthCookieOptions);
+    res.clearCookie('access_token', clearAuthCookieOptions);
+    res.clearCookie('logged_in', { ...clearAuthCookieOptions, httpOnly: false });
     return {
       message: 'Đăng xuất thành công',
     };
@@ -353,28 +372,32 @@ export class AuthService {
       });
     }
 
+    if (dbUser.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException(
+        'Tài khoản hiện không được phép đăng nhập',
+      );
+    }
+
     const jti = randomUUID();
 
     const accessToken = await this.jwtService.signAsync(
       {
         sub: dbUser.id,
-        email: dbUser.email,
         role: dbUser.role,
       },
       {
-        secret: process.env.JWT_ACCESS_SECRET,
+        secret: getJwtAccessSecret(),
         expiresIn: (process.env.JWT_ACCESS_EXPIRES_IN || '15m') as StringValue,
       },
     );
     const refreshToken = await this.jwtService.signAsync(
       {
         sub: dbUser.id,
-        email: dbUser.email,
         role: dbUser.role,
         jti,
       },
       {
-        secret: process.env.JWT_REFRESH_SECRET,
+        secret: getJwtRefreshSecret(),
         expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as StringValue,
       },
     );
@@ -384,6 +407,19 @@ export class AuthService {
       jti,
       userAgent: req?.headers?.['user-agent'],
       ipAddress: req?.ip ?? req?.socket?.remoteAddress ?? null,
+    });
+
+    await this.auditLogService.record({
+      userId: dbUser.id,
+      action: 'AUTH_SOCIAL_LOGIN_SUCCESS',
+      changedFields: ['session'],
+      metadata: {
+        provider: profile.provider,
+        userAgent: req?.headers?.['user-agent'] ?? null,
+        ipAddress: req?.ip ?? req?.socket?.remoteAddress ?? null,
+      },
+      ipAddress: req?.ip ?? req?.socket?.remoteAddress ?? null,
+      userAgent: req?.headers?.['user-agent'],
     });
 
     return { accessToken, dbUser, refreshToken };

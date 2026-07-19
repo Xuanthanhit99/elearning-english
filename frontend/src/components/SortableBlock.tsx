@@ -1,5 +1,4 @@
 import { useSortable } from "@dnd-kit/sortable";
-import type { Transform } from '@dnd-kit/utilities';
 import { CSS } from "@dnd-kit/utilities";
 export function SortableBlock({
   block,
