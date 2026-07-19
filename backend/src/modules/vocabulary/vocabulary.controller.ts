@@ -20,10 +20,14 @@ import { SubmitWeeklyTestDto } from './dto/submit-weekly-test.dto';
 import { SubmitReviewDto } from './dto/submit-review.dto';
 import { UpdateWordProgressDto } from './dto/update-word-progress.dto';
 import { SubmitReviewSessionDto } from './dto/review-session-answer.dto';
+import { AchievementsService } from '../achievements/achievements.service';
 
 @Controller('vocabulary')
 export class VocabularyController {
-  constructor(private vocabularyService: VocabularyService) {}
+  constructor(
+    private vocabularyService: VocabularyService,
+    private readonly achievementsService: AchievementsService,
+  ) {}
 
   @Get('topics')
   getTopics() {
@@ -67,13 +71,13 @@ export class VocabularyController {
   @Get('overview/achievements')
   @UseGuards(JwtAuthGuard)
   getAchievementOverview(@CurrentUser() user: any) {
-    return this.vocabularyService.getAchievementOverview(user.id);
+    return this.achievementsService.overview(user.id);
   }
 
   @Get('overview/achievements/:key')
   @UseGuards(JwtAuthGuard)
   getAchievementDetail(@CurrentUser() user: any, @Param('key') key: string) {
-    return this.vocabularyService.getAchievementDetail(user.id, key);
+    return this.achievementsService.detail(user.id, key);
   }
 
   @Get('overview/achievements/:key/activity')
@@ -84,7 +88,7 @@ export class VocabularyController {
     @Query('type') type?: string,
     @Query('id') id?: string,
   ) {
-    return this.vocabularyService.getAchievementActivityDetail(
+    return this.achievementsService.activityDetail(
       user.id,
       key,
       type || '',

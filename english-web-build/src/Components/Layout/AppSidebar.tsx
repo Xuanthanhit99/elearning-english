@@ -2,18 +2,22 @@
 
 import AppLogo from "@/src/Components/UI/AppLogo";
 import {
+  BarChart3,
   BookOpen,
   ChevronLeft,
   ChevronRight,
   ClipboardCheck,
   Compass,
+  FileText,
   Headphones,
+  History,
   Home,
   LayoutDashboard,
   MessageCircle,
   Mic2,
   NotebookPen,
   Settings,
+  TrendingUp,
   Trophy,
   Users,
   X,
@@ -49,6 +53,10 @@ function buildGroups(t: (key: string) => string): SidebarGroup[] {
       items: [
         { label: t("sidebar.home"), href: "/", icon: Home },
         { label: t("sidebar.dashboard"), href: "/dashboard", icon: LayoutDashboard },
+        { label: t("sidebar.analytics"), href: "/analytics", icon: BarChart3 },
+        { label: t("sidebar.reports"), href: "/reports", icon: FileText },
+        { label: t("sidebar.progress"), href: "/progress", icon: TrendingUp },
+        { label: t("sidebar.history"), href: "/history", icon: History },
         { label: t("sidebar.learningPath"), href: "/learning-path", icon: Compass },
         { label: t("sidebar.todayLesson"), href: "/learn", icon: ClipboardCheck },
       ],

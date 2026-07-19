@@ -30,6 +30,13 @@ export const NOTIFICATION_PREFERENCE_RULES = [
     description: 'Mission and goal notifications.',
   },
   {
+    preferenceKey: NotificationPreferenceKey.ACHIEVEMENT_NOTIFICATION,
+    eventTypes: [NotificationEventType.ACHIEVEMENT_UNLOCKED],
+    controlsInAppPersistence: true,
+    defaultEnabled: true,
+    description: 'Achievement unlock notifications.',
+  },
+  {
     preferenceKey: NotificationPreferenceKey.FRIEND_ACTIVITY,
     eventTypes: [
       NotificationEventType.FRIEND_ACTIVITY,

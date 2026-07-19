@@ -3,6 +3,7 @@ import { NotificationEventType } from '../contracts/notification-event-type';
 export enum NotificationPreferenceKey {
   DAILY_REMINDER_ENABLED = 'dailyReminderEnabled',
   MISSION_REMINDER = 'missionReminder',
+  ACHIEVEMENT_NOTIFICATION = 'showAchievements',
   FRIEND_ACTIVITY = 'friendActivity',
   CLUB_NOTIFICATION = 'clubNotification',
   LEADERBOARD_NOTIFICATION = 'leaderboardNotification',

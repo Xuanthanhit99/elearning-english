@@ -17,6 +17,9 @@ type DetailData = {
     tone: "blue" | "emerald" | "orange" | "pink" | "purple" | "yellow";
     xp: number;
     achievedAt: string;
+    status?: string;
+    claimable?: boolean;
+    claimed?: boolean;
   };
   overview: {
     title: string;
@@ -25,10 +28,29 @@ type DetailData = {
     target: number;
     unit: string;
     tip: string;
-    progressSteps: Array<{ label: string; date?: string; done: boolean; value: number }>;
+    progressSteps: Array<{
+      label: string;
+      date?: string;
+      done: boolean;
+      value: number;
+    }>;
   };
-  rewards: Array<{ label: string; reward: string; required: number; claimed: boolean; locked: boolean }>;
-  activities: Array<{ id?: string; type?: string; title: string; subtitle: string; time: string; xp: number; icon: AppIconName }>;
+  rewards: Array<{
+    label: string;
+    reward: string;
+    required: number;
+    claimed: boolean;
+    locked: boolean;
+  }>;
+  activities: Array<{
+    id?: string;
+    type?: string;
+    title: string;
+    subtitle: string;
+    time: string;
+    xp: number;
+    icon: AppIconName;
+  }>;
   suggestions: Array<{ title: string; subtitle: string; icon: AppIconName }>;
 };
 
@@ -37,7 +59,9 @@ export default function AchievementDetailPage() {
   const achievementKey = searchParams.get("key") || "";
   const [data, setData] = useState<DetailData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [claiming, setClaiming] = useState(false);
   const [message, setMessage] = useState("");
+  const [notice, setNotice] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -49,7 +73,9 @@ export default function AchievementDetailPage() {
       }
       try {
         setLoading(true);
-        const res = await api.get<DetailData>(`/vocabulary/overview/achievements/${achievementKey}`);
+        const res = await api.get<DetailData>(
+          `/vocabulary/overview/achievements/${achievementKey}`,
+        );
         if (active) setData(res.data);
       } catch {
         if (active) setMessage("Chưa tải được chi tiết thành tích.");
@@ -89,9 +115,53 @@ export default function AchievementDetailPage() {
   }
 
   const progressPercent = data.overview.target
-    ? Math.min(100, Math.round((data.overview.current / data.overview.target) * 100))
+    ? Math.min(
+        100,
+        Math.round((data.overview.current / data.overview.target) * 100),
+      )
     : 0;
   const firstActivity = data.activities.find((item) => item.id && item.type);
+
+  async function claimReward() {
+    if (
+      !data?.achievement.key ||
+      claiming ||
+      data.achievement.claimed ||
+      !data.achievement.claimable
+    )
+      return;
+
+    try {
+      setClaiming(true);
+      const res = await api.post(`/achievements/${data.achievement.key}/claim`);
+      setData((current) =>
+        current
+          ? {
+              ...current,
+              achievement: {
+                ...current.achievement,
+                claimed: true,
+                claimable: false,
+                status: "CLAIMED",
+              },
+              rewards: current.rewards.map((item) => ({
+                ...item,
+                claimed: true,
+                locked: false,
+              })),
+            }
+          : current,
+      );
+      const reward = res.data?.reward;
+      setNotice(
+        `Da nhan +${reward?.xp || 0} XP va +${reward?.coins || 0} coins.`,
+      );
+    } catch {
+      setNotice("Chua nhan duoc phan thuong. Vui long thu lai.");
+    } finally {
+      setClaiming(false);
+    }
+  }
 
   return (
     <div className="px-4 py-7 lg:px-8">
@@ -109,18 +179,30 @@ export default function AchievementDetailPage() {
         <main className="space-y-6">
           <header className="flex flex-wrap items-center justify-between gap-5">
             <div className="flex items-center gap-5">
-              <Link className="grid h-12 w-12 place-items-center rounded-xl border border-[#dfe2f3] text-[#6d35ff]" href="/vocabulary/achievements">
+              <Link
+                className="grid h-12 w-12 place-items-center rounded-xl border border-[#dfe2f3] text-[#6d35ff]"
+                href="/vocabulary/achievements"
+              >
                 <AppIcon name="chevronLeft" bare size={20} />
               </Link>
-              <AppIcon name={data.achievement.icon} tone={data.achievement.tone} className="h-28 w-28 rounded-full" size={44} />
+              <AppIcon
+                name={data.achievement.icon}
+                tone={data.achievement.tone}
+                className="h-28 w-28 rounded-full"
+                size={44}
+              />
               <div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <h1 className="text-2xl font-black text-[#101733]">{data.achievement.title}</h1>
+                  <h1 className="text-2xl font-black text-[#101733]">
+                    {data.achievement.title}
+                  </h1>
                   <span className="rounded-full bg-[#f1ecff] px-3 py-1 text-xs font-black text-[#6d35ff]">
                     {data.achievement.tag}
                   </span>
                 </div>
-                <p className="mt-3 font-bold text-[#69708b]">{data.achievement.description}</p>
+                <p className="mt-3 font-bold text-[#69708b]">
+                  {data.achievement.description}
+                </p>
                 <p className="mt-3 inline-flex rounded-full bg-[#f7f5ff] px-3 py-1 text-xs font-black text-[#69708b]">
                   Đạt được: {data.achievement.achievedAt}
                 </p>
@@ -130,31 +212,58 @@ export default function AchievementDetailPage() {
               <Share2 size={17} /> Chia sẻ
             </button>
           </header>
+          {notice && (
+            <div className="rounded-2xl border border-[#e3dafd] bg-[#fbf8ff] px-5 py-3 text-sm font-black text-[#6d35ff]">
+              {notice}
+            </div>
+          )}
 
           <section className="rounded-3xl border border-[#ebeaf6] bg-white p-7 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
-            <h2 className="text-xl font-black text-[#101733]">{data.overview.title}</h2>
-            <p className="mt-3 text-sm font-bold text-[#4f5575]">{data.overview.description}</p>
+            <h2 className="text-xl font-black text-[#101733]">
+              {data.overview.title}
+            </h2>
+            <p className="mt-3 text-sm font-bold text-[#4f5575]">
+              {data.overview.description}
+            </p>
             <div className="mt-9 grid gap-7 lg:grid-cols-[150px_1fr] lg:items-center">
               <div>
                 <p className="text-4xl font-black text-[#101733]">
-                  {data.overview.current} / {data.overview.target} {data.overview.unit}
+                  {data.overview.current} / {data.overview.target}{" "}
+                  {data.overview.unit}
                 </p>
                 <p className="mt-3 font-bold text-[#69708b]">Tiến độ của bạn</p>
                 <div className="mt-4 h-2 rounded-full bg-[#ece9f9]">
-                  <div className="h-2 rounded-full bg-[#6d35ff]" style={{ width: `${progressPercent}%` }} />
+                  <div
+                    className="h-2 rounded-full bg-[#6d35ff]"
+                    style={{ width: `${progressPercent}%` }}
+                  />
                 </div>
               </div>
               <div className="flex min-w-0 items-center">
                 {data.overview.progressSteps.map((step, index) => (
                   <div key={step.label} className="flex flex-1 items-center">
                     <div className="text-center">
-                      <span className={`mx-auto grid h-11 w-11 place-items-center rounded-full border-2 text-sm font-black ${step.done ? "border-orange-400 bg-orange-400 text-white" : "border-[#ccd0e9] bg-[#f7f8ff] text-[#8b91aa]"}`}>
-                        {step.done ? step.value : <AppIcon name="lock" bare size={17} />}
+                      <span
+                        className={`mx-auto grid h-11 w-11 place-items-center rounded-full border-2 text-sm font-black ${step.done ? "border-orange-400 bg-orange-400 text-white" : "border-[#ccd0e9] bg-[#f7f8ff] text-[#8b91aa]"}`}
+                      >
+                        {step.done ? (
+                          step.value
+                        ) : (
+                          <AppIcon name="lock" bare size={17} />
+                        )}
                       </span>
-                      <p className="mt-3 text-sm font-black text-[#27245f]">{step.label}</p>
-                      {step.date && <p className="mt-1 text-xs font-black text-orange-500">{step.date}</p>}
+                      <p className="mt-3 text-sm font-black text-[#27245f]">
+                        {step.label}
+                      </p>
+                      {step.date && (
+                        <p className="mt-1 text-xs font-black text-orange-500">
+                          {step.date}
+                        </p>
+                      )}
                     </div>
-                    {index < data.overview.progressSteps.length - 1 && <div className="h-0.5 flex-1 bg-[#dfe2f3]" />}
+                    {index < data.overview.progressSteps.length - 1 && (
+                      <div className="h-0.5 flex-1 bg-[#dfe2f3]" />
+                    )}
                   </div>
                 ))}
               </div>
@@ -166,18 +275,31 @@ export default function AchievementDetailPage() {
           </section>
 
           <section className="rounded-3xl border border-[#ebeaf6] bg-white p-7 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
-            <h2 className="text-xl font-black text-[#101733]">Lịch sử hoạt động</h2>
-            <p className="mt-2 text-sm font-bold text-[#69708b]">Các hoạt động học tập liên quan đến thành tích này</p>
+            <h2 className="text-xl font-black text-[#101733]">
+              Lịch sử hoạt động
+            </h2>
+            <p className="mt-2 text-sm font-bold text-[#69708b]">
+              Các hoạt động học tập liên quan đến thành tích này
+            </p>
             <div className="mt-5 divide-y divide-[#ebeaf6]">
               {data.activities.map((item, index) => (
-                <div key={`${item.title}-${index}`} className="grid gap-4 py-4 md:grid-cols-[48px_1fr_auto_auto] md:items-center">
+                <div
+                  key={`${item.title}-${index}`}
+                  className="grid gap-4 py-4 md:grid-cols-[48px_1fr_auto_auto] md:items-center"
+                >
                   <AppIcon name={item.icon} tone="purple" />
                   <div>
                     <h3 className="font-black text-[#101733]">{item.title}</h3>
-                    <p className="mt-1 text-sm font-bold text-[#69708b]">{item.subtitle}</p>
+                    <p className="mt-1 text-sm font-bold text-[#69708b]">
+                      {item.subtitle}
+                    </p>
                   </div>
-                  <span className="text-sm font-bold text-[#69708b]">{item.time || "Gần đây"}</span>
-                  <span className="font-black text-[#6d35ff]">+{item.xp} XP</span>
+                  <span className="text-sm font-bold text-[#69708b]">
+                    {item.time || "Gần đây"}
+                  </span>
+                  <span className="font-black text-[#6d35ff]">
+                    +{item.xp} XP
+                  </span>
                 </div>
               ))}
             </div>
@@ -195,35 +317,76 @@ export default function AchievementDetailPage() {
         <aside className="space-y-6">
           <section className="rounded-3xl border border-[#ebeaf6] bg-white p-6 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
             <h2 className="text-xl font-black text-[#101733]">Phần thưởng</h2>
-            <p className="mt-2 text-sm font-bold text-[#4f5575]">Nhận khi hoàn thành các mốc thành tích</p>
+            <p className="mt-2 text-sm font-bold text-[#4f5575]">
+              Nhận khi hoàn thành các mốc thành tích
+            </p>
             <div className="mt-5 space-y-3">
               {data.rewards.map((reward) => (
-                <div key={reward.label} className={`flex items-center gap-4 rounded-2xl border p-4 ${reward.claimed ? "border-orange-200 bg-orange-50/40" : "border-[#ebeaf6] bg-[#fbfaff]"}`}>
-                  <AppIcon name={reward.claimed ? "star" : "lock"} tone={reward.claimed ? "yellow" : "slate"} />
+                <div
+                  key={reward.label}
+                  className={`flex items-center gap-4 rounded-2xl border p-4 ${reward.claimed ? "border-orange-200 bg-orange-50/40" : "border-[#ebeaf6] bg-[#fbfaff]"}`}
+                >
+                  <AppIcon
+                    name={reward.claimed ? "star" : "lock"}
+                    tone={reward.claimed ? "yellow" : "slate"}
+                  />
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-black text-[#101733]">{reward.label}</h3>
-                    <p className="text-sm font-bold text-[#69708b]">{reward.claimed ? "Đã nhận" : `Cần đạt ${reward.required}`}</p>
+                    <h3 className="font-black text-[#101733]">
+                      {reward.label}
+                    </h3>
+                    <p className="text-sm font-bold text-[#69708b]">
+                      {reward.claimed
+                        ? "Đã nhận"
+                        : `Cần đạt ${reward.required}`}
+                    </p>
                   </div>
-                  <span className="font-black text-[#6d35ff]">{reward.reward}</span>
+                  <span className="font-black text-[#6d35ff]">
+                    {reward.reward}
+                  </span>
                 </div>
               ))}
             </div>
+            <button
+              onClick={claimReward}
+              disabled={
+                !data.achievement.claimable ||
+                data.achievement.claimed ||
+                claiming
+              }
+              className="mt-5 flex h-12 w-full items-center justify-center rounded-xl bg-[#6d35ff] text-sm font-black text-white disabled:cursor-not-allowed disabled:bg-[#d8d4ee] disabled:text-[#7d82a3]"
+            >
+              {data.achievement.claimed
+                ? "Da nhan thuong"
+                : claiming
+                  ? "Dang nhan..."
+                  : data.achievement.claimable
+                    ? "Nhan thuong"
+                    : "Chua the nhan"}
+            </button>
           </section>
 
           <section className="rounded-3xl border border-[#ebeaf6] bg-white p-6 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
             <h2 className="text-xl font-black text-[#101733]">Gợi ý cho bạn</h2>
             <div className="mt-5 space-y-4">
               {data.suggestions.map((item) => (
-                <div key={item.title} className="flex gap-4 rounded-2xl bg-[#fbfaff] p-4">
+                <div
+                  key={item.title}
+                  className="flex gap-4 rounded-2xl bg-[#fbfaff] p-4"
+                >
                   <AppIcon name={item.icon} tone="purple" />
                   <div>
                     <h3 className="font-black text-[#101733]">{item.title}</h3>
-                    <p className="mt-1 text-sm font-bold text-[#69708b]">{item.subtitle}</p>
+                    <p className="mt-1 text-sm font-bold text-[#69708b]">
+                      {item.subtitle}
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
-            <Link href="/vocabulary" className="mt-6 flex h-12 items-center justify-center gap-2 rounded-xl bg-[#6d35ff] text-sm font-black text-white">
+            <Link
+              href="/vocabulary"
+              className="mt-6 flex h-12 items-center justify-center gap-2 rounded-xl bg-[#6d35ff] text-sm font-black text-white"
+            >
               Bắt đầu học ngay <ChevronRight size={17} />
             </Link>
           </section>

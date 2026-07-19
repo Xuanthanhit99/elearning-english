@@ -281,7 +281,10 @@ model User {
   leaderboardRewards      UserLeaderboardReward[]
   leaderboardHistory      LeaderboardHistory[]
   leaderboardActivities   LeaderboardActivity[]
-  createdChallenges       SocialChallenge[]            @relation("SocialChallengeCreator")
+  achievements            UserAchievement[]
+  achievementEvents       AchievementProcessedEvent[]
+  achievementRewards      AchievementRewardTransaction[]
+  createdChallenges       SocialChallenge[]              @relation("SocialChallengeCreator")
   challengeParticipations SocialChallengeParticipant[]
 
   currentPlacementTestId    String?
@@ -3094,7 +3097,140 @@ enum XpSourceType {
   CLUB_EVENT
   REALTIME_ROOM
   ARENA
+  ACHIEVEMENT
   ADMIN_ADJUSTMENT
+}
+
+enum AchievementCategory {
+  LEARNING
+  VOCABULARY
+  GRAMMAR
+  READING
+  LISTENING
+  SPEAKING
+  WRITING
+  PLACEMENT
+  MISSION
+  STREAK
+  COMMUNITY
+  LEADERBOARD
+  PET
+  ARENA
+  SPECIAL
+}
+
+enum AchievementRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+enum AchievementVisibility {
+  PUBLIC
+  HIDDEN
+}
+
+enum AchievementStatus {
+  LOCKED
+  IN_PROGRESS
+  UNLOCKED
+  CLAIMABLE
+  CLAIMED
+}
+
+enum AchievementRuleType {
+  TOTAL_COUNT
+  MAX_VALUE
+  ONE_TIME_EVENT
+}
+
+model Achievement {
+  id           String                @id @default(uuid())
+  code         String                @unique
+  title        String
+  description  String
+  icon         String?
+  imageUrl     String?
+  category     AchievementCategory
+  rarity       AchievementRarity     @default(COMMON)
+  visibility   AchievementVisibility @default(PUBLIC)
+  ruleType     AchievementRuleType
+  eventType    String
+  ruleConfig   Json?
+  targetValue  Int
+  rewardXp     Int                   @default(0)
+  rewardCoins  Int                   @default(0)
+  displayOrder Int                   @default(0)
+  isActive     Boolean               @default(true)
+  startsAt     DateTime?
+  endsAt       DateTime?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+
+  users   UserAchievement[]
+  events  AchievementProcessedEvent[]
+  rewards AchievementRewardTransaction[]
+
+  @@index([isActive, eventType])
+  @@index([category, displayOrder])
+}
+
+model UserAchievement {
+  id             String            @id @default(uuid())
+  userId         String
+  achievementId  String
+  currentValue   Int               @default(0)
+  targetSnapshot Int
+  status         AchievementStatus @default(LOCKED)
+  unlockedAt     DateTime?
+  claimedAt      DateTime?
+  lastEventAt    DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  user        User                           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement                    @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  rewards     AchievementRewardTransaction[]
+
+  @@unique([userId, achievementId])
+  @@index([userId, status, updatedAt])
+  @@index([achievementId, status])
+}
+
+model AchievementProcessedEvent {
+  id            String   @id @default(uuid())
+  userId        String
+  achievementId String
+  eventId       String
+  eventType     String
+  sourceId      String?
+  createdAt     DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId, eventId])
+  @@index([userId, eventType, createdAt])
+  @@index([sourceId])
+}
+
+model AchievementRewardTransaction {
+  id                String   @id @default(uuid())
+  userId            String
+  achievementId     String
+  userAchievementId String   @unique
+  xp                Int      @default(0)
+  coins             Int      @default(0)
+  idempotencyKey    String   @unique
+  createdAt         DateTime @default(now())
+
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement     Achievement     @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  userAchievement UserAchievement @relation(fields: [userAchievementId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }
 
 enum LeaderboardRewardStatus {

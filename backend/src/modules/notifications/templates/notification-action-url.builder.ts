@@ -10,6 +10,10 @@ export class NotificationActionUrlBuilder {
     return '/missions';
   }
 
+  achievements() {
+    return '/achievements';
+  }
+
   leaderboardRewards() {
     return '/leaderboard/rewards';
   }

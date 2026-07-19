@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import {
+  AchievementStatus,
   LearningSkill,
   MissionV2Status,
   MissionV2Type,
@@ -7,9 +8,17 @@ import {
   type PlacementProcessingItemStatus,
   type CefrLevel,
 } from '@prisma/client';
+import {
+  addUserDays,
+  dateKeyInTimezone,
+  endOfUserWeek,
+  getUserDaySeries,
+  normalizeUserTimezone,
+  startOfUserDay,
+  startOfUserWeek,
+} from 'src/common/time/user-timezone.util';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LearningPathService } from '../learning-path/learning-path.service';
-import { MissionV2GeneratorService } from '../missions-v2/services/mission-v2-generator.service';
 import { SettingsQueryService } from '../settings/settings-query.service';
 
 const SKILLS: Array<{ key: LearningSkill; label: string; href: string }> = [
@@ -46,27 +55,30 @@ export class DashboardService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly learningPathService: LearningPathService,
-    private readonly missionGenerator: MissionV2GeneratorService,
     private readonly settingsQuery: SettingsQueryService,
   ) {}
 
   async getDashboard(userId: string) {
-    await this.missionGenerator.ensureCurrentMissions(userId);
-
     const settings = await this.settingsQuery.getSettings(userId);
+    const timezone = normalizeUserTimezone(settings.timezone);
 
     const now = new Date();
-    const startOfToday = this.startOfDay(now);
-    const weekDays = this.getLastDays(7, now);
-    const weekStart = weekDays[0];
+    const startOfToday = startOfUserDay(now, timezone);
+    const endOfToday = addUserDays(startOfToday, 1, timezone);
+    const weekStart = startOfUserWeek(now, timezone);
+    const weekEnd = endOfUserWeek(now, timezone);
+    const weekDays = getUserDaySeries(weekStart, 7, timezone);
 
     const [
       user,
+      xpProfile,
+      xpTransactions,
       pet,
       missions,
       notifications,
       notificationUnreadCount,
-      rewardTransactions,
+      achievementSummary,
+      recentAchievementRows,
       lessonProgress,
       vocabularyProgress,
       grammarProgress,
@@ -94,13 +106,34 @@ export class DashboardService {
           learningGoal: true,
         },
       }),
+      this.prisma.userXpProfile.findUnique({ where: { userId } }),
+      this.prisma.xpTransaction.findMany({
+        where: {
+          userId,
+          reversedAt: null,
+          earnedAt: { gte: weekStart, lt: weekEnd },
+        },
+        select: {
+          id: true,
+          finalXp: true,
+          skill: true,
+          sourceType: true,
+          sourceId: true,
+          reason: true,
+          earnedAt: true,
+        },
+        orderBy: { earnedAt: 'asc' },
+      }),
       this.prisma.petProfile.findUnique({ where: { userId } }),
       this.prisma.userMissionV2.findMany({
         where: {
           userId,
           status: { notIn: [MissionV2Status.CANCELLED] },
           OR: [
-            { type: MissionV2Type.DAILY, startsAt: { gte: startOfToday } },
+            {
+              type: MissionV2Type.DAILY,
+              startsAt: { gte: startOfToday, lt: endOfToday },
+            },
             { status: MissionV2Status.COMPLETED },
           ],
         },
@@ -115,12 +148,35 @@ export class DashboardService {
       this.prisma.notification.count({
         where: { userId, isRead: false },
       }),
-      this.prisma.missionRewardTransactionV2.findMany({
-        where: { userId, createdAt: { gte: weekStart } },
-        orderBy: { createdAt: 'asc' },
+      this.buildAchievementSummary(userId),
+      this.prisma.userAchievement.findMany({
+        where: {
+          userId,
+          status: {
+            in: [
+              AchievementStatus.UNLOCKED,
+              AchievementStatus.CLAIMABLE,
+              AchievementStatus.CLAIMED,
+            ],
+          },
+        },
+        include: {
+          achievement: {
+            select: {
+              code: true,
+              title: true,
+              description: true,
+              category: true,
+              rewardXp: true,
+              rewardCoins: true,
+            },
+          },
+        },
+        orderBy: [{ unlockedAt: 'desc' }, { updatedAt: 'desc' }],
+        take: 6,
       }),
       this.prisma.lessonProgress.findMany({
-        where: { userId, createdAt: { gte: weekStart } },
+        where: { userId, createdAt: { gte: weekStart, lt: weekEnd } },
         include: { lesson: { select: { title: true, duration: true } } },
         orderBy: { updatedAt: 'desc' },
         take: 20,
@@ -274,13 +330,18 @@ export class DashboardService {
       },
     );
     const weeklyActivity = this.buildWeeklyActivity(weekDays, {
-      rewardTransactions,
+      xpTransactions,
       lessonProgress,
       listeningSessions,
       readingSessions,
       writingSessions,
       speakingSessions,
+      timezone,
     });
+    const todayKey = this.dateKey(now, timezone);
+    const todayActivity = weeklyActivity.find((item) => item.date === todayKey);
+    const todayStudyMinutes = todayActivity?.minutes ?? 0;
+    const mappedMissions = this.mapMissions(missions);
     const learningPathDetail = await this.getLearningPathDetail(userId);
     const learningPathCurrentLesson = learningPathDetail?.currentLesson
       ? this.mapLearningPathLesson(learningPathDetail.currentLesson)
@@ -317,10 +378,14 @@ export class DashboardService {
       },
       currentStreak: pet?.streak ?? 0,
       xp: {
-        total: user.xp,
-        today: rewardTransactions
-          .filter((item) => item.createdAt >= startOfToday)
-          .reduce((sum, item) => sum + item.xp, 0),
+        total: xpProfile?.totalXp ?? user.xp,
+        today: xpTransactions
+          .filter(
+            (item) => item.earnedAt >= startOfToday && item.earnedAt < endOfToday,
+          )
+          .reduce((sum, item) => sum + item.finalXp, 0),
+        week: xpTransactions.reduce((sum, item) => sum + item.finalXp, 0),
+        level: xpProfile?.currentLevel ?? user.level,
       },
       coins: pet?.coins ?? 0,
       energy: pet?.energy ?? 0,
@@ -338,8 +403,51 @@ export class DashboardService {
             isChosen: pet.isChosen,
           }
         : null,
-      todayMissions: this.mapMissions(missions),
-      missions: this.mapMissions(missions),
+      todayMissions: mappedMissions,
+      missions: mappedMissions,
+      today: {
+        date: todayKey,
+        studyMinutes: todayStudyMinutes,
+        targetStudyMinutes: settings.dailyStudyMinutes,
+        completedActivities: todayActivity?.lessons ?? 0,
+        completedLessons: todayActivity?.lessons ?? 0,
+        wordsLearned: vocabularyProgress.filter(
+          (item) => item.learnedAt && item.learnedAt >= startOfToday,
+        ).length,
+        wordsReviewed: vocabularyProgress.filter(
+          (item) => item.updatedAt >= startOfToday && !item.learnedAt,
+        ).length,
+        xpEarned: xpTransactions
+          .filter((item) => item.earnedAt >= startOfToday && item.earnedAt < endOfToday)
+          .reduce((sum, item) => sum + item.finalXp, 0),
+        missionsCompleted: mappedMissions.summary.completed,
+        dailyGoalProgress:
+          settings.dailyStudyMinutes > 0
+            ? Math.min(
+                100,
+                Math.round((todayStudyMinutes / settings.dailyStudyMinutes) * 100),
+              )
+            : 0,
+        isGoalCompleted:
+          settings.dailyStudyMinutes > 0 &&
+          todayStudyMinutes >= settings.dailyStudyMinutes,
+      },
+      week: {
+        weekStart: this.dateKey(weekStart, timezone),
+        weekEnd: this.dateKey(addUserDays(weekEnd, -1, timezone), timezone),
+        studyMinutes: weeklyActivity.reduce((sum, item) => sum + item.minutes, 0),
+        activeDays: weeklyActivity.filter(
+          (item) => item.minutes > 0 || item.xp > 0 || item.lessons > 0,
+        ).length,
+        targetDays: settings.weeklyTargetDays,
+        completedActivities: weeklyActivity.reduce(
+          (sum, item) => sum + item.lessons,
+          0,
+        ),
+        xpEarned: weeklyActivity.reduce((sum, item) => sum + item.xp, 0),
+        dailySeries: weeklyActivity,
+      },
+      achievements: achievementSummary,
       learningPath: learningPathDetail
         ? {
             id: learningPathDetail.id,
@@ -449,19 +557,17 @@ export class DashboardService {
         writingSessions,
       }),
       recentSessions,
-      recentAchievements: missions
-        .filter((mission) => mission.completedAt)
-        .slice(0, 6)
-        .map((mission) => ({
-          id: mission.id,
-          title: mission.title,
-          description: mission.description,
-          type: mission.type,
-          xp: mission.rewardXp,
-          coins: mission.rewardCoins,
-          earnedAt: mission.completedAt,
-          href: `/missions?mission=${mission.id}`,
-        })),
+      recentAchievements: recentAchievementRows.map((item) => ({
+        id: item.id,
+        code: item.achievement.code,
+        title: item.achievement.title,
+        description: item.achievement.description,
+        type: item.achievement.category,
+        xp: item.achievement.rewardXp,
+        coins: item.achievement.rewardCoins,
+        earnedAt: item.unlockedAt ?? item.updatedAt,
+        href: `/achievements?code=${item.achievement.code}`,
+      })),
       notificationsPreview: notifications.map((item) => ({
         id: item.id,
         title: item.title,
@@ -471,6 +577,8 @@ export class DashboardService {
         href: '/notifications',
       })),
       notificationUnreadCount,
+      generatedAt: now,
+      timezone,
     };
   }
 
@@ -480,6 +588,111 @@ export class DashboardService {
     } catch {
       return null;
     }
+  }
+
+  private async buildAchievementSummary(userId: string) {
+    const [total, grouped, recentUnlocks, closest] = await Promise.all([
+      this.prisma.achievement.count({ where: { isActive: true } }),
+      this.prisma.userAchievement.groupBy({
+        by: ['status'],
+        where: { userId },
+        _count: { _all: true },
+      }),
+      this.prisma.userAchievement.findMany({
+        where: {
+          userId,
+          status: {
+            in: [
+              AchievementStatus.UNLOCKED,
+              AchievementStatus.CLAIMABLE,
+              AchievementStatus.CLAIMED,
+            ],
+          },
+        },
+        include: {
+          achievement: {
+            select: {
+              code: true,
+              title: true,
+              description: true,
+              category: true,
+              rewardXp: true,
+              rewardCoins: true,
+            },
+          },
+        },
+        orderBy: [{ unlockedAt: 'desc' }, { updatedAt: 'desc' }],
+        take: 5,
+      }),
+      this.prisma.userAchievement.findMany({
+        where: {
+          userId,
+          status: { in: [AchievementStatus.IN_PROGRESS, AchievementStatus.LOCKED] },
+        },
+        include: {
+          achievement: {
+            select: {
+              code: true,
+              title: true,
+              description: true,
+              targetValue: true,
+              rewardXp: true,
+              rewardCoins: true,
+            },
+          },
+        },
+        orderBy: [{ updatedAt: 'desc' }],
+        take: 20,
+      }),
+    ]);
+
+    const count = (status: AchievementStatus) =>
+      grouped.find((item) => item.status === status)?._count._all ?? 0;
+    const unlocked =
+      count(AchievementStatus.UNLOCKED) +
+      count(AchievementStatus.CLAIMABLE) +
+      count(AchievementStatus.CLAIMED);
+
+    return {
+      total,
+      unlocked,
+      inProgress: count(AchievementStatus.IN_PROGRESS),
+      claimable: count(AchievementStatus.CLAIMABLE),
+      claimed: count(AchievementStatus.CLAIMED),
+      completionPercentage:
+        total > 0 ? Math.round((unlocked / Math.max(total, 1)) * 100) : 0,
+      recentUnlocks: recentUnlocks.map((item) => ({
+        id: item.id,
+        code: item.achievement.code,
+        title: item.achievement.title,
+        description: item.achievement.description,
+        category: item.achievement.category,
+        xp: item.achievement.rewardXp,
+        coins: item.achievement.rewardCoins,
+        unlockedAt: item.unlockedAt ?? item.updatedAt,
+      })),
+      nextClosestAchievements: closest
+        .map((item) => ({
+          id: item.id,
+          code: item.achievement.code,
+          title: item.achievement.title,
+          description: item.achievement.description,
+          currentValue: item.currentValue,
+          targetValue: item.targetSnapshot || item.achievement.targetValue,
+          progressPercent: Math.min(
+            100,
+            Math.round(
+              (item.currentValue /
+                Math.max(item.targetSnapshot || item.achievement.targetValue, 1)) *
+                100,
+            ),
+          ),
+          xp: item.achievement.rewardXp,
+          coins: item.achievement.rewardCoins,
+        }))
+        .sort((left, right) => right.progressPercent - left.progressPercent)
+        .slice(0, 5),
+    };
   }
 
   private mapLearningPathLesson(lesson: {
@@ -957,7 +1170,7 @@ export class DashboardService {
   private buildWeeklyActivity(
     days: Date[],
     data: {
-      rewardTransactions: Array<{ createdAt: Date; xp: number }>;
+      xpTransactions: Array<{ earnedAt: Date; finalXp: number }>;
       lessonProgress: Array<{
         createdAt: Date;
         completedAt: Date | null;
@@ -973,27 +1186,33 @@ export class DashboardService {
         timeSpentSeconds: number;
       }>;
       speakingSessions: Array<{ finishedAt: Date | null; duration: number }>;
+      timezone: string;
     },
   ) {
     return days.map((day) => {
-      const key = this.dateKey(day);
-      const xp = data.rewardTransactions
-        .filter((item) => this.dateKey(item.createdAt) === key)
-        .reduce((sum, item) => sum + item.xp, 0);
+      const key = this.dateKey(day, data.timezone);
+      const xp = data.xpTransactions
+        .filter((item) => this.dateKey(item.earnedAt, data.timezone) === key)
+        .reduce((sum, item) => sum + item.finalXp, 0);
       const genericLessons = data.lessonProgress.filter(
-        (item) => item.completedAt && this.dateKey(item.completedAt) === key,
+        (item) =>
+          item.completedAt && this.dateKey(item.completedAt, data.timezone) === key,
       );
       const listening = data.listeningSessions.filter(
-        (item) => item.completedAt && this.dateKey(item.completedAt) === key,
+        (item) =>
+          item.completedAt && this.dateKey(item.completedAt, data.timezone) === key,
       );
       const reading = data.readingSessions.filter(
-        (item) => item.completedAt && this.dateKey(item.completedAt) === key,
+        (item) =>
+          item.completedAt && this.dateKey(item.completedAt, data.timezone) === key,
       );
       const writing = data.writingSessions.filter(
-        (item) => item.submittedAt && this.dateKey(item.submittedAt) === key,
+        (item) =>
+          item.submittedAt && this.dateKey(item.submittedAt, data.timezone) === key,
       );
       const speaking = data.speakingSessions.filter(
-        (item) => item.finishedAt && this.dateKey(item.finishedAt) === key,
+        (item) =>
+          item.finishedAt && this.dateKey(item.finishedAt, data.timezone) === key,
       );
 
       const minutes =
@@ -1257,19 +1476,7 @@ export class DashboardService {
     );
   }
 
-  private getLastDays(count: number, end: Date) {
-    return Array.from({ length: count }, (_, index) => {
-      const date = this.startOfDay(end);
-      date.setDate(date.getDate() - (count - 1 - index));
-      return date;
-    });
-  }
-
-  private startOfDay(date: Date) {
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  }
-
-  private dateKey(date: Date) {
-    return date.toISOString().slice(0, 10);
+  private dateKey(date: Date, timezone = 'Asia/Ho_Chi_Minh') {
+    return dateKeyInTimezone(date, timezone);
   }
 }

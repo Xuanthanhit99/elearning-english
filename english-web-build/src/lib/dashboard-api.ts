@@ -36,6 +36,8 @@ export type DashboardData = {
   xp: {
     total: number;
     today: number;
+    week?: number;
+    level?: number;
   };
   coins: number;
   energy: number;
@@ -58,6 +60,64 @@ export type DashboardData = {
       claimable: number;
     };
     items: DashboardMission[];
+  };
+  today?: {
+    date: string;
+    studyMinutes: number;
+    targetStudyMinutes: number;
+    completedActivities: number;
+    completedLessons: number;
+    wordsLearned: number;
+    wordsReviewed: number;
+    xpEarned: number;
+    missionsCompleted: number;
+    dailyGoalProgress: number;
+    isGoalCompleted: boolean;
+  };
+  week?: {
+    weekStart: string;
+    weekEnd: string;
+    studyMinutes: number;
+    activeDays: number;
+    targetDays: number;
+    completedActivities: number;
+    xpEarned: number;
+    dailySeries: Array<{
+      date: string;
+      label: string;
+      xp: number;
+      lessons: number;
+      minutes: number;
+    }>;
+  };
+  achievements?: {
+    total: number;
+    unlocked: number;
+    inProgress: number;
+    claimable: number;
+    claimed: number;
+    completionPercentage: number;
+    recentUnlocks: Array<{
+      id: string;
+      code: string;
+      title: string;
+      description: string;
+      category: string;
+      xp: number;
+      coins: number;
+      unlockedAt: string;
+    }>;
+    nextClosestAchievements: Array<{
+      id: string;
+      code: string;
+      title: string;
+      description: string;
+      currentValue: number;
+      targetValue: number;
+      progressPercent: number;
+      xp: number;
+      coins: number;
+    }>;
   };
   learningPath: {
     overallLevel: string;

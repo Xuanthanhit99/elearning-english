@@ -7,11 +7,13 @@ import {
 import { NotificationPreferenceKey } from './notification-preference.types';
 
 describe('notification preference registry', () => {
-  it('contains the eight real notification preference keys', () => {
+  it('contains the real notification preference keys', () => {
     expect(new Set(NOTIFICATION_PREFERENCE_KEYS)).toEqual(
       new Set(Object.values(NotificationPreferenceKey)),
     );
-    expect(NOTIFICATION_PREFERENCE_RULES).toHaveLength(8);
+    expect(NOTIFICATION_PREFERENCE_RULES).toHaveLength(
+      Object.values(NotificationPreferenceKey).length,
+    );
   });
 
   it('maps supported event types to a preference or explicit always-enabled policy', () => {

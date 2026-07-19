@@ -1,0 +1,163 @@
+import {
+  AchievementCategory,
+  AchievementRarity,
+  AchievementRuleType,
+  AchievementVisibility,
+  Prisma,
+} from '@prisma/client';
+
+export type AchievementSeedDefinition = {
+  code: string;
+  title: string;
+  description: string;
+  icon: string;
+  category: AchievementCategory;
+  rarity: AchievementRarity;
+  visibility: AchievementVisibility;
+  ruleType: AchievementRuleType;
+  eventType: string;
+  ruleConfig?: Prisma.InputJsonValue;
+  targetValue: number;
+  rewardXp: number;
+  rewardCoins: number;
+  displayOrder: number;
+};
+
+export const ACHIEVEMENT_CATALOG: AchievementSeedDefinition[] = [
+  {
+    code: 'vocabulary_first_10',
+    title: 'Tu vung khoi dong',
+    description: 'Hoan thanh 10 hoat dong tu vung.',
+    icon: 'book',
+    category: AchievementCategory.VOCABULARY,
+    rarity: AchievementRarity.COMMON,
+    visibility: AchievementVisibility.PUBLIC,
+    ruleType: AchievementRuleType.TOTAL_COUNT,
+    eventType: 'VOCABULARY_COMPLETED',
+    targetValue: 10,
+    rewardXp: 50,
+    rewardCoins: 10,
+    displayOrder: 10,
+  },
+  {
+    code: 'listening_first_10',
+    title: 'Nghe cham chi',
+    description: 'Hoan thanh 10 bai luyen nghe.',
+    icon: 'headphones',
+    category: AchievementCategory.LISTENING,
+    rarity: AchievementRarity.COMMON,
+    visibility: AchievementVisibility.PUBLIC,
+    ruleType: AchievementRuleType.TOTAL_COUNT,
+    eventType: 'LISTENING_COMPLETED',
+    targetValue: 10,
+    rewardXp: 60,
+    rewardCoins: 12,
+    displayOrder: 20,
+  },
+  {
+    code: 'grammar_first_10',
+    title: 'Ngu phap chac tay',
+    description: 'Hoan thanh 10 bai ngu phap.',
+    icon: 'exercise',
+    category: AchievementCategory.GRAMMAR,
+    rarity: AchievementRarity.COMMON,
+    visibility: AchievementVisibility.PUBLIC,
+    ruleType: AchievementRuleType.TOTAL_COUNT,
+    eventType: 'GRAMMAR_COMPLETED',
+    targetValue: 10,
+    rewardXp: 60,
+    rewardCoins: 12,
+    displayOrder: 30,
+  },
+  {
+    code: 'reading_first_10',
+    title: 'Doc deu dan',
+    description: 'Hoan thanh 10 bai doc.',
+    icon: 'book',
+    category: AchievementCategory.READING,
+    rarity: AchievementRarity.COMMON,
+    visibility: AchievementVisibility.PUBLIC,
+    ruleType: AchievementRuleType.TOTAL_COUNT,
+    eventType: 'READING_COMPLETED',
+    targetValue: 10,
+    rewardXp: 60,
+    rewardCoins: 12,
+    displayOrder: 40,
+  },
+  {
+    code: 'speaking_first_10',
+    title: 'Noi tu tin',
+    description: 'Hoan thanh 10 bai Speaking.',
+    icon: 'mic',
+    category: AchievementCategory.SPEAKING,
+    rarity: AchievementRarity.UNCOMMON,
+    visibility: AchievementVisibility.PUBLIC,
+    ruleType: AchievementRuleType.TOTAL_COUNT,
+    eventType: 'SPEAKING_COMPLETED',
+    targetValue: 10,
+    rewardXp: 80,
+    rewardCoins: 16,
+    displayOrder: 50,
+  },
+  {
+    code: 'writing_first_10',
+    title: 'Viet deu dan',
+    description: 'Hoan thanh 10 bai Writing.',
+    icon: 'pen',
+    category: AchievementCategory.WRITING,
+    rarity: AchievementRarity.UNCOMMON,
+    visibility: AchievementVisibility.PUBLIC,
+    ruleType: AchievementRuleType.TOTAL_COUNT,
+    eventType: 'WRITING_COMPLETED',
+    targetValue: 10,
+    rewardXp: 80,
+    rewardCoins: 16,
+    displayOrder: 60,
+  },
+  {
+    code: 'writing_score_90',
+    title: 'Bai viet an tuong',
+    description: 'Dat diem Writing tu 90 tro len.',
+    icon: 'star',
+    category: AchievementCategory.WRITING,
+    rarity: AchievementRarity.RARE,
+    visibility: AchievementVisibility.PUBLIC,
+    ruleType: AchievementRuleType.MAX_VALUE,
+    eventType: 'WRITING_COMPLETED',
+    ruleConfig: { valueField: 'score' },
+    targetValue: 90,
+    rewardXp: 120,
+    rewardCoins: 24,
+    displayOrder: 70,
+  },
+  {
+    code: 'mission_claimed_5',
+    title: 'Nguoi san nhiem vu',
+    description: 'Nhan thuong 5 nhiem vu.',
+    icon: 'target',
+    category: AchievementCategory.MISSION,
+    rarity: AchievementRarity.UNCOMMON,
+    visibility: AchievementVisibility.PUBLIC,
+    ruleType: AchievementRuleType.TOTAL_COUNT,
+    eventType: 'MISSION_CLAIMED',
+    targetValue: 5,
+    rewardXp: 80,
+    rewardCoins: 20,
+    displayOrder: 80,
+  },
+  {
+    code: 'placement_completed',
+    title: 'Bat dau dung trinh do',
+    description: 'Hoan thanh Placement Test dau tien.',
+    icon: 'sparkles',
+    category: AchievementCategory.PLACEMENT,
+    rarity: AchievementRarity.RARE,
+    visibility: AchievementVisibility.PUBLIC,
+    ruleType: AchievementRuleType.ONE_TIME_EVENT,
+    eventType: 'PLACEMENT_COMPLETED',
+    targetValue: 1,
+    rewardXp: 100,
+    rewardCoins: 20,
+    displayOrder: 90,
+  },
+];

@@ -48,6 +48,7 @@ export class NotificationPreferenceResolver {
       select: {
         dailyReminderEnabled: true,
         missionReminder: true,
+        showAchievements: true,
         friendActivity: true,
         clubNotification: true,
         leaderboardNotification: true,

@@ -69,6 +69,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { SettingsModule } from './modules/settings/settings.module';
 import { PlacementSessionModule } from './modules/placement/placement-session/placement-session.module';
 import { ChatSessionModule } from './modules/chat-session/chat-session.module';
+import { AchievementsModule } from './modules/achievements/achievements.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 
 @Module({
   imports: [
@@ -161,6 +163,8 @@ import { ChatSessionModule } from './modules/chat-session/chat-session.module';
     SettingsModule,
     PlacementSessionModule,
     ChatSessionModule,
+    AchievementsModule,
+    AnalyticsModule,
   ],
   providers: [
     GeminiService,

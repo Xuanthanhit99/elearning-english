@@ -55,6 +55,10 @@ export type Dictionary = {
     groupLearning: string;
     home: string;
     dashboard: string;
+    analytics: string;
+    reports: string;
+    progress: string;
+    history: string;
     learningPath: string;
     todayLesson: string;
     groupSkills: string;

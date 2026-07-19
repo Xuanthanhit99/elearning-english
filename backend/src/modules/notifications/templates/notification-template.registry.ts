@@ -127,6 +127,30 @@ export function createNotificationTemplateRegistry(
       },
     },
     {
+      eventType: NotificationEventType.ACHIEVEMENT_UNLOCKED,
+      eventVersion: 1,
+      templateKey: 'achievement-unlocked.v1',
+      render: ({ metadata }) => {
+        const achievementTitle = getText(
+          metadata,
+          'achievementTitle',
+          'thanh tich moi',
+        );
+        const rewardLabel = getText(metadata, 'rewardLabel', 'phan thuong');
+        return safeResult({
+          templateKey: 'achievement-unlocked.v1',
+          title: getText(metadata, 'title', 'Mo khoa thanh tich moi'),
+          body: getText(
+            metadata,
+            'message',
+            `Ban vua mo khoa ${achievementTitle}. ${rewardLabel} dang san sang de nhan.`,
+          ),
+          actionUrl: getInternalHref(urls, metadata, urls.achievements()),
+          metadata: { achievementTitle, rewardLabel },
+        });
+      },
+    },
+    {
       eventType: NotificationEventType.LEADERBOARD_REWARD_GRANTED,
       eventVersion: 1,
       templateKey: 'leaderboard-reward-granted.v1',
