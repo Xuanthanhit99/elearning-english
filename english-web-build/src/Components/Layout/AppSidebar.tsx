@@ -17,6 +17,7 @@ import {
   Mic2,
   NotebookPen,
   Settings,
+  ShieldCheck,
   TrendingUp,
   Trophy,
   Users,
@@ -83,7 +84,10 @@ function buildGroups(t: (key: string) => string): SidebarGroup[] {
     },
     {
       title: t("sidebar.groupSystem"),
-      items: [{ label: t("sidebar.settings"), href: "/settings", icon: Settings }],
+      items: [
+        { label: t("sidebar.admin"), href: "/admin", icon: ShieldCheck },
+        { label: t("sidebar.settings"), href: "/settings", icon: Settings },
+      ],
     },
   ];
 }

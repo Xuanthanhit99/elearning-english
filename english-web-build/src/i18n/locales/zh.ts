@@ -56,6 +56,7 @@ const zh: Dictionary = {
     missions: "任务",
     leaderboard: "排行榜",
     groupSystem: "系统",
+    admin: "管理后台",
     settings: "设置",
     premiumTitle: "高级版",
     premiumDesc: "无限学习，解锁更多个性化课程。",

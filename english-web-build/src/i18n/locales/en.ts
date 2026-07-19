@@ -56,6 +56,7 @@ const en: Dictionary = {
     missions: "Missions",
     leaderboard: "Leaderboard",
     groupSystem: "System",
+    admin: "Admin",
     settings: "Settings",
     premiumTitle: "Premium",
     premiumDesc: "Unlimited learning, unlock more personalized lessons.",

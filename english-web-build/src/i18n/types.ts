@@ -74,6 +74,7 @@ export type Dictionary = {
     missions: string;
     leaderboard: string;
     groupSystem: string;
+    admin: string;
     settings: string;
     premiumTitle: string;
     premiumDesc: string;

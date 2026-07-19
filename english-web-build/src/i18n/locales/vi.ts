@@ -56,6 +56,7 @@ const vi: Dictionary = {
     missions: "Nhiệm vụ",
     leaderboard: "Bảng xếp hạng",
     groupSystem: "Hệ thống",
+    admin: "Quản trị",
     settings: "Cài đặt",
     premiumTitle: "Premium",
     premiumDesc: "Học không giới hạn, mở khóa thêm bài học cá nhân hóa.",
