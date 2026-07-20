@@ -310,7 +310,11 @@ export class AdminDashboardService {
     return user;
   }
 
-  async applyUserAction(id: string, dto: AdminUserActionDto, actor: AdminActor) {
+  async applyUserAction(
+    id: string,
+    dto: AdminUserActionDto,
+    actor: AdminActor,
+  ) {
     const current = await this.prismaService.user.findUnique({
       where: { id },
       select: { id: true, role: true, status: true, xp: true },
@@ -321,7 +325,9 @@ export class AdminDashboardService {
     }
 
     if (current.id === actor.id && dto.action !== 'RESET_XP') {
-      throw new BadRequestException('Admin không thể tự thay đổi trạng thái tài khoản trong backoffice.');
+      throw new BadRequestException(
+        'Admin không thể tự thay đổi trạng thái tài khoản trong backoffice.',
+      );
     }
 
     const changedFields: string[] = [];
@@ -407,12 +413,17 @@ export class AdminDashboardService {
       }
     });
 
-    await this.record(actor, `admin.user.${dto.action.toLowerCase()}`, changedFields, {
-      targetUserId: id,
-      before: current,
-      after: updatedUser,
-      reason: dto.reason ?? null,
-    });
+    await this.record(
+      actor,
+      `admin.user.${dto.action.toLowerCase()}`,
+      changedFields,
+      {
+        targetUserId: id,
+        before: current,
+        after: updatedUser,
+        reason: dto.reason ?? null,
+      },
+    );
 
     return this.getUserProfile(id);
   }
@@ -471,7 +482,9 @@ export class AdminDashboardService {
       where.OR = [
         { title: { contains: query.search, mode: 'insensitive' } },
         { content: { contains: query.search, mode: 'insensitive' } },
-        { author: { fullname: { contains: query.search, mode: 'insensitive' } } },
+        {
+          author: { fullname: { contains: query.search, mode: 'insensitive' } },
+        },
       ];
     }
 
@@ -502,7 +515,11 @@ export class AdminDashboardService {
     return this.toPaginated(items, total, page, limit);
   }
 
-  async moderatePost(id: string, dto: AdminModerationActionDto, actor: AdminActor) {
+  async moderatePost(
+    id: string,
+    dto: AdminModerationActionDto,
+    actor: AdminActor,
+  ) {
     const data =
       dto.action === 'RESTORE'
         ? { status: CommunityPostStatus.PUBLISHED, deletedAt: null }
@@ -522,10 +539,15 @@ export class AdminDashboardService {
       },
     });
 
-    await this.record(actor, `admin.moderation.post.${dto.action.toLowerCase()}`, Object.keys(data), {
-      targetId: id,
-      reason: dto.reason ?? null,
-    });
+    await this.record(
+      actor,
+      `admin.moderation.post.${dto.action.toLowerCase()}`,
+      Object.keys(data),
+      {
+        targetId: id,
+        reason: dto.reason ?? null,
+      },
+    );
 
     return item;
   }
@@ -540,7 +562,9 @@ export class AdminDashboardService {
       where.OR = [
         { name: { contains: query.search, mode: 'insensitive' } },
         { slug: { contains: query.search, mode: 'insensitive' } },
-        { owner: { fullname: { contains: query.search, mode: 'insensitive' } } },
+        {
+          owner: { fullname: { contains: query.search, mode: 'insensitive' } },
+        },
       ];
     }
 
@@ -568,14 +592,21 @@ export class AdminDashboardService {
     return this.toPaginated(items, total, page, limit);
   }
 
-  async moderateClub(id: string, dto: AdminModerationActionDto, actor: AdminActor) {
+  async moderateClub(
+    id: string,
+    dto: AdminModerationActionDto,
+    actor: AdminActor,
+  ) {
     const data: any = {};
 
-    if (dto.action === 'ARCHIVE' || dto.action === 'DELETE') data.isActive = false;
+    if (dto.action === 'ARCHIVE' || dto.action === 'DELETE')
+      data.isActive = false;
     if (dto.action === 'RESTORE') data.isActive = true;
     if (dto.action === 'TRANSFER_OWNER') {
       if (!dto.targetUserId) {
-        throw new BadRequestException('Thiếu targetUserId để chuyển chủ sở hữu.');
+        throw new BadRequestException(
+          'Thiếu targetUserId để chuyển chủ sở hữu.',
+        );
       }
 
       const target = await this.prismaService.user.findUnique({
@@ -606,11 +637,16 @@ export class AdminDashboardService {
       },
     });
 
-    await this.record(actor, `admin.moderation.club.${dto.action.toLowerCase()}`, Object.keys(data), {
-      targetId: id,
-      targetUserId: dto.targetUserId ?? null,
-      reason: dto.reason ?? null,
-    });
+    await this.record(
+      actor,
+      `admin.moderation.club.${dto.action.toLowerCase()}`,
+      Object.keys(data),
+      {
+        targetId: id,
+        targetUserId: dto.targetUserId ?? null,
+        reason: dto.reason ?? null,
+      },
+    );
 
     return item;
   }
@@ -671,9 +707,21 @@ export class AdminDashboardService {
     ]);
 
     return [
-      { name: 'writing-processing', source: 'database_processing_jobs', ...writing },
-      { name: 'speaking-processing', source: 'database_processing_jobs', ...speaking },
-      { name: 'placement-processing', source: 'database_processing_jobs', ...placement },
+      {
+        name: 'writing-processing',
+        source: 'database_processing_jobs',
+        ...writing,
+      },
+      {
+        name: 'speaking-processing',
+        source: 'database_processing_jobs',
+        ...speaking,
+      },
+      {
+        name: 'placement-processing',
+        source: 'database_processing_jobs',
+        ...placement,
+      },
     ];
   }
 
@@ -695,7 +743,10 @@ export class AdminDashboardService {
     return {
       api: { status: 'UP', uptimeSeconds: Math.round(process.uptime()) },
       db: { status: dbStatus, latencyMs: dbLatencyMs },
-      redis: { status: 'CONFIGURED_BY_BULLMQ', note: 'Shared BullMQ connection is configured at app bootstrap.' },
+      redis: {
+        status: 'CONFIGURED_BY_BULLMQ',
+        note: 'Shared BullMQ connection is configured at app bootstrap.',
+      },
       bullmq: { status: 'MONITORED_VIA_PROCESSING_JOBS' },
       scheduler: { status: 'UP', note: 'Nest ScheduleModule is enabled.' },
       memory: {
@@ -720,7 +771,8 @@ export class AdminDashboardService {
         notifications: true,
         recommendations: true,
       },
-      limitation: 'Runtime persistence needs a dedicated settings table before production rollout.',
+      limitation:
+        'Runtime persistence needs a dedicated settings table before production rollout.',
     };
   }
 
@@ -736,7 +788,8 @@ export class AdminDashboardService {
         vocabularyReviewLimit: 20,
         placementRetakeDays: 14,
       },
-      limitation: 'Values are exposed for ops visibility; writes are deferred until settings storage is added.',
+      limitation:
+        'Values are exposed for ops visibility; writes are deferred until settings storage is added.',
     };
   }
 
@@ -775,7 +828,9 @@ export class AdminDashboardService {
         this.prismaService.user.count(),
         this.prismaService.user.count({ where: { status: UserStatus.ACTIVE } }),
         this.prismaService.user.count({ where: { status: UserStatus.BANNED } }),
-        this.prismaService.user.count({ where: { createAt: { gte: sinceToday } } }),
+        this.prismaService.user.count({
+          where: { createAt: { gte: sinceToday } },
+        }),
         this.prismaService.user.count({ where: { role: UserRole.TEACHER } }),
         this.prismaService.user.count({ where: { role: UserRole.ADMIN } }),
       ]);
@@ -817,7 +872,9 @@ export class AdminDashboardService {
   private contentModel(type: string, query: Partial<AdminListQueryDto>) {
     const search = query.search?.trim();
     const contains = (field: string) =>
-      search ? { [field]: { contains: search, mode: 'insensitive' } } : undefined;
+      search
+        ? { [field]: { contains: search, mode: 'insensitive' } }
+        : undefined;
 
     const baseSelect = {
       id: true,
@@ -862,8 +919,16 @@ export class AdminDashboardService {
         return {
           delegate: this.db.readingArticle,
           where: {
-            ...(contains('title') ? { OR: [contains('title'), contains('description')].filter(Boolean) } : {}),
-            ...(query.status ? { isPublished: query.status === 'PUBLISHED' } : {}),
+            ...(contains('title')
+              ? {
+                  OR: [contains('title'), contains('description')].filter(
+                    Boolean,
+                  ),
+                }
+              : {}),
+            ...(query.status
+              ? { isPublished: query.status === 'PUBLISHED' }
+              : {}),
           },
           select: {
             ...baseSelect,
@@ -921,7 +986,9 @@ export class AdminDashboardService {
         return {
           delegate: this.db.placementQuestion,
           where: {
-            ...(search ? { question: { contains: search, mode: 'insensitive' } } : {}),
+            ...(search
+              ? { question: { contains: search, mode: 'insensitive' } }
+              : {}),
             ...(query.status ? { isActive: query.status === 'PUBLISHED' } : {}),
           },
           select: {
@@ -941,7 +1008,9 @@ export class AdminDashboardService {
         return {
           delegate: this.prismaService.course,
           where: {
-            ...(search ? { title: { contains: search, mode: 'insensitive' } } : {}),
+            ...(search
+              ? { title: { contains: search, mode: 'insensitive' } }
+              : {}),
             ...(query.status ? { status: query.status as CourseStatus } : {}),
           },
           select: {
@@ -962,7 +1031,11 @@ export class AdminDashboardService {
     }
   }
 
-  private activeModel(delegate: any, search: string | undefined, select: Record<string, any>) {
+  private activeModel(
+    delegate: any,
+    search: string | undefined,
+    select: Record<string, any>,
+  ) {
     return {
       delegate,
       where: search
@@ -978,7 +1051,10 @@ export class AdminDashboardService {
     };
   }
 
-  private contentStatusPatch(type: string, status: AdminContentStatusDto['status']) {
+  private contentStatusPatch(
+    type: string,
+    status: AdminContentStatusDto['status'],
+  ) {
     const isPublished = status === 'PUBLISHED' || status === 'APPROVED';
     const isArchived = status === 'ARCHIVED' || status === 'REJECTED';
 
@@ -1025,9 +1101,12 @@ export class AdminDashboardService {
       const count = row._count.status;
       counts.total += count;
 
-      if (['QUEUED', 'WAITING', 'SUBMITTED'].includes(status)) counts.waiting += count;
-      else if (['PROCESSING', 'ACTIVE', 'RUNNING'].includes(status)) counts.active += count;
-      else if (['COMPLETED', 'DONE'].includes(status)) counts.completed += count;
+      if (['QUEUED', 'WAITING', 'SUBMITTED'].includes(status))
+        counts.waiting += count;
+      else if (['PROCESSING', 'ACTIVE', 'RUNNING'].includes(status))
+        counts.active += count;
+      else if (['COMPLETED', 'DONE'].includes(status))
+        counts.completed += count;
       else if (['FAILED', 'ERROR'].includes(status)) counts.failed += count;
     }
 

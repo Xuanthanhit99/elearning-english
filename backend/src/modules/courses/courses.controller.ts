@@ -38,13 +38,11 @@ export class CoursesController {
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  async get(@Param('id') id: string, @Req() req: any) {
-    const a = await this.coursesService.findOne(id, req.user);
-    console.log('first', a);
+  get(@Param('id') id: string, @Req() req: any) {
     return this.coursesService.findOne(id, req.user);
   }
 
-  @Get(':id')
+  @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
   update(

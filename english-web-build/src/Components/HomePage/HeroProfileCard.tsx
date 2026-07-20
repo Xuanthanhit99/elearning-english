@@ -47,7 +47,7 @@ export default function HeroProfileCard() {
             </h2>
 
             <p className="mt-3 max-w-sm leading-7 text-[#5b6b85]">
-              Hôm nay Miu đã chuẩn bị một nhiệm vụ ngắn để bạn giữ nhịp học đều
+              Hôm nay Lumi đã chuẩn bị một nhiệm vụ ngắn để bạn giữ nhịp học đều
               đặn.
             </p>
           </>
@@ -79,7 +79,7 @@ function GuestMascot() {
 
         <Image
           src="/cat-home.jpg"
-          alt="Miu mascot"
+          alt="Lumi mascot"
           width={320}
           height={320}
           className="relative z-10 h-[320px] w-[320px] rounded-full object-cover drop-shadow-2xl"

@@ -733,8 +733,7 @@ export class AchievementsService implements OnModuleInit {
           unlockedAt: Date | null;
           claimedAt: Date | null;
           rewards?: unknown[];
-        }
-      | null;
+        };
   }) {
     const { achievement, progress } = input;
     const currentValue = Math.max(0, progress?.currentValue ?? 0);

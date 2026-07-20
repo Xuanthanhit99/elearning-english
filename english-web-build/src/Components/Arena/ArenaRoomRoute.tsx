@@ -9,7 +9,7 @@ export default function ArenaRoomRoute() {
 
   if (!roomId) {
     return (
-      <main className="min-h-screen bg-[#fff4e8] p-8 font-black text-[#1f2a44]">
+      <main className="min-h-screen bg-[var(--background)] p-8 font-black text-[var(--lumiverse-ink)]">
         Không tìm thấy mã phòng Arena.
       </main>
     );

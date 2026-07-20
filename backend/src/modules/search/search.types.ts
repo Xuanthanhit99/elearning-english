@@ -1,8 +1,5 @@
 import { CefrLevel, LearningSkill } from '@prisma/client';
-import {
-  SearchResultStatus,
-  SearchResultType,
-} from './dto/search-query.dto';
+import { SearchResultStatus, SearchResultType } from './dto/search-query.dto';
 
 export type UnifiedSearchResult = {
   id: string;

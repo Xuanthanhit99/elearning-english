@@ -59,7 +59,13 @@ export class AdminUserActionDto {
 
 export class AdminContentStatusDto {
   @IsIn(['PUBLISHED', 'DRAFT', 'ARCHIVED', 'APPROVED', 'REJECTED', 'REVIEW'])
-  status!: 'PUBLISHED' | 'DRAFT' | 'ARCHIVED' | 'APPROVED' | 'REJECTED' | 'REVIEW';
+  status!:
+    | 'PUBLISHED'
+    | 'DRAFT'
+    | 'ARCHIVED'
+    | 'APPROVED'
+    | 'REJECTED'
+    | 'REVIEW';
 
   @IsOptional()
   @IsString()

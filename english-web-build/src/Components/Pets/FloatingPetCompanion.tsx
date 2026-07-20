@@ -90,6 +90,11 @@ export default function FloatingPetCompanion() {
   }, []);
 
   useEffect(() => {
+    const timer = window.setTimeout(() => setBubbleOpen(false), 6000);
+    return () => window.clearTimeout(timer);
+  }, [pet?.isChosen]);
+
+  useEffect(() => {
     if (!pet || chatMessages.length > 0) return;
 
     const name = pet.isChosen ? pet.petName : "Linh thú";
@@ -142,7 +147,7 @@ const callPetChat = async (payload: { content?: string; quickAction?: QuickActio
       setPet((current) => (current ? { ...current, ...data.petStatus } : current));
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Miu đang lag xíu, thử lại sau nhé";
+    const message = error instanceof Error ? error.message : "Lumi đang lag xíu, thử lại sau nhé";
     setChatMessages((current) => [...current, { id: Date.now() + 2, from: "pet", text: message }]);
   } finally {
     setSending(false);
@@ -158,7 +163,7 @@ const callPetChat = async (payload: { content?: string; quickAction?: QuickActio
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-[9000] sm:bottom-5 sm:right-5">
+      <div className="fixed bottom-20 right-3 z-[9000] max-w-[calc(100vw-1.5rem)] lg:bottom-5 lg:right-5">
         {bubbleOpen && (
           <div className="mb-3 max-w-[260px] rounded-[24px] border border-[#ead8c2] bg-white p-4 shadow-[0_24px_70px_rgba(31,42,68,0.16)] sm:max-w-[280px]">
             <div className="flex items-start justify-between gap-3">

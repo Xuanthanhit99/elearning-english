@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -183,60 +182,6 @@ export class PlacementDashboardService {
           : null,
         learningPathUrl: '/learning-path',
       },
-    };
-  }
-
-  async retake(userId: string, force = false) {
-    const active = await this.prisma.placementTest.findFirst({
-      where: { userId, status: PlacementTestStatus.IN_PROGRESS },
-      orderBy: { createdAt: 'desc' },
-      select: { id: true },
-    });
-
-    if (active) {
-      return {
-        testId: active.id,
-        nextUrl: `/placement/test/${active.id}`,
-      };
-    }
-
-    const latest = await this.prisma.placementTest.findFirst({
-      where: {
-        userId,
-        result: { status: PlacementResultStatus.READY },
-      },
-      orderBy: { completedAt: 'desc' },
-      select: { completedAt: true },
-    });
-
-    const retake = this.buildRetake(latest?.completedAt ?? null);
-
-    if (!retake.allowed && !force) {
-      throw new BadRequestException({
-        message: retake.message,
-        remainingDays: retake.remainingDays,
-        recommendedDate: retake.recommendedDate,
-        canForce: true,
-      });
-    }
-
-    const created = await this.prisma.placementTest.create({
-      data: {
-        userId,
-        status: PlacementTestStatus.IN_PROGRESS,
-        startedAt: new Date(),
-      },
-      select: { id: true },
-    });
-
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { currentPlacementTestId: created.id },
-    });
-
-    return {
-      testId: created.id,
-      nextUrl: `/placement/test/${created.id}`,
     };
   }
 

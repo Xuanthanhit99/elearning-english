@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { normalizeRedirectPath } from "@/src/lib/auth-redirect";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -11,7 +12,9 @@ export default function AuthCallbackPage() {
     const status = searchParams.get("status");
 
     if (status === "success") {
-      router.replace("/");
+      const redirect = sessionStorage.getItem("auth_redirect");
+      sessionStorage.removeItem("auth_redirect");
+      router.replace(normalizeRedirectPath(redirect));
       return;
     }
 

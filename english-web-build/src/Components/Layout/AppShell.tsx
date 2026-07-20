@@ -1,44 +1,104 @@
 "use client";
 
-import FloatingPetCompanion from "@/src/Components/Pets/FloatingPetCompanion";
-import PetSelectionPrompt from "@/src/Components/Pets/PetSelectionPrompt";
 import WelcomeLoginModal from "@/src/Components/WelcomeLoginModal";
 import { api } from "@/src/lib/axios";
 import { useAuthStore } from "@/src/store/authStore";
+import { usePathname } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
 import ResponsiveContainer from "../UI/ResponsiveContainer";
 import AppHeader from "./AppHeader";
 import AppSidebar from "./AppSidebar";
+import MobileNavigation from "./MobileNavigation";
+
+function AppShellLoading() {
+  return (
+    <div className="min-h-screen bg-[var(--lumiverse-bg)] p-4 lg:p-6">
+      <div className="mx-auto max-w-6xl space-y-5 pt-20 lg:pl-[280px]">
+        <div className="h-28 animate-pulse rounded-[2rem] bg-white/70 dark:bg-white/8" />
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div
+              key={index}
+              className="h-28 animate-pulse rounded-3xl bg-white/70 dark:bg-white/8"
+            />
+          ))}
+        </div>
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="h-80 animate-pulse rounded-3xl bg-white/70 dark:bg-white/8" />
+          <div className="h-80 animate-pulse rounded-3xl bg-white/70 dark:bg-white/8" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function getHttpStatus(error: unknown) {
+  if (
+    error &&
+    typeof error === "object" &&
+    "response" in error &&
+    error.response &&
+    typeof error.response === "object" &&
+    "status" in error.response &&
+    typeof error.response.status === "number"
+  ) {
+    return error.response.status;
+  }
+
+  return null;
+}
+
+function AppShellAuthError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[var(--lumiverse-bg)] p-4">
+      <div className="max-w-md rounded-3xl border border-[var(--lumiverse-border)] bg-white p-6 text-center shadow-sm dark:bg-white/8">
+        <h1 className="text-2xl font-black text-[var(--lumiverse-ink)]">
+          Khong the xac minh phien dang nhap
+        </h1>
+        <p className="mt-3 text-sm font-bold leading-6 text-[var(--lumiverse-muted)]">
+          May chu dang tam thoi khong phan hoi. Hay thu lai de tranh dang xuat
+          nham khi phien cua ban van con hieu luc.
+        </p>
+        <button
+          type="button"
+          onClick={onRetry}
+          className="lumiverse-button-primary mt-5 w-full"
+        >
+          Thu lai
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function AppShell({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
   const user = useAuthStore((state) => state.user);
+  const authStatus = useAuthStore((state) => state.status);
   const setUser = useAuthStore((state) => state.setUser);
+  const setAuthStatus = useAuthStore((state) => state.setStatus);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("sidebar-collapsed") === "true";
   });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
-  const [showPetPrompt, setShowPetPrompt] = useState(false);
-  const [petDaysLeft, setPetDaysLeft] = useState(7);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [authCheckAttempt, setAuthCheckAttempt] = useState(0);
+  const focusMode = pathname.startsWith("/placement/test/");
 
   useEffect(() => {
+    let active = true;
+
     const getMe = async () => {
       try {
+        setCheckingAuth(true);
+        setAuthStatus("loading");
         const res = await api.get("/auth/me");
+        if (!active) return;
         const currentUser = res.data.data.getUser;
         setUser(currentUser);
 
-        const petRes = await api.get("/pets/me");
-        if (petRes.data?.mustChoosePet) {
-          sessionStorage.removeItem("welcome_shown");
-          setPetDaysLeft(petRes.data.daysLeftToChoose ?? 7);
-          setShowWelcome(false);
-          setShowPetPrompt(true);
-          return;
-        }
-
-        setShowPetPrompt(false);
         const hasShownWelcome = sessionStorage.getItem("welcome_shown");
         if (!hasShownWelcome) {
           setShowWelcome(true);
@@ -46,54 +106,82 @@ export default function AppShell({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         console.error(error);
-        setUser(null);
+        if (!active) return;
+        const status = getHttpStatus(error);
+        if (status && status >= 500) {
+          setAuthStatus("error");
+        } else {
+          setUser(null);
+        }
+      } finally {
+        if (active) setCheckingAuth(false);
       }
     };
 
     getMe();
-  }, [setUser]);
+    return () => {
+      active = false;
+    };
+  }, [authCheckAttempt, setAuthStatus, setUser]);
 
   function handleSidebarCollapsed(value: boolean) {
     setSidebarCollapsed(value);
     localStorage.setItem("sidebar-collapsed", String(value));
   }
 
-  return (
-    <div className="min-h-screen bg-slate-50">
-      <AppSidebar
-        collapsed={sidebarCollapsed}
-        mobileOpen={mobileOpen}
-        onCollapsedChange={handleSidebarCollapsed}
-        onMobileOpenChange={setMobileOpen}
+  if (checkingAuth) return <AppShellLoading />;
+  if (!user && authStatus === "error") {
+    return (
+      <AppShellAuthError
+        onRetry={() => {
+          setCheckingAuth(true);
+          setAuthStatus("loading");
+          setAuthCheckAttempt((value) => value + 1);
+        }}
       />
+    );
+  }
+  if (!user) return <AppShellLoading />;
 
-      <AppHeader
-        sidebarCollapsed={sidebarCollapsed}
-        onOpenMobileMenu={() => setMobileOpen(true)}
-      />
+  return (
+    <div className="lumiverse-shell min-h-screen">
+      {focusMode ? null : (
+        <AppSidebar
+          collapsed={sidebarCollapsed}
+          mobileOpen={mobileOpen}
+          onCollapsedChange={handleSidebarCollapsed}
+          onMobileOpenChange={setMobileOpen}
+        />
+      )}
+
+      {focusMode ? null : (
+        <AppHeader
+          sidebarCollapsed={sidebarCollapsed}
+          onOpenMobileMenu={() => setMobileOpen(true)}
+        />
+      )}
 
       <WelcomeLoginModal
-        open={showWelcome && !showPetPrompt}
+        open={showWelcome}
         fullname={user?.fullname}
         avatar="/cat-home.jpg"
         onClose={() => setShowWelcome(false)}
       />
-      <PetSelectionPrompt
-        open={showPetPrompt}
-        fullname={user?.fullname}
-        daysLeft={petDaysLeft}
-        onClose={() => setShowPetPrompt(false)}
-      />
-<FloatingPetCompanion />
-
       <main
         className={[
-          "app-shell-content single-menu-content min-h-screen pt-16 transition-[padding-left] duration-300",
-          sidebarCollapsed ? "lg:pl-[84px]" : "lg:pl-[264px]",
+          "app-shell-content single-menu-content min-h-screen transition-[padding-left] duration-300",
+          focusMode
+            ? "pb-0 pt-0"
+            : "pb-24 pt-[76px] lg:pb-0",
+          focusMode ? "" : sidebarCollapsed ? "lg:pl-[96px]" : "lg:pl-[280px]",
         ].join(" ")}
       >
-        <ResponsiveContainer>{children}</ResponsiveContainer>
+        <ResponsiveContainer className={focusMode ? "max-w-none px-0 py-0 sm:px-0 sm:py-0 md:px-0 lg:px-0 lg:py-0" : ""}>
+          {children}
+        </ResponsiveContainer>
       </main>
+
+      {focusMode ? null : <MobileNavigation onOpenMenu={() => setMobileOpen(true)} />}
 
       <style jsx global>{`
         .app-shell-content > main,

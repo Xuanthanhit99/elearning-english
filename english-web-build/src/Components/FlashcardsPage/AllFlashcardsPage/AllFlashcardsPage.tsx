@@ -453,7 +453,7 @@ function RightPanel() {
 
       <Card className="flex items-center justify-between">
         <div>
-          <h3 className="mb-3 text-xl font-black">Gợi ý từ Poppy</h3>
+          <h3 className="mb-3 text-xl font-black">Gợi ý từ Lumi</h3>
           <p className="leading-7 text-purple-500">
             Ôn tập các thẻ “Khó” nhiều hơn một chút nhé! Bạn sẽ tiến bộ nhanh
             hơn đó! 🚀

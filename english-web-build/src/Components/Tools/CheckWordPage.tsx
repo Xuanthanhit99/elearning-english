@@ -79,7 +79,7 @@ export default function CheckWordPage() {
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 place-items-center rounded-2xl bg-orange-100 text-2xl">🦊</div>
             <div>
-              <h1 className="text-2xl font-black">Poppy<span className="text-violet-600">Lingo</span></h1>
+              <h1 className="text-2xl font-black">Lumi<span className="text-violet-600">Lingo</span></h1>
               <p className="text-sm font-semibold text-slate-500">Check từ nhanh</p>
             </div>
           </div>
@@ -280,7 +280,7 @@ function ExampleCard({ examples, word }: { examples?: WordCheckResult["examples"
 }
 
 function StudySuggestion({ suggestion, word }: { suggestion?: string; word: string }) {
-  return <div className="mt-6 rounded-[26px] bg-gradient-to-r from-violet-600 to-indigo-600 p-6 text-white"><h3 className="text-2xl font-black">Gợi ý học từ này</h3><p className="mt-3 leading-7 text-white/90">{suggestion || `Hãy tự đặt 3 câu với từ “${word}”, sau đó dùng tính năng Check bài để Miu sửa giúp bạn.`}</p></div>;
+  return <div className="mt-6 rounded-[26px] bg-gradient-to-r from-violet-600 to-indigo-600 p-6 text-white"><h3 className="text-2xl font-black">Gợi ý học từ này</h3><p className="mt-3 leading-7 text-white/90">{suggestion || `Hãy tự đặt 3 câu với từ “${word}”, sau đó dùng tính năng Check bài để Lumi sửa giúp bạn.`}</p></div>;
 }
 
 function SelectBox({ label, value, onChange, options }: { label: string; value: string; onChange: (value: string) => void; options: { label: string; value: string }[] }) {
@@ -308,15 +308,15 @@ function MiniList({ title, items }: { title: string; items: string[][] }) {
 }
 
 function WordLoading() {
-  return <div className="relative overflow-hidden rounded-[28px] border border-slate-200 bg-white p-10 text-center"><div className="absolute inset-0 bg-gradient-to-r from-transparent via-violet-50 to-transparent" /><div className="relative z-10"><div className="mx-auto grid h-24 w-24 animate-bounce place-items-center rounded-full bg-violet-100 text-5xl">🦊</div><h3 className="mt-5 text-3xl font-black">Miu đang tìm từ...</h3><p className="mt-3 text-slate-500">Đang tra nghĩa, IPA, ví dụ và cách dùng phù hợp với trình độ của bạn.</p></div></div>;
+  return <div className="relative overflow-hidden rounded-[28px] border border-slate-200 bg-white p-10 text-center"><div className="absolute inset-0 bg-gradient-to-r from-transparent via-violet-50 to-transparent" /><div className="relative z-10"><div className="mx-auto grid h-24 w-24 animate-bounce place-items-center rounded-full bg-violet-100 text-5xl">🦊</div><h3 className="mt-5 text-3xl font-black">Lumi đang tìm từ...</h3><p className="mt-3 text-slate-500">Đang tra nghĩa, IPA, ví dụ và cách dùng phù hợp với trình độ của bạn.</p></div></div>;
 }
 
 function WordNotFound() {
-  return <div className="rounded-[28px] border border-slate-200 bg-white p-10 text-center"><div className="text-7xl">😿</div><h3 className="mt-4 text-3xl font-black">Miu chưa tìm thấy từ này</h3><p className="mt-3 text-slate-500">Có thể từ chưa tồn tại hoặc bạn nhập sai chính tả.</p></div>;
+  return <div className="rounded-[28px] border border-slate-200 bg-white p-10 text-center"><div className="text-7xl">😿</div><h3 className="mt-4 text-3xl font-black">Lumi chưa tìm thấy từ này</h3><p className="mt-3 text-slate-500">Có thể từ chưa tồn tại hoặc bạn nhập sai chính tả.</p></div>;
 }
 
 function ServerError({ onRetry }: { onRetry: () => void }) {
-  return <div className="rounded-[28px] border border-red-200 bg-white p-10 text-center"><div className="text-7xl">😵</div><h3 className="mt-4 text-3xl font-black">Miu gặp sự cố</h3><p className="mt-3 text-slate-500">Máy chủ đang bận hoặc kết nối mạng có vấn đề.</p><button onClick={onRetry} className="mt-6 rounded-2xl bg-violet-600 px-8 py-4 font-black text-white">Thử lại</button></div>;
+  return <div className="rounded-[28px] border border-red-200 bg-white p-10 text-center"><div className="text-7xl">😵</div><h3 className="mt-4 text-3xl font-black">Lumi gặp sự cố</h3><p className="mt-3 text-slate-500">Máy chủ đang bận hoặc kết nối mạng có vấn đề.</p><button onClick={onRetry} className="mt-6 rounded-2xl bg-violet-600 px-8 py-4 font-black text-white">Thử lại</button></div>;
 }
 
 function highlightWord(text: string, word: string) {

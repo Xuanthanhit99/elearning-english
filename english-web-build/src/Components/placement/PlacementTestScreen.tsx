@@ -1,27 +1,23 @@
 "use client";
 
 import {
-  ArrowLeft,
   ArrowRight,
   Bookmark,
   BookOpen,
-  Bot,
-  Check,
   Clock3,
   Cloud,
+  FileText,
   Flag,
   Headphones,
-  Lightbulb,
   Loader2,
   Mic2,
   PencilLine,
+  RotateCcw,
   SkipForward,
-  Sparkles,
-  Trophy,
   Type,
 } from "lucide-react";
-import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   answerPlacementQuestion,
   flagPlacementQuestion,
@@ -30,52 +26,25 @@ import {
   PlacementTestScreenData,
   skipPlacementQuestion,
 } from "@/src/lib/placement-api";
-import PlacementWritingQuestion from "../placement-test/PlacementWritingQuestion";
-import PlacementSpeakingQuestion from "../placement-test/PlacementSpeakingQuestion";
 import PlacementListeningQuestion from "../placement-test/PlacementListeningQuestion";
-import { useRouter } from "next/navigation";
+import PlacementSpeakingQuestion from "../placement-test/PlacementSpeakingQuestion";
+import PlacementTextQuestion from "../placement-test/PlacementTextQuestion";
+import PlacementWritingQuestion from "../placement-test/PlacementWritingQuestion";
 
 const skillMeta: Record<
   LearningSkill,
-  { label: string; icon: React.ReactNode; className: string }
+  { label: string; icon: typeof Type; accent: string }
 > = {
-  VOCABULARY: {
-    label: "Vocabulary",
-    icon: <Type className="h-5 w-5" />,
-    className: "bg-violet-100 text-violet-700",
-  },
-  GRAMMAR: {
-    label: "Grammar",
-    icon: <BookOpen className="h-5 w-5" />,
-    className: "bg-emerald-100 text-emerald-700",
-  },
-  LISTENING: {
-    label: "Listening",
-    icon: <Headphones className="h-5 w-5" />,
-    className: "bg-orange-100 text-orange-700",
-  },
-  READING: {
-    label: "Reading",
-    icon: <BookOpen className="h-5 w-5" />,
-    className: "bg-pink-100 text-pink-700",
-  },
-  SPEAKING: {
-    label: "Speaking",
-    icon: <Mic2 className="h-5 w-5" />,
-    className: "bg-blue-100 text-blue-700",
-  },
-  WRITING: {
-    label: "Writing",
-    icon: <PencilLine className="h-5 w-5" />,
-    className: "bg-cyan-100 text-cyan-700",
-  },
+  VOCABULARY: { label: "Vocabulary", icon: Type, accent: "text-violet-700 bg-violet-50" },
+  GRAMMAR: { label: "Grammar", icon: BookOpen, accent: "text-emerald-700 bg-emerald-50" },
+  LISTENING: { label: "Listening", icon: Headphones, accent: "text-orange-700 bg-orange-50" },
+  READING: { label: "Reading", icon: FileText, accent: "text-sky-700 bg-sky-50" },
+  SPEAKING: { label: "Speaking", icon: Mic2, accent: "text-blue-700 bg-blue-50" },
+  WRITING: { label: "Writing", icon: PencilLine, accent: "text-cyan-700 bg-cyan-50" },
 };
 
-export default function PlacementTestScreen({
-  sessionId,
-}: {
-  sessionId: string;
-}) {
+export default function PlacementTestScreen({ sessionId }: { sessionId: string }) {
+  const router = useRouter();
   const [data, setData] = useState<PlacementTestScreenData | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -83,134 +52,14 @@ export default function PlacementTestScreen({
   const [flagging, setFlagging] = useState(false);
   const [error, setError] = useState("");
   const [remainingSeconds, setRemainingSeconds] = useState(0);
-  const questionStartedAt = useRef(Date.now());
   const [redirecting, setRedirecting] = useState(false);
-  const router = useRouter();
-  async function loadTest() {
+  const questionStartedAt = useRef(0);
+
+  const loadTest = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
-
       const result = await getPlacementTest(sessionId);
-
-      if (result.session.isCompleted || !result.currentQuestion) {
-        setRedirecting(true);
-        console.log("nextUrl", result.nextUrl);
-        const nextUrl =
-          result.nextUrl ?? `/placement/test/${sessionId}/processing`;
-
-        router.replace(nextUrl);
-        return;
-      }
-
-      setData(result);
-      setSelectedAnswer(result.currentQuestion.selectedAnswer);
-
-      const startedAt = new Date(result.session.startedAt).getTime();
-      const elapsed = Math.floor((Date.now() - startedAt) / 1000);
-
-      setRemainingSeconds(
-        Math.max(result.session.durationSeconds - elapsed, 0),
-      );
-
-      questionStartedAt.current = Date.now();
-    } catch (err) {
-      console.error("Load placement test error:", err);
-
-      setError(
-        err instanceof Error ? err.message : "Không thể tải phiên kiểm tra.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    void loadTest();
-  }, [sessionId]);
-
-  useEffect(() => {
-    if (!data) return;
-
-    const timer = window.setInterval(() => {
-      setRemainingSeconds((current) => Math.max(current - 1, 0));
-    }, 1000);
-
-    return () => window.clearInterval(timer);
-  }, [data?.session.id]);
-
-  useEffect(() => {
-    if (!data) return;
-    const currentData = data;
-
-    function handleKeyDown(event: KeyboardEvent) {
-      const currentQuestion = currentData.currentQuestion;
-      if (!currentQuestion) return;
-
-      const target = event.target as HTMLElement;
-
-      if (
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.isContentEditable
-      ) {
-        return;
-      }
-
-      const supportsOptions = [
-        "MULTIPLE_CHOICE",
-        "FILL_BLANK",
-        "LISTENING",
-        "READING",
-      ].includes(currentQuestion.type);
-
-      if (supportsOptions) {
-        const key = event.key.toUpperCase();
-        const option = (currentQuestion.options ?? []).find(
-          (item) => item.key.toUpperCase() === key,
-        );
-
-        if (option && !saving) {
-          setSelectedAnswer(option.text);
-        }
-
-        if (event.key === "ArrowRight" && selectedAnswer && !saving) {
-          void handleNext();
-        }
-      }
-
-      if (event.key.toLowerCase() === "f" && !flagging) {
-        void handleFlag();
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [data, selectedAnswer, saving, flagging]);
-
-  const currentSection = useMemo(() => {
-    if (!data?.currentQuestion) {
-      return null;
-    }
-
-    return data.sections.find(
-      (section) => section.skill === data.currentQuestion?.skill,
-    );
-  }, [data]);
-
-  async function handleNext() {
-    if (!data?.currentQuestion || !selectedAnswer || saving) return;
-    const currentQuestion = data.currentQuestion;
-
-    try {
-      setSaving(true);
-      setError("");
-
-      const result = await answerPlacementQuestion(sessionId, {
-        questionId: currentQuestion.id,
-        answer: selectedAnswer,
-        spentSeconds: getQuestionSpentSeconds(),
-      });
 
       if (result.session.isCompleted || !result.currentQuestion) {
         setRedirecting(true);
@@ -220,11 +69,49 @@ export default function PlacementTestScreen({
 
       setData(result);
       setSelectedAnswer(result.currentQuestion.selectedAnswer);
+      setRemainingSeconds(calculateRemaining(result));
       questionStartedAt.current = Date.now();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Không thể lưu câu trả lời.",
-      );
+      setError(err instanceof Error ? err.message : "We could not load this placement session.");
+    } finally {
+      setLoading(false);
+    }
+  }, [router, sessionId]);
+
+  useEffect(() => {
+    void Promise.resolve().then(loadTest);
+  }, [loadTest]);
+
+  const sessionKey = data?.session.id;
+
+  useEffect(() => {
+    if (!sessionKey) return;
+    const timer = window.setInterval(() => {
+      setRemainingSeconds((current) => Math.max(current - 1, 0));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [sessionKey]);
+
+  const currentSection = useMemo(() => {
+    if (!data?.currentQuestion) return null;
+    return data.sections.find((section) => section.skill === data.currentQuestion?.skill) ?? null;
+  }, [data]);
+
+  async function handleNext() {
+    if (!data?.currentQuestion || !selectedAnswer || saving) return;
+    const currentQuestion = data.currentQuestion;
+
+    try {
+      setSaving(true);
+      setError("");
+      const result = await answerPlacementQuestion(sessionId, {
+        questionId: currentQuestion.id,
+        answer: selectedAnswer,
+        spentSeconds: getQuestionSpentSeconds(),
+      });
+      applyNextResult(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "We could not save this answer.");
     } finally {
       setSaving(false);
     }
@@ -237,25 +124,13 @@ export default function PlacementTestScreen({
     try {
       setSaving(true);
       setError("");
-
       const result = await skipPlacementQuestion(sessionId, {
         questionId: currentQuestion.id,
         spentSeconds: getQuestionSpentSeconds(),
       });
-
-      if (result.session.isCompleted || !result.currentQuestion) {
-        setRedirecting(true);
-        router.replace(result.nextUrl ?? `/placement/test/${sessionId}/processing`);
-        return;
-      }
-
-      setData(result);
-      setSelectedAnswer(result.currentQuestion.selectedAnswer);
-      questionStartedAt.current = Date.now();
+      applyNextResult(result);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Không thể bỏ qua câu hỏi.",
-      );
+      setError(err instanceof Error ? err.message : "We could not skip this question.");
     } finally {
       setSaving(false);
     }
@@ -264,638 +139,470 @@ export default function PlacementTestScreen({
   async function handleFlag() {
     if (!data?.currentQuestion || flagging) return;
     const currentQuestion = data.currentQuestion;
+    const nextFlagged = !currentQuestion.isFlagged;
 
     try {
       setFlagging(true);
       setError("");
-
-      const newValue = !currentQuestion.isFlagged;
       await flagPlacementQuestion(sessionId, {
         questionId: currentQuestion.id,
-        isFlagged: newValue,
+        isFlagged: nextFlagged,
       });
 
       setData((current) => {
         if (!current?.currentQuestion) return current;
-
-        const currentQuestionId = current.currentQuestion.id;
-
         return {
           ...current,
           currentQuestion: {
             ...current.currentQuestion,
-            isFlagged: newValue,
+            isFlagged: nextFlagged,
           },
           questionNavigator: current.questionNavigator.map((item) =>
-            item.id === currentQuestionId
-              ? { ...item, flagged: newValue }
-              : item,
+            item.id === currentQuestion.id ? { ...item, flagged: nextFlagged } : item,
           ),
-          autosave: {
-            savedAt: new Date().toISOString(),
-          },
+          autosave: { savedAt: new Date().toISOString() },
         };
       });
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Không thể đánh dấu câu hỏi.",
-      );
+      setError(err instanceof Error ? err.message : "We could not update the flag.");
     } finally {
       setFlagging(false);
     }
   }
 
+  function applyNextResult(result: PlacementTestScreenData) {
+    if (result.session.isCompleted || !result.currentQuestion) {
+      setRedirecting(true);
+      router.replace(result.nextUrl ?? `/placement/test/${sessionId}/processing`);
+      return;
+    }
+
+    setData(result);
+    setSelectedAnswer(result.currentQuestion.selectedAnswer);
+    setRemainingSeconds(calculateRemaining(result));
+    questionStartedAt.current = Date.now();
+  }
+
   function getQuestionSpentSeconds() {
-    return Math.max(
-      Math.floor((Date.now() - questionStartedAt.current) / 1000),
-      0,
-    );
+    return Math.max(Math.floor((Date.now() - questionStartedAt.current) / 1000), 0);
   }
 
   if (redirecting) {
-    return (
-      <main className="flex min-h-[70vh] items-center justify-center p-6">
-        <div className="text-center">
-          <Loader2 className="mx-auto h-9 w-9 animate-spin text-violet-600" />
-
-          <p className="mt-4 font-black text-slate-900">
-            Đang chuyển sang màn phân tích kết quả...
-          </p>
-        </div>
-      </main>
-    );
+    return <CenteredState icon={Loader2} spinning title="Opening analysis" description="Your completed session is moving to the processing screen." />;
   }
 
   if (loading) {
     return <PlacementTestSkeleton />;
   }
 
-  if (!data) {
+  if (!data || !data.currentQuestion) {
     return (
-      <main className="flex min-h-[70vh] items-center justify-center p-6">
-        <div className="max-w-md rounded-3xl bg-white p-8 text-center shadow-sm">
-          <p className="text-xl font-black text-slate-900">
-            Không thể tải bài kiểm tra
-          </p>
-          <p className="mt-2 text-sm text-slate-500">{error}</p>
-          <button
-            type="button"
-            onClick={() => void loadTest()}
-            className="mt-6 rounded-xl bg-violet-600 px-5 py-3 font-bold text-white"
-          >
-            Thử lại
-          </button>
-        </div>
-      </main>
+      <CenteredState
+        icon={RotateCcw}
+        title="Test session unavailable"
+        description={error || "The session may have finished or expired."}
+        actionLabel="Try again"
+        onAction={() => void loadTest()}
+      />
     );
   }
 
-  if (!data.currentQuestion) {
-    return (
-      <main className="flex min-h-[70vh] items-center justify-center p-6">
-        <div className="rounded-3xl bg-white p-8 text-center shadow-sm">
-          <Loader2 className="mx-auto h-8 w-8 animate-spin text-violet-600" />
-
-          <p className="mt-4 text-lg font-black text-slate-900">
-            Đang hoàn tất bài kiểm tra
-          </p>
-
-          <p className="mt-2 text-sm text-slate-500">
-            Hệ thống đang chuyển sang màn phân tích kết quả.
-          </p>
-        </div>
-      </main>
-    );
-  }
-
-  const currentQuestion = data.currentQuestion;
-  const meta = skillMeta[currentQuestion.skill];
+  const question = data.currentQuestion;
+  const meta = skillMeta[question.skill];
+  const Icon = meta.icon;
   const sectionProgress =
     currentSection && currentSection.total > 0
       ? Math.round((currentSection.answered / currentSection.total) * 100)
       : 0;
-
-  const isSpeakingQuestion = currentQuestion.type === "SPEAKING";
-  const isWritingQuestion = currentQuestion.type === "WRITING";
-  const isListeningQuestion = currentQuestion.type === "LISTENING";
-  const isSpecialQuestion = isSpeakingQuestion || isWritingQuestion;
+  const isSpecialQuestion = question.type === "SPEAKING" || question.type === "WRITING";
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(to_bottom,#faf9ff,#ffffff)] px-4 py-6 sm:px-6">
-      <div className="mx-auto grid max-w-[1500px] gap-5 xl:grid-cols-[300px_minmax(0,1fr)_310px]">
-        <aside className="rounded-[28px] border border-violet-100 bg-white p-6 shadow-[0_16px_50px_rgba(76,29,149,0.08)]">
-          <h2 className="text-xl font-black text-slate-950">
-            Tiến trình bài kiểm tra
-          </h2>
+    <main className="min-h-screen bg-[#f7f8ff] text-slate-950">
+      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 px-3 py-3 backdrop-blur sm:px-5">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${meta.accent}`}>
+              <Icon aria-hidden className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-black uppercase tracking-[0.12em] text-violet-700">
+                {meta.label} placement
+              </p>
+              <p className="text-sm font-semibold text-slate-500">
+                Question {question.globalOrder} of {data.session.totalQuestions}
+              </p>
+            </div>
+          </div>
 
-          <div className="mt-6 flex items-center gap-5 border-b border-slate-100 pb-6">
-            <div
-              className="relative flex h-24 w-24 items-center justify-center rounded-full bg-[conic-gradient(#7c3aed_var(--progress),#ede9fe_0)] p-2"
-              style={
-                {
-                  "--progress": `${data.session.progressPercent * 3.6}deg`,
-                } as React.CSSProperties
-              }
+          <div className="flex items-center gap-3">
+            <Timer seconds={remainingSeconds} total={data.session.durationSeconds} />
+            <button
+              type="button"
+              onClick={() => void handleFlag()}
+              disabled={flagging}
+              aria-pressed={question.isFlagged}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 font-black text-slate-700 disabled:opacity-60"
             >
-              <div className="flex h-full w-full flex-col items-center justify-center rounded-full bg-white">
-                <span className="text-2xl font-black text-slate-950">
-                  {data.session.progressPercent}%
-                </span>
-                <span className="text-xs text-violet-600">Hoàn thành</span>
-              </div>
-            </div>
-
-            <div>
-              <p className="font-black text-slate-900">
-                Câu {data.currentQuestion.globalOrder} /{" "}
-                {data.session.totalQuestions}
-              </p>
-              <p className="mt-2 flex items-center gap-2 text-sm text-slate-500">
-                <Clock3 className="h-4 w-4" />
-                Khoảng 10 phút
-              </p>
-            </div>
-          </div>
-
-          <h3 className="mt-5 font-black text-slate-900">Các phần thi</h3>
-
-          <div className="mt-3 space-y-2">
-            {data.sections.map((section) => {
-              const sectionMeta = skillMeta[section.skill];
-              const active = section.skill === currentQuestion.skill;
-
-              return (
-                <div
-                  key={section.skill}
-                  className={`flex items-center justify-between rounded-2xl px-3 py-3 ${
-                    active ? "bg-violet-50" : ""
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`flex h-9 w-9 items-center justify-center rounded-xl ${sectionMeta.className}`}
-                    >
-                      {sectionMeta.icon}
-                    </div>
-                    <div>
-                      <p className="font-bold text-slate-900">
-                        {sectionMeta.label}
-                      </p>
-                      {active ? (
-                        <p className="text-xs font-semibold text-violet-600">
-                          Đang làm
-                        </p>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  <span className="text-sm text-slate-500">
-                    {section.total > 1
-                      ? `${section.answered} / ${section.total}`
-                      : section.status === "COMPLETED"
-                        ? "Đã xong"
-                        : "Chưa bắt đầu"}
-                  </span>
-                </div>
-              );
-            })}
-
-            <div className="flex items-center gap-3 rounded-2xl px-3 py-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
-                <Trophy className="h-5 w-5" />
-              </div>
-              <p className="font-bold text-slate-900">Kết quả</p>
-            </div>
-          </div>
-
-          <div className="mt-6 border-t border-slate-100 pt-5">
-            <h3 className="font-black text-slate-900">Trạng thái</h3>
-            <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-500">
-              <LegendDot className="bg-slate-200" text="Chưa làm" />
-              <LegendDot className="bg-violet-600" text="Đang làm" />
-              <LegendDot className="bg-emerald-500" text="Đã làm" />
-              <LegendDot className="bg-amber-400" text="Đánh dấu" />
-            </div>
-          </div>
-
-          <div className="mt-8 flex items-end gap-2 rounded-2xl bg-violet-50 p-3">
-            <div className="relative h-28 w-24 shrink-0">
-              <Image
-                src="/images/placement/poppy-cheer.png"
-                alt="Poppy cổ vũ"
-                fill
-                className="object-contain object-bottom"
+              <Bookmark
+                aria-hidden
+                className={`h-5 w-5 ${question.isFlagged ? "fill-amber-400 text-amber-500" : "text-slate-500"}`}
               />
-            </div>
-            <div className="pb-3">
-              <p className="font-black text-violet-700">Tuyệt vời!</p>
-              <p className="mt-1 text-xs leading-5 text-slate-600">
-                Bạn đang làm rất tốt. Cố lên nhé 💜
-              </p>
-            </div>
+              <span className="hidden sm:inline">{question.isFlagged ? "Flagged" : "Flag"}</span>
+            </button>
           </div>
-        </aside>
+        </div>
+      </header>
 
-        <section className="overflow-hidden rounded-[28px] border border-violet-100 bg-white shadow-[0_16px_60px_rgba(76,29,149,0.08)]">
-          <header className="border-b border-slate-100 px-6 py-4">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div
-                  className={`flex h-9 w-9 items-center justify-center rounded-xl ${meta.className}`}
-                >
-                  {meta.icon}
-                </div>
-                <div>
-                  <p className="font-black uppercase text-violet-700">
-                    Phần {SKILL_INDEX[data.currentQuestion.skill]}: {meta.label}
-                  </p>
-                </div>
+      <div className="mx-auto grid max-w-7xl gap-4 px-3 py-4 sm:px-5 lg:grid-cols-[minmax(0,1fr)_310px] lg:py-6">
+        <section className="min-w-0 overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_18px_55px_rgba(15,23,42,0.07)]">
+          <div className="border-b border-slate-100 px-5 py-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-black text-violet-700">
+                  Section {question.sectionOrder} / {question.sectionTotal}
+                </p>
+                <p className="mt-1 text-xs font-semibold text-slate-500">
+                  Level target: {question.level}
+                </p>
               </div>
-
-              <span className="inline-flex items-center gap-2 rounded-full bg-violet-50 px-4 py-2 text-sm font-bold text-violet-700">
-                <Bot className="h-4 w-4" />
-                Adaptive
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
+                {question.type.replace("_", " ")}
               </span>
             </div>
-
-            <div className="mt-4 flex items-center gap-4">
-              <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
-                <div
-                  className="h-full rounded-full bg-violet-600 transition-all duration-300"
-                  style={{ width: `${sectionProgress}%` }}
-                />
-              </div>
-              <span className="text-sm font-bold text-slate-700">
-                {data.currentQuestion.sectionOrder} /{" "}
-                {data.currentQuestion.sectionTotal}
-              </span>
-            </div>
-          </header>
-
-          <div className="border-b border-violet-100 bg-violet-50/60 px-6 py-4">
-            <div className="flex items-center gap-3 text-sm text-violet-800">
-              <Bot className="h-5 w-5 shrink-0" />
-              <span>
-                <strong>AI gợi ý:</strong>{" "}
-                {data.currentQuestion.adaptiveMessage}
-              </span>
-              <Sparkles className="ml-auto h-5 w-5 text-amber-400" />
+            <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={sectionProgress}>
+              <div className="h-full rounded-full bg-violet-600" style={{ width: `${sectionProgress}%` }} />
             </div>
           </div>
 
-          <div className="p-6 sm:p-8">
-            <div className="mb-5 flex items-center justify-between gap-4">
-              <span className="rounded-full bg-violet-50 px-4 py-2 text-sm font-bold text-violet-700">
-                Câu hỏi {data.currentQuestion.globalOrder}
-              </span>
-
-              <span className="rounded-full bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700">
-                {data.currentQuestion.level}
-              </span>
+          {question.adaptiveMessage ? (
+            <div className="border-b border-slate-100 bg-violet-50/65 px-5 py-3 text-sm font-semibold leading-6 text-violet-900">
+              {question.adaptiveMessage}
             </div>
+          ) : null}
 
-            {isListeningQuestion ? (
-              data.currentQuestion.audioUrl ? (
-                <PlacementListeningQuestion
-                  key={data.currentQuestion.id}
-                  audioUrl={data.currentQuestion.audioUrl}
-                  prompt={data.currentQuestion.prompt}
-                  options={data.currentQuestion.options ?? []}
-                  selectedAnswer={selectedAnswer}
-                  disabled={saving}
-                  onSelectAnswer={setSelectedAnswer}
-                />
-              ) : (
-                <div className="rounded-2xl border border-red-100 bg-red-50 p-5 text-red-700">
-                  Câu Listening chưa có file audio. Vui lòng tạo audioUrl cho
-                  câu hỏi trước khi đưa vào phiên kiểm tra.
-                </div>
-              )
-            ) : isSpeakingQuestion ? (
-              <PlacementSpeakingQuestion
-                key={data.currentQuestion.id}
-                sessionId={sessionId}
-                questionId={data.currentQuestion.id}
-                prompt={data.currentQuestion.prompt}
-                level={data.currentQuestion.level}
-                onSubmitted={async () => {
-                  await loadTest();
-                }}
-              />
-            ) : isWritingQuestion ? (
-              <PlacementWritingQuestion
-                key={data.currentQuestion.id}
-                sessionId={sessionId}
-                questionId={data.currentQuestion.id}
-                prompt={data.currentQuestion.prompt}
-                level={data.currentQuestion.level}
-                minWords={80}
-                maxWords={120}
-                onSubmitted={async () => {
-                  await loadTest();
-                }}
-              />
-            ) : (
-              <>
-                {data.currentQuestion.passage ? (
-                  <div className="mb-5 rounded-2xl bg-slate-50 p-5 leading-7 text-slate-700">
-                    {data.currentQuestion.passage}
-                  </div>
-                ) : null}
-
-                <h1 className="max-w-3xl text-2xl font-black leading-tight text-slate-950 sm:text-3xl">
-                  {data.currentQuestion.prompt}
-                </h1>
-
-                <div className="mt-7 space-y-3">
-                  {(data.currentQuestion.options ?? []).map((option) => {
-                    const active = selectedAnswer === option.text;
-
-                    return (
-                      <button
-                        type="button"
-                        key={option.key}
-                        disabled={saving}
-                        onClick={() => setSelectedAnswer(option.text)}
-                        className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition ${
-                          active
-                            ? "border-violet-500 bg-violet-50 ring-1 ring-violet-400"
-                            : "border-slate-200 bg-white hover:border-violet-200 hover:bg-violet-50/30"
-                        }`}
-                      >
-                        <span
-                          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
-                            active
-                              ? "border-violet-600 bg-violet-600 text-white"
-                              : "border-slate-300"
-                          }`}
-                        >
-                          {active ? <Check className="h-4 w-4" /> : null}
-                        </span>
-
-                        <span
-                          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg font-black ${
-                            active
-                              ? "bg-violet-600 text-white"
-                              : "bg-violet-50 text-slate-900"
-                          }`}
-                        >
-                          {option.key}
-                        </span>
-
-                        <span>
-                          <span className="block text-lg font-bold text-slate-900">
-                            {option.text}
-                          </span>
-                          {option.translation ? (
-                            <span className="mt-1 block text-sm text-slate-500">
-                              {option.translation}
-                            </span>
-                          ) : null}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
-            )}
+          <div className="px-5 py-6 sm:px-7">
+            <QuestionBody
+              sessionId={sessionId}
+              question={question}
+              selectedAnswer={selectedAnswer}
+              saving={saving}
+              onSelectAnswer={setSelectedAnswer}
+              onReload={() => void loadTest()}
+            />
 
             {error ? (
-              <p className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+              <p className="mt-5 rounded-2xl bg-rose-50 p-4 text-sm font-bold text-rose-600" role="alert">
                 {error}
               </p>
             ) : null}
           </div>
 
-          <footer className="border-t border-slate-100 px-6 py-5">
-            {!isSpecialQuestion ? (
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <footer className="sticky bottom-0 border-t border-slate-100 bg-white/95 px-5 py-4 backdrop-blur sm:px-7">
+            {isSpecialQuestion ? (
+              <div className="flex items-center justify-between gap-3 text-sm font-bold text-slate-500">
+                <span>Specialized response is saved through its own endpoint.</span>
+                <span>{question.globalOrder} / {data.session.totalQuestions}</span>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <button
                   type="button"
-                  disabled
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 py-3 font-bold text-slate-400"
+                  onClick={() => void handleSkip()}
+                  disabled={saving}
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-slate-200 px-5 py-3 font-black text-slate-600 disabled:opacity-60"
                 >
-                  <ArrowLeft className="h-5 w-5" />
-                  Câu trước
+                  <SkipForward aria-hidden className="h-5 w-5" />
+                  Skip
                 </button>
-
-                <span className="text-sm font-bold text-slate-500">
-                  {data.currentQuestion.globalOrder} /{" "}
-                  {data.session.totalQuestions}
-                </span>
-
+                <div className="flex items-center justify-center gap-2 text-sm font-bold text-emerald-700" aria-live="polite">
+                  <Cloud aria-hidden className="h-4 w-4" />
+                  Saved {formatSavedAt(data.autosave.savedAt)}
+                </div>
                 <button
                   type="button"
                   onClick={() => void handleNext()}
                   disabled={!selectedAnswer || saving}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-700 to-fuchsia-600 px-7 py-3 font-black text-white shadow-lg shadow-violet-200 transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-violet-600 px-6 py-3 font-black text-white shadow-[0_14px_34px_rgba(124,58,237,0.24)] disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {saving ? (
-                    <>
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      Đang lưu
-                    </>
-                  ) : (
-                    <>
-                      Câu tiếp theo
-                      <ArrowRight className="h-5 w-5" />
-                    </>
-                  )}
+                  {saving ? <Loader2 aria-hidden className="h-5 w-5 animate-spin" /> : null}
+                  Save and continue
+                  <ArrowRight aria-hidden className="h-5 w-5" />
                 </button>
               </div>
-            ) : (
-              <div className="text-center text-sm font-bold text-slate-500">
-                Câu {data.currentQuestion.globalOrder} /{" "}
-                {data.session.totalQuestions}
-              </div>
             )}
-
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-5 rounded-xl bg-emerald-50 px-4 py-3 text-sm">
-              <span className="inline-flex items-center gap-2 font-semibold text-emerald-700">
-                <Check className="h-4 w-4" />
-                Đã lưu lúc{" "}
-                {new Date(data.autosave.savedAt).toLocaleTimeString("vi-VN")}
-              </span>
-              <span className="inline-flex items-center gap-2 text-slate-600">
-                <Cloud className="h-4 w-4" />
-                Tiến trình được tự động lưu
-              </span>
-            </div>
           </footer>
         </section>
 
-        <aside className="space-y-5">
-          <div className="rounded-[28px] border border-violet-100 bg-white p-5 shadow-[0_16px_50px_rgba(76,29,149,0.07)]">
-            <div className="flex items-center gap-3">
-              <Clock3 className="h-6 w-6 text-violet-600" />
-              <div>
-                <p className="text-sm text-slate-500">Thời gian còn lại</p>
-                <p
-                  className={`text-3xl font-black ${
-                    remainingSeconds <= 30
-                      ? "text-red-600"
-                      : remainingSeconds <= 120
-                        ? "text-orange-500"
-                        : "text-slate-950"
-                  }`}
-                >
-                  {formatTime(remainingSeconds)}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-4 h-2 overflow-hidden rounded-full bg-violet-100">
-              <div
-                className="h-full rounded-full bg-violet-600 transition-all"
-                style={{
-                  width: `${Math.max(
-                    (remainingSeconds / data.session.durationSeconds) * 100,
-                    0,
-                  )}%`,
-                }}
-              />
-            </div>
-          </div>
-
-          <div className="rounded-[28px] border border-violet-100 bg-white p-5 shadow-[0_16px_50px_rgba(76,29,149,0.07)]">
-            <h2 className="text-xl font-black text-slate-950">
-              Danh sách câu hỏi
-            </h2>
-
-            <div className="mt-4 flex flex-wrap gap-3 text-xs text-slate-500">
-              <LegendDot className="bg-slate-200" text="Chưa làm" />
-              <LegendDot className="bg-violet-600" text="Đang làm" />
-              <LegendDot className="bg-emerald-500" text="Đã làm" />
-              <LegendDot className="bg-amber-400" text="Đánh dấu" />
-            </div>
-
-            <div className="mt-5 grid grid-cols-5 gap-3">
-              {data.questionNavigator.map((item) => (
-                <div key={item.id} className="relative">
-                  <span
-                    className={`flex h-11 w-11 items-center justify-center rounded-full border text-sm font-black ${
-                      item.active
-                        ? "border-violet-600 bg-violet-600 text-white"
-                        : item.answered
-                          ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                          : item.skipped
-                            ? "border-orange-300 bg-orange-50 text-orange-700"
-                            : "border-slate-200 bg-white text-slate-700"
-                    }`}
-                  >
-                    {item.order}
-                  </span>
-
-                  {item.flagged ? (
-                    <Flag className="absolute -right-1 -top-1 h-4 w-4 fill-amber-400 text-amber-400" />
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-[28px] border border-violet-100 bg-white p-5 shadow-[0_16px_50px_rgba(76,29,149,0.07)]">
-            <h2 className="text-lg font-black text-slate-950">Công cụ</h2>
-
-            <button
-              type="button"
-              onClick={() => void handleFlag()}
-              disabled={flagging}
-              className="mt-4 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-violet-50"
-            >
-              <Bookmark
-                className={`h-5 w-5 ${
-                  data.currentQuestion.isFlagged
-                    ? "fill-amber-400 text-amber-400"
-                    : "text-violet-600"
-                }`}
-              />
-              <span>
-                <span className="block font-bold text-slate-900">
-                  {data.currentQuestion.isFlagged
-                    ? "Bỏ đánh dấu"
-                    : "Đánh dấu câu hỏi"}
-                </span>
-                <span className="text-sm text-slate-500">
-                  Lưu câu hỏi để xem lại
-                </span>
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => void handleSkip()}
-              disabled={saving}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-violet-50"
-            >
-              <SkipForward className="h-5 w-5 text-violet-600" />
-              <span>
-                <span className="block font-bold text-slate-900">
-                  Bỏ qua câu hỏi
-                </span>
-                <span className="text-sm text-slate-500">
-                  Có thể quay lại sau
-                </span>
-              </span>
-            </button>
-          </div>
-
-          <div className="rounded-2xl bg-violet-50 p-4">
-            <div className="flex gap-3">
-              <Lightbulb className="h-6 w-6 shrink-0 text-amber-500" />
-              <div>
-                <p className="font-black text-violet-700">Mẹo nhỏ</p>
-                <p className="mt-1 text-sm leading-6 text-slate-600">
-                  {isSpeakingQuestion
-                    ? "Ghi âm trong khoảng 30–60 giây, sau đó nghe lại trước khi gửi."
-                    : isWritingQuestion
-                      ? "Viết đủ số từ yêu cầu. Bản nháp được tự động lưu trên thiết bị."
-                      : isListeningQuestion
-                        ? "Nghe kỹ audio trước khi chọn đáp án. Bạn có thể phát lại nếu chưa nghe rõ."
-                        : "Dùng phím A–D để chọn đáp án, phím F để đánh dấu và mũi tên phải để chuyển câu."}
-                </p>
-              </div>
-            </div>
-          </div>
+        <aside className="space-y-4 lg:sticky lg:top-[88px] lg:self-start">
+          <ProgressPanel data={data} />
+          <NavigatorPanel items={data.questionNavigator} />
+          <ToolPanel
+            flagged={question.isFlagged}
+            saving={saving}
+            flagging={flagging}
+            onFlag={() => void handleFlag()}
+            onSkip={() => void handleSkip()}
+          />
         </aside>
       </div>
     </main>
   );
 }
 
-const SKILL_INDEX: Record<LearningSkill, number> = {
-  VOCABULARY: 1,
-  GRAMMAR: 2,
-  LISTENING: 3,
-  READING: 4,
-  SPEAKING: 5,
-  WRITING: 6,
-};
+function QuestionBody({
+  sessionId,
+  question,
+  selectedAnswer,
+  saving,
+  onSelectAnswer,
+  onReload,
+}: {
+  sessionId: string;
+  question: NonNullable<PlacementTestScreenData["currentQuestion"]>;
+  selectedAnswer: string | null;
+  saving: boolean;
+  onSelectAnswer: (answer: string | null) => void;
+  onReload: () => void;
+}) {
+  if (question.type === "LISTENING") {
+    if (!question.audioUrl) {
+      return (
+        <div className="rounded-2xl border border-rose-100 bg-rose-50 p-5 text-sm font-bold text-rose-700">
+          Audio is unavailable for this Listening question. Please retry later.
+        </div>
+      );
+    }
+    return (
+      <PlacementListeningQuestion
+        key={question.id}
+        audioUrl={question.audioUrl}
+        prompt={question.prompt}
+        options={question.options}
+        selectedAnswer={selectedAnswer}
+        disabled={saving}
+        onSelectAnswer={onSelectAnswer}
+      />
+    );
+  }
 
-function formatTime(seconds: number) {
-  const minutes = Math.floor(seconds / 60);
-  const rest = seconds % 60;
+  if (question.type === "SPEAKING") {
+    return (
+      <PlacementSpeakingQuestion
+        key={question.id}
+        sessionId={sessionId}
+        questionId={question.id}
+        prompt={question.prompt}
+        level={question.level}
+        onSubmitted={onReload}
+      />
+    );
+  }
 
-  return `${String(minutes).padStart(2, "0")}:${String(rest).padStart(2, "0")}`;
+  if (question.type === "WRITING") {
+    return (
+      <PlacementWritingQuestion
+        key={question.id}
+        sessionId={sessionId}
+        questionId={question.id}
+        prompt={question.prompt}
+        level={question.level}
+        minWords={80}
+        maxWords={120}
+        onSubmitted={onReload}
+      />
+    );
+  }
+
+  return (
+    <PlacementTextQuestion
+      prompt={question.prompt}
+      passage={question.passage}
+      options={question.options}
+      selectedAnswer={selectedAnswer}
+      disabled={saving}
+      questionType={question.type}
+      onSelectAnswer={onSelectAnswer}
+    />
+  );
 }
 
-function LegendDot({ className, text }: { className: string; text: string }) {
+function Timer({ seconds, total }: { seconds: number; total: number }) {
+  const urgent = seconds <= 120;
+  const percent = total > 0 ? Math.max((seconds / total) * 100, 0) : 0;
+
   return (
-    <span className="inline-flex items-center gap-2">
-      <span className={`h-3 w-3 rounded-full ${className}`} />
-      {text}
-    </span>
+    <div className="min-w-[116px] rounded-2xl border border-slate-200 bg-white px-3 py-2">
+      <div className="flex items-center gap-2">
+        <Clock3 aria-hidden className={`h-4 w-4 ${urgent ? "text-rose-600" : "text-violet-600"}`} />
+        <span className={`font-black tabular-nums ${urgent ? "text-rose-600" : "text-slate-950"}`}>
+          {formatTime(seconds)}
+        </span>
+      </div>
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
+        <div className={`h-full rounded-full ${urgent ? "bg-rose-500" : "bg-violet-600"}`} style={{ width: `${percent}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function ProgressPanel({ data }: { data: PlacementTestScreenData }) {
+  return (
+    <section className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 className="font-black text-slate-950">Overall progress</h2>
+      <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-valuenow={data.session.progressPercent} aria-valuemin={0} aria-valuemax={100}>
+        <div className="h-full rounded-full bg-violet-600" style={{ width: `${data.session.progressPercent}%` }} />
+      </div>
+      <p className="mt-3 text-sm font-bold text-slate-500">
+        {data.session.answeredTotal} answered of {data.session.totalQuestions}
+      </p>
+      <div className="mt-4 space-y-2">
+        {data.sections.map((section) => {
+          const meta = skillMeta[section.skill];
+          const Icon = meta.icon;
+          return (
+            <div key={section.skill} className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 p-3">
+              <div className="flex items-center gap-2">
+                <Icon aria-hidden className="h-4 w-4 text-violet-600" />
+                <span className="text-sm font-black text-slate-700">{meta.label}</span>
+              </div>
+              <span className="text-xs font-bold text-slate-500">
+                {section.answered}/{section.total}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function NavigatorPanel({ items }: { items: PlacementTestScreenData["questionNavigator"] }) {
+  return (
+    <section className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 className="font-black text-slate-950">Questions</h2>
+      <div className="mt-4 grid grid-cols-6 gap-2 lg:grid-cols-5">
+        {items.map((item) => (
+          <span
+            key={item.id}
+            className={[
+              "relative flex h-10 w-10 items-center justify-center rounded-full border text-xs font-black",
+              item.active
+                ? "border-violet-600 bg-violet-600 text-white"
+                : item.answered
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                  : item.skipped
+                    ? "border-amber-300 bg-amber-50 text-amber-700"
+                    : "border-slate-200 bg-white text-slate-600",
+            ].join(" ")}
+            aria-current={item.active ? "step" : undefined}
+          >
+            {item.order}
+            {item.flagged ? <Flag aria-hidden className="absolute -right-1 -top-1 h-3.5 w-3.5 fill-amber-400 text-amber-500" /> : null}
+          </span>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ToolPanel({
+  flagged,
+  saving,
+  flagging,
+  onFlag,
+  onSkip,
+}: {
+  flagged: boolean;
+  saving: boolean;
+  flagging: boolean;
+  onFlag: () => void;
+  onSkip: () => void;
+}) {
+  return (
+    <section className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 className="font-black text-slate-950">Tools</h2>
+      <div className="mt-4 grid gap-2">
+        <button
+          type="button"
+          onClick={onFlag}
+          disabled={flagging}
+          className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 text-left font-black text-slate-700 disabled:opacity-60"
+        >
+          <Bookmark aria-hidden className={`h-5 w-5 ${flagged ? "fill-amber-400 text-amber-500" : "text-violet-600"}`} />
+          {flagged ? "Remove flag" : "Flag question"}
+        </button>
+        <button
+          type="button"
+          onClick={onSkip}
+          disabled={saving}
+          className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 text-left font-black text-slate-700 disabled:opacity-60"
+        >
+          <SkipForward aria-hidden className="h-5 w-5 text-violet-600" />
+          Skip question
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function CenteredState({
+  icon: Icon,
+  title,
+  description,
+  spinning = false,
+  actionLabel,
+  onAction,
+}: {
+  icon: typeof Loader2;
+  title: string;
+  description: string;
+  spinning?: boolean;
+  actionLabel?: string;
+  onAction?: () => void;
+}) {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-[#f7f8ff] p-6">
+      <section className="w-full max-w-lg rounded-[28px] bg-white p-8 text-center shadow-sm">
+        <Icon aria-hidden className={`mx-auto h-10 w-10 text-violet-600 ${spinning ? "animate-spin" : ""}`} />
+        <h1 className="mt-5 text-2xl font-black text-slate-950">{title}</h1>
+        <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">{description}</p>
+        {actionLabel && onAction ? (
+          <button type="button" onClick={onAction} className="mt-6 rounded-2xl bg-violet-600 px-5 py-3 font-black text-white">
+            {actionLabel}
+          </button>
+        ) : null}
+      </section>
+    </main>
   );
 }
 
 function PlacementTestSkeleton() {
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-6">
-      <div className="mx-auto grid max-w-[1500px] animate-pulse gap-5 xl:grid-cols-[300px_minmax(0,1fr)_310px]">
-        <div className="h-[900px] rounded-[28px] bg-white" />
-        <div className="h-[900px] rounded-[28px] bg-white" />
-        <div className="h-[700px] rounded-[28px] bg-white" />
+    <main className="min-h-screen bg-[#f7f8ff] px-3 py-4">
+      <div className="mx-auto grid max-w-7xl animate-pulse gap-4 lg:grid-cols-[minmax(0,1fr)_310px]">
+        <div className="h-[760px] rounded-[28px] bg-white" />
+        <div className="h-[620px] rounded-[28px] bg-white" />
       </div>
     </main>
   );
+}
+
+function calculateRemaining(result: PlacementTestScreenData) {
+  const startedAt = new Date(result.session.startedAt).getTime();
+  const elapsed = Number.isFinite(startedAt)
+    ? Math.floor((Date.now() - startedAt) / 1000)
+    : 0;
+  return Math.max(result.session.durationSeconds - elapsed, 0);
+}
+
+function formatTime(seconds: number) {
+  const minutes = Math.floor(seconds / 60);
+  const rest = seconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(rest).padStart(2, "0")}`;
+}
+
+function formatSavedAt(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "recently";
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }

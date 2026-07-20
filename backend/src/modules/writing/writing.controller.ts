@@ -171,7 +171,10 @@ export class WritingController {
   @UseGuards(JwtAuthGuard)
   @Post('sessions/:sessionId/retry-processing')
   retryProcessing(@Param('sessionId') sessionId: string, @Req() req: any) {
-    return this.writingProcessingService.retryProcessing(req.user.id, sessionId);
+    return this.writingProcessingService.retryProcessing(
+      req.user.id,
+      sessionId,
+    );
   }
 
   @UseGuards(JwtAuthGuard)

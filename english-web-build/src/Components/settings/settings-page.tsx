@@ -699,7 +699,7 @@ export default function SettingsPage() {
           {activeTab === 'advanced' && (
             <SectionCard
               title="Tính năng thông minh"
-              description="Những đề xuất giúp PoppyLingo khác biệt với web học thông thường."
+              description="Những đề xuất giúp Lumiverse khác biệt với web học thông thường."
             >
               <Field
                 label="Learning DNA"

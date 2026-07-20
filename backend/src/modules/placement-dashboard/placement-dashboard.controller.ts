@@ -1,16 +1,13 @@
 import {
-  Body,
   Controller,
   Get,
   Param,
-  Post,
   Req,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { RetakePlacementDto } from './dto/retake-placement.dto';
 import { PlacementDashboardService } from './placement-dashboard.service';
 
 type AuthenticatedRequest = Request & {
@@ -27,18 +24,6 @@ export class PlacementDashboardController {
     return {
       success: true,
       data: await this.service.getDashboard(this.getUserId(req)),
-    };
-  }
-
-  @Post('retake')
-  async retake(
-    @Req() req: AuthenticatedRequest,
-    @Body() dto: RetakePlacementDto,
-  ) {
-    return {
-      success: true,
-      message: 'Đã tạo phiên Placement Test mới.',
-      data: await this.service.retake(this.getUserId(req), dto.force ?? false),
     };
   }
 

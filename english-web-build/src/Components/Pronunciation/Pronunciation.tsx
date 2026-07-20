@@ -113,11 +113,11 @@ function Hero() {
 
           <h1 className="max-w-4xl text-5xl font-black leading-tight text-[#1f2a44] lg:text-7xl">
             Luyện phát âm chuẩn hơn cùng{" "}
-            <span className="text-[#ff6b00]">Miu AI</span>
+            <span className="text-[#ff6b00]">Lumi AI</span>
           </h1>
 
           <p className="mt-5 max-w-3xl text-lg font-bold leading-8 text-[#5b6b85]">
-            Nghe mẫu, ghi âm, nhận điểm phát âm và xem lỗi từng từ. Miu sẽ giúp
+            Nghe mẫu, ghi âm, nhận điểm phát âm và xem lỗi từng từ. Lumi sẽ giúp
             bạn sửa âm cuối, trọng âm, độ rõ và độ trôi chảy.
           </p>
         </div>
@@ -128,7 +128,7 @@ function Hero() {
 
           <h2 className="relative z-10 text-3xl font-black">Hôm nay luyện gì?</h2>
           <p className="relative z-10 mt-3 font-bold leading-7 text-white/80">
-            Miu gợi ý luyện 10 câu ngắn để cải thiện âm cuối và trọng âm.
+            Lumi gợi ý luyện 10 câu ngắn để cải thiện âm cuối và trọng âm.
           </p>
 
           <div className="relative z-10 mt-6 grid grid-cols-2 gap-3">
@@ -341,7 +341,7 @@ function AnalyzingCard() {
       </div>
 
       <h2 className="mt-5 text-3xl font-black text-[#1f2a44]">
-        Miu đang phân tích phát âm...
+        Lumi đang phân tích phát âm...
       </h2>
 
       <p className="mt-2 font-bold text-[#5b6b85]">
@@ -547,7 +547,7 @@ function AiCoach() {
         </div>
 
         <div>
-          <h2 className="text-3xl font-black">Miu AI Coach</h2>
+          <h2 className="text-3xl font-black">Lumi AI Coach</h2>
           <p className="mt-3 font-bold leading-7 text-white/80">
             Bạn có tốc độ nói tốt và âm chính khá rõ. Ngày mai nên luyện thêm âm
             cuối <b>/z/</b>, <b>/v/</b> và trọng âm trong từ có 2 âm tiết.

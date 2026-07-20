@@ -106,22 +106,22 @@ export default function CheckWritingPage() {
 
             <h1 className="max-w-3xl text-5xl font-extrabold leading-tight text-[#1f2a44] lg:text-6xl">
               Check bài viết cùng{" "}
-              <span className="text-[#ff6b00]">PoppyLingo</span>
+              <span className="text-[#ff6b00]">Lumiverse</span>
             </h1>
 
             <p className="mt-5 max-w-3xl text-lg leading-8 text-[#5b6b85]">
-              Dán đoạn văn tiếng Anh của bạn để Miu kiểm tra ngữ pháp, từ vựng,
+              Dán đoạn văn tiếng Anh của bạn để Lumi kiểm tra ngữ pháp, từ vựng,
               cách diễn đạt và gợi ý phiên bản tự nhiên hơn.
             </p>
           </div>
 
           <div className="rounded-[28px] border border-[#ead8c2] bg-white p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
             <h2 className="text-2xl font-extrabold text-[#1f2a44]">
-              Miu sẽ kiểm tra gì?
+              Lumi sẽ kiểm tra gì?
             </h2>
 
             <p className="mt-3 leading-7 text-[#5b6b85]">
-              Không chỉ sửa lỗi, Miu còn giải thích vì sao sai và gợi ý cách nói
+              Không chỉ sửa lỗi, Lumi còn giải thích vì sao sai và gợi ý cách nói
               tự nhiên.
             </p>
 
@@ -192,7 +192,7 @@ export default function CheckWritingPage() {
               disabled={loading || !text.trim()}
               className="mt-4 w-full rounded-2xl bg-[#ff6b00] py-4 font-extrabold text-white shadow-lg shadow-orange-200 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading ? "Miu đang sửa bài..." : "Check bài"}
+              {loading ? "Lumi đang sửa bài..." : "Check bài"}
             </button>
 
             <div className="mt-5">
@@ -266,7 +266,7 @@ function ScoreCard({ data }: { data: WritingCheckResult }) {
           </h2>
 
           <p className="mt-3 leading-7 text-[#5b6b85]">
-            Miu đã kiểm tra ngữ pháp, từ vựng, cách diễn đạt và khả năng truyền
+            Lumi đã kiểm tra ngữ pháp, từ vựng, cách diễn đạt và khả năng truyền
             đạt ý nghĩa của bài viết.
           </p>
 
@@ -373,11 +373,11 @@ function ImprovedVersion({ data }: { data: WritingCheckResult }) {
   return (
     <div className="rounded-[26px] border border-[#ead8c2] bg-white p-6 shadow-[0_24px_70px_rgba(31,42,68,0.06)]">
       <h2 className="text-xl font-extrabold text-[#1f2a44]">
-        Phiên bản Miu gợi ý
+        Phiên bản Lumi gợi ý
       </h2>
 
       <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 font-bold leading-7 text-[#1f2a44]">
-        {data.suggestedVersion || "Miu chưa có phiên bản gợi ý."}
+        {data.suggestedVersion || "Lumi chưa có phiên bản gợi ý."}
       </div>
     </div>
   );
@@ -420,7 +420,7 @@ function SuggestionBox({ title, items }: { title: string; items: string[] }) {
 function StudyNote({ note }: { note?: string }) {
   return (
     <div className="rounded-[24px] bg-gradient-to-r from-[#1f2a44] to-[#6b5796] p-6 text-white shadow-[0_24px_70px_rgba(31,42,68,0.12)]">
-      <h2 className="text-2xl font-extrabold">💡 Mẹo học từ Miu</h2>
+      <h2 className="text-2xl font-extrabold">💡 Mẹo học từ Lumi</h2>
 
       <p className="mt-3 leading-7 text-white/90">
         {note ||
@@ -451,7 +451,7 @@ function WritingLoading() {
       />
 
       <h2 className="mt-5 text-4xl font-extrabold text-[#1f2a44]">
-        Miu đang sửa bài...
+        Lumi đang sửa bài...
       </h2>
 
       <p className="mt-3 text-[#5b6b85]">
@@ -480,7 +480,7 @@ function WritingNotFound() {
       />
 
       <h2 className="mt-5 text-4xl font-extrabold text-[#1f2a44]">
-        Miu chưa hiểu bài viết này 😿
+        Lumi chưa hiểu bài viết này 😿
       </h2>
 
       <p className="mt-3 text-[#5b6b85]">Hãy thử nhập đoạn văn dài hơn.</p>
@@ -494,7 +494,7 @@ function WritingError() {
       <div className="text-7xl">😵</div>
 
       <h2 className="mt-5 text-4xl font-extrabold text-[#1f2a44]">
-        Miu gặp sự cố
+        Lumi gặp sự cố
       </h2>
 
       <p className="mt-3 text-[#5b6b85]">Không thể kết nối AI lúc này.</p>
@@ -512,7 +512,7 @@ function EmptyWritingResult() {
       </h2>
 
       <p className="mt-3 text-[#5b6b85]">
-        Miu sẽ phân tích ngữ pháp, từ vựng và cách diễn đạt.
+        Lumi sẽ phân tích ngữ pháp, từ vựng và cách diễn đạt.
       </p>
     </div>
   );

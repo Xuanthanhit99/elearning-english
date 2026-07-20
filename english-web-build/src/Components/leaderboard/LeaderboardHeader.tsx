@@ -21,7 +21,7 @@ export function LeaderboardHeader({
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-white/75">
-            PoppyLingo League
+            Lumiverse League
           </p>
 
           <h1 className="mt-2 text-3xl font-black sm:text-4xl">

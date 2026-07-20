@@ -77,7 +77,9 @@ export function zonedTimeToUtc(
   second = 0,
 ) {
   const normalizedTimezone = normalizeUserTimezone(timezone);
-  const initial = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+  const initial = new Date(
+    Date.UTC(year, month - 1, day, hour, minute, second),
+  );
   const firstPass = new Date(
     initial.getTime() - getOffsetMs(initial, normalizedTimezone),
   );
@@ -99,12 +101,7 @@ export function dateKeyInTimezone(date: Date, timezone: string) {
 export function startOfUserDay(date: Date, timezone: string) {
   const normalizedTimezone = normalizeUserTimezone(timezone);
   const parts = getZonedParts(date, normalizedTimezone);
-  return zonedTimeToUtc(
-    normalizedTimezone,
-    parts.year,
-    parts.month,
-    parts.day,
-  );
+  return zonedTimeToUtc(normalizedTimezone, parts.year, parts.month, parts.day);
 }
 
 export function addUserDays(date: Date, days: number, timezone: string) {
@@ -142,7 +139,11 @@ export function startOfUserWeek(date: Date, timezone: string) {
     Sat: -5,
     Sun: -6,
   };
-  return addUserDays(start, mondayOffset[localWeekday] ?? 0, normalizedTimezone);
+  return addUserDays(
+    start,
+    mondayOffset[localWeekday] ?? 0,
+    normalizedTimezone,
+  );
 }
 
 export function endOfUserWeek(date: Date, timezone: string) {

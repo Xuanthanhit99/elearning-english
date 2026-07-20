@@ -65,7 +65,11 @@ export class SearchService {
     }
 
     const userContext = await this.getUserContext(userId);
-    const sources = await this.collectSearchSources(normalized, query, userContext);
+    const sources = await this.collectSearchSources(
+      normalized,
+      query,
+      userContext,
+    );
     const filtered = sources
       .filter((item) => this.matchesFilters(item, query))
       .map((item) => ({
@@ -107,12 +111,14 @@ export class SearchService {
     }
 
     const results = normalized
-      ? (await this.search(userId, {
-          q: normalized,
-          limit: Math.min(limit * 2, 20),
-          offset: 0,
-          sort: SearchSort.RELEVANCE,
-        })).results
+      ? (
+          await this.search(userId, {
+            q: normalized,
+            limit: Math.min(limit * 2, 20),
+            offset: 0,
+            sort: SearchSort.RELEVANCE,
+          })
+        ).results
       : await this.popularSuggestionSeeds(limit);
 
     const seen = new Set<string>();
@@ -136,12 +142,14 @@ export class SearchService {
   }
 
   async discovery(userId: string) {
-    const [recommendations, popular, newest, quickPractice] = await Promise.all([
-      this.recommendations(userId, 8),
-      this.getPopularContent(),
-      this.getNewestContent(),
-      this.getQuickPractice(),
-    ]);
+    const [recommendations, popular, newest, quickPractice] = await Promise.all(
+      [
+        this.recommendations(userId, 8),
+        this.getPopularContent(),
+        this.getNewestContent(),
+        this.getQuickPractice(),
+      ],
+    );
 
     const sections: DiscoverySection[] = [
       {
@@ -207,7 +215,8 @@ export class SearchService {
         type: 'NEXT_LEARNING_PATH_STEP',
         title: dashboard.recommendedLesson.title,
         description:
-          dashboard.recommendedLesson.subtitle ?? 'Follow your current learning path.',
+          dashboard.recommendedLesson.subtitle ??
+          'Follow your current learning path.',
         reason: 'This is the next useful step from your learning path.',
         priority: 90,
         skill: this.skillFromType(dashboard.recommendedLesson.type),
@@ -267,7 +276,8 @@ export class SearchService {
       type: 'QUICK_PRACTICE',
       title: 'Quick vocabulary practice',
       description: 'A short practice session to keep your daily rhythm.',
-      reason: 'Quick practice is useful when no stronger recommendation exists.',
+      reason:
+        'Quick practice is useful when no stronger recommendation exists.',
       priority: 40,
       skill: LearningSkill.VOCABULARY,
       href: '/vocabulary/review',
@@ -297,15 +307,13 @@ export class SearchService {
       this.searchCommunity(contains),
     ]);
 
-    return sources
-      .flat()
-      .map((item) => ({
-        ...item,
-        score:
-          item.score +
-          (query.level && item.level === query.level ? 5 : 0) +
-          (context.currentLevel && item.level === context.currentLevel ? 3 : 0),
-      }));
+    return sources.flat().map((item) => ({
+      ...item,
+      score:
+        item.score +
+        (query.level && item.level === query.level ? 5 : 0) +
+        (context.currentLevel && item.level === context.currentLevel ? 3 : 0),
+    }));
   }
 
   private async searchVocabulary(q: string): Promise<UnifiedSearchResult[]> {
@@ -346,7 +354,9 @@ export class SearchService {
           description: word.example,
           skill: LearningSkill.VOCABULARY,
           level: this.toCefr(word.level),
-          tags: [word.partOfSpeech, word.topic?.name].filter(Boolean) as string[],
+          tags: [word.partOfSpeech, word.topic?.name].filter(
+            Boolean,
+          ) as string[],
           href: this.routes.href(SearchResultType.VOCABULARY_WORD, {
             id: word.id,
             slug: word.word,
@@ -400,7 +410,9 @@ export class SearchService {
             { slug: { contains: q, mode: 'insensitive' } },
           ],
         },
-        include: { topic: { select: { title: true, slug: true, level: true } } },
+        include: {
+          topic: { select: { title: true, slug: true, level: true } },
+        },
         take: 12,
         orderBy: [{ order: 'asc' }, { updatedAt: 'desc' }],
       }),
@@ -538,7 +550,9 @@ export class SearchService {
         skill: LearningSkill.LISTENING,
         level: this.toCefr(item.level),
         tags: [item.topic],
-        href: this.routes.href(SearchResultType.LISTENING_CONTENT, { id: item.id }),
+        href: this.routes.href(SearchResultType.LISTENING_CONTENT, {
+          id: item.id,
+        }),
         createdAt: item.createdAt,
         q,
       }),
@@ -770,7 +784,9 @@ export class SearchService {
           subtitle: post.category ?? 'Community post',
           description: post.content.slice(0, 180),
           tags: post.tags.slice(0, 5),
-          href: this.routes.href(SearchResultType.COMMUNITY_POST, { id: post.id }),
+          href: this.routes.href(SearchResultType.COMMUNITY_POST, {
+            id: post.id,
+          }),
           popularity: post.score,
           createdAt: post.createdAt,
           q,
@@ -952,8 +968,13 @@ export class SearchService {
   private async getNewestContent() {
     const [grammar, writing, speaking] = await Promise.all([
       this.prisma.grammarLesson.findMany({
-        where: { isActive: true, topic: { isActive: true, category: { isActive: true } } },
-        include: { topic: { select: { title: true, slug: true, level: true } } },
+        where: {
+          isActive: true,
+          topic: { isActive: true, category: { isActive: true } },
+        },
+        include: {
+          topic: { select: { title: true, slug: true, level: true } },
+        },
         take: 4,
         orderBy: { createdAt: 'desc' },
       }),
@@ -1026,7 +1047,9 @@ export class SearchService {
           q: topic.title,
         }),
       ),
-    ].sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0));
+    ].sort(
+      (a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0),
+    );
   }
 
   private async getQuickPractice() {
@@ -1037,7 +1060,11 @@ export class SearchService {
         orderBy: { updatedAt: 'desc' },
       }),
       this.prisma.readingArticle.findMany({
-        where: { isPublished: true, category: { isActive: true }, readTime: { lte: 8 } },
+        where: {
+          isPublished: true,
+          category: { isActive: true },
+          readTime: { lte: 8 },
+        },
         take: 4,
         orderBy: { updatedAt: 'desc' },
       }),
@@ -1053,7 +1080,9 @@ export class SearchService {
           skill: LearningSkill.LISTENING,
           level: this.toCefr(item.level),
           tags: [item.topic],
-          href: this.routes.href(SearchResultType.LISTENING_CONTENT, { id: item.id }),
+          href: this.routes.href(SearchResultType.LISTENING_CONTENT, {
+            id: item.id,
+          }),
           createdAt: item.createdAt,
           q: item.question,
         }),
@@ -1124,13 +1153,38 @@ export class SearchService {
     ]);
 
     return [
-      this.skillScore(LearningSkill.READING, reading._avg.accuracy, reading._count.id),
-      this.skillScore(LearningSkill.LISTENING, listening._avg.score, listening._count.id),
-      this.skillScore(LearningSkill.SPEAKING, speaking._avg.overallScore, speaking._count.id),
-      this.skillScore(LearningSkill.WRITING, writing._avg.overallScore, writing._count.id),
-      this.skillScore(LearningSkill.GRAMMAR, grammar._avg.score, grammar._count.id),
+      this.skillScore(
+        LearningSkill.READING,
+        reading._avg.accuracy,
+        reading._count.id,
+      ),
+      this.skillScore(
+        LearningSkill.LISTENING,
+        listening._avg.score,
+        listening._count.id,
+      ),
+      this.skillScore(
+        LearningSkill.SPEAKING,
+        speaking._avg.overallScore,
+        speaking._count.id,
+      ),
+      this.skillScore(
+        LearningSkill.WRITING,
+        writing._avg.overallScore,
+        writing._count.id,
+      ),
+      this.skillScore(
+        LearningSkill.GRAMMAR,
+        grammar._avg.score,
+        grammar._count.id,
+      ),
     ]
-      .filter((item): item is { skill: LearningSkill; score: number; sample: number } => Boolean(item))
+      .filter(
+        (
+          item,
+        ): item is { skill: LearningSkill; score: number; sample: number } =>
+          Boolean(item),
+      )
       .filter((item) => item.sample >= 2 && item.score < 70)
       .sort((a, b) => a.score - b.score);
   }
@@ -1158,12 +1212,19 @@ export class SearchService {
       }),
       this.prisma.speakingSession.findFirst({
         where: { userId, finishedAt: { not: null }, overallScore: { lt: 70 } },
-        include: { topic: { select: { title: true, slug: true } }, lesson: { select: { title: true } } },
+        include: {
+          topic: { select: { title: true, slug: true } },
+          lesson: { select: { title: true } },
+        },
         orderBy: { finishedAt: 'desc' },
       }),
       this.prisma.writingSession.findFirst({
         where: { userId, isSubmitted: true, overallScore: { lt: 70 } },
-        include: { lesson: { select: { title: true, topic: { select: { slug: true } } } } },
+        include: {
+          lesson: {
+            select: { title: true, topic: { select: { slug: true } } },
+          },
+        },
         orderBy: { submittedAt: 'desc' },
       }),
     ]);
@@ -1188,17 +1249,24 @@ export class SearchService {
       },
       speaking && {
         id: speaking.id,
-        title: speaking.lesson?.title || speaking.topic?.title || 'Speaking practice',
+        title:
+          speaking.lesson?.title ||
+          speaking.topic?.title ||
+          'Speaking practice',
         score: speaking.overallScore,
         skill: LearningSkill.SPEAKING,
-        href: speaking.topic?.slug ? `/speaking/topics/${speaking.topic.slug}` : '/speaking/topics',
+        href: speaking.topic?.slug
+          ? `/speaking/topics/${speaking.topic.slug}`
+          : '/speaking/topics',
       },
       writing && {
         id: writing.id,
         title: writing.lesson.title,
         score: writing.overallScore ?? 0,
         skill: LearningSkill.WRITING,
-        href: writing.lesson.topic?.slug ? `/writing/topics/${writing.lesson.topic.slug}` : '/writing/topics',
+        href: writing.lesson.topic?.slug
+          ? `/writing/topics/${writing.lesson.topic.slug}`
+          : '/writing/topics',
       },
     ].filter(Boolean) as Array<{
       id: string;
@@ -1237,7 +1305,12 @@ export class SearchService {
       imageUrl: input.imageUrl ?? null,
       tags: input.tags ?? [],
       status: SearchResultStatus.ACCESSIBLE,
-      score: this.baseScore(input.title, input.description, input.tags ?? [], input.q),
+      score: this.baseScore(
+        input.title,
+        input.description,
+        input.tags ?? [],
+        input.q,
+      ),
       href: input.href,
       popularity: input.popularity ?? 0,
       createdAt: input.createdAt ?? null,
@@ -1259,16 +1332,26 @@ export class SearchService {
     if (normalizedTitle === normalizedQuery) score += 100;
     else if (normalizedTitle.startsWith(normalizedQuery)) score += 75;
     else if (normalizedTitle.includes(normalizedQuery)) score += 55;
-    if (tags.some((tag) => this.normalizeForCompare(tag).includes(normalizedQuery))) {
+    if (
+      tags.some((tag) =>
+        this.normalizeForCompare(tag).includes(normalizedQuery),
+      )
+    ) {
       score += 25;
     }
-    if (description && this.normalizeForCompare(description).includes(normalizedQuery)) {
+    if (
+      description &&
+      this.normalizeForCompare(description).includes(normalizedQuery)
+    ) {
       score += 10;
     }
     return score;
   }
 
-  private normalizeQuery(value?: string, options: { allowEmpty?: boolean } = {}) {
+  private normalizeQuery(
+    value?: string,
+    options: { allowEmpty?: boolean } = {},
+  ) {
     const normalized = String(value ?? '')
       .normalize('NFKC')
       .replace(/[\u0000-\u001F\u007F]/g, ' ')
@@ -1299,7 +1382,11 @@ export class SearchService {
   ) {
     let boost = 0;
     if (item.skill && context.weakSkills.has(item.skill)) boost += 4;
-    if (item.level && context.currentLevel && item.level === context.currentLevel) {
+    if (
+      item.level &&
+      context.currentLevel &&
+      item.level === context.currentLevel
+    ) {
       boost += 3;
     }
     return boost;
@@ -1314,7 +1401,10 @@ export class SearchService {
         return (b.popularity ?? 0) - (a.popularity ?? 0) || b.score - a.score;
       }
       if (sort === SearchSort.LEVEL_ASC) {
-        return (CEFR_ORDER[a.level ?? 'A1'] ?? 99) - (CEFR_ORDER[b.level ?? 'A1'] ?? 99);
+        return (
+          (CEFR_ORDER[a.level ?? 'A1'] ?? 99) -
+          (CEFR_ORDER[b.level ?? 'A1'] ?? 99)
+        );
       }
       return (
         b.score - a.score ||
@@ -1333,14 +1423,21 @@ export class SearchService {
       : null;
   }
 
-  private skillScore(skill: LearningSkill, score: number | null, sample: number) {
+  private skillScore(
+    skill: LearningSkill,
+    score: number | null,
+    sample: number,
+  ) {
     if (score === null || Number.isNaN(score)) return null;
     return { skill, score: Math.round(score), sample };
   }
 
   private skillFromType(value: string): LearningSkill | null {
     const upper = value.toUpperCase();
-    return Object.values(LearningSkill).find((skill) => upper.includes(skill)) ?? null;
+    return (
+      Object.values(LearningSkill).find((skill) => upper.includes(skill)) ??
+      null
+    );
   }
 
   private skillLabel(skill: LearningSkill) {

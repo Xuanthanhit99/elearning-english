@@ -48,13 +48,13 @@ export default function ThemeToggle({
         aria-label={t("header.theme")}
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+        className="lumiverse-button-soft h-11 w-11 p-0 text-[var(--lumiverse-muted)]"
       >
         <ActiveIcon size={18} />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-12 z-50 w-44 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+        <div className="lumiverse-surface absolute right-0 top-14 z-50 w-44 rounded-3xl p-1.5">
           {OPTIONS.map(({ value, icon: Icon }) => (
             <button
               key={value}
@@ -62,8 +62,8 @@ export default function ThemeToggle({
               onClick={() => choose(value)}
               className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-bold transition ${
                 value === theme
-                  ? "bg-violet-50 text-violet-700 dark:bg-violet-950/40"
-                  : "text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"
+                  ? "bg-blue-50 text-[var(--lumiverse-primary)] dark:bg-white/10"
+                  : "text-[var(--lumiverse-muted)] hover:bg-white/70 dark:hover:bg-white/8"
               }`}
             >
               <Icon size={16} />

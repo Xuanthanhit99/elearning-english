@@ -7,7 +7,6 @@ import {
   Bot,
   CheckCircle2,
   Headphones,
-  Loader2,
   Mic2,
   PencilLine,
   RefreshCw,
@@ -26,6 +25,13 @@ import {
   PlacementDashboardData,
   retakePlacement,
 } from '@/src/lib/placement-dashboard-api';
+import {
+  LumiverseButton,
+  LumiverseDialog,
+  LumiverseDialogCloseButton,
+  LumiverseSkeleton,
+  LumiverseState,
+} from '@/src/Components/UI/Lumiverse';
 
 const skillMeta: Record<
   LearningSkill,
@@ -111,14 +117,35 @@ export default function PlacementDashboardScreen() {
       .join(' ');
   }, [data]);
 
+  const radarSummary = useMemo(() => {
+    if (!data) return '';
+    return data.skills
+      .map((item) => {
+        const label = skillMeta[item.skill].label;
+        const score = item.status === 'SKIPPED' ? 'chưa đánh giá' : `${Math.round(item.score)}/100`;
+        return `${label}: ${score}`;
+      })
+      .join(', ');
+  }, [data]);
+
   if (loading) {
     return (
-      <main className="flex min-h-[70vh] items-center justify-center p-6">
-        <div className="text-center">
-          <Loader2 className="mx-auto h-10 w-10 animate-spin text-violet-600" />
-          <p className="mt-4 font-black text-slate-900">
-            Đang tải Placement Dashboard...
-          </p>
+      <main
+        className="min-h-screen px-4 py-6 sm:px-6"
+        aria-busy="true"
+        aria-live="polite"
+      >
+        <span className="sr-only">Đang tải Placement Dashboard…</span>
+        <div className="mx-auto max-w-[1500px] space-y-5">
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(390px,0.95fr)]">
+            <LumiverseSkeleton className="h-[320px]" />
+            <LumiverseSkeleton className="h-[320px]" />
+          </div>
+          <div className="grid gap-4 lg:grid-cols-3">
+            <LumiverseSkeleton className="h-[180px]" />
+            <LumiverseSkeleton className="h-[180px]" />
+            <LumiverseSkeleton className="h-[180px]" />
+          </div>
         </div>
       </main>
     );
@@ -126,12 +153,15 @@ export default function PlacementDashboardScreen() {
 
   if (!data) {
     return (
-      <StatusState
-        title="Không thể tải dữ liệu"
-        description={error || 'Vui lòng thử lại.'}
-        buttonLabel="Thử lại"
-        onClick={() => void load()}
-      />
+      <main className="mx-auto flex min-h-[70vh] max-w-2xl items-center justify-center px-4 py-10">
+        <LumiverseState
+          title="Không thể tải dữ liệu"
+          description={error || 'Vui lòng thử lại.'}
+          actionLabel="Thử lại"
+          tone="error"
+          onAction={() => void load()}
+        />
+      </main>
     );
   }
 
@@ -178,15 +208,15 @@ export default function PlacementDashboardScreen() {
   if (!latest) return null;
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(to_bottom,#faf9ff,#fff)] px-4 py-6 sm:px-6">
+    <main className="min-h-screen px-4 py-6 sm:px-6">
       <div className="mx-auto max-w-[1500px] space-y-5">
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(390px,0.95fr)]">
-          <section className="rounded-[30px] border border-violet-100 bg-white p-6 shadow-[0_18px_60px_rgba(76,29,149,0.08)]">
+          <section className="lumiverse-card p-6">
             <div className="grid items-center gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
               <div className="relative h-[300px]">
                 <Image
                   src="/images/placement/poppy-completed.png"
-                  alt="Poppy chúc mừng"
+                  alt="Lumi chúc mừng"
                   fill
                   priority
                   className="object-contain"
@@ -194,16 +224,16 @@ export default function PlacementDashboardScreen() {
               </div>
 
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-black text-emerald-700">
-                  <CheckCircle2 className="h-4 w-4" />
+                <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-black text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                  <CheckCircle2 aria-hidden className="h-4 w-4" />
                   Đã hoàn thành
                 </div>
 
-                <h1 className="mt-4 text-4xl font-black text-slate-950">
+                <h1 className="mt-4 text-4xl font-black text-[var(--lumiverse-ink)]">
                   Placement Test!
                 </h1>
 
-                <p className="mt-2 leading-7 text-slate-600">
+                <p className="mt-2 leading-7 text-[var(--lumiverse-muted)]">
                   Bạn đã hoàn thành bài kiểm tra đánh giá trình độ tiếng Anh.
                 </p>
 
@@ -225,7 +255,7 @@ export default function PlacementDashboardScreen() {
                   />
                 </div>
 
-                <p className="mt-4 text-sm text-slate-500">
+                <p className="mt-4 text-sm text-[var(--lumiverse-muted)]">
                   {latest.completedAt
                     ? new Date(latest.completedAt).toLocaleString('vi-VN')
                     : 'Vừa hoàn thành'}
@@ -234,8 +264,8 @@ export default function PlacementDashboardScreen() {
             </div>
           </section>
 
-          <aside className="rounded-[30px] border border-violet-100 bg-white p-6 shadow-[0_18px_60px_rgba(76,29,149,0.08)]">
-            <h2 className="text-xl font-black text-slate-950">
+          <aside className="lumiverse-card p-6">
+            <h2 className="text-xl font-black text-[var(--lumiverse-ink)]">
               Bạn muốn làm gì tiếp theo?
             </h2>
 
@@ -280,10 +310,10 @@ export default function PlacementDashboardScreen() {
               />
             </div>
 
-            <div className="mt-5 rounded-2xl bg-violet-50 p-4">
+            <div className="mt-5 rounded-2xl bg-blue-50 p-4 dark:bg-white/8">
               <div className="flex gap-3">
-                <Sparkles className="h-5 w-5 shrink-0 text-violet-600" />
-                <p className="text-sm leading-6 text-slate-600">
+                <Sparkles aria-hidden className="h-5 w-5 shrink-0 text-[var(--lumiverse-primary)]" />
+                <p className="text-sm leading-6 text-[var(--lumiverse-muted)]">
                   Luyện tập thường xuyên sẽ giúp cập nhật lộ trình chính xác hơn
                   trong lần kiểm tra tiếp theo.
                 </p>
@@ -304,20 +334,20 @@ export default function PlacementDashboardScreen() {
             items={latest.improvements}
             icon={Target}
           />
-          <div className="rounded-[28px] border border-violet-100 bg-white p-6 shadow-[0_14px_45px_rgba(76,29,149,0.07)]">
+          <div className="lumiverse-card p-6">
             <div className="flex items-start gap-4">
-              <Rocket className="h-10 w-10 shrink-0 text-violet-600" />
+              <Rocket aria-hidden className="h-10 w-10 shrink-0 text-[var(--lumiverse-primary)]" />
               <div>
-                <h2 className="text-xl font-black text-slate-950">
+                <h2 className="text-xl font-black text-[var(--lumiverse-ink)]">
                   Dự đoán tiến bộ
                 </h2>
-                <p className="mt-3 leading-7 text-slate-600">
+                <p className="mt-3 leading-7 text-[var(--lumiverse-muted)]">
                   Nếu học đều 20 phút/ngày, bạn có thể đạt{' '}
-                  <strong className="text-violet-700">
+                  <strong className="text-[var(--lumiverse-primary)]">
                     {latest.projectedLevel ?? 'mức tiếp theo'}
                   </strong>{' '}
                   trong{' '}
-                  <strong>
+                  <strong className="text-[var(--lumiverse-ink)]">
                     {latest.projectedWeeksMin ?? 0}–
                     {latest.projectedWeeksMax ?? 0} tuần
                   </strong>
@@ -329,8 +359,8 @@ export default function PlacementDashboardScreen() {
         </section>
 
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(390px,0.95fr)]">
-          <div className="rounded-[30px] border border-violet-100 bg-white p-6 shadow-[0_18px_60px_rgba(76,29,149,0.08)]">
-            <h2 className="text-2xl font-black text-slate-950">
+          <div className="lumiverse-card p-6">
+            <h2 className="text-2xl font-black text-[var(--lumiverse-ink)]">
               Tổng quan kỹ năng
             </h2>
 
@@ -338,6 +368,7 @@ export default function PlacementDashboardScreen() {
               <RadarChart
                 points={radarPoints}
                 overall={latest.overallScore}
+                summary={radarSummary}
               />
 
               <div className="space-y-3">
@@ -348,34 +379,34 @@ export default function PlacementDashboardScreen() {
                   return (
                     <div
                       key={item.skill}
-                      className="grid gap-4 rounded-2xl border border-slate-100 p-4 md:grid-cols-[160px_90px_110px_minmax(0,1fr)]"
+                      className="grid gap-4 rounded-2xl border border-[var(--lumiverse-border)] p-4 md:grid-cols-[160px_90px_110px_minmax(0,1fr)]"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
-                          <Icon className="h-5 w-5" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[var(--lumiverse-primary)] dark:bg-white/8">
+                          <Icon aria-hidden className="h-5 w-5" />
                         </div>
-                        <span className="font-black text-slate-900">
+                        <span className="font-black text-[var(--lumiverse-ink)]">
                           {meta.label}
                         </span>
                       </div>
 
-                      <div className="text-2xl font-black text-violet-700">
+                      <div className="text-2xl font-black text-[var(--lumiverse-primary)]">
                         {item.status === 'SKIPPED'
                           ? '—'
                           : Math.round(item.score)}
-                        <span className="text-sm text-slate-400">
+                        <span className="text-sm text-[var(--lumiverse-muted)]">
                           /100
                         </span>
                       </div>
 
-                      <span className="self-start rounded-full bg-slate-50 px-3 py-1 text-center text-xs font-bold text-slate-600">
+                      <span className="self-start rounded-full bg-black/5 px-3 py-1 text-center text-xs font-bold text-[var(--lumiverse-muted)] dark:bg-white/8">
                         {item.label ?? 'Đã đánh giá'}
                       </span>
 
-                      <div className="text-sm leading-6 text-slate-600">
+                      <div className="text-sm leading-6 text-[var(--lumiverse-muted)]">
                         <p>{item.feedback}</p>
                         {item.improvements[0] ? (
-                          <p className="mt-1 text-orange-600">
+                          <p className="mt-1 text-orange-600 dark:text-orange-400">
                             Cần cải thiện: {item.improvements[0]}
                           </p>
                         ) : null}
@@ -413,46 +444,41 @@ export default function PlacementDashboardScreen() {
           />
         </section>
 
-        <section className="rounded-[30px] border border-violet-100 bg-gradient-to-r from-violet-50 to-fuchsia-50 p-6">
+        <section className="lumiverse-card p-6">
           <div className="grid items-center gap-5 lg:grid-cols-[minmax(0,1fr)_auto]">
             <div>
-              <h2 className="text-2xl font-black text-slate-950">
+              <h2 className="text-2xl font-black text-[var(--lumiverse-ink)]">
                 Tiếp tục hành trình học tập của bạn!
               </h2>
-              <p className="mt-2 max-w-3xl leading-7 text-slate-600">
+              <p className="mt-2 max-w-3xl leading-7 text-[var(--lumiverse-muted)]">
                 Bạn đang ở trình độ {latest.overallLevel}. Hãy tiếp tục học
                 theo lộ trình AI để cải thiện các kỹ năng ưu tiên.
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={() =>
-                router.push(data.actions.continueLearningUrl)
-              }
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-700 to-fuchsia-600 px-6 py-4 font-black text-white"
+            <LumiverseButton
+              onClick={() => router.push(data.actions.continueLearningUrl)}
             >
               Tiếp tục học
-              <ArrowRight className="h-5 w-5" />
-            </button>
+              <ArrowRight aria-hidden className="h-5 w-5" />
+            </LumiverseButton>
           </div>
         </section>
 
         {error ? (
-          <p className="rounded-2xl bg-red-50 p-4 text-sm text-red-600">
+          <p className="rounded-2xl bg-rose-50 p-4 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
             {error}
           </p>
         ) : null}
       </div>
 
-      {showRetakeModal ? (
-        <RetakeModal
-          message={data.retake.message}
-          loading={retaking}
-          onClose={() => setShowRetakeModal(false)}
-          onConfirm={() => void handleRetake(true)}
-        />
-      ) : null}
+      <RetakeDialog
+        open={showRetakeModal}
+        message={data.retake.message}
+        loading={retaking}
+        onClose={() => setShowRetakeModal(false)}
+        onConfirm={() => void handleRetake(true)}
+      />
     </main>
   );
 }
@@ -464,22 +490,18 @@ function StatusState(props: {
   onClick: () => void;
 }) {
   return (
-    <main className="flex min-h-[75vh] items-center justify-center bg-slate-50 p-6">
-      <div className="w-full max-w-xl rounded-[30px] bg-white p-9 text-center shadow-sm">
-        <Bot className="mx-auto h-12 w-12 text-violet-600" />
-        <h1 className="mt-5 text-3xl font-black text-slate-950">
+    <main className="flex min-h-[75vh] items-center justify-center p-6">
+      <div className="w-full max-w-xl lumiverse-card p-9 text-center">
+        <Bot aria-hidden className="mx-auto h-12 w-12 text-[var(--lumiverse-primary)]" />
+        <h1 className="mt-5 text-3xl font-black text-[var(--lumiverse-ink)]">
           {props.title}
         </h1>
-        <p className="mt-3 leading-7 text-slate-600">
+        <p className="mt-3 leading-7 text-[var(--lumiverse-muted)]">
           {props.description}
         </p>
-        <button
-          type="button"
-          onClick={props.onClick}
-          className="mt-7 rounded-xl bg-violet-600 px-7 py-4 font-black text-white"
-        >
+        <LumiverseButton className="mt-7" onClick={props.onClick}>
           {props.buttonLabel}
-        </button>
+        </LumiverseButton>
       </div>
     </main>
   );
@@ -491,12 +513,12 @@ function MetricCard(props: {
   footer: string;
 }) {
   return (
-    <div className="rounded-2xl border border-violet-100 p-5 text-center">
-      <p className="text-sm font-bold text-slate-500">{props.title}</p>
-      <p className="mt-2 text-4xl font-black text-violet-700">
+    <div className="rounded-2xl border border-[var(--lumiverse-border)] p-5 text-center">
+      <p className="text-sm font-bold text-[var(--lumiverse-muted)]">{props.title}</p>
+      <p className="mt-2 text-4xl font-black text-[var(--lumiverse-primary)]">
         {props.value}
       </p>
-      <p className="mt-2 text-xs text-slate-500">{props.footer}</p>
+      <p className="mt-2 text-xs text-[var(--lumiverse-muted)]">{props.footer}</p>
     </div>
   );
 }
@@ -516,25 +538,25 @@ function ActionRow(props: {
       type="button"
       disabled={props.disabled}
       onClick={props.onClick}
-      className="flex w-full items-start gap-4 rounded-2xl border border-slate-100 p-4 text-left transition hover:border-violet-200 hover:bg-violet-50 disabled:opacity-50"
+      className="flex w-full items-start gap-4 rounded-2xl border border-[var(--lumiverse-border)] p-4 text-left transition hover:border-[var(--lumiverse-primary)] hover:bg-blue-50 disabled:opacity-50 dark:hover:bg-white/8"
     >
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-100 text-violet-600">
-        <Icon className="h-6 w-6" />
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[var(--lumiverse-primary)] dark:bg-white/8">
+        <Icon aria-hidden className="h-6 w-6" />
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="font-black text-slate-950">{props.title}</p>
+          <p className="font-black text-[var(--lumiverse-ink)]">{props.title}</p>
           {props.badge ? (
-            <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-500">
+            <span className="rounded-full bg-black/5 px-2 py-1 text-[11px] font-bold text-[var(--lumiverse-muted)] dark:bg-white/8">
               {props.badge}
             </span>
           ) : null}
         </div>
-        <p className="mt-1 text-sm leading-6 text-slate-500">
+        <p className="mt-1 text-sm leading-6 text-[var(--lumiverse-muted)]">
           {props.description}
         </p>
       </div>
-      <ArrowRight className="mt-3 h-5 w-5 text-violet-500" />
+      <ArrowRight aria-hidden className="mt-3 h-5 w-5 shrink-0 text-[var(--lumiverse-primary)]" />
     </button>
   );
 }
@@ -549,25 +571,26 @@ function SummaryCard(props: {
 
   return (
     <div
-      className={`rounded-[28px] border p-6 ${
+      className={`lumiverse-card p-6 ${
         props.positive
-          ? 'border-emerald-100 bg-emerald-50/40'
-          : 'border-orange-100 bg-orange-50/40'
+          ? 'border-emerald-200/60 bg-emerald-50/40 dark:bg-emerald-500/10'
+          : 'border-orange-200/60 bg-orange-50/40 dark:bg-orange-500/10'
       }`}
     >
       <div className="flex items-center gap-3">
         <Icon
+          aria-hidden
           className={`h-7 w-7 ${
-            props.positive ? 'text-emerald-600' : 'text-orange-600'
+            props.positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-orange-600 dark:text-orange-400'
           }`}
         />
-        <h2 className="text-xl font-black text-slate-950">
+        <h2 className="text-xl font-black text-[var(--lumiverse-ink)]">
           {props.title}
         </h2>
       </div>
       <div className="mt-4 space-y-2">
         {props.items.slice(0, 4).map((item) => (
-          <p key={item} className="text-sm leading-6 text-slate-700">
+          <p key={item} className="text-sm leading-6 text-[var(--lumiverse-ink)]">
             ✓ {item}
           </p>
         ))}
@@ -576,10 +599,15 @@ function SummaryCard(props: {
   );
 }
 
-function RadarChart(props: { points: string; overall: number }) {
+function RadarChart(props: { points: string; overall: number; summary: string }) {
   return (
     <div className="flex items-center justify-center">
-      <svg viewBox="0 0 220 220" className="h-[250px] w-[250px]">
+      <svg
+        viewBox="0 0 220 220"
+        className="h-[250px] w-[250px]"
+        role="img"
+        aria-label={`Biểu đồ tổng quan kỹ năng. Điểm tổng: ${Math.round(props.overall)}/100. ${props.summary}`}
+      >
         {[84, 64, 44, 24].map((radius) => (
           <polygon
             key={radius}
@@ -592,17 +620,17 @@ function RadarChart(props: { points: string; overall: number }) {
               })
               .join(' ')}
             fill="none"
-            stroke="#ddd6fe"
+            stroke="var(--lumiverse-border)"
           />
         ))}
         <polygon
           points={props.points}
-          fill="rgba(124,58,237,0.17)"
-          stroke="#7c3aed"
+          fill="rgba(23,70,255,0.16)"
+          stroke="var(--lumiverse-primary)"
           strokeWidth="3"
         />
-        <circle cx="110" cy="110" r="30" fill="white" />
-        <text x="110" y="106" textAnchor="middle" fontSize="12" fill="#64748b">
+        <circle cx="110" cy="110" r="30" fill="var(--lumiverse-card)" />
+        <text x="110" y="106" textAnchor="middle" fontSize="12" fill="var(--lumiverse-muted)">
           Overall
         </text>
         <text
@@ -611,7 +639,7 @@ function RadarChart(props: { points: string; overall: number }) {
           textAnchor="middle"
           fontSize="22"
           fontWeight="800"
-          fill="#5b21b6"
+          fill="var(--lumiverse-primary)"
         >
           {Math.round(props.overall)}
         </text>
@@ -624,24 +652,24 @@ function PriorityPanel(props: {
   priorities: PlacementDashboardData['priorities'];
 }) {
   return (
-    <section className="rounded-[28px] border border-violet-100 bg-white p-6">
-      <h2 className="text-xl font-black text-slate-950">
+    <section className="lumiverse-card p-6">
+      <h2 className="text-xl font-black text-[var(--lumiverse-ink)]">
         Ưu tiên cải thiện (AI gợi ý)
       </h2>
       <div className="mt-4 space-y-3">
         {props.priorities.map((item) => (
           <div
             key={item.id}
-            className="flex items-start gap-3 rounded-2xl border border-slate-100 p-4"
+            className="flex items-start gap-3 rounded-2xl border border-[var(--lumiverse-border)] p-4"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-600 font-black text-white">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--lumiverse-primary)] font-black text-white">
               {item.priority}
             </span>
             <div>
-              <p className="font-black text-violet-700">
+              <p className="font-black text-[var(--lumiverse-primary)]">
                 {skillMeta[item.skill].label}
               </p>
-              <p className="mt-1 text-sm leading-6 text-slate-600">
+              <p className="mt-1 text-sm leading-6 text-[var(--lumiverse-muted)]">
                 {item.reason}
               </p>
             </div>
@@ -656,33 +684,30 @@ function LearningPathPanel(props: {
   phases: PlacementDashboardData['learningPath'];
 }) {
   return (
-    <section className="rounded-[28px] border border-violet-100 bg-white p-6">
-      <h2 className="text-xl font-black text-slate-950">
+    <section className="lumiverse-card p-6">
+      <h2 className="text-xl font-black text-[var(--lumiverse-ink)]">
         Lộ trình học tập cá nhân hóa
       </h2>
       <div className="mt-4 grid gap-3">
         {props.phases.map((phase) => (
           <div
             key={phase.id}
-            className="rounded-2xl border border-violet-100 p-4"
+            className="rounded-2xl border border-[var(--lumiverse-border)] p-4"
           >
-            <p className="text-sm font-black text-violet-700">
+            <p className="text-sm font-black text-[var(--lumiverse-primary)]">
               Giai đoạn {phase.phase}
             </p>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-[var(--lumiverse-muted)]">
               {phase.weeksMin}–{phase.weeksMax} tuần
             </p>
-            <h3 className="mt-3 font-black text-slate-950">
+            <h3 className="mt-3 font-black text-[var(--lumiverse-ink)]">
               {phase.title}
             </h3>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
+            <p className="mt-2 text-sm leading-6 text-[var(--lumiverse-muted)]">
               {phase.description}
             </p>
-            <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
-              <div
-                className="h-full rounded-full bg-violet-600"
-                style={{ width: `${phase.progress}%` }}
-              />
+            <div className="mt-4 lumiverse-progress h-2">
+              <div style={{ width: `${phase.progress}%` }} />
             </div>
           </div>
         ))}
@@ -697,15 +722,15 @@ function HistoryPanel(props: {
   onSelect: (url: string) => void;
 }) {
   return (
-    <section className="rounded-[28px] border border-violet-100 bg-white p-6">
+    <section className="lumiverse-card p-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-black text-slate-950">
+        <h2 className="text-lg font-black text-[var(--lumiverse-ink)]">
           Lịch sử bài kiểm tra
         </h2>
         <button
           type="button"
           onClick={props.onViewAll}
-          className="text-sm font-bold text-violet-700"
+          className="text-sm font-bold text-[var(--lumiverse-primary)]"
         >
           Xem tất cả
         </button>
@@ -716,23 +741,23 @@ function HistoryPanel(props: {
             key={item.testId}
             type="button"
             onClick={() => props.onSelect(item.resultUrl)}
-            className="flex w-full items-center justify-between rounded-xl bg-slate-50 p-3 text-left"
+            className="flex w-full items-center justify-between rounded-xl bg-black/[0.03] p-3 text-left dark:bg-white/5"
           >
             <div>
-              <p className="text-sm font-bold text-slate-700">
+              <p className="text-sm font-bold text-[var(--lumiverse-ink)]">
                 {item.completedAt
                   ? new Date(item.completedAt).toLocaleDateString('vi-VN')
                   : 'Không rõ ngày'}
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-[var(--lumiverse-muted)]">
                 {item.isLatest ? 'Kết quả gần nhất' : levelLabel(item.level)}
               </p>
             </div>
             <div className="text-right">
-              <span className="rounded-full bg-violet-600 px-3 py-1 text-xs font-black text-white">
+              <span className="rounded-full bg-[var(--lumiverse-primary)] px-3 py-1 text-xs font-black text-white">
                 {item.level}
               </span>
-              <p className="mt-1 text-xs font-bold text-slate-500">
+              <p className="mt-1 text-xs font-bold text-[var(--lumiverse-muted)]">
                 {Math.round(item.score)}/100
               </p>
             </div>
@@ -748,8 +773,8 @@ function ComparisonPanel(props: {
   currentLevel: string;
 }) {
   return (
-    <section className="rounded-[28px] border border-violet-100 bg-white p-6">
-      <h2 className="text-lg font-black text-slate-950">
+    <section className="lumiverse-card p-6">
+      <h2 className="text-lg font-black text-[var(--lumiverse-ink)]">
         So sánh tiến bộ
       </h2>
       {props.comparison.hasPrevious ? (
@@ -774,7 +799,7 @@ function ComparisonPanel(props: {
           />
         </div>
       ) : (
-        <p className="mt-5 rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">
+        <p className="mt-5 rounded-2xl bg-black/[0.03] p-5 text-sm text-[var(--lumiverse-muted)] dark:bg-white/5">
           Đây là kết quả đầu tiên. Sau lần kiểm tra tiếp theo, hệ thống sẽ
           hiển thị tiến bộ tại đây.
         </p>
@@ -789,11 +814,11 @@ function CompareMetric(props: {
   positive?: boolean;
 }) {
   return (
-    <div className="rounded-2xl bg-slate-50 p-4 text-center">
-      <p className="text-xs font-bold text-slate-500">{props.title}</p>
+    <div className="rounded-2xl bg-black/[0.03] p-4 text-center dark:bg-white/5">
+      <p className="text-xs font-bold text-[var(--lumiverse-muted)]">{props.title}</p>
       <p
         className={`mt-2 text-2xl font-black ${
-          props.positive ? 'text-emerald-600' : 'text-violet-700'
+          props.positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-[var(--lumiverse-primary)]'
         }`}
       >
         {props.value}
@@ -807,8 +832,8 @@ function CoursePanel(props: {
   onSelect: (slug: string | null) => void;
 }) {
   return (
-    <section className="rounded-[28px] border border-violet-100 bg-white p-6">
-      <h2 className="text-lg font-black text-slate-950">
+    <section className="lumiverse-card p-6">
+      <h2 className="text-lg font-black text-[var(--lumiverse-ink)]">
         Khóa học AI đề xuất cho bạn
       </h2>
       <div className="mt-4 grid gap-3">
@@ -817,9 +842,9 @@ function CoursePanel(props: {
             key={course.id}
             type="button"
             onClick={() => props.onSelect(course.slug)}
-            className="flex gap-4 rounded-2xl border border-slate-100 p-3 text-left hover:bg-violet-50"
+            className="flex gap-4 rounded-2xl border border-[var(--lumiverse-border)] p-3 text-left hover:bg-blue-50 dark:hover:bg-white/8"
           >
-            <div className="relative h-20 w-24 shrink-0 overflow-hidden rounded-xl bg-violet-50">
+            <div className="relative h-20 w-24 shrink-0 overflow-hidden rounded-xl bg-blue-50 dark:bg-white/8">
               {course.thumbnail ? (
                 <Image
                   src={course.thumbnail}
@@ -828,16 +853,16 @@ function CoursePanel(props: {
                   className="object-cover"
                 />
               ) : (
-                <BookOpen className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 text-violet-500" />
+                <BookOpen aria-hidden className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 text-[var(--lumiverse-primary)]" />
               )}
             </div>
             <div>
-              <p className="font-black text-slate-950">{course.title}</p>
+              <p className="font-black text-[var(--lumiverse-ink)]">{course.title}</p>
               <p className="mt-1 text-xs text-amber-500">
                 ★ {course.rating ?? 0}
                 {course.reviews !== null ? ` (${course.reviews})` : ''}
               </p>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-[var(--lumiverse-muted)]">
                 {course.lessonCount ?? 0} bài học
               </p>
             </div>
@@ -848,47 +873,36 @@ function CoursePanel(props: {
   );
 }
 
-function RetakeModal(props: {
+function RetakeDialog(props: {
+  open: boolean;
   message: string;
   loading: boolean;
   onClose: () => void;
   onConfirm: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-[28px] bg-white p-7 shadow-2xl">
-        <h2 className="text-2xl font-black text-slate-950">
+    <LumiverseDialog open={props.open} onClose={props.onClose} titleId="dashboard-retake-title">
+      <div className="flex items-start justify-between gap-4">
+        <h2 id="dashboard-retake-title" className="text-2xl font-black text-[var(--lumiverse-ink)]">
           Làm lại Placement Test?
         </h2>
-        <p className="mt-3 leading-7 text-slate-600">
-          {props.message}
-        </p>
-        <div className="mt-5 rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">
-          Kết quả mới sẽ được lưu riêng và không xóa lịch sử cũ.
-        </div>
-        <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            onClick={props.onClose}
-            disabled={props.loading}
-            className="rounded-xl border border-slate-200 px-5 py-3 font-bold text-slate-700"
-          >
-            Quay lại
-          </button>
-          <button
-            type="button"
-            onClick={props.onConfirm}
-            disabled={props.loading}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-3 font-black text-white"
-          >
-            {props.loading ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : null}
-            Vẫn làm lại
-          </button>
-        </div>
+        <LumiverseDialogCloseButton onClose={props.onClose} label="Đóng hộp thoại" />
       </div>
-    </div>
+      <p className="mt-3 leading-7 text-[var(--lumiverse-muted)]">
+        {props.message}
+      </p>
+      <div className="mt-5 rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
+        Kết quả mới sẽ được lưu riêng và không xóa lịch sử cũ.
+      </div>
+      <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <LumiverseButton tone="ghost" disabled={props.loading} onClick={props.onClose}>
+          Quay lại
+        </LumiverseButton>
+        <LumiverseButton loading={props.loading} onClick={props.onConfirm}>
+          Vẫn làm lại
+        </LumiverseButton>
+      </div>
+    </LumiverseDialog>
   );
 }
 

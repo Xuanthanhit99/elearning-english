@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { LearningSkill } from '@prisma/client';
 import type { Request } from 'express';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
@@ -27,7 +35,10 @@ export class ProgressController {
   }
 
   @Get('skills/:skill')
-  getSkill(@Param('skill') skill: LearningSkill, @Req() req: AuthenticatedRequest) {
+  getSkill(
+    @Param('skill') skill: LearningSkill,
+    @Req() req: AuthenticatedRequest,
+  ) {
     return this.progressService.getSkillProgress(req.user.id, skill);
   }
 

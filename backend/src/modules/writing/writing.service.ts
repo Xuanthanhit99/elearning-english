@@ -1103,7 +1103,9 @@ Rules:
     }
 
     if (session.isSubmitted) {
-      throw new BadRequestException('Bài Writing đã hoàn thành, không thể sửa bản nháp.');
+      throw new BadRequestException(
+        'Bài Writing đã hoàn thành, không thể sửa bản nháp.',
+      );
     }
 
     const wordCount = this.countWords(body.content);

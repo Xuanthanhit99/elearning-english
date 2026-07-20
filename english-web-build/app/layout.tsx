@@ -5,6 +5,7 @@ import ThemeInitializer, {
   themeAntiFlashScript,
 } from "@/src/Components/ThemeInitializer";
 import LanguageInitializer from "@/src/Components/LanguageInitializer";
+import AuthInitializer from "@/src/Components/Auth/AuthInitializer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,8 +18,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PoppyLingo",
-  description: "Học ngôn ngữ cùng Miu",
+  title: "Lumiverse",
+  description: "Học ngôn ngữ cùng Lumi",
 };
 
 export default function RootLayout({
@@ -34,13 +35,13 @@ export default function RootLayout({
     >
       <head>
         <script
-          // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{ __html: themeAntiFlashScript }}
         />
       </head>
-      <body className="min-h-screen antialiased border-[#f2dfc8] bg-[#fff4e8] dark:border-slate-800 dark:bg-slate-950">
+      <body className="min-h-screen antialiased">
         <ThemeInitializer />
         <LanguageInitializer />
+        <AuthInitializer />
         {children}
       </body>
     </html>

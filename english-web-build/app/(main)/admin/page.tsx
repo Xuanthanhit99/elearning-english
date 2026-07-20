@@ -142,7 +142,7 @@ export default function AdminBackofficePage() {
               <ShieldCheck size={15} />
               Admin Backoffice
             </div>
-            <h1 className="mt-3 text-2xl font-black md:text-3xl">Trung tâm vận hành PoppyLingo</h1>
+            <h1 className="mt-3 text-2xl font-black md:text-3xl">Trung tâm vận hành Lumiverse</h1>
             <p className="mt-1 max-w-2xl text-sm font-semibold text-slate-500">
               Quản trị người dùng, nội dung, moderation, queue, health và audit log trên cùng một màn.
             </p>

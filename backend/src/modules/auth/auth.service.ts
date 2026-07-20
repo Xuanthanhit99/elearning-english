@@ -321,7 +321,10 @@ export class AuthService {
 
     res.clearCookie('refresh_token', clearAuthCookieOptions);
     res.clearCookie('access_token', clearAuthCookieOptions);
-    res.clearCookie('logged_in', { ...clearAuthCookieOptions, httpOnly: false });
+    res.clearCookie('logged_in', {
+      ...clearAuthCookieOptions,
+      httpOnly: false,
+    });
     return {
       message: 'Đăng xuất thành công',
     };
@@ -437,9 +440,13 @@ export class AuthService {
         bio: true,
         goal: true,
         interests: true,
+        phone: true,
         level: true,
         xp: true,
         isPro: true,
+        role: true,
+        englishLevel: true,
+        learningGoal: true,
         createAt: true,
       },
     });
@@ -589,7 +596,7 @@ export class AuthService {
 
     return this.prisma.user.update({
       where: { id: userId },
-      data: dto,
+      data,
       select: {
         id: true,
         fullname: true,

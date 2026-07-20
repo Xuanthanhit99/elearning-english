@@ -48,7 +48,7 @@ export default function Footer() {
               <div className="rounded-[34px] border border-white/20 bg-white/10 p-5 backdrop-blur">
                 <Image
                   src="/cat-home.jpg"
-                  alt="Poppy mascot"
+                  alt="Lumi mascot"
                   width={220}
                   height={220}
                   className="rounded-[28px] object-cover"

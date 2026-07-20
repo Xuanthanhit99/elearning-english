@@ -16,7 +16,7 @@ export async function sendChatMessage(
     return (data?.data ?? data) as SendMessageResponse;
   } catch (error) {
     throw new Error(
-      getApiErrorMessage(error, "Miu đang lag xíu, thử lại sau nhé"),
+      getApiErrorMessage(error, "Lumi đang lag xíu, thử lại sau nhé"),
     );
   }
 }

@@ -62,7 +62,11 @@ export class AdminDashboardController {
     @Body() dto: AdminUserActionDto,
     @Req() req: AdminRequest,
   ) {
-    return this.adminDashboardService.applyUserAction(id, dto, this.getActor(req));
+    return this.adminDashboardService.applyUserAction(
+      id,
+      dto,
+      this.getActor(req),
+    );
   }
 
   @Get('content')

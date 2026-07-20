@@ -1,5 +1,13 @@
 import { Transform } from 'class-transformer';
-import { IsEnum, IsInt, IsISO8601, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsISO8601,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 import { LearningSkill } from '@prisma/client';
 
 export enum UnifiedProgressStatus {

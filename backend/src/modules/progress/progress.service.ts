@@ -171,7 +171,10 @@ export class ProgressService {
   async getProgressOverview(userId: string) {
     const dashboard = await this.dashboardService.getDashboard(userId);
     const [history, inProgress] = await Promise.all([
-      this.getUnifiedHistory(userId, { limit: 8, range: ProgressRange.THIRTY_DAYS }),
+      this.getUnifiedHistory(userId, {
+        limit: 8,
+        range: ProgressRange.THIRTY_DAYS,
+      }),
       this.getInProgressItems(userId),
     ]);
 
@@ -195,8 +198,9 @@ export class ProgressService {
           0,
         totalXp: dashboard.xp?.total ?? 0,
         currentStreak: dashboard.currentStreak ?? 0,
-        activeSkills: dashboard.skillProgress.filter((skill) => skill.percent > 0)
-          .length,
+        activeSkills: dashboard.skillProgress.filter(
+          (skill) => skill.percent > 0,
+        ).length,
       },
       learningPath: dashboard.learningPath
         ? {
@@ -215,7 +219,11 @@ export class ProgressService {
           }
         : {
             state: 'NOT_CREATED',
-            action: { type: 'VIEW_LESSON', label: 'Take placement test', href: '/placement' },
+            action: {
+              type: 'VIEW_LESSON',
+              label: 'Take placement test',
+              href: '/placement',
+            },
           },
       skills: await this.getSkillProgress(userId),
       inProgress: inProgress.items.slice(0, 5),
@@ -237,7 +245,9 @@ export class ProgressService {
     const skills = dashboard.skillProgress
       .filter((item) => !skill || item.key === skill)
       .map((item) => {
-        const skillActivities = activities.filter((activity) => activity.skill === item.key);
+        const skillActivities = activities.filter(
+          (activity) => activity.skill === item.key,
+        );
         const completed = skillActivities.filter(
           (activity) => activity.status === UnifiedProgressStatus.COMPLETED,
         );
@@ -263,8 +273,10 @@ export class ProgressService {
           completedActivities: completed.length,
           inProgressActivities: inProgress.length,
           studyMinutes: Math.round(
-            completed.reduce((sum, activity) => sum + (activity.durationSeconds ?? 0), 0) /
-              60,
+            completed.reduce(
+              (sum, activity) => sum + (activity.durationSeconds ?? 0),
+              0,
+            ) / 60,
           ),
           recentScore: scores.at(0) ?? null,
           averageScore: this.average(scores),
@@ -289,13 +301,17 @@ export class ProgressService {
   }
 
   async getInProgressItems(userId: string) {
-    const items = (await this.collectActivities(userId, {
-      status: UnifiedProgressStatus.IN_PROGRESS,
-      range: ProgressRange.NINETY_DAYS,
-      limit: 20,
-    }))
+    const items = (
+      await this.collectActivities(userId, {
+        status: UnifiedProgressStatus.IN_PROGRESS,
+        range: ProgressRange.NINETY_DAYS,
+        limit: 20,
+      })
+    )
       .filter((item) => item.action.type === 'RESUME' && item.action.href)
-      .sort((left, right) => right.occurredAt.getTime() - left.occurredAt.getTime())
+      .sort(
+        (left, right) => right.occurredAt.getTime() - left.occurredAt.getTime(),
+      )
       .slice(0, 10)
       .map((item) => ({
         id: item.id,
@@ -317,11 +333,15 @@ export class ProgressService {
     const limit = Math.min(Math.max(Number(query.limit ?? 20), 1), 50);
     const cursor = this.decodeCursor(query.cursor);
     const { timezone } = await this.resolveRange(userId, query);
-    const collected = await this.collectActivities(userId, { ...query, limit: 80 });
+    const collected = await this.collectActivities(userId, {
+      ...query,
+      limit: 80,
+    });
     const filtered = collected
       .filter((item) => {
         if (!cursor) return true;
-        if (item.occurredAt.getTime() < cursor.occurredAt.getTime()) return true;
+        if (item.occurredAt.getTime() < cursor.occurredAt.getTime())
+          return true;
         return (
           item.occurredAt.getTime() === cursor.occurredAt.getTime() &&
           item.activityKey < cursor.activityKey
@@ -356,7 +376,11 @@ export class ProgressService {
       throw new NotFoundException('Activity not found.');
     }
 
-    const activity = await this.findActivityByKey(userId, parsed.type, parsed.id);
+    const activity = await this.findActivityByKey(
+      userId,
+      parsed.type,
+      parsed.id,
+    );
     if (!activity) {
       throw new NotFoundException('Activity not found.');
     }
@@ -405,7 +429,11 @@ export class ProgressService {
                 { updatedAt: { gte: range.start, lt: range.end } },
               ],
             },
-            include: { word: { select: { word: true, meaningVi: true, meaningEn: true } } },
+            include: {
+              word: {
+                select: { word: true, meaningVi: true, meaningEn: true },
+              },
+            },
             orderBy: { updatedAt: 'desc' },
             take: limit,
           })
@@ -413,7 +441,16 @@ export class ProgressService {
       !skill || skill === LearningSkill.GRAMMAR
         ? this.prismaService.grammarLessonProgress.findMany({
             where: { userId, updatedAt: { gte: range.start, lt: range.end } },
-            include: { lesson: { select: { id: true, title: true, duration: true, topic: { select: { title: true } } } } },
+            include: {
+              lesson: {
+                select: {
+                  id: true,
+                  title: true,
+                  duration: true,
+                  topic: { select: { title: true } },
+                },
+              },
+            },
             orderBy: { updatedAt: 'desc' },
             take: limit,
           })
@@ -427,7 +464,9 @@ export class ProgressService {
                 { completedAt: { gte: range.start, lt: range.end } },
               ],
             },
-            include: { article: { select: { title: true, slug: true, readTime: true } } },
+            include: {
+              article: { select: { title: true, slug: true, readTime: true } },
+            },
             orderBy: { startedAt: 'desc' },
             take: limit,
           })
@@ -472,7 +511,15 @@ export class ProgressService {
                 { updatedAt: { gte: range.start, lt: range.end } },
               ],
             },
-            include: { lesson: { select: { title: true, duration: true, topic: { select: { title: true } } } } },
+            include: {
+              lesson: {
+                select: {
+                  title: true,
+                  duration: true,
+                  topic: { select: { title: true } },
+                },
+              },
+            },
             orderBy: { updatedAt: 'desc' },
             take: limit,
           })
@@ -490,7 +537,11 @@ export class ProgressService {
         take: limit,
       }),
       this.prismaService.xpTransaction.findMany({
-        where: { userId, reversedAt: null, earnedAt: { gte: range.start, lt: range.end } },
+        where: {
+          userId,
+          reversedAt: null,
+          earnedAt: { gte: range.start, lt: range.end },
+        },
         select: { sourceType: true, sourceId: true, finalXp: true },
       }),
     ]);
@@ -508,7 +559,10 @@ export class ProgressService {
 
     return activities
       .filter((item) => !skill || item.skill === skill || item.skill === null)
-      .filter((item) => status === UnifiedProgressStatus.ALL || item.status === status)
+      .filter(
+        (item) =>
+          status === UnifiedProgressStatus.ALL || item.status === status,
+      )
       .filter((item) => !query.activityType || item.type === query.activityType)
       .sort(
         (left, right) =>
@@ -522,7 +576,9 @@ export class ProgressService {
       limit: 100,
       range: ProgressRange.NINETY_DAYS,
     });
-    return activities.find((item) => item.type === type && item.id === id) ?? null;
+    return (
+      activities.find((item) => item.type === type && item.id === id) ?? null
+    );
   }
 
   private mapVocabularyActivity(
@@ -537,7 +593,11 @@ export class ProgressService {
       masteredAt: Date | null;
       updatedAt: Date;
       createdAt: Date;
-      word: { word: string; meaningVi: string | null; meaningEn: string | null };
+      word: {
+        word: string;
+        meaningVi: string | null;
+        meaningEn: string | null;
+      };
     },
     xp: Map<string, number>,
   ): UnifiedLearningActivity {
@@ -560,20 +620,36 @@ export class ProgressService {
       score: null,
       accuracy:
         item.correctCount + item.wrongCount > 0
-          ? Math.round((item.correctCount / (item.correctCount + item.wrongCount)) * 100)
+          ? Math.round(
+              (item.correctCount / (item.correctCount + item.wrongCount)) * 100,
+            )
           : null,
-      xpEarned: xp.get(this.xpKey(XpSourceType.VOCABULARY, item.wordId)) ?? null,
+      xpEarned:
+        xp.get(this.xpKey(XpSourceType.VOCABULARY, item.wordId)) ?? null,
       durationSeconds: null,
       startedAt: item.createdAt,
       completedAt,
       occurredAt: completedAt ?? item.updatedAt,
-      action: { type: 'VIEW_LESSON', label: 'Review vocabulary', href: '/vocabulary' },
-      metadata: { seenCount: item.seenCount, correctCount: item.correctCount, wrongCount: item.wrongCount },
+      action: {
+        type: 'VIEW_LESSON',
+        label: 'Review vocabulary',
+        href: '/vocabulary',
+      },
+      metadata: {
+        seenCount: item.seenCount,
+        correctCount: item.correctCount,
+        wrongCount: item.wrongCount,
+      },
     };
   }
 
-  private mapGrammarActivity(item: any, xp: Map<string, number>): UnifiedLearningActivity {
-    const status = item.completed ? UnifiedProgressStatus.COMPLETED : UnifiedProgressStatus.IN_PROGRESS;
+  private mapGrammarActivity(
+    item: any,
+    xp: Map<string, number>,
+  ): UnifiedLearningActivity {
+    const status = item.completed
+      ? UnifiedProgressStatus.COMPLETED
+      : UnifiedProgressStatus.IN_PROGRESS;
     return {
       id: item.id,
       activityKey: this.activityKey('GRAMMAR_LESSON_PROGRESS', item.id),
@@ -592,15 +668,24 @@ export class ProgressService {
       completedAt: item.completedAt,
       occurredAt: item.completedAt ?? item.updatedAt,
       action: {
-        type: status === UnifiedProgressStatus.COMPLETED ? 'VIEW_RESULT' : 'RESUME',
-        label: status === UnifiedProgressStatus.COMPLETED ? 'View lesson' : 'Resume grammar',
+        type:
+          status === UnifiedProgressStatus.COMPLETED ? 'VIEW_RESULT' : 'RESUME',
+        label:
+          status === UnifiedProgressStatus.COMPLETED
+            ? 'View lesson'
+            : 'Resume grammar',
         href: `/grammar/lesson/${item.lessonId}`,
       },
     };
   }
 
-  private mapReadingActivity(item: any, xp: Map<string, number>): UnifiedLearningActivity {
-    const status = item.isCompleted ? UnifiedProgressStatus.COMPLETED : UnifiedProgressStatus.IN_PROGRESS;
+  private mapReadingActivity(
+    item: any,
+    xp: Map<string, number>,
+  ): UnifiedLearningActivity {
+    const status = item.isCompleted
+      ? UnifiedProgressStatus.COMPLETED
+      : UnifiedProgressStatus.IN_PROGRESS;
     return {
       id: item.id,
       activityKey: this.activityKey('READING_SESSION', item.id),
@@ -614,14 +699,21 @@ export class ProgressService {
       sessionId: item.id,
       score: item.score || null,
       accuracy: item.accuracy || null,
-      xpEarned: xp.get(this.xpKey(XpSourceType.READING, item.id)) ?? item.earnedXp ?? null,
+      xpEarned:
+        xp.get(this.xpKey(XpSourceType.READING, item.id)) ??
+        item.earnedXp ??
+        null,
       durationSeconds: item.spentTime || null,
       startedAt: item.startedAt,
       completedAt: item.completedAt,
       occurredAt: item.completedAt ?? item.startedAt,
       action: {
-        type: status === UnifiedProgressStatus.COMPLETED ? 'VIEW_RESULT' : 'RESUME',
-        label: status === UnifiedProgressStatus.COMPLETED ? 'View result' : 'Resume reading',
+        type:
+          status === UnifiedProgressStatus.COMPLETED ? 'VIEW_RESULT' : 'RESUME',
+        label:
+          status === UnifiedProgressStatus.COMPLETED
+            ? 'View result'
+            : 'Resume reading',
         href:
           status === UnifiedProgressStatus.COMPLETED
             ? `/reading/sessions/${item.id}/result`
@@ -630,7 +722,10 @@ export class ProgressService {
     };
   }
 
-  private mapListeningActivity(item: any, xp: Map<string, number>): UnifiedLearningActivity {
+  private mapListeningActivity(
+    item: any,
+    xp: Map<string, number>,
+  ): UnifiedLearningActivity {
     const completed = Boolean(item.completedAt) || item.status === 'COMPLETED';
     const answered = item.correct + item.wrong + item.skipped;
     return {
@@ -640,13 +735,19 @@ export class ProgressService {
       skill: LearningSkill.LISTENING,
       title: item.topic ? `Listening: ${item.topic}` : 'Listening practice',
       description: item.level,
-      status: completed ? UnifiedProgressStatus.COMPLETED : UnifiedProgressStatus.IN_PROGRESS,
+      status: completed
+        ? UnifiedProgressStatus.COMPLETED
+        : UnifiedProgressStatus.IN_PROGRESS,
       entityType: 'LISTENING_SESSION',
       entityId: item.id,
       sessionId: item.id,
       score: item.score || null,
-      accuracy: item.total > 0 ? Math.round((item.correct / item.total) * 100) : null,
-      xpEarned: xp.get(this.xpKey(XpSourceType.LISTENING, item.id)) ?? item.xpEarned ?? null,
+      accuracy:
+        item.total > 0 ? Math.round((item.correct / item.total) * 100) : null,
+      xpEarned:
+        xp.get(this.xpKey(XpSourceType.LISTENING, item.id)) ??
+        item.xpEarned ??
+        null,
       durationSeconds: null,
       startedAt: item.startedAt,
       completedAt: item.completedAt,
@@ -662,12 +763,16 @@ export class ProgressService {
         correct: item.correct,
         wrong: item.wrong,
         skipped: item.skipped,
-        progressPercent: item.total > 0 ? Math.round((answered / item.total) * 100) : 0,
+        progressPercent:
+          item.total > 0 ? Math.round((answered / item.total) * 100) : 0,
       },
     };
   }
 
-  private mapSpeakingActivity(item: any, xp: Map<string, number>): UnifiedLearningActivity {
+  private mapSpeakingActivity(
+    item: any,
+    xp: Map<string, number>,
+  ): UnifiedLearningActivity {
     const completed = Boolean(item.finishedAt) || item.status === 'COMPLETED';
     return {
       id: item.id,
@@ -676,7 +781,9 @@ export class ProgressService {
       skill: LearningSkill.SPEAKING,
       title: item.lesson?.title ?? item.topic?.title ?? 'Speaking practice',
       description: item.topic?.title ?? null,
-      status: completed ? UnifiedProgressStatus.COMPLETED : UnifiedProgressStatus.IN_PROGRESS,
+      status: completed
+        ? UnifiedProgressStatus.COMPLETED
+        : UnifiedProgressStatus.IN_PROGRESS,
       entityType: 'SPEAKING_SESSION',
       entityId: item.id,
       sessionId: item.id,
@@ -703,7 +810,10 @@ export class ProgressService {
     };
   }
 
-  private mapWritingActivity(item: any, xp: Map<string, number>): UnifiedLearningActivity {
+  private mapWritingActivity(
+    item: any,
+    xp: Map<string, number>,
+  ): UnifiedLearningActivity {
     const completed = Boolean(item.submittedAt) || item.isSubmitted;
     return {
       id: item.id,
@@ -712,7 +822,9 @@ export class ProgressService {
       skill: LearningSkill.WRITING,
       title: item.lesson.title,
       description: item.lesson.topic?.title ?? null,
-      status: completed ? UnifiedProgressStatus.COMPLETED : UnifiedProgressStatus.IN_PROGRESS,
+      status: completed
+        ? UnifiedProgressStatus.COMPLETED
+        : UnifiedProgressStatus.IN_PROGRESS,
       entityType: 'WRITING_SESSION',
       entityId: item.id,
       sessionId: item.id,
@@ -740,7 +852,10 @@ export class ProgressService {
     };
   }
 
-  private mapLessonActivity(item: any, xp: Map<string, number>): UnifiedLearningActivity {
+  private mapLessonActivity(
+    item: any,
+    xp: Map<string, number>,
+  ): UnifiedLearningActivity {
     const completed = Boolean(item.completedAt) || item.completed;
     return {
       id: item.id,
@@ -748,8 +863,12 @@ export class ProgressService {
       type: 'LEARNING_PATH_LESSON',
       skill: null,
       title: item.lesson.title,
-      description: item.lesson.duration ? `${item.lesson.duration} minutes` : null,
-      status: completed ? UnifiedProgressStatus.COMPLETED : UnifiedProgressStatus.IN_PROGRESS,
+      description: item.lesson.duration
+        ? `${item.lesson.duration} minutes`
+        : null,
+      status: completed
+        ? UnifiedProgressStatus.COMPLETED
+        : UnifiedProgressStatus.IN_PROGRESS,
       entityType: 'LESSON',
       entityId: item.lessonId,
       score: null,
@@ -774,13 +893,22 @@ export class ProgressService {
     const todayStart = startOfUserDay(now, timezone);
 
     if (query.from || query.to) {
-      const start = query.from ? new Date(query.from) : addUserDays(todayStart, -29, timezone);
-      const end = query.to ? addUserDays(startOfUserDay(new Date(query.to), timezone), 1, timezone) : addUserDays(todayStart, 1, timezone);
-      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || start > end) {
+      const start = query.from
+        ? new Date(query.from)
+        : addUserDays(todayStart, -29, timezone);
+      const end = query.to
+        ? addUserDays(startOfUserDay(new Date(query.to), timezone), 1, timezone)
+        : addUserDays(todayStart, 1, timezone);
+      if (
+        Number.isNaN(start.getTime()) ||
+        Number.isNaN(end.getTime()) ||
+        start > end
+      ) {
         throw new BadRequestException('Invalid date range.');
       }
       const maxEnd = addUserDays(start, 91, timezone);
-      if (end > maxEnd) throw new BadRequestException('Date range is too large.');
+      if (end > maxEnd)
+        throw new BadRequestException('Date range is too large.');
       return { start, end, timezone };
     }
 
@@ -793,7 +921,11 @@ export class ProgressService {
   }
 
   private buildXpMap(
-    rows: Array<{ sourceType: XpSourceType; sourceId: string | null; finalXp: number }>,
+    rows: Array<{
+      sourceType: XpSourceType;
+      sourceId: string | null;
+      finalXp: number;
+    }>,
   ) {
     const map = new Map<string, number>();
     for (const row of rows) {
@@ -805,16 +937,15 @@ export class ProgressService {
   }
 
   private groupActivities(items: UnifiedLearningActivity[], timezone: string) {
-    return items.reduce<Array<{ date: string; items: UnifiedLearningActivity[] }>>(
-      (groups, item) => {
-        const date = this.formatUserDateKey(item.occurredAt, timezone);
-        const existing = groups.find((group) => group.date === date);
-        if (existing) existing.items.push(item);
-        else groups.push({ date, items: [item] });
-        return groups;
-      },
-      [],
-    );
+    return items.reduce<
+      Array<{ date: string; items: UnifiedLearningActivity[] }>
+    >((groups, item) => {
+      const date = this.formatUserDateKey(item.occurredAt, timezone);
+      const existing = groups.find((group) => group.date === date);
+      if (existing) existing.items.push(item);
+      else groups.push({ date, items: [item] });
+      return groups;
+    }, []);
   }
 
   private formatUserDateKey(date: Date, timezone: string) {
@@ -828,7 +959,9 @@ export class ProgressService {
 
   private average(values: number[]) {
     if (!values.length) return null;
-    return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+    return Math.round(
+      values.reduce((sum, value) => sum + value, 0) / values.length,
+    );
   }
 
   private activityKey(type: string, id: string) {
@@ -843,13 +976,17 @@ export class ProgressService {
   }
 
   private encodeCursor(occurredAt: Date, activityKey: string) {
-    return Buffer.from(`${occurredAt.toISOString()}|${activityKey}`).toString('base64url');
+    return Buffer.from(`${occurredAt.toISOString()}|${activityKey}`).toString(
+      'base64url',
+    );
   }
 
   private decodeCursor(cursor?: string) {
     if (!cursor) return null;
     try {
-      const [date, activityKey] = Buffer.from(cursor, 'base64url').toString().split('|');
+      const [date, activityKey] = Buffer.from(cursor, 'base64url')
+        .toString()
+        .split('|');
       if (!date || !activityKey) return null;
       return { occurredAt: new Date(date), activityKey };
     } catch {

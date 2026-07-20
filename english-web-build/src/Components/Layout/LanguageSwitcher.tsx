@@ -39,14 +39,14 @@ export default function LanguageSwitcher({
         aria-label={LOCALE_LABELS[locale]}
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 text-sm font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+        className="lumiverse-button-soft h-11 gap-1.5 px-2.5 text-sm"
       >
-        <Globe size={17} className="text-violet-600" />
+        <Globe size={17} className="text-[var(--lumiverse-primary)]" />
         <span className="hidden sm:inline">{LOCALE_FLAGS[locale]}</span>
       </button>
 
       {open && (
-        <div className="absolute right-0 top-12 z-50 w-44 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+        <div className="lumiverse-surface absolute right-0 top-14 z-50 w-44 rounded-3xl p-1.5">
           {LOCALES.map((option) => (
             <button
               key={option}
@@ -54,8 +54,8 @@ export default function LanguageSwitcher({
               onClick={() => choose(option)}
               className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-bold transition ${
                 option === locale
-                  ? "bg-violet-50 text-violet-700 dark:bg-violet-950/40"
-                  : "text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"
+                  ? "bg-blue-50 text-[var(--lumiverse-primary)] dark:bg-white/10"
+                  : "text-[var(--lumiverse-muted)] hover:bg-white/70 dark:hover:bg-white/8"
               }`}
             >
               <span>{LOCALE_FLAGS[option]}</span>

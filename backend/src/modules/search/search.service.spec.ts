@@ -8,7 +8,7 @@ import { SearchRouteRegistry } from './search-route.registry';
 import { SearchService } from './search.service';
 
 const prismaMock = {
-  userXpProfile: { findUnique: jest.fn(), },
+  userXpProfile: { findUnique: jest.fn() },
   readingSession: { aggregate: jest.fn(), findFirst: jest.fn() },
   listeningSession: { aggregate: jest.fn(), findFirst: jest.fn() },
   speakingSession: { aggregate: jest.fn(), findFirst: jest.fn() },
@@ -37,15 +37,32 @@ describe('SearchService', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     Object.values(prismaMock).forEach((delegate) => {
-      Object.values(delegate).forEach((fn) => (fn as jest.Mock).mockResolvedValue([]));
+      Object.values(delegate).forEach((fn) =>
+        (fn as jest.Mock).mockResolvedValue([]),
+      );
     });
     prismaMock.userXpProfile.findUnique.mockResolvedValue(null);
     prismaMock.userWordProgress.count.mockResolvedValue(0);
-    prismaMock.readingSession.aggregate.mockResolvedValue({ _avg: { accuracy: null }, _count: { id: 0 } });
-    prismaMock.listeningSession.aggregate.mockResolvedValue({ _avg: { score: null }, _count: { id: 0 } });
-    prismaMock.speakingSession.aggregate.mockResolvedValue({ _avg: { overallScore: null }, _count: { id: 0 } });
-    prismaMock.writingSession.aggregate.mockResolvedValue({ _avg: { overallScore: null }, _count: { id: 0 } });
-    prismaMock.grammarLessonProgress.aggregate.mockResolvedValue({ _avg: { score: null }, _count: { id: 0 } });
+    prismaMock.readingSession.aggregate.mockResolvedValue({
+      _avg: { accuracy: null },
+      _count: { id: 0 },
+    });
+    prismaMock.listeningSession.aggregate.mockResolvedValue({
+      _avg: { score: null },
+      _count: { id: 0 },
+    });
+    prismaMock.speakingSession.aggregate.mockResolvedValue({
+      _avg: { overallScore: null },
+      _count: { id: 0 },
+    });
+    prismaMock.writingSession.aggregate.mockResolvedValue({
+      _avg: { overallScore: null },
+      _count: { id: 0 },
+    });
+    prismaMock.grammarLessonProgress.aggregate.mockResolvedValue({
+      _avg: { score: null },
+      _count: { id: 0 },
+    });
     prismaMock.readingSession.findFirst.mockResolvedValue(null);
     prismaMock.listeningSession.findFirst.mockResolvedValue(null);
     prismaMock.speakingSession.findFirst.mockResolvedValue(null);
@@ -74,9 +91,9 @@ describe('SearchService', () => {
   });
 
   it('rejects overly long queries', async () => {
-    await expect(service.search('user-1', { q: 'x'.repeat(100) })).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(
+      service.search('user-1', { q: 'x'.repeat(100) }),
+    ).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('ranks exact title matches before partial matches', async () => {

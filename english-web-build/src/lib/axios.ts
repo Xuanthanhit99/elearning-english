@@ -1,71 +1,100 @@
 // src/lib/axios.ts
-import axios from "axios";
+import axios, {
+  AxiosError,
+  AxiosRequestConfig,
+  InternalAxiosRequestConfig,
+} from "axios";
 import { attachNormalizedApiError } from "./api-error";
+import { useAuthStore } from "@/src/store/authStore";
+import { buildLoginUrl } from "./auth-redirect";
 
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002",
   withCredentials: true,
 });
 
-let isRefreshing = false;
-let refreshQueue: Array<{
-  resolve: () => void;
-  reject: (error: unknown) => void;
-}> = [];
+const authApi = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002",
+  withCredentials: true,
+});
 
-function rejectRefreshQueue(error: unknown) {
-  refreshQueue.forEach(({ reject }) => reject(error));
-  refreshQueue = [];
+type RetriableRequestConfig = InternalAxiosRequestConfig & {
+  _retry?: boolean;
+};
+
+let refreshPromise: Promise<void> | null = null;
+
+function isAuthEndpoint(url: string | undefined, endpoint: string) {
+  return String(url || "").includes(endpoint);
 }
 
-function resolveRefreshQueue() {
-  refreshQueue.forEach(({ resolve }) => resolve());
-  refreshQueue = [];
+function shouldAttemptRefresh(error: AxiosError) {
+  const originalRequest = error.config as RetriableRequestConfig | undefined;
+  const url = originalRequest?.url;
+
+  return (
+    error.response?.status === 401 &&
+    Boolean(originalRequest) &&
+    !originalRequest?._retry &&
+    !isAuthEndpoint(url, "/auth/refresh") &&
+    !isAuthEndpoint(url, "/auth/login") &&
+    !isAuthEndpoint(url, "/auth/logout") &&
+    !isAuthEndpoint(url, "/auth/register")
+  );
 }
 
 function redirectToLogin() {
   if (typeof window === "undefined") return;
   if (window.location.pathname.startsWith("/auth")) return;
 
-  window.location.href = "/auth";
+  window.location.href = buildLoginUrl(
+    `${window.location.pathname}${window.location.search}${window.location.hash}`,
+  );
+}
+
+async function refreshSession() {
+  if (!refreshPromise) {
+    refreshPromise = authApi
+      .post("/auth/refresh")
+      .then(() => undefined)
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+
+  return refreshPromise;
+}
+
+async function handleUnrecoverableAuthFailure() {
+  useAuthStore.getState().setUser(null);
+
+  try {
+    await authApi.post("/auth/logout");
+  } catch {
+    // Best effort only: refresh may already be expired or cookies may be gone.
+  }
+
+  redirectToLogin();
 }
 
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
+    const axiosError = error as AxiosError;
+    const originalRequest = axiosError.config as RetriableRequestConfig | undefined;
 
-    if (
-      error.response?.status === 401 &&
-      originalRequest &&
-      !originalRequest._retry &&
-      !String(originalRequest.url || "").includes("/auth/refresh") &&
-      !String(originalRequest.url || "").includes("/auth/login")
-    ) {
+    if (shouldAttemptRefresh(axiosError) && originalRequest) {
       originalRequest._retry = true;
 
-      if (isRefreshing) {
-        await new Promise<void>((resolve, reject) => {
-          refreshQueue.push({ resolve, reject });
-        });
-        return api(originalRequest);
-      }
-
-      isRefreshing = true;
-
       try {
-        await api.post("/auth/refresh");
-        resolveRefreshQueue();
-        return api(originalRequest);
+        await refreshSession();
+        return api(originalRequest as AxiosRequestConfig);
       } catch (refreshError) {
-        rejectRefreshQueue(refreshError);
-        redirectToLogin();
+        await handleUnrecoverableAuthFailure();
         return Promise.reject(attachNormalizedApiError(refreshError as Error));
-      } finally {
-        isRefreshing = false;
       }
     }
 
-    return Promise.reject(attachNormalizedApiError(error));
+    return Promise.reject(attachNormalizedApiError(error as Error));
   },
 );

@@ -10,7 +10,11 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { DashboardService } from '../dashboard/dashboard.service';
 import { SettingsQueryService } from '../settings/settings-query.service';
-import { AnalyticsQueryDto, AnalyticsRange, ReportQueryDto } from './dto/analytics-query.dto';
+import {
+  AnalyticsQueryDto,
+  AnalyticsRange,
+  ReportQueryDto,
+} from './dto/analytics-query.dto';
 
 type DashboardSnapshot = Awaited<ReturnType<DashboardService['getDashboard']>>;
 
@@ -42,7 +46,10 @@ export class AnalyticsService {
       range: {
         key: query.range ?? AnalyticsRange.SEVEN_DAYS,
         from: dateKeyInTimezone(range.start, range.timezone),
-        to: dateKeyInTimezone(addUserDays(range.end, -1, range.timezone), range.timezone),
+        to: dateKeyInTimezone(
+          addUserDays(range.end, -1, range.timezone),
+          range.timezone,
+        ),
         timezone: range.timezone,
       },
       summary: {
@@ -50,7 +57,10 @@ export class AnalyticsService {
         studyMinutes: totals.studyMinutes,
         completedActivities: totals.completedActivities,
         activeDays: series.filter(
-          (item) => item.xp > 0 || item.studyMinutes > 0 || item.completedActivities > 0,
+          (item) =>
+            item.xp > 0 ||
+            item.studyMinutes > 0 ||
+            item.completedActivities > 0,
         ).length,
         currentStreak: dashboard.currentStreak,
       },
@@ -73,11 +83,13 @@ export class AnalyticsService {
       range: overview.range,
       items: overview.skills,
       strongest:
-        [...overview.skills].sort((left, right) => right.percent - left.percent)[0] ??
-        null,
+        [...overview.skills].sort(
+          (left, right) => right.percent - left.percent,
+        )[0] ?? null,
       focus:
-        [...overview.skills].sort((left, right) => left.percent - right.percent)[0] ??
-        null,
+        [...overview.skills].sort(
+          (left, right) => left.percent - right.percent,
+        )[0] ?? null,
     };
   }
 
@@ -157,14 +169,20 @@ export class AnalyticsService {
       pagination: {
         limit,
         hasMore: rows.length > limit,
-        nextCursor: rows.length > limit && last ? this.encodeCursor(last.occurredAt, last.id) : null,
+        nextCursor:
+          rows.length > limit && last
+            ? this.encodeCursor(last.occurredAt, last.id)
+            : null,
       },
     };
   }
 
   async getReport(userId: string, query: ReportQueryDto) {
     const rangeKey = query.range ?? AnalyticsRange.THIRTY_DAYS;
-    const overview = await this.getOverview(userId, { range: rangeKey, limit: 8 });
+    const overview = await this.getOverview(userId, {
+      range: rangeKey,
+      limit: 8,
+    });
     const achievements = await this.prisma.userAchievement.count({
       where: {
         userId,
@@ -222,11 +240,19 @@ export class AnalyticsService {
         select: { finalXp: true, earnedAt: true },
       }),
       this.prisma.readingSession.findMany({
-        where: { userId, isCompleted: true, completedAt: { gte: start, lt: end } },
+        where: {
+          userId,
+          isCompleted: true,
+          completedAt: { gte: start, lt: end },
+        },
         select: { completedAt: true, spentTime: true },
       }),
       this.prisma.writingSession.findMany({
-        where: { userId, isSubmitted: true, submittedAt: { gte: start, lt: end } },
+        where: {
+          userId,
+          isSubmitted: true,
+          submittedAt: { gte: start, lt: end },
+        },
         select: { submittedAt: true, timeSpentSeconds: true },
       }),
       this.prisma.speakingSession.findMany({
@@ -249,37 +275,64 @@ export class AnalyticsService {
         .filter((item) => dateKeyInTimezone(item.earnedAt, timezone) === key)
         .reduce((sum, item) => sum + item.finalXp, 0);
       const readings = readingSessions.filter(
-        (item) => item.completedAt && dateKeyInTimezone(item.completedAt, timezone) === key,
+        (item) =>
+          item.completedAt &&
+          dateKeyInTimezone(item.completedAt, timezone) === key,
       );
       const writings = writingSessions.filter(
-        (item) => item.submittedAt && dateKeyInTimezone(item.submittedAt, timezone) === key,
+        (item) =>
+          item.submittedAt &&
+          dateKeyInTimezone(item.submittedAt, timezone) === key,
       );
       const speakings = speakingSessions.filter(
-        (item) => item.finishedAt && dateKeyInTimezone(item.finishedAt, timezone) === key,
+        (item) =>
+          item.finishedAt &&
+          dateKeyInTimezone(item.finishedAt, timezone) === key,
       );
       const listenings = listeningSessions.filter(
-        (item) => item.completedAt && dateKeyInTimezone(item.completedAt, timezone) === key,
+        (item) =>
+          item.completedAt &&
+          dateKeyInTimezone(item.completedAt, timezone) === key,
       );
       const lessons = lessonProgress.filter(
-        (item) => item.completedAt && dateKeyInTimezone(item.completedAt, timezone) === key,
+        (item) =>
+          item.completedAt &&
+          dateKeyInTimezone(item.completedAt, timezone) === key,
       );
 
       return {
         date: key,
         xp,
         studyMinutes:
-          readings.reduce((sum, item) => sum + Math.round(item.spentTime / 60), 0) +
-          writings.reduce((sum, item) => sum + Math.round(item.timeSpentSeconds / 60), 0) +
-          speakings.reduce((sum, item) => sum + Math.round(item.duration / 60), 0) +
+          readings.reduce(
+            (sum, item) => sum + Math.round(item.spentTime / 60),
+            0,
+          ) +
+          writings.reduce(
+            (sum, item) => sum + Math.round(item.timeSpentSeconds / 60),
+            0,
+          ) +
+          speakings.reduce(
+            (sum, item) => sum + Math.round(item.duration / 60),
+            0,
+          ) +
           lessons.reduce((sum, item) => sum + (item.lesson.duration ?? 0), 0),
         completedActivities:
-          readings.length + writings.length + speakings.length + listenings.length + lessons.length,
+          readings.length +
+          writings.length +
+          speakings.length +
+          listenings.length +
+          lessons.length,
       };
     });
   }
 
   private sumSeries(
-    series: Array<{ xp: number; studyMinutes: number; completedActivities: number }>,
+    series: Array<{
+      xp: number;
+      studyMinutes: number;
+      completedActivities: number;
+    }>,
   ) {
     return series.reduce(
       (sum, item) => ({
@@ -292,13 +345,19 @@ export class AnalyticsService {
   }
 
   private buildTrend(
-    series: Array<{ xp: number; studyMinutes: number; completedActivities: number }>,
+    series: Array<{
+      xp: number;
+      studyMinutes: number;
+      completedActivities: number;
+    }>,
   ) {
     const midpoint = Math.floor(series.length / 2);
     const previous = this.sumSeries(series.slice(0, midpoint));
     const current = this.sumSeries(series.slice(midpoint));
     const percentageChange =
-      previous.xp > 0 ? Math.round(((current.xp - previous.xp) / previous.xp) * 100) : null;
+      previous.xp > 0
+        ? Math.round(((current.xp - previous.xp) / previous.xp) * 100)
+        : null;
 
     return {
       currentValue: current.xp,
@@ -306,7 +365,11 @@ export class AnalyticsService {
       absoluteChange: current.xp - previous.xp,
       percentageChange,
       direction:
-        current.xp > previous.xp ? 'UP' : current.xp < previous.xp ? 'DOWN' : 'FLAT',
+        current.xp > previous.xp
+          ? 'UP'
+          : current.xp < previous.xp
+            ? 'DOWN'
+            : 'FLAT',
     };
   }
 
@@ -336,7 +399,10 @@ export class AnalyticsService {
     return `${sourceType} completed`;
   }
 
-  private actionUrlForSource(sourceType: XpSourceType, sourceId: string | null) {
+  private actionUrlForSource(
+    sourceType: XpSourceType,
+    sourceId: string | null,
+  ) {
     const allowlist: Partial<Record<XpSourceType, string>> = {
       VOCABULARY: '/vocabulary',
       GRAMMAR: '/grammar',

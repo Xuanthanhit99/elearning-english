@@ -2,19 +2,40 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { api } from "@/src/lib/axios";
+import { normalizeRedirectPath } from "@/src/lib/auth-redirect";
 import { AuthErrorModal } from "../AuthErrorModal";
+import AppLogo from "../UI/AppLogo";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002";
 
 type Mode = "login" | "register";
+
+function getErrorMessage(error: unknown, fallback: string) {
+  if (
+    error &&
+    typeof error === "object" &&
+    "response" in error &&
+    error.response &&
+    typeof error.response === "object" &&
+    "data" in error.response
+  ) {
+    const data = error.response.data as { message?: unknown };
+    if (typeof data.message === "string") return data.message;
+  }
+
+  return fallback;
+}
 
 export default function Auth({ mode = "login" }: { mode?: Mode }) {
   const [currentMode, setCurrentMode] = useState<Mode>(mode);
 
   return (
-    <main className="min-h-screen bg-[#fff4e8] p-3 sm:p-4">
-      <section className="min-h-[calc(100vh-24px)] rounded-[24px] bg-gradient-to-br from-[#fffaf5] via-white to-[#f8f5ff] px-4 py-6 sm:min-h-[calc(100vh-32px)] sm:rounded-[28px] sm:px-6 sm:py-10">
+    <main className="min-h-screen bg-[var(--background)] p-3 sm:p-4">
+      <section className="min-h-[calc(100vh-24px)] rounded-[24px] bg-gradient-to-br from-white via-white to-blue-50/60 px-4 py-6 sm:min-h-[calc(100vh-32px)] sm:rounded-[28px] sm:px-6 sm:py-10">
         <div className="mx-auto grid min-h-[calc(100vh-72px)] max-w-7xl items-center gap-8 lg:min-h-[calc(100vh-112px)] lg:grid-cols-2 lg:gap-12">
           <div className="hidden lg:block">
             <LeftContent />
@@ -31,7 +52,7 @@ export default function Auth({ mode = "login" }: { mode?: Mode }) {
                   ease: "easeOut",
                 },
               }}
-              className="mx-auto w-full max-w-xl rounded-[28px] border border-[#ead8c2] bg-white p-5 shadow-[0_30px_90px_rgba(31,42,68,0.12)] sm:rounded-[32px] sm:p-7"
+              className="mx-auto w-full max-w-xl rounded-[28px] border border-[var(--lumiverse-border)] bg-white p-5 shadow-[0_30px_90px_rgba(31,42,68,0.12)] sm:rounded-[32px] sm:p-7"
             >
               <div className="mb-8 grid grid-cols-2 rounded-full bg-slate-100 p-1.5">
                 <button
@@ -39,8 +60,8 @@ export default function Auth({ mode = "login" }: { mode?: Mode }) {
                   onClick={() => setCurrentMode("login")}
                   className={`rounded-full py-3 text-center font-extrabold transition-all duration-300 ${
                     currentMode === "login"
-                      ? "bg-white text-[#1f2a44] shadow"
-                      : "text-[#5b6b85]"
+                      ? "bg-white text-[var(--lumiverse-ink)] shadow"
+                      : "text-[var(--lumiverse-muted)]"
                   }`}
                 >
                   Đăng nhập
@@ -51,8 +72,8 @@ export default function Auth({ mode = "login" }: { mode?: Mode }) {
                   onClick={() => setCurrentMode("register")}
                   className={`rounded-full py-3 text-center font-extrabold transition-all duration-300 ${
                     currentMode === "register"
-                      ? "bg-white text-[#1f2a44] shadow"
-                      : "text-[#5b6b85]"
+                      ? "bg-white text-[var(--lumiverse-ink)] shadow"
+                      : "text-[var(--lumiverse-muted)]"
                   }`}
                 >
                   Đăng ký
@@ -84,61 +105,28 @@ export default function Auth({ mode = "login" }: { mode?: Mode }) {
 
 function MobileLogo() {
   return (
-    <Link
-      href="/"
-      className="mb-6 flex items-center justify-center gap-3 lg:hidden"
-    >
-      <Image
-        src="/cat-home.jpg"
-        alt="Miu mascot"
-        width={52}
-        height={52}
-        className="rounded-full object-cover"
-      />
-
-      <div>
-        <h1 className="text-2xl font-extrabold leading-none">
-          <span className="text-[#5b6b85]">Miu</span>
-          <span className="text-[#ff6b00]">Lingo</span>
-        </h1>
-        <p className="mt-1 text-sm font-bold text-[#5b6b85]">
-          Học ngôn ngữ cùng Miu
-        </p>
-      </div>
-    </Link>
+    <div className="mb-6 flex justify-center lg:hidden">
+      <AppLogo href="/" />
+    </div>
   );
 }
 
 function LeftContent() {
   return (
     <div>
-      <Link href="/" className="mb-10 flex items-center gap-4">
-        <Image
-          src="/cat-home.jpg"
-          alt="Miu mascot"
-          width={64}
-          height={64}
-          className="rounded-full object-cover"
-        />
-
-        <div>
-          <h1 className="text-2xl font-extrabold leading-none">
-            <span className="text-[#5b6b85]">Miu</span>
-            <span className="text-[#ff6b00]">Lingo</span>
-          </h1>
-          <p className="mt-2 font-bold text-[#5b6b85]">Học ngôn ngữ cùng Miu</p>
-        </div>
-      </Link>
-
-      <div className="mb-8 inline-flex rounded-full border border-[#ffd4ad] bg-white px-5 py-3 font-extrabold text-[#ff6b00] shadow-sm">
-        🐱 Miu đồng hành cùng bạn
+      <div className="mb-10">
+        <AppLogo href="/" />
       </div>
 
-      <h2 className="max-w-2xl text-5xl font-extrabold leading-tight text-[#1f2a44] lg:text-6xl">
+      <div className="mb-8 inline-flex rounded-full border border-[var(--lumiverse-border)] bg-white px-5 py-3 font-extrabold text-[var(--lumiverse-primary)] shadow-sm">
+        🐱 Lumi đồng hành cùng bạn
+      </div>
+
+      <h2 className="max-w-2xl text-5xl font-extrabold leading-tight text-[var(--lumiverse-ink)] lg:text-6xl">
         Đăng nhập để tiếp tục hành trình học
       </h2>
 
-      <p className="mt-6 max-w-2xl text-lg leading-8 text-[#5b6b85]">
+      <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--lumiverse-muted)]">
         Học miễn phí, check từ, check bài và lưu tiến độ mỗi ngày. Giao diện nhẹ
         nhàng, dễ gần và phù hợp cho người mới bắt đầu.
       </p>
@@ -153,24 +141,24 @@ function LeftContent() {
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 font-extrabold text-emerald-500">
               ✓
             </span>
-            <span className="font-extrabold text-[#1f2a44]">{item}</span>
+            <span className="font-extrabold text-[var(--lumiverse-ink)]">{item}</span>
           </div>
         ))}
       </div>
 
-      <div className="mt-10 flex max-w-md items-center gap-5 rounded-[26px] border border-[#ead8c2] bg-white p-6 shadow-[0_24px_70px_rgba(31,42,68,0.06)]">
+      <div className="mt-10 flex max-w-md items-center gap-5 rounded-[26px] border border-[var(--lumiverse-border)] bg-white p-6 shadow-[0_24px_70px_rgba(31,42,68,0.06)]">
         <Image
           src="/cat-home.jpg"
-          alt="Meow Mentor"
+          alt="Lumi Mentor"
           width={90}
           height={90}
           className="rounded-2xl object-cover"
         />
 
         <div>
-          <h3 className="text-xl font-extrabold text-[#1f2a44]">Meow Mentor</h3>
-          <p className="mt-2 leading-7 text-[#5b6b85]">
-            Miu sẽ gợi ý nhiệm vụ học phù hợp với trình độ và mục tiêu của bạn.
+          <h3 className="text-xl font-extrabold text-[var(--lumiverse-ink)]">Lumi Mentor</h3>
+          <p className="mt-2 leading-7 text-[var(--lumiverse-muted)]">
+            Lumi sẽ gợi ý nhiệm vụ học phù hợp với trình độ và mục tiêu của bạn.
           </p>
         </div>
       </div>
@@ -179,6 +167,8 @@ function LeftContent() {
 }
 
 function LoginForm({ onSwitch }: { onSwitch: () => void }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorModal, setErrorModal] = useState({
@@ -223,23 +213,23 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
         return;
       }
 
-      window.location.href = "/";
-    } catch (error: any) {
+      router.replace(normalizeRedirectPath(searchParams.get("redirect")));
+    } catch (error: unknown) {
       setErrorModal({
         open: true,
         message:
-          error?.response?.data?.message ||
+          getErrorMessage(error, "") ||
           "Không thể kết nối tới máy chủ. Vui lòng thử lại.",
       });
     }
   };
   return (
     <div>
-      <h2 className="text-3xl font-extrabold text-[#1f2a44]">
+      <h2 className="text-3xl font-extrabold text-[var(--lumiverse-ink)]">
         Chào mừng trở lại
       </h2>
 
-      <p className="mt-3 text-[#5b6b85]">
+      <p className="mt-3 text-[var(--lumiverse-muted)]">
         Đăng nhập để tiếp tục học và xem tiến độ của bạn.
       </p>
 
@@ -275,14 +265,14 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
               value={recoveryCode}
               onChange={setRecoveryCode}
             />
-            <p className="text-xs font-bold text-[#8a5b26]">
+            <p className="text-xs font-bold text-[var(--lumiverse-ink)]">
               Chỉ cần nhập một trong hai: mã 6 số hoặc mã khôi phục.
             </p>
           </div>
         )}
 
         <div className="flex items-center justify-between gap-3 text-sm">
-          <label className="flex items-center gap-2 font-bold text-[#5b6b85]">
+          <label className="flex items-center gap-2 font-bold text-[var(--lumiverse-muted)]">
             <input
               type="checkbox"
               onChange={(e) => setRememberMe(e.target.checked)}
@@ -293,7 +283,7 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
 
           <Link
             href="/forgot-password"
-            className="font-extrabold text-[#ff6b00]"
+            className="font-extrabold text-[var(--lumiverse-primary)]"
           >
             Quên mật khẩu?
           </Link>
@@ -301,18 +291,18 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
 
         <button
           type="submit"
-          className="w-full rounded-2xl bg-gradient-to-r from-[#ff961c] to-[#ff6b00] py-4 font-extrabold text-white shadow-xl shadow-orange-200"
+          className="w-full rounded-2xl bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] py-4 font-extrabold text-white shadow-xl shadow-blue-200"
         >
           Đăng nhập
         </button>
       </form>
 
-      <p className="mt-6 text-center font-bold text-[#5b6b85]">
+      <p className="mt-6 text-center font-bold text-[var(--lumiverse-muted)]">
         Chưa có tài khoản?{" "}
         <button
           type="button"
           onClick={onSwitch}
-          className="font-extrabold text-[#ff6b00]"
+          className="font-extrabold text-[var(--lumiverse-primary)]"
         >
           Đăng ký miễn phí
         </button>
@@ -358,11 +348,11 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
       }
 
       setShowSuccessModal(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       setErrorModal({
         open: true,
         message:
-          error?.response?.data?.message ||
+          getErrorMessage(error, "") ||
           "Không thể đăng ký. Vui lòng thử lại.",
       });
     }
@@ -378,11 +368,11 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
 
   return (
     <div>
-      <h2 className="text-3xl font-extrabold text-[#1f2a44]">
+      <h2 className="text-3xl font-extrabold text-[var(--lumiverse-ink)]">
         Tạo tài khoản miễn phí
       </h2>
 
-      <p className="mt-3 text-[#5b6b85]">
+      <p className="mt-3 text-[var(--lumiverse-muted)]">
         Bắt đầu học miễn phí, check từ và check bài ngay hôm nay.
       </p>
 
@@ -412,25 +402,25 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
           onChange={setPassword}
         />
 
-        <label className="flex items-center gap-2 text-sm font-bold text-[#5b6b85]">
+        <label className="flex items-center gap-2 text-sm font-bold text-[var(--lumiverse-muted)]">
           <input type="checkbox" />
           Tôi đồng ý với điều khoản sử dụng
         </label>
 
         <button
           type="submit"
-          className="w-full rounded-2xl bg-gradient-to-r from-[#ff961c] to-[#ff6b00] py-4 font-extrabold text-white shadow-xl shadow-orange-200"
+          className="w-full rounded-2xl bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] py-4 font-extrabold text-white shadow-xl shadow-blue-200"
         >
           Đăng ký miễn phí
         </button>
       </form>
 
-      <p className="mt-6 text-center font-bold text-[#5b6b85]">
+      <p className="mt-6 text-center font-bold text-[var(--lumiverse-muted)]">
         Đã có tài khoản?{" "}
         <button
           type="button"
           onClick={onSwitch}
-          className="font-extrabold text-[#ff6b00]"
+          className="font-extrabold text-[var(--lumiverse-primary)]"
         >
           Đăng nhập
         </button>
@@ -451,15 +441,23 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
 }
 
 function SocialButtons({ label }: { label: string }) {
+  const searchParams = useSearchParams();
+
+  function rememberRedirect() {
+    const redirect = normalizeRedirectPath(searchParams.get("redirect"));
+    sessionStorage.setItem("auth_redirect", redirect);
+  }
+
   return (
     <>
       <div className="mt-7 grid grid-cols-2 gap-3">
         <button
           type="button"
           onClick={() => {
-            window.location.href = "http://localhost:3002/auth/google";
+            rememberRedirect();
+            window.location.href = `${API_BASE_URL}/auth/google`;
           }}
-          className="rounded-2xl border border-[#ead8c2] py-3 font-extrabold text-[#1f2a44] transition hover:bg-[#fff4e8]"
+          className="rounded-2xl border border-[var(--lumiverse-border)] py-3 font-extrabold text-[var(--lumiverse-ink)] transition hover:bg-[var(--lumiverse-card)]"
         >
           Google
         </button>
@@ -467,9 +465,10 @@ function SocialButtons({ label }: { label: string }) {
         <button
           type="button"
           onClick={() => {
-            window.location.href = "http://localhost:3002/auth/facebook";
+            rememberRedirect();
+            window.location.href = `${API_BASE_URL}/auth/facebook`;
           }}
-          className="rounded-2xl border border-[#ead8c2] py-3 font-extrabold text-[#1f2a44] transition hover:bg-[#fff4e8]"
+          className="rounded-2xl border border-[var(--lumiverse-border)] py-3 font-extrabold text-[var(--lumiverse-ink)] transition hover:bg-[var(--lumiverse-card)]"
         >
           Facebook
         </button>
@@ -499,7 +498,7 @@ function Input({
 }) {
   return (
     <label className="block">
-      <span className="font-extrabold text-[#334155]">{label}</span>
+      <span className="font-extrabold text-[var(--lumiverse-muted)]">{label}</span>
       <input
         type={type}
         value={value}
@@ -508,10 +507,10 @@ function Input({
         className="
           mt-2 w-full rounded-2xl border border-slate-200
           bg-slate-50 px-5 py-4
-          font-bold text-[#1f2a44]
+          font-bold text-[var(--lumiverse-ink)]
           outline-none transition
           placeholder:text-slate-300
-          focus:border-[#ff6b00] focus:bg-white
+          focus:border-[var(--lumiverse-primary)] focus:bg-white
         "
       />
     </label>
@@ -531,12 +530,12 @@ function RegisterSuccessModal({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="w-full max-w-md overflow-hidden rounded-[32px] bg-white shadow-2xl">
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#ff961c] to-[#ff6b00] p-8 text-center text-white">
+        <div className="bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] p-8 text-center text-white">
           <div className="animate-bounce text-6xl">🎉</div>
 
           <h2 className="mt-4 text-3xl font-extrabold">Đăng ký thành công!</h2>
 
-          <p className="mt-2 text-white/90">Chào mừng bạn đến với PoppyLingo</p>
+          <p className="mt-2 text-white/90">Chào mừng bạn đến với Lumiverse</p>
         </div>
 
         {/* Body */}
@@ -545,14 +544,14 @@ function RegisterSuccessModal({
             ✅
           </div>
 
-          <p className="mt-5 leading-7 text-[#5b6b85]">
+          <p className="mt-5 leading-7 text-[var(--lumiverse-muted)]">
             Tài khoản của bạn đã được tạo thành công. Hãy đăng nhập để bắt đầu
             hành trình học tiếng Anh.
           </p>
 
           <button
             onClick={onClose}
-            className="mt-6 w-full rounded-2xl bg-[#ff6b00] py-4 font-extrabold text-white"
+            className="mt-6 w-full rounded-2xl bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] py-4 font-extrabold text-white"
           >
             Đăng nhập ngay
           </button>

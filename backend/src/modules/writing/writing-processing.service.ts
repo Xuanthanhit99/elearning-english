@@ -48,7 +48,10 @@ export class WritingProcessingService {
 
     if (
       runningJob &&
-      !this.isStale(runningJob.status, runningJob.startedAt ?? runningJob.updatedAt)
+      !this.isStale(
+        runningJob.status,
+        runningJob.startedAt ?? runningJob.updatedAt,
+      )
     ) {
       return {
         sessionId: session.id,

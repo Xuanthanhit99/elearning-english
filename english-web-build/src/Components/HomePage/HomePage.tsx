@@ -1,32 +1,36 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import AppLogo from "@/src/Components/UI/AppLogo";
+import LanguageSwitcher from "@/src/Components/Layout/LanguageSwitcher";
+import ThemeToggle from "@/src/Components/Layout/ThemeToggle";
+import {
+  LumiverseBadge,
+  LumiverseCard,
+  LumiverseSectionHeader,
+} from "@/src/Components/UI/Lumiverse";
+import { buildLoginUrl } from "@/src/lib/auth-redirect";
+import { useAuthStore } from "@/src/store/authStore";
 import {
   ArrowRight,
-  BarChart3,
   BookOpen,
-  Bot,
   CheckCircle2,
   ChevronDown,
+  Compass,
   Headphones,
   MessageCircle,
   Mic2,
-  PenLine,
-  Play,
-  ShieldCheck,
+  NotebookPen,
+  PawPrint,
   Sparkles,
-  Star,
   Target,
   Trophy,
-  Users,
-  Zap,
+  UsersRound,
+  WandSparkles,
   type LucideIcon,
 } from "lucide-react";
-import AppLogo from "@/src/Components/UI/AppLogo";
-import { api } from "@/src/lib/axios";
-import { useAuthStore } from "@/src/store/authStore";
+import Image from "next/image";
+import Link from "next/link";
+import { useState, type ReactNode } from "react";
 
 type UserSummary = {
   fullname?: string | null;
@@ -38,149 +42,135 @@ type Feature = {
   title: string;
   description: string;
   href: string;
+  accent: string;
+  iconBackground: string;
 };
 
 const navItems = [
-  { label: "Lộ trình", href: "#learning-path" },
-  { label: "AI Tutor", href: "#ai-features" },
-  { label: "Cộng đồng", href: "#community" },
-  { label: "FAQ", href: "#faq" },
+  { label: "Learning path", href: "#learning-path" },
+  { label: "Skills", href: "#skills" },
+  { label: "AI learning", href: "#ai-learning" },
+  { label: "Community", href: "#community" },
 ];
 
-const features: Feature[] = [
-  {
-    icon: Target,
-    title: "Placement test cá nhân hóa",
-    description: "Xác định trình độ CEFR và tạo lộ trình phù hợp ngay từ buổi đầu.",
-    href: "/placement",
-  },
+const skills: Feature[] = [
   {
     icon: BookOpen,
-    title: "Vocabulary theo SRS",
-    description: "Học từ mới, ôn lại đúng thời điểm và tránh lặp nội dung đã hoàn thành.",
+    title: "Vocabulary",
+    description:
+      "Build long-term memory with daily words, review cycles and weekly progress.",
     href: "/vocabulary",
+    accent: "from-emerald-50 to-teal-50 dark:from-emerald-500/10 dark:to-teal-500/5",
+    iconBackground: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
+  },
+  {
+    icon: CheckCircle2,
+    title: "Grammar",
+    description:
+      "Master grammar through guided topics, focused lessons and practical exercises.",
+    href: "/grammar",
+    accent: "from-blue-50 to-cyan-50 dark:from-blue-500/10 dark:to-cyan-500/5",
+    iconBackground: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300",
   },
   {
     icon: Headphones,
-    title: "Listening mỗi ngày",
-    description: "10 câu nghe theo chủ đề, có câu sai được ghép vào lượt luyện kế tiếp.",
+    title: "Listening",
+    description:
+      "Train your ears with level-based listening practice and instant feedback.",
     href: "/listening",
+    accent: "from-violet-50 to-indigo-50 dark:from-violet-500/10 dark:to-indigo-500/5",
+    iconBackground: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300",
   },
   {
     icon: Mic2,
-    title: "Speaking có AI phản hồi",
-    description: "Luyện phát âm, phản xạ hội thoại và nhận góp ý rõ ràng theo từng câu.",
+    title: "Speaking",
+    description:
+      "Practice speaking with real sessions, pronunciation feedback and AI evaluation.",
     href: "/speaking",
+    accent: "from-fuchsia-50 to-pink-50 dark:from-fuchsia-500/10 dark:to-pink-500/5",
+    iconBackground: "bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-500/15 dark:text-fuchsia-300",
   },
   {
-    icon: PenLine,
-    title: "Writing được chấm chi tiết",
-    description: "Gemini đánh giá grammar, vocabulary, coherence và sửa bài theo mục tiêu.",
+    icon: BookOpen,
+    title: "Reading",
+    description:
+      "Read level-appropriate articles and improve comprehension one session at a time.",
+    href: "/reading",
+    accent: "from-amber-50 to-orange-50 dark:from-amber-500/10 dark:to-orange-500/5",
+    iconBackground: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
+  },
+  {
+    icon: NotebookPen,
+    title: "Writing",
+    description:
+      "Write with clear prompts, structured practice and actionable AI feedback.",
     href: "/writing",
+    accent: "from-rose-50 to-orange-50 dark:from-rose-500/10 dark:to-orange-500/5",
+    iconBackground: "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300",
+  },
+];
+
+const productPillars: Feature[] = [
+  {
+    icon: Compass,
+    title: "Discover your level",
+    description:
+      "Begin with the placement test and receive a path that matches your real ability.",
+    href: "/placement",
+    accent: "from-blue-50 via-white to-violet-50 dark:from-blue-500/10 dark:via-white/5 dark:to-violet-500/10",
+    iconBackground: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300",
   },
   {
-    icon: Trophy,
-    title: "Mission, XP, streak",
-    description: "Giữ động lực bằng nhiệm vụ hằng ngày, thành tích và bảng xếp hạng.",
+    icon: Target,
+    title: "Build a daily rhythm",
+    description:
+      "Stay consistent with missions, XP, streaks and meaningful progress milestones.",
     href: "/missions",
+    accent: "from-violet-50 via-white to-fuchsia-50 dark:from-violet-500/10 dark:via-white/5 dark:to-fuchsia-500/10",
+    iconBackground: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300",
+  },
+  {
+    icon: PawPrint,
+    title: "Learn with a companion",
+    description:
+      "A learning companion experience is being prepared and will arrive when it is ready.",
+    href: "#companion",
+    accent: "from-orange-50 via-white to-pink-50 dark:from-orange-500/10 dark:via-white/5 dark:to-pink-500/10",
+    iconBackground: "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300",
   },
 ];
 
-const pathSteps = [
-  "Kiểm tra trình độ",
-  "Nhận lộ trình AI",
-  "Học bài ngắn mỗi ngày",
-  "Ôn tập thông minh",
-  "Theo dõi tiến bộ",
-];
-
-const testimonials = [
-  {
-    name: "Minh Anh",
-    role: "Sinh viên năm 2",
-    quote:
-      "Mình biết hôm nay cần học gì, ôn gì và vì sao. Cảm giác nhẹ hơn rất nhiều so với tự học lan man.",
-  },
-  {
-    name: "Hoàng Nam",
-    role: "Nhân viên văn phòng",
-    quote:
-      "Phần nghe và nói theo tình huống giúp mình luyện đều 15 phút mỗi ngày mà không bị quá tải.",
-  },
-  {
-    name: "Linh Chi",
-    role: "Tự học IELTS nền tảng",
-    quote:
-      "Writing feedback rất rõ: sai ở đâu, sửa thế nào, và bài kế tiếp nên luyện gì.",
-  },
-];
-
-const faqs = [
-  {
-    question: "PoppyLingo khác gì Duolingo?",
-    answer:
-      "PoppyLingo tập trung vào lộ trình cá nhân hóa, phản hồi AI cho Speaking/Writing, ôn tập SRS và dashboard tiến bộ theo từng kỹ năng.",
-  },
-  {
-    question: "Có học miễn phí được không?",
-    answer:
-      "Có. Người dùng có thể bắt đầu với placement test, một số bài học, nhiệm vụ hằng ngày và công cụ AI cơ bản.",
-  },
-  {
-    question: "Người mất gốc có dùng được không?",
-    answer:
-      "Có. Placement test sẽ xác định điểm xuất phát và mở lộ trình từ A1 đến các mục tiêu cao hơn.",
-  },
-  {
-    question: "AI có thay giáo viên không?",
-    answer:
-      "Không. AI đóng vai trò huấn luyện viên cá nhân: gợi ý, sửa lỗi, nhắc ôn và cá nhân hóa bài luyện.",
-  },
+const stats = [
+  { value: "6", label: "core English skills" },
+  { value: "1", label: "connected learning path" },
+  { value: "24/7", label: "learning access" },
 ];
 
 export default function HomePage() {
   const user = useAuthStore((state) => state.user) as UserSummary | null;
-  const setUser = useAuthStore((state) => state.setUser);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  useEffect(() => {
-    let mounted = true;
-
-    api
-      .get("/auth/me")
-      .then((res) => {
-        if (!mounted) return;
-        setUser(res.data?.data?.getUser ?? res.data?.data?.user ?? res.data);
-      })
-      .catch(() => {
-        if (!mounted) return;
-        setUser(null);
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, [setUser]);
-
   return (
-    <main className="min-h-screen overflow-x-clip bg-[#fbfcff] text-slate-950">
-      <Header user={user} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+    <main className="min-h-screen overflow-x-clip bg-[var(--lumiverse-bg)] text-[var(--lumiverse-ink)]">
+      <PublicHeader
+        user={user}
+        mobileOpen={mobileOpen}
+        setMobileOpen={setMobileOpen}
+      />
+
       <Hero user={user} />
-      <TrustBar />
-      <FeatureSection />
-      <LearningPathSection />
-      <AiSection />
+      <TrustStrip />
+      <ProductPillars />
+      <SkillsSection />
+      <AiLearningSection />
       <CommunitySection />
-      <PricingSection />
-      <TestimonialsSection />
-      <FaqSection />
-      <FinalCta />
+      <FinalCta user={user} />
       <Footer />
     </main>
   );
 }
 
-function Header({
+function PublicHeader({
   user,
   mobileOpen,
   setMobileOpen,
@@ -190,16 +180,19 @@ function Header({
   setMobileOpen: (open: boolean) => void;
 }) {
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/90 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-[var(--lumiverse-border)] bg-white/80 backdrop-blur-2xl dark:bg-slate-950/80">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
-        <AppLogo className="h-11" />
+        <AppLogo />
 
-        <nav aria-label="Điều hướng chính" className="hidden items-center gap-7 lg:flex">
+        <nav
+          aria-label="Main navigation"
+          className="hidden items-center gap-8 lg:flex"
+        >
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="text-sm font-bold text-slate-600 transition hover:text-[#6d35ff]"
+              className="relative text-sm font-extrabold text-[var(--lumiverse-muted)] transition hover:text-[var(--lumiverse-primary)]"
             >
               {item.label}
             </Link>
@@ -207,26 +200,24 @@ function Header({
         </nav>
 
         <div className="hidden items-center gap-3 sm:flex">
+          <LanguageSwitcher />
+          <ThemeToggle />
           {user ? (
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-black text-white transition hover:bg-[#6d35ff]"
-            >
-              Vào dashboard <ArrowRight aria-hidden className="h-4 w-4" />
+            <Link href="/dashboard" className="lumiverse-button-primary text-sm">
+              Open dashboard
+              <ArrowRight aria-hidden className="h-4 w-4" />
             </Link>
           ) : (
             <>
-              <Link
-                href="/auth"
-                className="rounded-full px-5 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-100"
-              >
-                Đăng nhập
+              <Link href="/auth" className="lumiverse-button-soft text-sm">
+                Sign in
               </Link>
               <Link
-                href="/placement"
-                className="inline-flex items-center gap-2 rounded-full bg-[#6d35ff] px-5 py-3 text-sm font-black text-white shadow-[0_16px_32px_rgba(109,53,255,0.24)] transition hover:bg-[#5825df]"
+                href={buildLoginUrl("/placement")}
+                className="lumiverse-button-primary text-sm"
               >
-                Bắt đầu miễn phí <ArrowRight aria-hidden className="h-4 w-4" />
+                Start placement
+                <ArrowRight aria-hidden className="h-4 w-4" />
               </Link>
             </>
           )}
@@ -236,198 +227,277 @@ function Header({
           type="button"
           aria-expanded={mobileOpen}
           aria-controls="mobile-home-nav"
+          aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-900 lg:hidden"
+          className="lumiverse-button-soft h-11 w-11 p-0 lg:hidden"
         >
-          <span className="sr-only">Mở menu</span>
-          <ChevronDown aria-hidden className={`h-5 w-5 transition ${mobileOpen ? "rotate-180" : ""}`} />
+          <ChevronDown
+            aria-hidden
+            className={`h-5 w-5 transition-transform duration-200 ${
+              mobileOpen ? "rotate-180" : ""
+            }`}
+          />
         </button>
       </div>
 
-      {mobileOpen && (
-        <nav id="mobile-home-nav" aria-label="Điều hướng di động" className="border-t border-slate-200 bg-white px-4 py-4 lg:hidden">
+      {mobileOpen ? (
+        <nav
+          id="mobile-home-nav"
+          aria-label="Mobile navigation"
+          className="border-t border-[var(--lumiverse-border)] px-4 py-4 lg:hidden"
+        >
           <div className="mx-auto grid max-w-7xl gap-2">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className="rounded-2xl px-4 py-3 font-bold text-slate-700 hover:bg-[#f3efff]"
+                className="rounded-2xl px-4 py-3 font-extrabold text-[var(--lumiverse-muted)] transition hover:bg-white/70 hover:text-[var(--lumiverse-primary)] dark:hover:bg-white/8"
               >
                 {item.label}
               </Link>
             ))}
+
             <Link
-              href={user ? "/dashboard" : "/placement"}
-              className="mt-2 rounded-2xl bg-[#6d35ff] px-4 py-3 text-center font-black text-white"
+              href={user ? "/dashboard" : buildLoginUrl("/placement")}
+              onClick={() => setMobileOpen(false)}
+              className="lumiverse-button-primary mt-2"
             >
-              {user ? "Vào dashboard" : "Bắt đầu miễn phí"}
+              {user ? "Open dashboard" : "Start placement"}
             </Link>
           </div>
         </nav>
-      )}
+      ) : null}
     </header>
   );
 }
 
 function Hero({ user }: { user: UserSummary | null }) {
+  const primaryHref = user ? "/dashboard" : "/placement";
+  const protectedPrimaryHref = user ? primaryHref : buildLoginUrl(primaryHref);
+  const learningPathHref = user ? "/learning-path" : buildLoginUrl("/learning-path");
+
   return (
-    <section className="relative isolate overflow-hidden">
-      <div className="absolute inset-x-0 top-0 -z-10 h-[640px] bg-[radial-gradient(circle_at_20%_20%,#efe7ff_0,transparent_34%),radial-gradient(circle_at_80%_10%,#dff7ff_0,transparent_30%),linear-gradient(180deg,#ffffff_0%,#f6f8ff_100%)]" />
-      <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-24">
-        <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#d8ccff] bg-white px-4 py-2 text-sm font-black text-[#6d35ff] shadow-sm">
-            <Sparkles aria-hidden className="h-4 w-4" />
-            AI English learning platform
-          </p>
-          <h1 className="mt-6 max-w-3xl text-balance text-4xl font-black leading-[1.04] tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
-            Học tiếng Anh theo lộ trình AI, mỗi ngày rõ mình cần làm gì.
+    <section className="relative isolate overflow-hidden px-4 pb-16 pt-10 sm:px-6 sm:pb-20 sm:pt-14 lg:px-8 lg:pb-24">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[42rem] bg-[radial-gradient(circle_at_20%_20%,rgba(42,126,255,0.14),transparent_32%),radial-gradient(circle_at_82%_18%,rgba(167,67,255,0.16),transparent_30%),radial-gradient(circle_at_70%_70%,rgba(255,98,145,0.12),transparent_32%)]"
+      />
+
+      <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(420px,0.95fr)]">
+        <div className="min-w-0">
+          <LumiverseBadge>Learn. Explore. Grow. Together.</LumiverseBadge>
+
+          <h1 className="mt-6 max-w-4xl text-4xl font-black leading-[1.03] tracking-[-0.04em] sm:text-5xl lg:text-7xl">
+            Your English journey,
+            <span className="mt-1 block bg-gradient-to-r from-blue-600 via-violet-600 to-pink-500 bg-clip-text text-transparent">
+              connected in one universe.
+            </span>
           </h1>
-          <p className="mt-6 max-w-2xl text-lg font-medium leading-8 text-slate-600 sm:text-xl">
-            PoppyLingo kết hợp placement test, SRS, luyện nghe nói đọc viết và phản hồi AI để giúp bạn tiến bộ đều mà không bị quá tải.
+
+          <p className="mt-6 max-w-2xl text-base font-semibold leading-8 text-[var(--lumiverse-muted)] sm:text-lg">
+            Lumiverse brings placement, personalized learning paths, six core
+            skills, missions, community and AI feedback into one clear
+            experience.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
-              href={user ? "/dashboard" : "/placement"}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-[#6d35ff] px-6 py-4 text-base font-black text-white shadow-[0_20px_44px_rgba(109,53,255,0.28)] transition hover:-translate-y-0.5 hover:bg-[#5825df]"
+              href={protectedPrimaryHref}
+              className="lumiverse-button-primary min-h-14 px-7 py-4 text-base"
             >
-              {user ? "Tiếp tục học" : "Kiểm tra trình độ miễn phí"}
+              {user ? "Continue your journey" : "Discover your English level"}
               <ArrowRight aria-hidden className="h-5 w-5" />
             </Link>
+
             <Link
-              href="#ai-features"
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-4 text-base font-black text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:border-[#cfc2ff]"
+              href={learningPathHref}
+              className="lumiverse-button-soft min-h-14 px-7 py-4 text-base"
             >
-              <Play aria-hidden className="h-5 w-5 text-[#6d35ff]" />
-              Xem AI hỗ trợ gì
+              Explore learning path
             </Link>
           </div>
 
-          <ul className="mt-8 grid gap-3 text-sm font-bold text-slate-700 sm:grid-cols-3">
-            {["Miễn phí để bắt đầu", "Theo CEFR A1-C2", "Học 10-20 phút/ngày"].map((item) => (
-              <li key={item} className="flex items-center gap-2">
-                <CheckCircle2 aria-hidden className="h-5 w-5 shrink-0 text-emerald-500" />
-                {item}
-              </li>
+          <div className="mt-8 grid max-w-2xl grid-cols-3 gap-3">
+            {stats.map((stat) => (
+              <div
+                key={stat.label}
+                className="rounded-2xl border border-white/70 bg-white/60 px-4 py-4 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5"
+              >
+                <p className="text-xl font-black text-[var(--lumiverse-ink)] sm:text-2xl">
+                  {stat.value}
+                </p>
+                <p className="mt-1 text-xs font-bold leading-5 text-[var(--lumiverse-muted)] sm:text-sm">
+                  {stat.label}
+                </p>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
 
         <div className="relative">
-          <div className="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-4 shadow-[0_30px_90px_rgba(48,37,115,0.16)]">
-            <div className="grid gap-4 rounded-[1.5rem] bg-[#f7f5ff] p-4 sm:grid-cols-[1fr_180px]">
-              <div className="rounded-[1.25rem] bg-white p-5 shadow-sm">
-                <p className="text-sm font-black text-[#6d35ff]">Today's plan</p>
-                <h2 className="mt-2 text-2xl font-black">Environment B1</h2>
-                <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
-                  8 từ cần ôn, 10 câu nghe, 1 bài speaking ngắn.
-                </p>
-                <div className="mt-5 space-y-3">
-                  <ProgressRow label="Vocabulary" value="80%" />
-                  <ProgressRow label="Listening" value="65%" />
-                  <ProgressRow label="Speaking" value="42%" />
+          <div
+            aria-hidden
+            className="absolute -inset-6 -z-10 rounded-[3rem] bg-gradient-to-br from-blue-400/20 via-violet-400/20 to-pink-400/20 blur-3xl"
+          />
+
+          <LumiverseCard className="relative overflow-hidden p-0">
+            <div className="relative min-h-[480px] overflow-hidden rounded-[inherit] bg-[linear-gradient(145deg,#eef6ff_0%,#f6f0ff_52%,#fff1f7_100%)] p-6 dark:bg-[linear-gradient(145deg,rgba(21,41,87,0.96),rgba(55,28,93,0.96),rgba(76,30,70,0.96))] sm:p-8">
+              <div
+                aria-hidden
+                className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-violet-300/35 blur-3xl"
+              />
+              <div
+                aria-hidden
+                className="absolute -bottom-20 -left-12 h-72 w-72 rounded-full bg-blue-300/30 blur-3xl"
+              />
+
+              <div className="relative z-10 flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--lumiverse-primary)]">
+                    Your learning companion
+                  </p>
+                  <h2 className="mt-2 text-2xl font-black sm:text-3xl">
+                    Meet Lumi
+                  </h2>
+                  <p className="mt-2 max-w-xs text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+                    A friendly guide that stays with you from placement to daily
+                    progress.
+                  </p>
                 </div>
+
+                <span className="inline-flex rounded-full bg-white/70 px-3 py-1.5 text-xs font-black text-violet-700 shadow-sm backdrop-blur dark:bg-white/10 dark:text-violet-200">
+                  AI companion
+                </span>
               </div>
-              <div className="flex flex-col items-center justify-center rounded-[1.25rem] bg-white p-4 text-center shadow-sm">
+
+              <div className="relative z-10 mt-5 flex justify-center">
                 <Image
                   src="/cat-home.jpg"
-                  alt="Poppy mascot hướng dẫn học tiếng Anh"
-                  width={180}
-                  height={180}
+                  alt="Lumiverse learning mascot"
+                  width={420}
+                  height={420}
                   priority
-                  sizes="(max-width: 640px) 140px, 180px"
-                  className="h-32 w-32 rounded-full object-cover sm:h-40 sm:w-40"
+                  sizes="(max-width: 768px) 320px, 420px"
+                  className="h-[280px] w-[280px] rounded-[2rem] object-cover shadow-[0_24px_70px_rgba(75,55,180,0.22)] ring-8 ring-white/60 sm:h-[330px] sm:w-[330px]"
                 />
-                <p className="mt-3 text-sm font-black text-slate-900">AI coach</p>
-                <p className="text-xs font-semibold text-slate-500">Gợi ý bài tiếp theo</p>
+              </div>
+
+              <div className="relative z-10 -mt-3 grid grid-cols-3 gap-3">
+                <MiniMetric label="Placement" value="Personalized" />
+                <MiniMetric label="Daily goal" value="20 min" />
+                <MiniMetric label="Path" value="A1–C1" />
               </div>
             </div>
+          </LumiverseCard>
+        </div>
+      </div>
+    </section>
+  );
+}
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              <Metric icon={Zap} label="Streak" value="18 ngày" />
-              <Metric icon={Star} label="XP hôm nay" value="2,450" />
-              <Metric icon={BarChart3} label="Tiến độ" value="+12%" />
+function TrustStrip() {
+  return (
+    <section className="px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl rounded-[1.75rem] border border-[var(--lumiverse-border)] bg-white/75 p-4 shadow-sm backdrop-blur dark:bg-white/5">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <TrustItem icon={Compass} text="Placement-based start" />
+          <TrustItem icon={WandSparkles} text="AI-assisted feedback" />
+          <TrustItem icon={Target} text="Daily missions and XP" />
+          <TrustItem icon={UsersRound} text="Community motivation" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ProductPillars() {
+  return (
+    <Section
+      id="learning-path"
+      eyebrow="Your journey"
+      title="Start from where you are. Grow with a clear path."
+      description="Every major entry point connects to a real route and an existing learning flow in your project."
+    >
+      <div className="grid gap-5 md:grid-cols-3">
+        {productPillars.map((feature, index) => (
+        <FeatureCard
+            key={feature.href}
+            feature={feature}
+            number={`0${index + 1}`}
+          />
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+function SkillsSection() {
+  return (
+    <Section
+      id="skills"
+      eyebrow="Six core skills"
+      title="Practice every part of English in one connected system."
+      description="Move between vocabulary, grammar, listening, speaking, reading and writing without losing your progress."
+    >
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {skills.map((feature) => (
+        <FeatureCard key={feature.href} feature={feature} />
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+function AiLearningSection() {
+  return (
+    <Section
+      id="ai-learning"
+      eyebrow="AI learning"
+      title="Helpful AI, placed where it adds real value."
+      description="Lumiverse supports the learner without turning the product into a collection of disconnected AI features."
+    >
+      <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+        <LumiverseCard className="relative overflow-hidden p-7 sm:p-8">
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(62,107,255,0.12),transparent_34%),radial-gradient(circle_at_88%_80%,rgba(214,73,255,0.12),transparent_36%)]"
+          />
+          <div className="relative z-10">
+            <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 text-white shadow-lg shadow-violet-500/20">
+              <Sparkles aria-hidden className="h-6 w-6" />
+            </div>
+
+            <h3 className="mt-6 max-w-2xl text-2xl font-black sm:text-3xl">
+              One path shaped by your level, activity and progress.
+            </h3>
+
+            <p className="mt-4 max-w-2xl text-sm font-semibold leading-7 text-[var(--lumiverse-muted)] sm:text-base">
+              Use placement results, skill performance and completed sessions to
+              guide the next learning step. Speaking and writing remain connected
+              to their existing processing flows.
+            </p>
+
+            <div className="mt-7 grid gap-3 sm:grid-cols-3">
+              <AiChip icon={Compass} text="Personalized next steps" />
+              <AiChip icon={Mic2} text="Speaking evaluation" />
+              <AiChip icon={NotebookPen} text="Writing feedback" />
             </div>
           </div>
+        </LumiverseCard>
+
+        <div className="grid gap-5">
+          <InfoBlock
+            icon={Mic2}
+            title="Practice speaking"
+            text="Open real speaking topics, record sessions and receive feedback from the current workflow."
+          />
+          <InfoBlock
+            icon={NotebookPen}
+            title="Improve writing"
+            text="Write from real prompts, submit sessions and review structured result feedback."
+          />
         </div>
-      </div>
-    </section>
-  );
-}
-
-function TrustBar() {
-  return (
-    <section aria-label="Điểm nổi bật" className="border-y border-slate-200 bg-white">
-      <div className="mx-auto grid max-w-7xl gap-4 px-4 py-6 sm:grid-cols-3 sm:px-6 lg:grid-cols-5 lg:px-8">
-        {["Vocabulary SRS", "AI Speaking", "AI Writing", "Community", "Leaderboard"].map((item) => (
-          <div key={item} className="rounded-2xl bg-slate-50 px-4 py-3 text-center text-sm font-black text-slate-700">
-            {item}
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function FeatureSection() {
-  return (
-    <Section id="features" eyebrow="Nền tảng học toàn diện" title="Không chỉ học từ mới. Bạn luyện đủ kỹ năng và được AI điều chỉnh lộ trình.">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {features.map((feature) => (
-          <Link
-            key={feature.title}
-            href={feature.href}
-            className="group rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(48,37,115,0.12)]"
-          >
-            <feature.icon aria-hidden className="h-9 w-9 text-[#6d35ff]" />
-            <h3 className="mt-5 text-xl font-black text-slate-950">{feature.title}</h3>
-            <p className="mt-3 text-sm font-medium leading-6 text-slate-600">{feature.description}</p>
-            <span className="mt-5 inline-flex items-center gap-2 text-sm font-black text-[#6d35ff]">
-              Khám phá <ArrowRight aria-hidden className="h-4 w-4 transition group-hover:translate-x-1" />
-            </span>
-          </Link>
-        ))}
-      </div>
-    </Section>
-  );
-}
-
-function LearningPathSection() {
-  return (
-    <Section id="learning-path" eyebrow="Learning Path" title="Một lộ trình rõ ràng từ kiểm tra đầu vào đến bài học hằng ngày.">
-      <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-2xl font-black">Hôm nay nên học gì?</h3>
-          <p className="mt-3 leading-7 text-slate-600">
-            PoppyLingo ưu tiên ôn tập trước, mở từ mới theo năng lực ghi nhớ và tự điều chỉnh nếu bạn sai nhiều.
-          </p>
-          <Link href="/placement" className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white">
-            Làm placement test <ArrowRight aria-hidden className="h-4 w-4" />
-          </Link>
-        </div>
-        <ol className="grid gap-3">
-          {pathSteps.map((step, index) => (
-            <li key={step} className="flex items-center gap-4 rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-sm">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#efe9ff] text-lg font-black text-[#6d35ff]">
-                {index + 1}
-              </span>
-              <span className="font-black text-slate-900">{step}</span>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </Section>
-  );
-}
-
-function AiSection() {
-  return (
-    <Section id="ai-features" eyebrow="AI features" title="AI không chỉ tạo bài. AI giúp bạn học đúng thứ cần học.">
-      <div className="grid gap-4 lg:grid-cols-3">
-        <InfoCard icon={Bot} title="AI phân tích mục tiêu" text="Từ trình độ, thời gian rảnh và mục tiêu, hệ thống tạo lộ trình học phù hợp." />
-        <InfoCard icon={MessageCircle} title="AI sửa lỗi theo ngữ cảnh" text="Speaking và Writing nhận phản hồi cụ thể thay vì chỉ báo đúng sai." />
-        <InfoCard icon={ShieldCheck} title="Không nhồi bài quá mức" text="SRS ưu tiên ghi nhớ dài hạn, giảm lượng từ mới khi bạn quên nhiều." />
       </div>
     </Section>
   );
@@ -435,81 +505,62 @@ function AiSection() {
 
 function CommunitySection() {
   return (
-    <Section id="community" eyebrow="Community & leaderboard" title="Học một mình nhưng vẫn có động lực như đang ở lớp.">
-      <div className="grid gap-4 md:grid-cols-3">
-        <InfoCard icon={Users} title="Cộng đồng học chung" text="Chia sẻ câu hỏi, bài viết, tài nguyên và tiến bộ học tập." />
-        <InfoCard icon={Trophy} title="Bảng xếp hạng" text="Thi đua XP theo tuần, mùa giải và nhóm bạn." />
-        <InfoCard icon={Star} title="Thành tích" text="Mở khóa badge theo vocabulary, listening, streak, mission và level." />
+    <Section
+      id="community"
+      eyebrow="Grow together"
+      title="Learning feels lighter when progress is shared."
+      description="Missions, rankings, clubs and community activity help learners stay consistent without distracting from the lessons."
+    >
+      <div className="grid gap-5 md:grid-cols-3">
+        <InfoBlock
+          icon={MessageCircle}
+          title="Community"
+          text="Join discussions, clubs and social learning spaces through the existing community module."
+          href={buildLoginUrl("/community")}
+        />
+        <InfoBlock
+          icon={Trophy}
+          title="Leaderboard"
+          text="Track weekly progress, XP and competition through the current leaderboard routes."
+          href={buildLoginUrl("/leaderboard")}
+        />
+        <InfoBlock
+          icon={Target}
+          title="Missions"
+          text="Turn daily goals into achievable milestones connected to real learning activity."
+          href={buildLoginUrl("/missions")}
+        />
       </div>
     </Section>
   );
 }
 
-function PricingSection() {
+function FinalCta({ user }: { user: UserSummary | null }) {
   return (
-    <Section id="pricing" eyebrow="Pricing" title="Bắt đầu miễn phí. Nâng cấp khi bạn cần học sâu hơn.">
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Plan title="Free" price="0đ" description="Dành cho người mới bắt đầu thử lộ trình AI." items={["Placement test", "Bài học cơ bản", "Daily goal", "Một phần công cụ AI"]} href="/placement" cta="Bắt đầu miễn phí" />
-        <Plan title="Premium" price="Linh hoạt" description="Dành cho người học nghiêm túc cần phản hồi và nội dung nâng cao." items={["AI feedback đầy đủ", "Không giới hạn ôn tập", "Explore topics", "Báo cáo tiến bộ nâng cao"]} href="/auth" cta="Tìm hiểu nâng cấp" featured />
-      </div>
-    </Section>
-  );
-}
-
-function TestimonialsSection() {
-  return (
-    <Section id="testimonials" eyebrow="Học viên nói gì" title="Thiết kế để người học quay lại mỗi ngày, không phải học bùng lên rồi bỏ.">
-      <div className="grid gap-4 md:grid-cols-3">
-        {testimonials.map((item) => (
-          <figure key={item.name} className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex gap-1 text-amber-400" aria-label="5 sao">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <Star key={index} aria-hidden className="h-4 w-4 fill-current" />
-              ))}
-            </div>
-            <blockquote className="mt-5 text-sm font-medium leading-7 text-slate-700">"{item.quote}"</blockquote>
-            <figcaption className="mt-5">
-              <p className="font-black text-slate-950">{item.name}</p>
-              <p className="text-sm font-semibold text-slate-500">{item.role}</p>
-            </figcaption>
-          </figure>
-        ))}
-      </div>
-    </Section>
-  );
-}
-
-function FaqSection() {
-  return (
-    <Section id="faq" eyebrow="FAQ" title="Những câu hỏi thường gặp trước khi bắt đầu.">
-      <div className="mx-auto grid max-w-4xl gap-3">
-        {faqs.map((item) => (
-          <details key={item.question} className="group rounded-[1.25rem] border border-slate-200 bg-white p-5 shadow-sm">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-black text-slate-950">
-              {item.question}
-              <ChevronDown aria-hidden className="h-5 w-5 shrink-0 text-[#6d35ff] transition group-open:rotate-180" />
-            </summary>
-            <p className="mt-4 text-sm font-medium leading-7 text-slate-600">{item.answer}</p>
-          </details>
-        ))}
-      </div>
-    </Section>
-  );
-}
-
-function FinalCta() {
-  return (
-    <section className="px-4 py-14 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-slate-950 p-8 text-white shadow-[0_30px_90px_rgba(15,23,42,0.24)] sm:p-12">
+    <section className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+      <div className="mx-auto max-w-7xl overflow-hidden rounded-[2.25rem] bg-[linear-gradient(135deg,#08249b_0%,#3646f5_46%,#8b38ed_72%,#f25192_100%)] p-8 text-white shadow-[0_32px_100px_rgba(78,64,214,0.28)] sm:p-12">
         <div className="grid items-center gap-8 lg:grid-cols-[1fr_auto]">
           <div>
-            <h2 className="text-3xl font-black tracking-tight sm:text-4xl">Sẵn sàng biết mình nên học gì hôm nay?</h2>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
-              Làm placement test miễn phí, nhận lộ trình AI và bắt đầu với mục tiêu nhỏ trong ngày.
+            <LumiverseBadge className="border-white/20 bg-white/10 text-white">
+              Your next step
+            </LumiverseBadge>
+
+            <h2 className="mt-5 max-w-3xl text-3xl font-black tracking-tight sm:text-5xl">
+              Find your level and begin your Lumiverse journey.
+            </h2>
+
+            <p className="mt-4 max-w-2xl text-base font-semibold leading-7 text-white/80">
+              Start with placement, or continue from your dashboard when your
+              account already has learning progress.
             </p>
           </div>
-          <Link href="/placement" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-white px-6 py-4 font-black text-slate-950">
-            Bắt đầu ngay <ArrowRight aria-hidden className="h-5 w-5" />
+
+          <Link
+            href={user ? "/dashboard" : buildLoginUrl("/placement")}
+            className="inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-white px-7 py-4 font-black text-[#2230a8] shadow-xl transition hover:-translate-y-0.5"
+          >
+            {user ? "Open dashboard" : "Start placement test"}
+            <ArrowRight aria-hidden className="h-5 w-5" />
           </Link>
         </div>
       </div>
@@ -519,16 +570,25 @@ function FinalCta() {
 
 function Footer() {
   return (
-    <footer className="border-t border-slate-200 bg-white px-4 py-10 sm:px-6 lg:px-8">
+    <footer className="border-t border-[var(--lumiverse-border)] bg-white/70 px-4 py-10 backdrop-blur dark:bg-slate-950/70 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 md:flex-row md:items-center md:justify-between">
-        <AppLogo compact />
-        <nav aria-label="Liên kết chân trang" className="flex flex-wrap gap-4 text-sm font-bold text-slate-600">
-          <Link href="/courses">Courses</Link>
-          <Link href="/community">Community</Link>
-          <Link href="/privacy">Privacy</Link>
-          <Link href="/terms">Terms</Link>
+        <div>
+          <AppLogo />
+        </div>
+
+        <nav
+          aria-label="Footer links"
+          className="flex flex-wrap gap-x-5 gap-y-3 text-sm font-bold text-[var(--lumiverse-muted)]"
+        >
+          <Link href={buildLoginUrl("/placement")}>Placement</Link>
+          <Link href={buildLoginUrl("/learning-path")}>Learning path</Link>
+          <Link href={buildLoginUrl("/community")}>Community</Link>
+          <Link href="/auth">Sign in</Link>
         </nav>
-        <p className="text-sm font-semibold text-slate-500">© 2026 PoppyLingo</p>
+
+        <p className="text-sm font-semibold text-[var(--lumiverse-muted)]">
+          © 2026 Lumiverse
+        </p>
       </div>
     </footer>
   );
@@ -538,94 +598,166 @@ function Section({
   id,
   eyebrow,
   title,
+  description,
   children,
 }: {
   id: string;
   eyebrow: string;
   title: string;
-  children: React.ReactNode;
+  description: string;
+  children: ReactNode;
 }) {
   return (
-    <section id={id} className="px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
+    <section id={id} className="scroll-mt-24 px-4 py-14 sm:px-6 sm:py-18 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-8 max-w-3xl">
-          <p className="text-sm font-black uppercase tracking-[0.18em] text-[#6d35ff]">{eyebrow}</p>
-          <h2 className="mt-3 text-balance text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">{title}</h2>
-        </div>
+        <p className="mb-3 text-sm font-black uppercase tracking-[0.18em] text-[var(--lumiverse-primary)]">
+          {eyebrow}
+        </p>
+        <LumiverseSectionHeader title={title} description={description} />
         {children}
       </div>
     </section>
   );
 }
 
-function InfoCard({ icon: Icon, title, text }: { icon: LucideIcon; title: string; text: string }) {
-  return (
-    <article className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm">
-      <Icon aria-hidden className="h-9 w-9 text-[#6d35ff]" />
-      <h3 className="mt-5 text-xl font-black text-slate-950">{title}</h3>
-      <p className="mt-3 text-sm font-medium leading-6 text-slate-600">{text}</p>
-    </article>
-  );
-}
-
-function Plan({
-  title,
-  price,
-  description,
-  items,
-  href,
-  cta,
-  featured = false,
+function FeatureCard({
+  feature,
+  number,
 }: {
-  title: string;
-  price: string;
-  description: string;
-  items: string[];
-  href: string;
-  cta: string;
-  featured?: boolean;
+  feature: Feature;
+  number?: string;
 }) {
+  const Icon = feature.icon;
+
   return (
-    <article className={`rounded-[1.5rem] border p-6 shadow-sm ${featured ? "border-[#6d35ff] bg-[#f6f2ff]" : "border-slate-200 bg-white"}`}>
-      <h3 className="text-2xl font-black">{title}</h3>
-      <p className="mt-2 text-4xl font-black text-[#6d35ff]">{price}</p>
-      <p className="mt-3 text-sm font-medium leading-6 text-slate-600">{description}</p>
-      <ul className="mt-6 space-y-3">
-        {items.map((item) => (
-          <li key={item} className="flex items-center gap-2 text-sm font-bold text-slate-700">
-            <CheckCircle2 aria-hidden className="h-5 w-5 text-emerald-500" />
-            {item}
-          </li>
-        ))}
-      </ul>
-      <Link href={href} className={`mt-6 inline-flex w-full justify-center rounded-2xl px-5 py-3 font-black ${featured ? "bg-[#6d35ff] text-white" : "bg-slate-950 text-white"}`}>
-        {cta}
-      </Link>
-    </article>
+    <Link
+      href={feature.href.startsWith("#") ? feature.href : buildLoginUrl(feature.href)}
+      className={`group relative block overflow-hidden rounded-[1.75rem] border border-[var(--lumiverse-border)] bg-gradient-to-br ${feature.accent} p-6 shadow-[0_12px_40px_rgba(35,45,120,0.06)] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_22px_60px_rgba(35,45,120,0.12)]`}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <span
+          className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${feature.iconBackground}`}
+        >
+          <Icon aria-hidden className="h-6 w-6" />
+        </span>
+
+        {number ? (
+          <span className="text-sm font-black tracking-[0.14em] text-[var(--lumiverse-muted)]/60">
+            {number}
+          </span>
+        ) : null}
+      </div>
+
+      <h3 className="mt-6 text-xl font-black text-[var(--lumiverse-ink)]">
+        {feature.title}
+      </h3>
+
+      <p className="mt-3 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+        {feature.description}
+      </p>
+
+      <span className="mt-6 inline-flex items-center gap-2 text-sm font-black text-[var(--lumiverse-primary)]">
+        Explore
+        <ArrowRight
+          aria-hidden
+          className="h-4 w-4 transition-transform group-hover:translate-x-1"
+        />
+      </span>
+    </Link>
   );
 }
 
-function ProgressRow({ label, value }: { label: string; value: string }) {
-  const percent = Number(value.replace("%", ""));
+function InfoBlock({
+  icon: Icon,
+  title,
+  text,
+  href,
+}: {
+  icon: LucideIcon;
+  title: string;
+  text: string;
+  href?: string;
+}) {
+  const content = (
+    <LumiverseCard className="h-full p-6 transition duration-300 hover:-translate-y-1">
+      <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--lumiverse-primary)]/10 text-[var(--lumiverse-primary)]">
+        <Icon aria-hidden className="h-6 w-6" />
+      </span>
+
+      <h3 className="mt-5 text-xl font-black text-[var(--lumiverse-ink)]">
+        {title}
+      </h3>
+
+      <p className="mt-3 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+        {text}
+      </p>
+
+      {href ? (
+        <span className="mt-5 inline-flex items-center gap-2 text-sm font-black text-[var(--lumiverse-primary)]">
+          Open module
+          <ArrowRight aria-hidden className="h-4 w-4" />
+        </span>
+      ) : null}
+    </LumiverseCard>
+  );
+
+  return href ? (
+    <Link href={href} className="block h-full">
+      {content}
+    </Link>
+  ) : (
+    content
+  );
+}
+
+function MiniMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div>
-      <div className="flex justify-between text-xs font-black text-slate-600">
-        <span>{label}</span>
-        <span>{value}</span>
-      </div>
-      <div className="mt-1.5 h-2 rounded-full bg-slate-100">
-        <div className="h-2 rounded-full bg-[#6d35ff]" style={{ width: `${percent}%` }} />
-      </div>
+    <div className="rounded-2xl border border-white/70 bg-white/70 p-3 text-center shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10">
+      <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--lumiverse-muted)]">
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-black text-[var(--lumiverse-ink)]">
+        {value}
+      </p>
     </div>
   );
 }
 
-function Metric({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
+function TrustItem({
+  icon: Icon,
+  text,
+}: {
+  icon: LucideIcon;
+  text: string;
+}) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4">
-      <Icon aria-hidden className="h-5 w-5 text-[#6d35ff]" />
-      <p className="mt-3 text-lg font-black">{value}</p>
-      <p className="text-xs font-bold text-slate-500">{label}</p>
+    <div className="flex items-center gap-3 rounded-2xl px-3 py-2">
+      <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--lumiverse-primary)]/10 text-[var(--lumiverse-primary)]">
+        <Icon aria-hidden className="h-5 w-5" />
+      </span>
+      <span className="text-sm font-extrabold text-[var(--lumiverse-ink)]">
+        {text}
+      </span>
+    </div>
+  );
+}
+
+function AiChip({
+  icon: Icon,
+  text,
+}: {
+  icon: LucideIcon;
+  text: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-[var(--lumiverse-border)] bg-white/70 px-4 py-3 dark:bg-white/5">
+      <Icon
+        aria-hidden
+        className="h-5 w-5 shrink-0 text-[var(--lumiverse-primary)]"
+      />
+      <span className="text-sm font-extrabold text-[var(--lumiverse-ink)]">
+        {text}
+      </span>
     </div>
   );
 }

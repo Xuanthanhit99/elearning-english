@@ -1,14 +1,8 @@
-'use client';
+"use client";
 
-import {
-  FileText,
-  Lightbulb,
-  Loader2,
-  Save,
-  Send,
-} from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { submitPlacementWriting } from '@/src/lib/placement-special-response-api';
+import { FileText, Lightbulb, Loader2, Save, Send } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { submitPlacementWriting } from "@/src/lib/placement-special-response-api";
 
 type Props = {
   sessionId: string;
@@ -30,18 +24,19 @@ export default function PlacementWritingQuestion({
   onSubmitted,
 }: Props) {
   const storageKey = `placement-writing:${sessionId}:${questionId}`;
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
-  const [error, setError] = useState('');
-  const startedAtRef = useRef(Date.now());
+  const [error, setError] = useState("");
+  const startedAtRef = useRef(0);
+
+  useEffect(() => {
+    startedAtRef.current = Date.now();
+  }, [questionId]);
 
   useEffect(() => {
     const draft = window.localStorage.getItem(storageKey);
-
-    if (draft) {
-      setContent(draft);
-    }
+    if (draft) window.queueMicrotask(() => setContent(draft));
   }, [storageKey]);
 
   useEffect(() => {
@@ -49,47 +44,33 @@ export default function PlacementWritingQuestion({
       window.localStorage.setItem(storageKey, content);
       setSavedAt(new Date());
     }, 500);
-
     return () => window.clearTimeout(timer);
   }, [content, storageKey]);
 
   const wordCount = useMemo(
-    () =>
-      content
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean).length,
+    () => content.trim().split(/\s+/).filter(Boolean).length,
     [content],
   );
 
-  const canSubmit =
-    wordCount >= minWords &&
-    wordCount <= maxWords &&
-    !submitting;
+  const canSubmit = wordCount >= minWords && wordCount <= maxWords && !submitting;
+  const tooShort = wordCount < minWords;
+  const tooLong = wordCount > maxWords;
 
   async function handleSubmit() {
     if (!canSubmit) return;
 
     try {
       setSubmitting(true);
-      setError('');
-
+      setError("");
       await submitPlacementWriting(sessionId, {
         questionId,
         content: content.trim(),
-        spentSeconds: Math.floor(
-          (Date.now() - startedAtRef.current) / 1000,
-        ),
+        spentSeconds: Math.floor((Date.now() - startedAtRef.current) / 1000),
       });
-
       window.localStorage.removeItem(storageKey);
       await onSubmitted();
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Không thể gửi bài viết.',
-      );
+      setError(err instanceof Error ? err.message : "Writing submission failed.");
     } finally {
       setSubmitting(false);
     }
@@ -97,13 +78,12 @@ export default function PlacementWritingQuestion({
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <span className="rounded-full bg-cyan-50 px-4 py-2 text-sm font-bold text-cyan-700">
-          Writing · {level}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <span className="rounded-full bg-cyan-50 px-4 py-2 text-sm font-black text-cyan-700">
+          Writing • {level}
         </span>
-
-        <span className="text-sm font-medium text-slate-500">
-          Yêu cầu: {minWords}–{maxWords} từ
+        <span className="text-sm font-bold text-slate-500">
+          {minWords}-{maxWords} words
         </span>
       </div>
 
@@ -111,67 +91,71 @@ export default function PlacementWritingQuestion({
         {prompt}
       </h1>
 
-      <div className="mt-6 rounded-2xl border border-violet-100 bg-violet-50/60 p-4">
+      <div className="mt-6 rounded-2xl border border-violet-100 bg-violet-50/65 p-4">
         <div className="flex gap-3">
-          <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
-          <p className="text-sm leading-6 text-slate-600">
-            Viết thành một đoạn hoàn chỉnh, có câu mở đầu, nội dung chính và
-            câu kết. Hãy ưu tiên diễn đạt tự nhiên thay vì dùng từ quá khó.
+          <Lightbulb aria-hidden className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+          <p className="text-sm font-semibold leading-6 text-slate-600">
+            Write a complete response with a clear opening, supporting details,
+            and a short conclusion. Your draft is saved locally for this
+            question only and removed after successful submission.
           </p>
         </div>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-3xl border border-slate-200 bg-white focus-within:border-violet-400 focus-within:ring-2 focus-within:ring-violet-100">
-        <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-5 py-3">
-          <div className="flex items-center gap-2 font-bold text-slate-700">
-            <FileText className="h-5 w-5 text-violet-600" />
-            Bài viết của bạn
-          </div>
-
-          <div
-            className={`text-sm font-bold ${
-              wordCount > maxWords
-                ? 'text-red-600'
-                : wordCount >= minWords
-                  ? 'text-emerald-600'
-                  : 'text-slate-500'
-            }`}
+      <section className="mt-6 overflow-hidden rounded-3xl border border-slate-200 bg-white focus-within:border-violet-400 focus-within:ring-2 focus-within:ring-violet-100">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50 px-5 py-3">
+          <label htmlFor="placement-writing-editor" className="flex items-center gap-2 font-black text-slate-700">
+            <FileText aria-hidden className="h-5 w-5 text-violet-600" />
+            Your response
+          </label>
+          <span
+            className={[
+              "rounded-full px-3 py-1 text-sm font-black",
+              tooLong
+                ? "bg-rose-50 text-rose-600"
+                : tooShort
+                  ? "bg-amber-50 text-amber-700"
+                  : "bg-emerald-50 text-emerald-700",
+            ].join(" ")}
+            aria-live="polite"
           >
-            {wordCount} / {maxWords} từ
-          </div>
+            {wordCount}/{maxWords} words
+          </span>
         </div>
 
         <textarea
+          id="placement-writing-editor"
           value={content}
           onChange={(event) => setContent(event.target.value)}
-          placeholder="Bắt đầu viết tại đây..."
-          className="min-h-[340px] w-full resize-y border-0 p-5 text-base leading-8 text-slate-800 outline-none"
+          disabled={submitting}
+          placeholder="Start writing here..."
+          className="min-h-[340px] w-full resize-y border-0 p-5 text-base font-medium leading-8 text-slate-800 outline-none placeholder:text-slate-400 disabled:opacity-60"
         />
 
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-5 py-3 text-sm">
-          <span className="inline-flex items-center gap-2 text-slate-500">
-            <Save className="h-4 w-4 text-emerald-500" />
+          <span className="inline-flex items-center gap-2 font-semibold text-slate-500" aria-live="polite">
+            <Save aria-hidden className="h-4 w-4 text-emerald-500" />
             {savedAt
-              ? `Đã lưu nháp lúc ${savedAt.toLocaleTimeString('vi-VN')}`
-              : 'Bản nháp sẽ tự động lưu trên thiết bị'}
+              ? `Draft saved at ${savedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+              : "Draft saves on this device"}
           </span>
 
-          {wordCount < minWords ? (
-            <span className="text-orange-600">
-              Cần thêm {minWords - wordCount} từ
+          {tooShort ? (
+            <span className="font-bold text-amber-700">
+              Add {minWords - wordCount} more word{minWords - wordCount === 1 ? "" : "s"}
             </span>
           ) : null}
 
-          {wordCount > maxWords ? (
-            <span className="text-red-600">
-              Vượt quá {wordCount - maxWords} từ
+          {tooLong ? (
+            <span className="font-bold text-rose-600">
+              Remove {wordCount - maxWords} word{wordCount - maxWords === 1 ? "" : "s"}
             </span>
           ) : null}
         </div>
-      </div>
+      </section>
 
       {error ? (
-        <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+        <p className="mt-4 rounded-xl bg-rose-50 px-4 py-3 text-sm font-bold text-rose-600" role="alert">
           {error}
         </p>
       ) : null}
@@ -181,19 +165,10 @@ export default function PlacementWritingQuestion({
           type="button"
           onClick={() => void handleSubmit()}
           disabled={!canSubmit}
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-700 to-fuchsia-600 px-7 py-3.5 font-black text-white shadow-lg shadow-violet-200 transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-violet-600 px-7 py-3.5 font-black text-white shadow-[0_14px_34px_rgba(124,58,237,0.24)] transition hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-300 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {submitting ? (
-            <>
-              <Loader2 className="h-5 w-5 animate-spin" />
-              Đang gửi
-            </>
-          ) : (
-            <>
-              Gửi bài viết
-              <Send className="h-5 w-5" />
-            </>
-          )}
+          {submitting ? <Loader2 aria-hidden className="h-5 w-5 animate-spin" /> : <Send aria-hidden className="h-5 w-5" />}
+          Submit writing
         </button>
       </div>
     </div>

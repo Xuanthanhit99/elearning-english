@@ -110,7 +110,7 @@ export function MiuChatModal({
             {loading && (
               <div className="flex justify-start">
                 <div className="rounded-2xl rounded-tl-sm border border-orange-100 bg-white px-4 py-2.5 text-sm text-slate-400">
-                  Miu đang gõ...
+                  Lumi đang gõ...
                 </div>
               </div>
             )}

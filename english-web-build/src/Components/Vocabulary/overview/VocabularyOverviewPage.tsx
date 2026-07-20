@@ -293,7 +293,7 @@ export default function VocabularyOverviewPage() {
               </div>
               <Image
                 src="/poppylingo-logo.png"
-                alt="PoppyLingo"
+                alt="Lumiverse"
                 width={180}
                 height={180}
                 className="absolute bottom-3 right-4 w-40 drop-shadow-2xl"

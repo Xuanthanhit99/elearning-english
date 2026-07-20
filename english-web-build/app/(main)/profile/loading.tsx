@@ -12,7 +12,7 @@ export default function Loading() {
       />
 
       <p className="mt-6 text-lg font-bold text-[#1f2a44]">
-        Miu đang chuẩn bị...
+        Lumi đang chuẩn bị...
       </p>
     </div>
   );

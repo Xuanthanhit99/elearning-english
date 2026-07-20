@@ -82,7 +82,7 @@ export default function WelcomeLoginModal({
             <div className="mt-2 text-3xl">👋</div>
 
             <p className="mt-3 text-lg font-bold leading-8 text-[#5b6b85]">
-              Miu đã chuẩn bị nhiệm vụ nhẹ nhàng để bạn giữ chuỗi học hôm nay.
+              Lumi đã chuẩn bị nhiệm vụ nhẹ nhàng để bạn giữ chuỗi học hôm nay.
             </p>
 
             <div className="absolute -bottom-4 right-10 h-8 w-8 rotate-45 bg-white" />
@@ -91,7 +91,7 @@ export default function WelcomeLoginModal({
           <div className="absolute bottom-0 right-20 z-10 animate-[miuFloat_2s_ease-in-out_infinite]">
             <Image
               src={avatar}
-              alt="Miu mascot"
+              alt="Lumi mascot"
               width={230}
               height={230}
               className="rounded-[32px] object-cover drop-shadow-2xl"

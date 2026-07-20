@@ -18,18 +18,18 @@ export default function PetSelectionPrompt({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/45 px-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-2xl overflow-hidden rounded-[34px] bg-white shadow-2xl">
+    <div className="fixed inset-0 z-[10000] flex items-start justify-center overflow-y-auto bg-black/45 px-4 py-6 backdrop-blur-sm sm:items-center sm:py-10">
+      <div className="relative w-full max-w-2xl overflow-y-auto rounded-[34px] bg-white shadow-2xl" style={{ maxHeight: "calc(100dvh - 3rem)" }}>
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-5 top-5 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-xl font-black text-[#1f2a44] shadow-sm hover:bg-white"
+          className="sticky right-5 top-5 z-20 ml-auto flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-xl font-black text-[#1f2a44] shadow-sm hover:bg-white"
           aria-label="Đóng thông báo chọn thú cưng"
         >
           ×
         </button>
 
-        <div className="bg-gradient-to-br from-[#fff0dc] via-white to-[#eef6ff] p-7 sm:p-9">
+        <div className="-mt-10 bg-gradient-to-br from-[#fff0dc] via-white to-[#eef6ff] p-7 sm:p-9">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
             <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-[30px] bg-white text-6xl shadow-xl ring-4 ring-[#ff6b00]/20">
               🐾
@@ -43,7 +43,7 @@ export default function PetSelectionPrompt({
                 Chào {fullname}, bạn chưa chọn thú cưng học tập
               </h2>
               <p className="mt-3 font-bold leading-7 text-[#5b6b85]">
-                Bạn chỉ được chọn một loại thú cưng. Nếu sau {daysLeft} ngày bạn chưa chọn, PoppyLingo sẽ chọn ngẫu nhiên và khóa thú cưng đó cho tài khoản của bạn.
+                Bạn chỉ được chọn một loại thú cưng. Nếu sau {daysLeft} ngày bạn chưa chọn, Lumiverse sẽ chọn ngẫu nhiên và khóa thú cưng đó cho tài khoản của bạn.
               </p>
             </div>
           </div>

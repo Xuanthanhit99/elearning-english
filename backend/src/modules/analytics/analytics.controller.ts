@@ -31,7 +31,10 @@ export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 
   @Get('analytics/overview')
-  async overview(@Req() req: AuthenticatedRequest, @Query() query: AnalyticsQueryDto) {
+  async overview(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: AnalyticsQueryDto,
+  ) {
     return {
       success: true,
       data: await this.analyticsService.getOverview(this.getUserId(req), query),
@@ -39,7 +42,10 @@ export class AnalyticsController {
   }
 
   @Get('analytics/skills')
-  async skills(@Req() req: AuthenticatedRequest, @Query() query: AnalyticsQueryDto) {
+  async skills(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: AnalyticsQueryDto,
+  ) {
     return {
       success: true,
       data: await this.analyticsService.getSkills(this.getUserId(req), query),
@@ -62,7 +68,10 @@ export class AnalyticsController {
   }
 
   @Get('analytics/activity')
-  async activity(@Req() req: AuthenticatedRequest, @Query() query: AnalyticsQueryDto) {
+  async activity(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: AnalyticsQueryDto,
+  ) {
     return {
       success: true,
       data: await this.analyticsService.getActivity(this.getUserId(req), query),
@@ -90,7 +99,10 @@ export class AnalyticsController {
   }
 
   @Get('reports/range')
-  async rangeReport(@Req() req: AuthenticatedRequest, @Query() query: ReportQueryDto) {
+  async rangeReport(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: ReportQueryDto,
+  ) {
     return {
       success: true,
       data: await this.analyticsService.getReport(this.getUserId(req), query),

@@ -26,6 +26,6 @@ export class OrdersController {
 
   @Get('/my')
   myOrders(@Req() req: any) {
-    this.ordersService.myOrders(req.user.id);
+    return this.ordersService.myOrders(req.user.id);
   }
 }

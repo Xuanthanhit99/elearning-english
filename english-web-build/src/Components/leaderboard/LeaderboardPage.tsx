@@ -159,7 +159,7 @@ export default function LeaderboardPage({
               <div className="mb-2 flex items-center gap-2 text-violet-100">
                 <Trophy className="h-5 w-5" />
                 <span className="text-sm font-semibold uppercase tracking-wider">
-                  PoppyLingo League
+                  Lumiverse League
                 </span>
               </div>
               <h1 className="text-3xl font-black sm:text-4xl">Bảng xếp hạng</h1>

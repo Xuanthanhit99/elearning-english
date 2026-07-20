@@ -188,7 +188,7 @@ export default function PlacementLanding() {
               </p>
 
               <p className="mt-3 max-w-xl text-base leading-7 text-slate-500">
-                Chọn một phương thức bên dưới để PoppyLingo xác định điểm bắt
+                Chọn một phương thức bên dưới để Lumiverse xác định điểm bắt
                 đầu phù hợp nhất.
               </p>
             </div>

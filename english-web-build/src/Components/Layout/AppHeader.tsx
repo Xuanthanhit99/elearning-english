@@ -192,8 +192,8 @@ export default function AppHeader({
   return (
     <header
       className={[
-        "fixed right-0 top-0 z-30 h-16 border-b border-slate-200 bg-white/90 backdrop-blur-xl transition-[left] duration-300",
-        sidebarCollapsed ? "lg:left-[84px]" : "lg:left-[264px]",
+        "fixed right-0 top-0 z-30 h-[76px] border-b border-[var(--lumiverse-border)] bg-white/78 shadow-[0_10px_34px_rgba(24,50,118,0.08)] backdrop-blur-2xl transition-[left] duration-300 dark:bg-slate-950/78",
+        sidebarCollapsed ? "lg:left-[96px]" : "lg:left-[280px]",
         "left-0",
       ].join(" ")}
     >
@@ -202,16 +202,24 @@ export default function AppHeader({
           type="button"
           aria-label={t("header.openMenu")}
           onClick={onOpenMobileMenu}
-          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 lg:hidden"
+          className="lumiverse-button-soft h-11 w-11 shrink-0 p-0 lg:hidden"
         >
           <Menu size={20} />
         </button>
 
+        <Link
+          href="/search"
+          aria-label={t("header.searchPlaceholder")}
+          className="lumiverse-button-soft h-11 w-11 shrink-0 p-0 md:hidden"
+        >
+          <Search size={18} />
+        </Link>
+
         <div className="hidden min-w-[190px] lg:block">
-          <p className="truncate text-sm font-black text-slate-950 dark:text-white">
+          <p className="truncate text-sm font-black text-[var(--lumiverse-ink)]">
             {t("header.greeting", { name: fullname.split(" ").slice(-1)[0] })}
           </p>
-          <p className="truncate text-xs font-bold text-slate-500">
+          <p className="truncate text-xs font-bold text-[var(--lumiverse-muted)]">
             {t("header.readyToday")}
           </p>
         </div>
@@ -219,11 +227,11 @@ export default function AppHeader({
         <form
           ref={searchRef}
           onSubmit={submitSearch}
-          className="relative min-w-0 flex-1 lg:max-w-[520px]"
+          className="relative hidden min-w-0 flex-1 md:block lg:max-w-[520px]"
         >
           <Search
             aria-hidden
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 sm:left-4"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--lumiverse-muted)] sm:left-4"
             size={18}
           />
           <input
@@ -242,21 +250,21 @@ export default function AppHeader({
             onFocus={() => {
               if (suggestions.length > 0) setSuggestionsOpen(true);
             }}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-10 pr-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-violet-400 focus:bg-white sm:pl-11 sm:pr-4 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            className="lumiverse-input h-12 w-full pl-10 pr-3 text-sm font-bold outline-none transition placeholder:text-slate-400 sm:pl-11 sm:pr-4"
             placeholder={t("header.searchPlaceholder")}
             aria-label={t("header.searchPlaceholder")}
           />
           {suggestionsLoading && (
             <Loader2
               aria-hidden
-              className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-violet-500"
+              className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-[var(--lumiverse-primary)]"
             />
           )}
           {suggestionsOpen && suggestions.length > 0 && (
             <div
               id="global-search-suggestions"
               role="listbox"
-              className="absolute left-0 right-0 top-12 z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
+              className="lumiverse-surface absolute left-0 right-0 top-14 z-50 overflow-hidden rounded-3xl"
             >
               {suggestions.map((item) => (
                 <Link
@@ -264,7 +272,7 @@ export default function AppHeader({
                   href={item.href}
                   role="option"
                   onClick={() => setSuggestionsOpen(false)}
-                  className="flex items-center justify-between gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-violet-50 hover:text-violet-700 dark:text-slate-200 dark:hover:bg-violet-950/40"
+                  className="flex items-center justify-between gap-3 px-4 py-3 text-sm font-bold text-[var(--lumiverse-muted)] hover:bg-blue-50 hover:text-[var(--lumiverse-primary)] dark:hover:bg-white/8"
                 >
                   <span className="min-w-0">
                     <span className="block truncate font-black">{item.title}</span>
@@ -272,13 +280,13 @@ export default function AppHeader({
                       {item.subtitle ?? item.type}
                     </span>
                   </span>
-                  <Search size={15} className="shrink-0 text-slate-300" />
+                    <Search size={15} className="shrink-0 text-[var(--lumiverse-cyan)]" />
                 </Link>
               ))}
               <button
                 type="button"
                 onClick={() => submitSearch()}
-                className="flex w-full items-center justify-center border-t border-slate-100 px-4 py-3 text-sm font-black text-violet-700"
+                className="flex w-full items-center justify-center border-t border-[var(--lumiverse-border)] px-4 py-3 text-sm font-black text-[var(--lumiverse-primary)]"
               >
                 Search all results
               </button>
@@ -298,7 +306,7 @@ export default function AppHeader({
           type="button"
           aria-label={t("header.notifications")}
           onClick={() => setNotificationsOpen(true)}
-          className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-violet-600 dark:border-slate-700 dark:bg-slate-900"
+          className="lumiverse-button-soft relative h-11 w-11 shrink-0 p-0 text-[var(--lumiverse-primary)]"
         >
           <Bell size={19} />
           {unreadNotifications > 0 && (
@@ -314,24 +322,24 @@ export default function AppHeader({
             aria-expanded={profileOpen}
             aria-label={t("header.account")}
             onClick={() => setProfileOpen((open) => !open)}
-            className="flex h-11 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-2.5 text-left dark:border-slate-700 dark:bg-slate-900"
+            className="lumiverse-button-soft h-12 gap-2 px-2.5 text-left"
           >
             {displayUser?.avatar ? (
               <img
                 src={displayUser.avatar}
                 alt={fullname}
-                className="h-8 w-8 rounded-full object-cover"
+                className="h-9 w-9 rounded-full object-cover"
               />
             ) : (
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100 text-xs font-black text-violet-700">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-xs font-black text-[var(--lumiverse-primary)]">
                 {getInitials(fullname)}
               </span>
             )}
             <span className="hidden min-w-0 sm:block">
-              <span className="block max-w-[110px] truncate text-sm font-black text-slate-950 dark:text-white">
+              <span className="block max-w-[110px] truncate text-sm font-black text-[var(--lumiverse-ink)]">
                 {fullname}
               </span>
-              <span className="block truncate text-xs font-bold text-slate-500">
+              <span className="block truncate text-xs font-bold text-[var(--lumiverse-muted)]">
                 {level}
               </span>
             </span>
@@ -344,7 +352,7 @@ export default function AppHeader({
           </button>
 
           {profileOpen && (
-            <div className="absolute right-0 top-13 z-50 w-[min(14rem,calc(100vw-1.5rem))] rounded-2xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+            <div className="lumiverse-surface absolute right-0 top-14 z-50 w-[min(14rem,calc(100vw-1.5rem))] rounded-3xl p-2">
               <DropdownLink href="/profile" icon={<User size={16} />}>
                 {t("header.profile")}
               </DropdownLink>
@@ -384,13 +392,13 @@ function HeaderStat({
   value: number;
 }) {
   return (
-    <div className="flex h-11 items-center gap-2 rounded-2xl bg-slate-50 px-3">
-      <span className="text-amber-500">{icon}</span>
+    <div className="flex h-12 items-center gap-2 rounded-2xl border border-[var(--lumiverse-border)] bg-white/62 px-3 shadow-sm dark:bg-white/8">
+      <span className="text-[var(--lumiverse-gold)]">{icon}</span>
       <span>
-        <span className="block text-sm font-black text-slate-950">
+        <span className="block text-sm font-black text-[var(--lumiverse-ink)]">
           {value.toLocaleString()}
         </span>
-        <span className="block text-[11px] font-bold text-slate-500">
+        <span className="block text-[11px] font-bold text-[var(--lumiverse-muted)]">
           {label}
         </span>
       </span>
@@ -410,7 +418,7 @@ function DropdownLink({
   return (
     <Link
       href={href}
-      className="flex min-w-0 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-black text-slate-700 hover:bg-violet-50 hover:text-violet-700"
+      className="flex min-w-0 items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-black text-[var(--lumiverse-muted)] hover:bg-blue-50 hover:text-[var(--lumiverse-primary)] dark:hover:bg-white/8"
     >
       <span className="shrink-0">{icon}</span>
       <span className="truncate">{children}</span>

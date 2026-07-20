@@ -381,7 +381,8 @@ export class DashboardService {
         total: xpProfile?.totalXp ?? user.xp,
         today: xpTransactions
           .filter(
-            (item) => item.earnedAt >= startOfToday && item.earnedAt < endOfToday,
+            (item) =>
+              item.earnedAt >= startOfToday && item.earnedAt < endOfToday,
           )
           .reduce((sum, item) => sum + item.finalXp, 0),
         week: xpTransactions.reduce((sum, item) => sum + item.finalXp, 0),
@@ -418,14 +419,19 @@ export class DashboardService {
           (item) => item.updatedAt >= startOfToday && !item.learnedAt,
         ).length,
         xpEarned: xpTransactions
-          .filter((item) => item.earnedAt >= startOfToday && item.earnedAt < endOfToday)
+          .filter(
+            (item) =>
+              item.earnedAt >= startOfToday && item.earnedAt < endOfToday,
+          )
           .reduce((sum, item) => sum + item.finalXp, 0),
         missionsCompleted: mappedMissions.summary.completed,
         dailyGoalProgress:
           settings.dailyStudyMinutes > 0
             ? Math.min(
                 100,
-                Math.round((todayStudyMinutes / settings.dailyStudyMinutes) * 100),
+                Math.round(
+                  (todayStudyMinutes / settings.dailyStudyMinutes) * 100,
+                ),
               )
             : 0,
         isGoalCompleted:
@@ -435,7 +441,10 @@ export class DashboardService {
       week: {
         weekStart: this.dateKey(weekStart, timezone),
         weekEnd: this.dateKey(addUserDays(weekEnd, -1, timezone), timezone),
-        studyMinutes: weeklyActivity.reduce((sum, item) => sum + item.minutes, 0),
+        studyMinutes: weeklyActivity.reduce(
+          (sum, item) => sum + item.minutes,
+          0,
+        ),
         activeDays: weeklyActivity.filter(
           (item) => item.minutes > 0 || item.xp > 0 || item.lessons > 0,
         ).length,
@@ -627,7 +636,9 @@ export class DashboardService {
       this.prisma.userAchievement.findMany({
         where: {
           userId,
-          status: { in: [AchievementStatus.IN_PROGRESS, AchievementStatus.LOCKED] },
+          status: {
+            in: [AchievementStatus.IN_PROGRESS, AchievementStatus.LOCKED],
+          },
         },
         include: {
           achievement: {
@@ -683,7 +694,10 @@ export class DashboardService {
             100,
             Math.round(
               (item.currentValue /
-                Math.max(item.targetSnapshot || item.achievement.targetValue, 1)) *
+                Math.max(
+                  item.targetSnapshot || item.achievement.targetValue,
+                  1,
+                )) *
                 100,
             ),
           ),
@@ -1196,23 +1210,28 @@ export class DashboardService {
         .reduce((sum, item) => sum + item.finalXp, 0);
       const genericLessons = data.lessonProgress.filter(
         (item) =>
-          item.completedAt && this.dateKey(item.completedAt, data.timezone) === key,
+          item.completedAt &&
+          this.dateKey(item.completedAt, data.timezone) === key,
       );
       const listening = data.listeningSessions.filter(
         (item) =>
-          item.completedAt && this.dateKey(item.completedAt, data.timezone) === key,
+          item.completedAt &&
+          this.dateKey(item.completedAt, data.timezone) === key,
       );
       const reading = data.readingSessions.filter(
         (item) =>
-          item.completedAt && this.dateKey(item.completedAt, data.timezone) === key,
+          item.completedAt &&
+          this.dateKey(item.completedAt, data.timezone) === key,
       );
       const writing = data.writingSessions.filter(
         (item) =>
-          item.submittedAt && this.dateKey(item.submittedAt, data.timezone) === key,
+          item.submittedAt &&
+          this.dateKey(item.submittedAt, data.timezone) === key,
       );
       const speaking = data.speakingSessions.filter(
         (item) =>
-          item.finishedAt && this.dateKey(item.finishedAt, data.timezone) === key,
+          item.finishedAt &&
+          this.dateKey(item.finishedAt, data.timezone) === key,
       );
 
       const minutes =
