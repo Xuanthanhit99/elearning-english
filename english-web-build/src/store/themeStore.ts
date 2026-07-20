@@ -3,6 +3,12 @@ import { persist } from "zustand/middleware";
 
 export type ThemeChoice = "LIGHT" | "DARK" | "SYSTEM";
 
+const THEME_CHOICES: ThemeChoice[] = ["LIGHT", "DARK", "SYSTEM"];
+
+export function isThemeChoice(value: unknown): value is ThemeChoice {
+  return typeof value === "string" && THEME_CHOICES.includes(value as ThemeChoice);
+}
+
 interface ThemeState {
   theme: ThemeChoice;
   setTheme: (theme: ThemeChoice) => void;

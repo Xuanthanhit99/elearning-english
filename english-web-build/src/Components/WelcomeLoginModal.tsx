@@ -3,7 +3,6 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import confetti from "canvas-confetti";
 import { AppIcon, LegacyIcon } from "@/src/Components/UI/AppIcon";
 
 type Props = {
@@ -24,7 +23,7 @@ export default function WelcomeLoginModal({
   useEffect(() => {
     if (!open) return;
 
-    setCountdown(10);
+    const resetTimer = window.setTimeout(() => setCountdown(10), 0);
 
     const timer = setInterval(() => {
       setCountdown((prev) => {
@@ -42,7 +41,10 @@ export default function WelcomeLoginModal({
       });
     }, 1000);
 
-    return () => clearInterval(timer);
+    return () => {
+      window.clearTimeout(resetTimer);
+      clearInterval(timer);
+    };
   }, [open, onClose]);
 
   if (!open) return null;
@@ -50,7 +52,7 @@ export default function WelcomeLoginModal({
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/45 px-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-4xl overflow-hidden rounded-[36px] bg-white shadow-2xl">
+      <div className="relative w-full max-w-4xl overflow-hidden rounded-[36px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] shadow-2xl">
         <button
           type="button"
           onClick={onClose}
@@ -74,18 +76,18 @@ export default function WelcomeLoginModal({
             <AppIcon name="star" tone="yellow" size={28} bare />
           </div>
 
-          <div className="relative z-10 max-w-md rounded-[22px] bg-white p-6 shadow-xl">
+          <div className="relative z-10 max-w-md rounded-[22px] border border-white/40 bg-white p-6 shadow-xl dark:border-white/10 dark:bg-slate-950/88">
             <h2 className="text-2xl font-extrabold text-[#ff6b00]">
               Chào mừng trở lại, {fullname}!
             </h2>
 
             <div className="mt-2 text-3xl">👋</div>
 
-            <p className="mt-3 text-lg font-bold leading-8 text-[#5b6b85]">
+            <p className="mt-3 text-lg font-bold leading-8 text-[var(--lumiverse-muted)]">
               Lumi đã chuẩn bị nhiệm vụ nhẹ nhàng để bạn giữ chuỗi học hôm nay.
             </p>
 
-            <div className="absolute -bottom-4 right-10 h-8 w-8 rotate-45 bg-white" />
+            <div className="absolute -bottom-4 right-10 h-8 w-8 rotate-45 bg-white dark:bg-slate-950/88" />
           </div>
 
           <div className="absolute bottom-0 right-20 z-10 animate-[miuFloat_2s_ease-in-out_infinite]">
@@ -106,8 +108,8 @@ export default function WelcomeLoginModal({
             <StatCard icon="" value="68%" label="tiến độ tuần" />
           </div>
 
-          <div className="mt-6 rounded-[24px] border border-slate-200 bg-slate-50 p-5">
-            <h3 className="text-2xl font-extrabold text-[#1f2a44]">
+          <div className="mt-6 rounded-[24px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] p-5">
+            <h3 className="text-2xl font-extrabold text-[var(--lumiverse-ink)]">
               Nhiệm vụ gợi ý hôm nay
             </h3>
 
@@ -119,19 +121,19 @@ export default function WelcomeLoginModal({
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <button className="rounded-2xl bg-[#ff6b00] px-7 py-4 font-extrabold text-white shadow-lg shadow-orange-200">
+            <button className="rounded-2xl bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] px-7 py-4 font-extrabold text-white shadow-lg shadow-blue-200/40 transition hover:opacity-95 dark:shadow-black/20">
               Bắt đầu nhiệm vụ
             </button>
 
             <button
               type="button"
               onClick={onClose}
-              className="rounded-2xl bg-[#fff0dc] px-7 py-4 font-extrabold text-[#92400e]"
+              className="rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] px-7 py-4 font-extrabold text-[var(--lumiverse-ink)] transition hover:bg-[var(--lumiverse-card)]"
             >
               Để sau
             </button>
 
-            <span className="ml-auto font-bold text-[#5b6b85]">
+            <span className="ml-auto font-bold text-[var(--lumiverse-muted)]">
               Tự đóng sau {countdown}s
             </span>
           </div>
@@ -151,11 +153,11 @@ function StatCard({
   label: string;
 }) {
   return (
-    <div className="rounded-[22px] border border-[#ead8c2] bg-[#fffaf5] p-5 text-center">
+    <div className="rounded-[22px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] p-5 text-center">
       <div className="flex items-center justify-center gap-2 text-2xl font-extrabold text-[#ff6b00]">
         <LegacyIcon icon={icon || "⭐"} label={label} tone="orange" size={16} /> {value}
       </div>
-      <p className="mt-2 font-extrabold text-[#5b6b85]">{label}</p>
+      <p className="mt-2 font-extrabold text-[var(--lumiverse-muted)]">{label}</p>
     </div>
   );
 }
@@ -170,7 +172,7 @@ function Mission({
   time: string;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 font-extrabold text-[#1f2a44]">
+    <div className="flex items-center justify-between rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] px-4 py-3 font-extrabold text-[var(--lumiverse-ink)]">
       <span className="inline-flex items-center gap-2">
         <LegacyIcon icon={icon} label={title} tone="purple" className="h-8 w-8" size={16} /> {title}
       </span>

@@ -58,13 +58,13 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <div className="space-y-5">
-        <div className="h-36 animate-pulse rounded-3xl bg-slate-200" />
+        <div className="h-36 animate-pulse rounded-3xl bg-[var(--lumiverse-card-soft)]" />
         <div className="grid gap-4 md:grid-cols-3">
           {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="h-28 animate-pulse rounded-3xl bg-slate-200" />
+            <div key={index} className="h-28 animate-pulse rounded-3xl bg-[var(--lumiverse-card-soft)]" />
           ))}
         </div>
-        <div className="h-80 animate-pulse rounded-3xl bg-slate-200" />
+        <div className="h-80 animate-pulse rounded-3xl bg-[var(--lumiverse-card-soft)]" />
       </div>
     );
   }
@@ -127,19 +127,19 @@ export default function AnalyticsPage() {
           ["Hoạt động", data.summary.completedActivities],
           ["Ngày học", data.summary.activeDays],
         ].map(([label, value]) => (
-          <div key={label} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-3xl font-black text-slate-950">{value}</p>
-            <p className="text-sm font-bold text-slate-500">{label}</p>
+          <div key={label} className="rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-5 shadow-sm">
+            <p className="text-3xl font-black text-[var(--lumiverse-ink)]">{value}</p>
+            <p className="text-sm font-bold text-[var(--lumiverse-muted)]">{label}</p>
           </div>
         ))}
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-5 shadow-sm">
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-black text-slate-950">Xu hướng XP</h2>
-              <p className="text-sm font-bold text-slate-500">
+              <h2 className="text-xl font-black text-[var(--lumiverse-ink)]">Xu hướng XP</h2>
+              <p className="text-sm font-bold text-[var(--lumiverse-muted)]">
                 {data.range.from} - {data.range.to}
               </p>
             </div>
@@ -148,14 +148,14 @@ export default function AnalyticsPage() {
           <div className="grid h-64 grid-cols-7 items-end gap-2 overflow-x-auto sm:gap-3">
             {data.activityTrend.map((item) => (
               <div key={item.date} className="flex h-full min-w-10 flex-col justify-end gap-2">
-                <div className="flex flex-1 items-end rounded-2xl bg-slate-50 px-2 pb-2">
+                <div className="flex flex-1 items-end rounded-2xl bg-[var(--lumiverse-card-soft)] px-2 pb-2">
                   <div
                     className="w-full rounded-xl bg-gradient-to-t from-violet-600 to-cyan-400"
                     style={{ height: `${Math.max(8, (item.xp / maxXp) * 100)}%` }}
                     title={`${item.date}: ${item.xp} XP`}
                   />
                 </div>
-                <p className="text-center text-[11px] font-bold text-slate-500">
+                <p className="text-center text-[11px] font-bold text-[var(--lumiverse-muted)]">
                   {item.date.slice(5)}
                 </p>
               </div>
@@ -169,10 +169,10 @@ export default function AnalyticsPage() {
               <Sparkles size={17} />
               Báo cáo thông minh
             </div>
-            <h2 className="mt-3 text-2xl font-black text-slate-950">{data.aiReport.title}</h2>
+            <h2 className="mt-3 text-2xl font-black text-[var(--lumiverse-ink)]">{data.aiReport.title}</h2>
             <div className="mt-4 space-y-2">
               {data.aiReport.insights.map((item) => (
-                <p key={item} className="rounded-2xl bg-white p-3 text-sm font-bold text-slate-600">
+                <p key={item} className="rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-3 text-sm font-bold text-[var(--lumiverse-muted)]">
                   {item}
                 </p>
               ))}
@@ -189,16 +189,16 @@ export default function AnalyticsPage() {
       </section>
 
       <section className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-xl font-black text-slate-950">Tiến độ kỹ năng</h2>
+        <div className="rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-5 shadow-sm">
+          <h2 className="mb-4 text-xl font-black text-[var(--lumiverse-ink)]">Tiến độ kỹ năng</h2>
           <div className="space-y-3">
             {data.skills.map((skill) => (
-              <Link key={skill.key} href={skill.href} className="block rounded-2xl border border-slate-100 p-4 hover:bg-violet-50">
+              <Link key={skill.key} href={skill.href} className="block rounded-2xl border border-[var(--lumiverse-border)] p-4 hover:bg-[var(--lumiverse-card-soft)]">
                 <div className="mb-2 flex items-center justify-between font-black">
                   <span>{skill.label}</span>
                   <span>{skill.sampleStatus === "READY" ? `${skill.percent}%` : "Chưa đủ dữ liệu"}</span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                <div className="h-2 overflow-hidden rounded-full bg-[var(--lumiverse-card-soft)]">
                   <div className="h-full rounded-full bg-violet-600" style={{ width: `${Math.min(skill.percent, 100)}%` }} />
                 </div>
               </Link>
@@ -206,18 +206,18 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-xl font-black text-slate-950">Hoạt động gần đây</h2>
+        <div className="rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-5 shadow-sm">
+          <h2 className="mb-4 text-xl font-black text-[var(--lumiverse-ink)]">Hoạt động gần đây</h2>
           {data.recentActivities.length ? (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-[var(--lumiverse-border)]">
               {data.recentActivities.map((activity) => (
                 <Link key={activity.id} href={activity.actionUrl} className="flex items-center gap-3 py-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
                     <CalendarDays size={18} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-black text-slate-950">{activity.title}</p>
-                    <p className="truncate text-sm font-bold text-slate-500">{activity.description}</p>
+                    <p className="truncate font-black text-[var(--lumiverse-ink)]">{activity.title}</p>
+                    <p className="truncate text-sm font-bold text-[var(--lumiverse-muted)]">{activity.description}</p>
                   </div>
                   <span className="rounded-full bg-amber-50 px-3 py-1 text-sm font-black text-amber-700">
                     +{activity.xp} XP
@@ -226,7 +226,7 @@ export default function AnalyticsPage() {
               ))}
             </div>
           ) : (
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 text-sm font-bold text-slate-500">
+            <div className="rounded-2xl border border-dashed border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] p-5 text-sm font-bold text-[var(--lumiverse-muted)]">
               Chưa có hoạt động trong khoảng thời gian này.
             </div>
           )}

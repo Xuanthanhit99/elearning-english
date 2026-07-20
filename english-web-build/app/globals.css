@@ -18,6 +18,7 @@
   --lumiverse-rose: #ff5f8f;
   --lumiverse-mint: #21d59b;
   --lumiverse-card: rgba(255, 255, 255, 0.86);
+  --lumiverse-card-soft: rgba(255, 255, 255, 0.62);
   --lumiverse-border: rgba(77, 106, 178, 0.18);
   --lumiverse-ring: rgba(23, 70, 255, 0.28);
   --lumiverse-shadow: 0 24px 70px rgba(25, 55, 130, 0.14);
@@ -39,6 +40,7 @@
   --lumiverse-ink: #f5f8ff;
   --lumiverse-muted: #aebbe0;
   --lumiverse-card: rgba(9, 19, 45, 0.88);
+  --lumiverse-card-soft: rgba(163, 188, 255, 0.08);
   --lumiverse-border: rgba(163, 188, 255, 0.18);
   --lumiverse-ring: rgba(18, 183, 255, 0.32);
   --lumiverse-shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
@@ -196,6 +198,168 @@ code {
 
 .dark .lumiverse-input:focus {
   background: rgba(9, 19, 45, 0.96);
+}
+
+/* Dark-mode compatibility for pre-token legacy screens.
+   Scope stays inside the Lumiverse document root and only maps known
+   light-only neutral surfaces/text/borders to existing semantic tokens.
+   Brand and status palettes such as red/green/amber/blue/purple are
+   intentionally left untouched. Prefer component tokens for new work. */
+.dark .lumiverse-theme-compat .bg-white,
+.dark .lumiverse-theme-compat [class~="bg-white"] {
+  background-color: var(--lumiverse-card);
+}
+
+.dark .lumiverse-theme-compat [class~="bg-white/95"],
+.dark .lumiverse-theme-compat [class~="bg-white/90"],
+.dark .lumiverse-theme-compat [class~="bg-white/85"],
+.dark .lumiverse-theme-compat [class~="bg-white/80"],
+.dark .lumiverse-theme-compat [class~="bg-white/75"],
+.dark .lumiverse-theme-compat [class~="bg-white/70"],
+.dark .lumiverse-theme-compat [class~="bg-white/60"],
+.dark .lumiverse-theme-compat [class~="bg-white/50"],
+.dark .lumiverse-theme-compat [class~="bg-white/40"],
+.dark .lumiverse-theme-compat [class~="bg-white/30"],
+.dark .lumiverse-theme-compat [class~="bg-white/20"],
+.dark .lumiverse-theme-compat [class~="bg-white/15"],
+.dark .lumiverse-theme-compat [class~="bg-white/12"],
+.dark .lumiverse-theme-compat [class~="bg-white/10"],
+.dark .lumiverse-theme-compat [class~="bg-white/8"],
+.dark .lumiverse-theme-compat [class~="bg-white/6"],
+.dark .lumiverse-theme-compat [class*="bg-[#fff"],
+.dark .lumiverse-theme-compat [class*="bg-[#f8"],
+.dark .lumiverse-theme-compat [class*="bg-[#f7"],
+.dark .lumiverse-theme-compat [class*="bg-[#fb"],
+.dark .lumiverse-theme-compat [class*="bg-[#faf"],
+.dark .lumiverse-theme-compat [class*="bg-[#f5"],
+.dark .lumiverse-theme-compat [class*="bg-[#f4"],
+.dark .lumiverse-theme-compat [class*="bg-[#f3"],
+.dark .lumiverse-theme-compat [class*="bg-[#f2"],
+.dark .lumiverse-theme-compat [class*="bg-[#f1"],
+.dark .lumiverse-theme-compat [class*="bg-[#efe"],
+.dark .lumiverse-theme-compat [class*="bg-[#e8"],
+.dark .lumiverse-theme-compat [class*="bg-[#ead"],
+.dark .lumiverse-theme-compat [class*="bg-[#dfe"],
+.dark .lumiverse-theme-compat [class*="bg-[#eee"] {
+  background-color: var(--lumiverse-card-soft);
+}
+
+.dark .lumiverse-theme-compat .bg-slate-50,
+.dark .lumiverse-theme-compat .bg-slate-100,
+.dark .lumiverse-theme-compat .bg-slate-200,
+.dark .lumiverse-theme-compat .bg-gray-50,
+.dark .lumiverse-theme-compat .bg-gray-100,
+.dark .lumiverse-theme-compat .bg-gray-200,
+.dark .lumiverse-theme-compat .bg-zinc-50,
+.dark .lumiverse-theme-compat .bg-zinc-100,
+.dark .lumiverse-theme-compat .bg-zinc-200,
+.dark .lumiverse-theme-compat [class~="bg-slate-50"],
+.dark .lumiverse-theme-compat [class~="bg-slate-100"],
+.dark .lumiverse-theme-compat [class~="bg-slate-200"],
+.dark .lumiverse-theme-compat [class~="bg-gray-50"],
+.dark .lumiverse-theme-compat [class~="bg-gray-100"],
+.dark .lumiverse-theme-compat [class~="bg-gray-200"],
+.dark .lumiverse-theme-compat [class~="bg-zinc-50"],
+.dark .lumiverse-theme-compat [class~="bg-zinc-100"],
+.dark .lumiverse-theme-compat [class~="bg-zinc-200"] {
+  background-color: var(--lumiverse-card-soft);
+}
+
+.dark .lumiverse-theme-compat .border-slate-100,
+.dark .lumiverse-theme-compat .border-slate-200,
+.dark .lumiverse-theme-compat .border-slate-300,
+.dark .lumiverse-theme-compat .border-gray-100,
+.dark .lumiverse-theme-compat .border-gray-200,
+.dark .lumiverse-theme-compat .border-gray-300,
+.dark .lumiverse-theme-compat .border-zinc-100,
+.dark .lumiverse-theme-compat .border-zinc-200,
+.dark .lumiverse-theme-compat .border-zinc-300,
+.dark .lumiverse-theme-compat [class*="border-[#ead"],
+.dark .lumiverse-theme-compat [class*="border-[#e8"],
+.dark .lumiverse-theme-compat [class*="border-[#d9"],
+.dark .lumiverse-theme-compat [class*="border-[#dfe"],
+.dark .lumiverse-theme-compat [class*="border-[#b99"],
+.dark .lumiverse-theme-compat [class*="border-[#bfa"] {
+  border-color: var(--lumiverse-border);
+}
+
+.dark .lumiverse-theme-compat .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+.dark .lumiverse-theme-compat .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+.dark .lumiverse-theme-compat .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.dark .lumiverse-theme-compat .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--lumiverse-border);
+}
+
+.dark .lumiverse-theme-compat .text-slate-950,
+.dark .lumiverse-theme-compat .text-slate-900,
+.dark .lumiverse-theme-compat .text-slate-800,
+.dark .lumiverse-theme-compat .text-slate-700,
+.dark .lumiverse-theme-compat .text-gray-950,
+.dark .lumiverse-theme-compat .text-gray-900,
+.dark .lumiverse-theme-compat .text-gray-800,
+.dark .lumiverse-theme-compat .text-gray-700,
+.dark .lumiverse-theme-compat .text-zinc-950,
+.dark .lumiverse-theme-compat .text-zinc-900,
+.dark .lumiverse-theme-compat .text-zinc-800,
+.dark .lumiverse-theme-compat .text-zinc-700,
+.dark .lumiverse-theme-compat [class*="text-[#1f2a44]"],
+.dark .lumiverse-theme-compat [class*="text-[#101733]"],
+.dark .lumiverse-theme-compat [class*="text-[#121735]"],
+.dark .lumiverse-theme-compat [class*="text-[#303956]"],
+.dark .lumiverse-theme-compat [class*="text-[#27245f]"],
+.dark .lumiverse-theme-compat [class*="text-[#09083f]"],
+.dark .lumiverse-theme-compat [class*="text-[#08083d]"],
+.dark .lumiverse-theme-compat [class*="text-[#09093f]"] {
+  color: var(--lumiverse-ink);
+}
+
+.dark .lumiverse-theme-compat .text-slate-600,
+.dark .lumiverse-theme-compat .text-slate-500,
+.dark .lumiverse-theme-compat .text-slate-400,
+.dark .lumiverse-theme-compat .text-gray-600,
+.dark .lumiverse-theme-compat .text-gray-500,
+.dark .lumiverse-theme-compat .text-gray-400,
+.dark .lumiverse-theme-compat .text-zinc-600,
+.dark .lumiverse-theme-compat .text-zinc-500,
+.dark .lumiverse-theme-compat .text-zinc-400,
+.dark .lumiverse-theme-compat [class*="text-[#5b6b85]"],
+.dark .lumiverse-theme-compat [class*="text-[#69708b]"],
+.dark .lumiverse-theme-compat [class*="text-[#59627f]"],
+.dark .lumiverse-theme-compat [class*="text-[#6b7280]"],
+.dark .lumiverse-theme-compat [class*="text-[#8b91aa]"],
+.dark .lumiverse-theme-compat [class*="text-[#8a94a8]"],
+.dark .lumiverse-theme-compat [class*="text-[#a6a3c4]"],
+.dark .lumiverse-theme-compat [class*="text-[#73799b]"],
+.dark .lumiverse-theme-compat [class*="text-[#4f5575]"],
+.dark .lumiverse-theme-compat [class*="text-[#555d78]"] {
+  color: var(--lumiverse-muted);
+}
+
+.dark .lumiverse-theme-compat input,
+.dark .lumiverse-theme-compat textarea,
+.dark .lumiverse-theme-compat select {
+  border-color: var(--lumiverse-border);
+  background-color: rgba(9, 19, 45, 0.78);
+  color: var(--lumiverse-ink);
+}
+
+.dark .lumiverse-theme-compat input::placeholder,
+.dark .lumiverse-theme-compat textarea::placeholder {
+  color: rgba(174, 187, 224, 0.72);
+}
+
+.dark .lumiverse-theme-compat table,
+.dark .lumiverse-theme-compat thead,
+.dark .lumiverse-theme-compat tbody,
+.dark .lumiverse-theme-compat tr,
+.dark .lumiverse-theme-compat td,
+.dark .lumiverse-theme-compat th {
+  border-color: var(--lumiverse-border);
+}
+
+.dark .lumiverse-theme-compat [role="dialog"],
+.dark .lumiverse-theme-compat [aria-modal="true"] {
+  color: var(--lumiverse-ink);
 }
 
 .lumiverse-progress {

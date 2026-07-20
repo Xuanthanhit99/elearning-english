@@ -2,6 +2,7 @@
 
 import WelcomeLoginModal from "@/src/Components/WelcomeLoginModal";
 import { api } from "@/src/lib/axios";
+import { useTranslation } from "@/src/hooks/useTranslation";
 import { useAuthStore } from "@/src/store/authStore";
 import { usePathname } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
@@ -49,22 +50,23 @@ function getHttpStatus(error: unknown) {
 }
 
 function AppShellAuthError({ onRetry }: { onRetry: () => void }) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--lumiverse-bg)] p-4">
       <div className="max-w-md rounded-3xl border border-[var(--lumiverse-border)] bg-white p-6 text-center shadow-sm dark:bg-white/8">
         <h1 className="text-2xl font-black text-[var(--lumiverse-ink)]">
-          Khong the xac minh phien dang nhap
+          {t("common.authSessionErrorTitle")}
         </h1>
         <p className="mt-3 text-sm font-bold leading-6 text-[var(--lumiverse-muted)]">
-          May chu dang tam thoi khong phan hoi. Hay thu lai de tranh dang xuat
-          nham khi phien cua ban van con hieu luc.
+          {t("common.authSessionErrorDescription")}
         </p>
         <button
           type="button"
           onClick={onRetry}
           className="lumiverse-button-primary mt-5 w-full"
         >
-          Thu lai
+          {t("common.tryAgain")}
         </button>
       </div>
     </div>

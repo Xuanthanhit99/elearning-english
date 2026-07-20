@@ -3,6 +3,7 @@
 import AppLogo from "@/src/Components/UI/AppLogo";
 import LanguageSwitcher from "@/src/Components/Layout/LanguageSwitcher";
 import ThemeToggle from "@/src/Components/Layout/ThemeToggle";
+import { features } from "@/src/config/features";
 import {
   LumiverseBadge,
   LumiverseCard,
@@ -200,7 +201,7 @@ function PublicHeader({
         </nav>
 
         <div className="hidden items-center gap-3 sm:flex">
-          <LanguageSwitcher />
+          {features.languageSwitcher ? <LanguageSwitcher /> : null}
           <ThemeToggle />
           {user ? (
             <Link href="/dashboard" className="lumiverse-button-primary text-sm">

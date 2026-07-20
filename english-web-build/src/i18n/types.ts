@@ -1,8 +1,12 @@
 export type Locale = "vi" | "en" | "zh" | "de";
 
-export const DEFAULT_LOCALE: Locale = "vi";
+export const DEFAULT_LOCALE: Locale = "en";
 
 export const LOCALES: Locale[] = ["vi", "en", "zh", "de"];
+
+export function isLocale(value: unknown): value is Locale {
+  return typeof value === "string" && LOCALES.includes(value as Locale);
+}
 
 export const LOCALE_LABELS: Record<Locale, string> = {
   vi: "Tiếng Việt",
@@ -27,11 +31,15 @@ export type Dictionary = {
     default: string;
     cancel: string;
     close: string;
+    tryAgain: string;
+    authSessionErrorTitle: string;
+    authSessionErrorDescription: string;
   };
   header: {
     greeting: string;
     readyToday: string;
     searchPlaceholder: string;
+    searchAllResults: string;
     streak: string;
     xp: string;
     notifications: string;
@@ -45,11 +53,58 @@ export type Dictionary = {
     defaultUser: string;
     language: string;
     theme: string;
+    levelPrefix: string;
   };
   theme: {
     light: string;
     dark: string;
     system: string;
+  };
+  auth: {
+    loginTab: string;
+    registerTab: string;
+    companionBadge: string;
+    headline: string;
+    description: string;
+    benefitFreeLessons: string;
+    benefitWritingFeedback: string;
+    benefitWordCheck: string;
+    mentorTitle: string;
+    mentorDescription: string;
+    loginTitle: string;
+    loginDescription: string;
+    loginSocialLabel: string;
+    registerTitle: string;
+    registerDescription: string;
+    registerSocialLabel: string;
+    emailLabel: string;
+    emailPlaceholder: string;
+    passwordLabel: string;
+    passwordPlaceholder: string;
+    passwordRegisterPlaceholder: string;
+    fullNameLabel: string;
+    fullNamePlaceholder: string;
+    twoFactorCodeLabel: string;
+    twoFactorCodePlaceholder: string;
+    recoveryCodeLabel: string;
+    recoveryCodePlaceholder: string;
+    twoFactorHint: string;
+    rememberMe: string;
+    forgotPassword: string;
+    loginButton: string;
+    registerButton: string;
+    noAccount: string;
+    haveAccount: string;
+    termsAgree: string;
+    twoFactorRequired: string;
+    invalidCredentials: string;
+    loginConnectionError: string;
+    registerFailed: string;
+    registerConnectionError: string;
+    successTitle: string;
+    successWelcome: string;
+    successDescription: string;
+    successLoginNow: string;
   };
   sidebar: {
     groupLearning: string;

@@ -10,7 +10,7 @@ export default function CheckWordLayout({ children }: { children: ReactNode }) {
   const avatar = user?.avatar || "/cat-home.jpg";
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#fbfbff] text-[#101733]">
+    <main className="min-h-screen overflow-x-hidden bg-[var(--background)] text-[var(--lumiverse-ink)]">
       <div className="mx-auto flex min-h-screen max-w-[1920px]">
         <VocabularySidebar />
         <section className="min-w-0 flex-1">

@@ -38,7 +38,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: themeAntiFlashScript }}
         />
       </head>
-      <body className="min-h-screen antialiased">
+      <body className="lumiverse-theme-compat min-h-screen antialiased">
         <ThemeInitializer />
         <LanguageInitializer />
         <AuthInitializer />

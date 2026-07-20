@@ -4,10 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
+    "build:turbopack": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node scripts/test-auth-redirect.mjs"
+    "typecheck": "tsc --noEmit --pretty false",
+    "test": "node scripts/test-auth-redirect.mjs",
+    "i18n:check": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
     "@capacitor/cli": "^7.6.7",

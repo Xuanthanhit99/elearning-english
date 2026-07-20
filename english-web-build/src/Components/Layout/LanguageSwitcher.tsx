@@ -22,8 +22,17 @@ export default function LanguageSwitcher({
         setOpen(false);
       }
     }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   function choose(next: Locale) {
@@ -36,21 +45,24 @@ export default function LanguageSwitcher({
     <div ref={ref} className="relative shrink-0">
       <button
         type="button"
-        aria-label={LOCALE_LABELS[locale]}
+        aria-label={`Language: ${LOCALE_LABELS[locale]}`}
+        aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
         className="lumiverse-button-soft h-11 gap-1.5 px-2.5 text-sm"
       >
-        <Globe size={17} className="text-[var(--lumiverse-primary)]" />
+        <Globe aria-hidden size={17} className="text-[var(--lumiverse-primary)]" />
         <span className="hidden sm:inline">{LOCALE_FLAGS[locale]}</span>
       </button>
 
       {open && (
-        <div className="lumiverse-surface absolute right-0 top-14 z-50 w-44 rounded-3xl p-1.5">
+        <div className="lumiverse-surface absolute right-0 top-14 z-50 w-44 rounded-3xl p-1.5" role="menu">
           {LOCALES.map((option) => (
             <button
               key={option}
               type="button"
+              role="menuitemradio"
+              aria-checked={option === locale}
               onClick={() => choose(option)}
               className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-bold transition ${
                 option === locale

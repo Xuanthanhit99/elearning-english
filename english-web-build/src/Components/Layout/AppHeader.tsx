@@ -11,8 +11,10 @@ import {
 import { useAuthStore } from "@/src/store/authStore";
 import { useNotificationStore } from "@/src/store/notificationStore";
 import { settingsApi } from "@/src/lib/settings-api";
+import { formatNumber } from "@/src/lib/locale-format";
 import { getSearchSuggestions, Suggestion } from "@/src/lib/search-api";
 import { useTranslation } from "@/src/hooks/useTranslation";
+import { features } from "@/src/config/features";
 import LanguageSwitcher from "./LanguageSwitcher";
 import ThemeToggle from "./ThemeToggle";
 import {
@@ -51,7 +53,7 @@ export default function AppHeader({
   sidebarCollapsed,
 }: AppHeaderProps) {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { locale, t } = useTranslation();
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
   const profileRef = useRef<HTMLDivElement | null>(null);
@@ -80,7 +82,7 @@ export default function AppHeader({
   const fullname = displayUser?.fullname || t("header.defaultUser");
   const level =
     displayUser?.englishLevel ||
-    `Level ${displayUser?.currentLevel || displayUser?.level || 1}`;
+    `${t("header.levelPrefix")} ${displayUser?.currentLevel || displayUser?.level || 1}`;
   const xp = displayUser?.xp ?? 0;
   const streak = displayUser?.streak ?? 0;
 
@@ -288,18 +290,20 @@ export default function AppHeader({
                 onClick={() => submitSearch()}
                 className="flex w-full items-center justify-center border-t border-[var(--lumiverse-border)] px-4 py-3 text-sm font-black text-[var(--lumiverse-primary)]"
               >
-                Search all results
+                {t("header.searchAllResults")}
               </button>
             </div>
           )}
         </form>
 
         <div className="hidden items-center gap-2 md:flex">
-          <HeaderStat icon={<Flame size={18} />} label={t("header.streak")} value={streak} />
-          <HeaderStat icon={<Star size={18} />} label={t("header.xp")} value={xp} />
+          <HeaderStat icon={<Flame size={18} />} label={t("header.streak")} locale={locale} value={streak} />
+          <HeaderStat icon={<Star size={18} />} label={t("header.xp")} locale={locale} value={xp} />
         </div>
 
-        <LanguageSwitcher onChange={(locale) => persistPreference({ language: locale.toUpperCase() })} />
+        {features.languageSwitcher ? (
+          <LanguageSwitcher onChange={(locale) => persistPreference({ language: locale.toUpperCase() })} />
+        ) : null}
         <ThemeToggle onChange={(theme) => persistPreference({ theme })} />
 
         <button
@@ -385,10 +389,12 @@ export default function AppHeader({
 function HeaderStat({
   icon,
   label,
+  locale,
   value,
 }: {
   icon: React.ReactNode;
   label: string;
+  locale: string;
   value: number;
 }) {
   return (
@@ -396,7 +402,7 @@ function HeaderStat({
       <span className="text-[var(--lumiverse-gold)]">{icon}</span>
       <span>
         <span className="block text-sm font-black text-[var(--lumiverse-ink)]">
-          {value.toLocaleString()}
+          {formatNumber(value, locale)}
         </span>
         <span className="block text-[11px] font-bold text-[var(--lumiverse-muted)]">
           {label}

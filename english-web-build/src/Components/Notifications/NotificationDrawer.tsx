@@ -68,20 +68,20 @@ export default function NotificationDrawer({
       {open && (
         <button
           aria-label="Dong thong bao"
-          className="fixed inset-0 z-40 bg-slate-950/30 sm:hidden"
+          className="fixed inset-0 z-40 bg-black/45 backdrop-blur-sm sm:hidden"
           onClick={onClose}
         />
       )}
       <aside
         className={[
-          "fixed right-0 top-0 z-50 h-dvh w-full max-w-md border-l border-slate-200 bg-white shadow-2xl transition-transform duration-300",
+          "fixed right-0 top-0 z-50 h-dvh w-full max-w-md border-l border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] shadow-2xl backdrop-blur-xl transition-transform duration-300",
           open ? "translate-x-0" : "translate-x-full",
         ].join(" ")}
       >
-        <div className="flex h-16 items-center justify-between border-b border-slate-100 px-5">
+        <div className="flex h-16 items-center justify-between border-b border-[var(--lumiverse-border)] px-5">
           <div>
-            <h2 className="text-lg font-black text-slate-950">Thong bao</h2>
-            <p className="text-xs font-bold text-slate-500">
+            <h2 className="text-lg font-black text-[var(--lumiverse-ink)]">Thong bao</h2>
+            <p className="text-xs font-bold text-[var(--lumiverse-muted)]">
               {unreadCount} chua doc
             </p>
           </div>
@@ -89,14 +89,14 @@ export default function NotificationDrawer({
             <button
               type="button"
               onClick={() => void markAllRead()}
-              className="rounded-xl bg-violet-50 px-3 py-2 text-xs font-black text-violet-700"
+              className="rounded-xl bg-[var(--lumiverse-card-soft)] px-3 py-2 text-xs font-black text-[var(--lumiverse-primary)] transition hover:bg-white/80 dark:hover:bg-white/10"
             >
               Doc tat ca
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="grid h-9 w-9 place-items-center rounded-xl border border-slate-200"
+              className="grid h-9 w-9 place-items-center rounded-xl border border-[var(--lumiverse-border)] text-[var(--lumiverse-muted)] transition hover:bg-[var(--lumiverse-card-soft)] hover:text-[var(--lumiverse-ink)]"
             >
               <X size={18} />
             </button>
@@ -109,12 +109,12 @@ export default function NotificationDrawer({
               {Array.from({ length: 4 }).map((_, index) => (
                 <div
                   key={index}
-                  className="h-24 animate-pulse rounded-2xl bg-slate-100"
+                  className="h-24 animate-pulse rounded-2xl bg-[var(--lumiverse-card-soft)]"
                 />
               ))}
             </div>
           ) : error ? (
-            <div className="rounded-2xl bg-rose-50 p-4 text-sm font-bold text-rose-600">
+            <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-bold text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
               {error}
             </div>
           ) : items.length ? (
@@ -126,12 +126,12 @@ export default function NotificationDrawer({
                     key={item.id}
                     className={`rounded-2xl border p-4 transition ${
                       item.isRead
-                        ? "border-slate-100 bg-white"
-                        : "border-violet-100 bg-violet-50"
+                        ? "border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)]"
+                        : "border-violet-200 bg-violet-50 dark:border-violet-400/30 dark:bg-violet-500/10"
                     }`}
                   >
                     <div className="flex gap-3">
-                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white text-violet-700 shadow-sm">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white text-violet-700 shadow-sm dark:bg-violet-500/15 dark:text-violet-200">
                         <Icon size={20} />
                       </span>
                       <div className="min-w-0 flex-1">
@@ -143,14 +143,14 @@ export default function NotificationDrawer({
                           }}
                           className="block"
                         >
-                          <h3 className="line-clamp-1 font-black text-slate-950">
+                          <h3 className="line-clamp-1 font-black text-[var(--lumiverse-ink)]">
                             {item.title}
                           </h3>
-                          <p className="mt-1 line-clamp-2 text-sm font-bold text-slate-500">
+                          <p className="mt-1 line-clamp-2 text-sm font-bold text-[var(--lumiverse-muted)]">
                             {item.message}
                           </p>
                         </Link>
-                        <p className="mt-2 text-xs font-bold text-slate-400">
+                        <p className="mt-2 text-xs font-bold text-[var(--lumiverse-muted)]">
                           {timeAgo(item.createdAt)}
                         </p>
                       </div>
@@ -158,7 +158,7 @@ export default function NotificationDrawer({
                         type="button"
                         aria-label="Luu tru thong bao"
                         onClick={() => void archive(item.id)}
-                        className="grid h-8 w-8 shrink-0 place-items-center rounded-xl text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                        className="grid h-8 w-8 shrink-0 place-items-center rounded-xl text-[var(--lumiverse-muted)] transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-200"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -169,18 +169,18 @@ export default function NotificationDrawer({
               <Link
                 href="/notifications"
                 onClick={onClose}
-                className="flex h-12 items-center justify-center rounded-2xl border border-violet-200 font-black text-violet-700"
+                className="flex h-12 items-center justify-center rounded-2xl border border-[var(--lumiverse-border)] font-black text-[var(--lumiverse-primary)] transition hover:bg-[var(--lumiverse-card-soft)]"
               >
                 Xem tat ca
               </Link>
             </div>
           ) : (
-            <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center">
-              <Bell className="mx-auto text-slate-300" size={42} />
-              <h3 className="mt-4 font-black text-slate-950">
+            <div className="rounded-3xl border border-dashed border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] p-8 text-center">
+              <Bell className="mx-auto text-[var(--lumiverse-muted)]" size={42} />
+              <h3 className="mt-4 font-black text-[var(--lumiverse-ink)]">
                 Chua co thong bao
               </h3>
-              <p className="mt-2 text-sm font-bold text-slate-500">
+              <p className="mt-2 text-sm font-bold text-[var(--lumiverse-muted)]">
                 Khi co nhiem vu, thanh tich hoac nhac hoc moi, ban se thay o day.
               </p>
             </div>

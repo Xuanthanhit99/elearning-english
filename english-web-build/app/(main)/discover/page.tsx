@@ -13,12 +13,12 @@ import {
 function DiscoveryCard({ item }: { item: DiscoverySection["items"][number] }) {
   const href = isRecommendation(item) ? item.href : (item as UnifiedSearchResult).href;
   return (
-    <Link href={href} className="block rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-violet-200 hover:bg-violet-50">
+    <Link href={href} className="block rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-5 shadow-sm transition hover:border-violet-300 hover:bg-[var(--lumiverse-card-soft)] dark:hover:border-violet-400/40">
       <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
         <Sparkles size={20} />
       </div>
-      <h3 className="line-clamp-2 text-lg font-black text-slate-950">{item.title}</h3>
-      <p className="mt-2 line-clamp-2 text-sm font-bold leading-6 text-slate-500">
+      <h3 className="line-clamp-2 text-lg font-black text-[var(--lumiverse-ink)]">{item.title}</h3>
+      <p className="mt-2 line-clamp-2 text-sm font-bold leading-6 text-[var(--lumiverse-muted)]">
         {isRecommendation(item) ? item.reason : item.description ?? item.subtitle ?? item.type}
       </p>
       <div className="mt-4 inline-flex items-center gap-2 text-sm font-black text-violet-700">
@@ -77,7 +77,7 @@ export default function DiscoverPage() {
 
       {loading ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, index) => <div key={index} className="h-48 animate-pulse rounded-3xl bg-slate-200" />)}
+          {Array.from({ length: 8 }).map((_, index) => <div key={index} className="h-48 animate-pulse rounded-3xl bg-[var(--lumiverse-card-soft)]" />)}
         </div>
       ) : error ? (
         <section className="rounded-3xl border border-rose-200 bg-rose-50 p-6">
@@ -90,8 +90,8 @@ export default function DiscoverPage() {
         sections.map((section) => (
           <section key={section.id} className="space-y-4">
             <div>
-              <h2 className="text-2xl font-black text-slate-950">{section.title}</h2>
-              <p className="text-sm font-bold text-slate-500">{section.description}</p>
+              <h2 className="text-2xl font-black text-[var(--lumiverse-ink)]">{section.title}</h2>
+              <p className="text-sm font-bold text-[var(--lumiverse-muted)]">{section.description}</p>
             </div>
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               {section.items.map((item) => <DiscoveryCard key={item.id} item={item} />)}
@@ -99,9 +99,9 @@ export default function DiscoverPage() {
           </section>
         ))
       ) : (
-        <section className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center">
-          <p className="font-black text-slate-700">No discovery content yet.</p>
-          <p className="mt-2 text-sm font-bold text-slate-500">Complete a lesson or placement test to improve recommendations.</p>
+        <section className="rounded-3xl border border-dashed border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] p-8 text-center">
+          <p className="font-black text-[var(--lumiverse-ink)]">No discovery content yet.</p>
+          <p className="mt-2 text-sm font-bold text-[var(--lumiverse-muted)]">Complete a lesson or placement test to improve recommendations.</p>
         </section>
       )}
     </div>

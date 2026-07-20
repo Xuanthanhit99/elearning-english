@@ -3,7 +3,13 @@ import { Suspense } from "react";
 
 export default function Page() {
   return (
-    <Suspense fallback={<main className="min-h-screen bg-[#fff4e8] p-8 font-black text-[#1f2a44]">Đang mở phòng Arena...</main>}>
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-[var(--background)] p-8 font-black text-[var(--lumiverse-ink)]">
+          Dang mo phong Arena...
+        </main>
+      }
+    >
       <ArenaRoomRoute />
     </Suspense>
   );

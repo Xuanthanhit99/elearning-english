@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import {
   Bell,
   Bot,
@@ -20,6 +21,7 @@ import { useTranslation } from '@/src/hooks/useTranslation';
 import { useThemeStore, ThemeChoice } from '@/src/store/themeStore';
 import { useLanguageStore } from '@/src/store/languageStore';
 import { LOCALES, LOCALE_LABELS, Locale } from '@/src/i18n/types';
+import { features } from '@/src/config/features';
 
 const tabs = [
   { id: 'learning', icon: Brain },
@@ -552,19 +554,21 @@ export default function SettingsPage() {
                   ].map(([value, label]) => ({ value, label }))}
                 />
               </Field>
-              <Field
-                label={t('settings.languageLabel')}
-                description={t('settings.languageDescription')}
-              >
-                <Select
-                  value={(settings.language || 'vi').toLowerCase()}
-                  onChange={(value) => patch('language', value.toUpperCase())}
-                  options={LOCALES.map((locale) => ({
-                    value: locale,
-                    label: LOCALE_LABELS[locale],
-                  }))}
-                />
-              </Field>
+              {features.languageSwitcher ? (
+                <Field
+                  label={t('settings.languageLabel')}
+                  description={t('settings.languageDescription')}
+                >
+                  <Select
+                    value={(settings.language || 'vi').toLowerCase()}
+                    onChange={(value) => patch('language', value.toUpperCase())}
+                    options={LOCALES.map((locale) => ({
+                      value: locale,
+                      label: LOCALE_LABELS[locale],
+                    }))}
+                  />
+                </Field>
+              ) : null}
               <Field label={t('settings.fontScaleLabel')}>
                 <Select
                   value={settings.fontScale}
@@ -768,9 +772,12 @@ export default function SettingsPage() {
 
             <div className="mt-5 grid gap-5 sm:grid-cols-[180px_minmax(0,1fr)]">
               <div className="rounded-2xl border border-slate-200 bg-white p-3 dark:border-slate-800">
-                <img
+                <Image
                   src={twoFactorSetup.qrCodeDataUrl}
                   alt="2FA QR code"
+                  width={156}
+                  height={156}
+                  unoptimized
                   className="h-full w-full rounded-xl"
                 />
               </div>
