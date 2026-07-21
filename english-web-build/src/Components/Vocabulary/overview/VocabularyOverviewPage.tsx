@@ -292,7 +292,7 @@ export default function VocabularyOverviewPage() {
                 </div>
               </div>
               <Image
-                src="/poppylingo-logo.png"
+                src="/loho/icon.png"
                 alt="Lumiverse"
                 width={180}
                 height={180}
@@ -356,7 +356,7 @@ export default function VocabularyOverviewPage() {
                 Tiếp tục học
               </Link>
               <Image
-                src="/poppylingo-logo.png"
+                src="/loho/icon.png"
                 alt="Mascot"
                 width={210}
                 height={210}

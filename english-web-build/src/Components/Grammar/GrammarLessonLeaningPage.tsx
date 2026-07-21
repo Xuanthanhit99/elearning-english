@@ -2,6 +2,7 @@
 "use client";
 
 import { api } from "@/src/lib/axios";
+import { useSpeak } from "@/src/hooks/useSpeak";
 import {
   Bell,
   BookOpen,
@@ -807,11 +808,19 @@ function TipsContent({ lesson }: { lesson: LessonData }) {
 }
 
 function ExampleRow({ item }: { item: LessonExample }) {
+  const { speak, isSpeaking } = useSpeak();
+  const speaking = isSpeaking(item.en);
+
   return (
     <div className="grid grid-cols-[52px_1fr] items-center rounded-xl border bg-white/70 p-4">
-      <div className="grid h-11 w-11 place-items-center rounded-xl bg-slate-50 text-indigo-600">
+      <button
+        type="button"
+        onClick={() => speak(item.en, item.en)}
+        disabled={speaking}
+        className={`grid h-11 w-11 place-items-center rounded-xl bg-slate-50 text-indigo-600 transition disabled:cursor-not-allowed ${speaking ? "animate-pulse opacity-70" : "hover:bg-slate-100"}`}
+      >
         <Volume2 size={18} />
-      </div>
+      </button>
       <div>
         <p
           className="font-bold"

@@ -186,7 +186,7 @@ export default function AchievementOverviewPage() {
                   Hãy duy trì thói quen học tập để đạt được nhiều thành tích hơn nữa nhé!
                 </p>
               </div>
-              <img src="/poppylingo-logo.png" alt="Mascot" className="h-36 w-36 object-contain" />
+              <img src="/loho/icon.png" alt="Mascot" className="h-36 w-36 object-contain" />
             </div>
           </section>
 

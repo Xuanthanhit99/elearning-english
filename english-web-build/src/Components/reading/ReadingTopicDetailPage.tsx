@@ -36,6 +36,7 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import { api } from "@/src/lib/axios";
+import { useSpeak } from "@/src/hooks/useSpeak";
 
 type TopicDetailResponse = {
   category: {
@@ -150,6 +151,7 @@ export default function ReadingTopicDetailPage({
   const [data, setData] = useState<TopicDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { speak, isSpeaking } = useSpeak();
 
   async function fetchTopicDetail() {
     try {
@@ -497,7 +499,12 @@ export default function ReadingTopicDetailPage({
                   <div className="space-y-4">
                     {data.featuredVocabulary.map((item) => (
                       <div key={item.id} className="flex items-center gap-4">
-                        <button className="grid h-9 w-9 place-items-center rounded-full bg-violet-50">
+                        <button
+                          type="button"
+                          onClick={() => speak(item.id, item.word)}
+                          disabled={isSpeaking(item.id)}
+                          className={`grid h-9 w-9 shrink-0 place-items-center rounded-full bg-violet-50 transition disabled:cursor-not-allowed ${isSpeaking(item.id) ? "animate-pulse opacity-70" : "hover:bg-violet-100"}`}
+                        >
                           <Volume2 size={17} className="text-violet-600" />
                         </button>
                         <div>

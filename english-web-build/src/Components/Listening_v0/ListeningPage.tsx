@@ -670,7 +670,7 @@ export default function ListeningPage() {
                     Nghe lần đầu để nắm ý chính, lần 2 để chú ý chi tiết nhé!
                   </p>
                 </div>
-                <img src="/poppylingo-logo.png" alt="Mascot" className="w-24" />
+                <img src="/loho/icon.png" alt="Mascot" className="w-24" />
               </section>
             </aside>
           </div>
@@ -923,7 +923,7 @@ function ListeningCompletedCard({
         <div className="relative z-10 grid items-center gap-8 lg:grid-cols-[280px_1fr]">
           <div className="mx-auto">
             <img
-              src="/poppylingo-logo.png"
+              src="/loho/icon.png"
               alt="Hoàn thành"
               className="mx-auto w-56 drop-shadow-xl"
             />
@@ -1131,7 +1131,7 @@ function RatingCompleteModal({
         </button>
 
         <img
-          src="/poppylingo-logo.png"
+          src="/loho/icon.png"
           alt="Hoàn thành"
           className="relative z-10 mx-auto h-36 w-36 rounded-full object-contain"
         />
@@ -1318,7 +1318,7 @@ function CheckingAnswerModal() {
           <span className="absolute inset-0 rounded-full border-[7px] border-[#e3d5ff]" />
           <span className="absolute inset-0 animate-spin rounded-full border-[7px] border-transparent border-t-[#6d35ff]" />
           <img
-            src="/poppylingo-logo.png"
+            src="/loho/icon.png"
             alt="Đang kiểm tra"
             className="relative h-16 w-16 rounded-full object-contain"
           />

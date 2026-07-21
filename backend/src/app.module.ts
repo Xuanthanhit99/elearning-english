@@ -32,6 +32,7 @@ import { GeminiService } from './modules/gemini/gemini.service';
 import { GeminiController } from './modules/gemini/gemini.controller';
 import { GeminiModule } from './modules/gemini/gemini.module';
 import { PronunciationModule } from './modules/pronunciation/pronunciation.module';
+import { TtsModule } from './modules/tts/tts.module';
 import { PetsModule } from './modules/pets/pets.module';
 import { ArenaModule } from './modules/arena/arena.module';
 import { CommunityModule } from './modules/community/community.module';
@@ -137,6 +138,7 @@ import { HealthController } from './health.controller';
     PlacementTestsModule,
     GeminiModule,
     PronunciationModule,
+    TtsModule,
     PetsModule,
     ArenaModule,
     CommunityModule,

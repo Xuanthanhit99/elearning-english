@@ -2,9 +2,11 @@
 
 import { api } from "@/src/lib/axios";
 import { useState } from "react";
+import { useSpeak } from "@/src/hooks/useSpeak";
 
 type WordCheckResult = {
   word?: string;
+  audio?: string;
   ipa?: string;
   phonetic?: string;
   partOfSpeech?: string;
@@ -42,6 +44,7 @@ export default function CheckWordPage() {
   const [searchData, setSearchData] = useState<WordCheckResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { speak, isSpeaking } = useSpeak();
 
   const onClickCheckWork = async () => {
     if (!word.trim()) return;
@@ -154,8 +157,19 @@ export default function CheckWordPage() {
                 <ServerError onRetry={onClickCheckWork} />
               ) : (
                 <>
-                  <WordResultCard word={searchData} fallbackWord={word} />
-                  <ExampleCard examples={searchData?.examples} word={searchData?.word || word} />
+                  <WordResultCard
+                    word={searchData}
+                    fallbackWord={word}
+                    speaking={isSpeaking("check-word")}
+                    onSpeak={(text, audio) => speak("check-word", text, audio, fromLang === "vi" ? "vi" : "en")}
+                  />
+                  <ExampleCard
+                    examples={searchData?.examples}
+                    word={searchData?.word || word}
+                    lang={fromLang === "vi" ? "vi" : "en"}
+                    isSpeaking={isSpeaking}
+                    onSpeak={speak}
+                  />
                   <StudySuggestion suggestion={searchData?.suggestion} word={searchData?.word || word} />
                 </>
               )}
@@ -198,7 +212,17 @@ export default function CheckWordPage() {
   );
 }
 
-function WordResultCard({ word, fallbackWord }: { word: WordCheckResult | null; fallbackWord: string }) {
+function WordResultCard({
+  word,
+  fallbackWord,
+  speaking,
+  onSpeak,
+}: {
+  word: WordCheckResult | null;
+  fallbackWord: string;
+  speaking: boolean;
+  onSpeak: (text: string, audioUrl?: string | null) => void;
+}) {
   if (!word) {
     return <div className="rounded-[26px] border border-slate-200 bg-slate-50 p-8 text-center font-bold text-slate-500">Nhập từ và bấm Tra cứu để xem kết quả.</div>;
   }
@@ -208,22 +232,20 @@ function WordResultCard({ word, fallbackWord }: { word: WordCheckResult | null; 
   const meaning = word.mainMeaning || word.meaning || word.definition || "Chưa có nghĩa chính.";
   const tags = word.tags?.length ? word.tags : [word.level || "B1", word.partOfSpeech || "Từ vựng"];
 
-  const speak = () => {
-    if (typeof window === "undefined" || !displayWord) return;
-    const utterance = new SpeechSynthesisUtterance(displayWord);
-    utterance.lang = displayWord.match(/[àáảãạăâêôơưđ]/i) ? "vi-VN" : "en-US";
-    utterance.rate = 0.85;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
-  };
-
   return (
     <div className="rounded-[28px] border border-slate-200 bg-white p-6">
       <div className="grid gap-8 lg:grid-cols-[1fr_390px]">
         <div>
           <div className="flex items-center gap-3">
             <h2 className="text-4xl font-black">{displayWord}</h2>
-            <button onClick={speak} className="grid h-10 w-10 place-items-center rounded-xl bg-violet-100 text-violet-600">🔊</button>
+            <button
+              type="button"
+              onClick={() => displayWord && onSpeak(displayWord, word.audio)}
+              disabled={speaking || !displayWord}
+              className={`grid h-10 w-10 place-items-center rounded-xl bg-violet-100 text-violet-600 transition disabled:cursor-not-allowed ${speaking ? "animate-pulse opacity-70" : "hover:bg-violet-200"}`}
+            >
+              🔊
+            </button>
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {ipa && <span className="font-bold text-slate-500">{ipa}</span>}
@@ -257,23 +279,46 @@ function WordResultCard({ word, fallbackWord }: { word: WordCheckResult | null; 
   );
 }
 
-function ExampleCard({ examples, word }: { examples?: WordCheckResult["examples"]; word: string }) {
+function ExampleCard({
+  examples,
+  word,
+  lang,
+  isSpeaking,
+  onSpeak,
+}: {
+  examples?: WordCheckResult["examples"];
+  word: string;
+  lang: "en" | "vi";
+  isSpeaking: (key: string) => boolean;
+  onSpeak: (key: string, text: string, audioUrl?: string | null, lang?: "en" | "vi") => void;
+}) {
   const list = examples?.map((item) => ({ source: item.source || item.en || "", target: item.target || item.vi || "" })).filter((x) => x.source || x.target) || [];
 
   return (
     <div className="mt-6 rounded-[28px] border border-slate-200 bg-white p-6">
       <h3 className="text-xl font-black">Ví dụ</h3>
       <div className="mt-4 space-y-3">
-        {list.length ? list.map((item) => (
-          <div key={`${item.source}-${item.target}`} className="flex items-center gap-4 rounded-2xl border border-slate-200 p-4">
-            <span className="grid h-10 w-10 place-items-center rounded-full bg-violet-100 text-violet-600">🔊</span>
-            <div className="flex-1">
-              <p className="font-bold text-[#0f1744]">{highlightWord(item.source, word)}</p>
-              <p className="mt-1 text-sm text-slate-500">{item.target}</p>
+        {list.length ? list.map((item, index) => {
+          const key = `example-${index}`;
+          const speaking = isSpeaking(key);
+          return (
+            <div key={`${item.source}-${item.target}`} className="flex items-center gap-4 rounded-2xl border border-slate-200 p-4">
+              <button
+                type="button"
+                onClick={() => item.source && onSpeak(key, item.source, null, lang)}
+                disabled={speaking || !item.source}
+                className={`grid h-10 w-10 place-items-center rounded-full bg-violet-100 text-violet-600 transition disabled:cursor-not-allowed ${speaking ? "animate-pulse opacity-70" : "hover:bg-violet-200"}`}
+              >
+                🔊
+              </button>
+              <div className="flex-1">
+                <p className="font-bold text-[#0f1744]">{highlightWord(item.source, word)}</p>
+                <p className="mt-1 text-sm text-slate-500">{item.target}</p>
+              </div>
+              <span className="text-slate-400">☆</span>
             </div>
-            <span className="text-slate-400">☆</span>
-          </div>
-        )) : <div className="rounded-2xl bg-slate-50 p-4 font-bold text-slate-500">Sau khi check từ, ví dụ sẽ hiển thị ở đây.</div>}
+          );
+        }) : <div className="rounded-2xl bg-slate-50 p-4 font-bold text-slate-500">Sau khi check từ, ví dụ sẽ hiển thị ở đây.</div>}
       </div>
     </div>
   );

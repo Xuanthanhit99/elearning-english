@@ -16,6 +16,7 @@ import { join, resolve, sep } from 'path';
 
 const DEFAULT_STATIC_ROOT_SUBDIR = 'public';
 const DEFAULT_LISTENING_AUDIO_SUBDIR = 'listening-audio';
+const DEFAULT_TTS_AUDIO_SUBDIR = 'tts-audio';
 
 /**
  * Thư mục static root thật sự được `ServeStaticModule` phục vụ tại "/".
@@ -104,6 +105,46 @@ export function getListeningAudioUrlPrefix(): string {
   const subdir = sanitizeSubdir(
     process.env.LISTENING_AUDIO_SUBDIR,
     DEFAULT_LISTENING_AUDIO_SUBDIR,
+  );
+
+  return `/${subdir}`;
+}
+
+/**
+ * Thư mục vật lý để ghi audio TTS dùng chung (phát âm từ vựng, đọc mẫu
+ * câu luyện phát âm, đọc từ trong bài đọc/ngữ pháp...) — cùng cơ chế
+ * "subdir bên trong static root" như audio Listening ở trên, để không
+ * bao giờ lệch khỏi phạm vi `ServeStaticModule` phục vụ. Override tên
+ * subdir bằng `TTS_AUDIO_SUBDIR`. Mặc định: `tts-audio`.
+ */
+export function getTtsAudioDir(): string {
+  const staticRoot = getStaticRootDir();
+  const subdir = sanitizeSubdir(
+    process.env.TTS_AUDIO_SUBDIR,
+    DEFAULT_TTS_AUDIO_SUBDIR,
+  );
+
+  const resolvedDir = resolve(staticRoot, subdir);
+  const resolvedRoot = resolve(staticRoot);
+
+  const isInsideRoot =
+    resolvedDir === resolvedRoot || resolvedDir.startsWith(resolvedRoot + sep);
+
+  if (!isInsideRoot) {
+    return join(resolvedRoot, DEFAULT_TTS_AUDIO_SUBDIR);
+  }
+
+  return resolvedDir;
+}
+
+/**
+ * Prefix URL public tương ứng với `getTtsAudioDir()` — xem giải thích ở
+ * `getListeningAudioUrlPrefix()`.
+ */
+export function getTtsAudioUrlPrefix(): string {
+  const subdir = sanitizeSubdir(
+    process.env.TTS_AUDIO_SUBDIR,
+    DEFAULT_TTS_AUDIO_SUBDIR,
   );
 
   return `/${subdir}`;

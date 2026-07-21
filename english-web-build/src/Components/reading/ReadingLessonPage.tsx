@@ -18,6 +18,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/src/lib/axios";
+import { useSpeak } from "@/src/hooks/useSpeak";
 import {
   ApiEnvelope,
   ReadingLessonResponse,
@@ -73,6 +74,7 @@ export default function ReadingLessonPage({
     useState<ReadingSubmitResult | null>(null);
 
   const { missionForArticle } = useReadingMissions();
+  const { speak, isSpeaking } = useSpeak();
 
   async function loadLesson() {
     try {
@@ -387,7 +389,9 @@ export default function ReadingLessonPage({
                   >
                     <button
                       type="button"
-                      className="grid h-10 w-10 place-items-center rounded-xl bg-white text-violet-600 shadow-sm"
+                      onClick={() => speak(word.id, word.word, word.audioUrl)}
+                      disabled={isSpeaking(word.id)}
+                      className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-violet-600 shadow-sm transition disabled:cursor-not-allowed ${isSpeaking(word.id) ? "animate-pulse opacity-70" : "hover:bg-violet-50"}`}
                     >
                       <Volume2 size={18} />
                     </button>

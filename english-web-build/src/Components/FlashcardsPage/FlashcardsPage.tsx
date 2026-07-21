@@ -19,6 +19,7 @@ import {
   Volume2,
   X,
 } from "lucide-react";
+import { speakWord } from "@/src/lib/tts-api";
 
 const navs = [
   ["Trang chủ", Home],
@@ -208,7 +209,11 @@ export default function FlashcardsPage() {
 
                   <h3 className="mb-5 text-5xl font-black">
                     adventure{" "}
-                    <button className="rounded-full bg-purple-100 p-3 text-purple-600">
+                    <button
+                      type="button"
+                      onClick={() => speakWord("adventure")}
+                      className="rounded-full bg-purple-100 p-3 text-purple-600 transition hover:bg-purple-200"
+                    >
                       <Volume2 />
                     </button>
                   </h3>
@@ -330,7 +335,11 @@ export default function FlashcardsPage() {
                         <span className="rounded-lg bg-purple-50 px-3 py-2 text-sm font-black text-purple-600">
                           {level}
                         </span>
-                        <button className="rounded-lg bg-purple-50 p-2 text-purple-600">
+                        <button
+                          type="button"
+                          onClick={() => speakWord(word)}
+                          className="rounded-lg bg-purple-50 p-2 text-purple-600 transition hover:bg-purple-100"
+                        >
                           <Volume2 size={18} />
                         </button>
                       </div>

@@ -25,6 +25,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
@@ -81,7 +82,7 @@ function buildGroups(t: (key: string) => string): SidebarGroup[] {
     {
       title: "Companion",
       items: [
-        { label: "Pet", href: "/pet", icon: PawPrint },
+        // { label: "Pet", href: "/pet", icon: PawPrint },
         { label: t("sidebar.discover"), href: "/discover", icon: Compass },
         { label: t("sidebar.studyRooms"), href: "/study-rooms", icon: MessageCircle },
       ],
@@ -94,7 +95,7 @@ function buildGroups(t: (key: string) => string): SidebarGroup[] {
         { label: t("sidebar.history"), href: "/history", icon: History },
         { label: t("header.notifications"), href: "/notifications", icon: Bell },
         { label: t("sidebar.settings"), href: "/settings", icon: Settings },
-        { label: t("sidebar.admin"), href: "/admin", icon: ShieldCheck },
+        // { label: t("sidebar.admin"), href: "/admin", icon: ShieldCheck },
       ],
     },
   ];
@@ -209,9 +210,9 @@ function SidebarContent({
           <Link
             href="/"
             aria-label="Lumiverse"
-            className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] text-lg font-black text-white shadow-[0_16px_34px_rgba(23,70,255,0.24)]"
+            className="flex h-12 w-12 items-center justify-center rounded-2xl shadow-[0_16px_34px_rgba(23,70,255,0.24)]"
           >
-            L
+            <Image src="/loho/icon.png" alt="" width={512} height={512} className="h-11 w-11 rounded-[22%] object-contain" />
           </Link>
         ) : (
           <AppLogo href="/" />

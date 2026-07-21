@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
 import { api } from "@/src/lib/axios";
+import { speakWord } from "@/src/lib/tts-api";
 import { useAuthStore } from "@/src/store/authStore";
 import { AppIcon, AppIconName } from "@/src/Components/UI/AppIcon";
 import AppLogo from "@/src/Components/UI/AppLogo";
@@ -529,11 +530,11 @@ export default function VocabularyPage() {
   };
 
   const playAudio = () => {
-    if (!currentWord?.audio) {
+    if (!currentWord?.word) {
       setMessage(c.messages.noAudio);
       return;
     }
-    new Audio(currentWord.audio).play();
+    speakWord(currentWord.word, currentWord.audio);
   };
 
   const nextWord = async () => {
@@ -1382,7 +1383,7 @@ function ExampleTabContent({
         />
         <ExampleMeta
           action={
-            word?.audio ? () => new Audio(word.audio || "").play() : undefined
+            word?.word ? () => speakWord(word.word, word.audio) : undefined
           }
           label={c.exampleTab.phonetic}
           value={word?.phonetic || "/səˈsteɪ.nə.bəl/"}
@@ -1444,7 +1445,7 @@ function ExampleTabContent({
                 {word?.word || "sustainable"}
               </h3>
               <button
-                onClick={() => word?.audio && new Audio(word.audio).play()}
+                onClick={() => word?.word && speakWord(word.word, word.audio)}
                 className="grid h-10 w-10 place-items-center rounded-xl bg-white text-[#6d35ff] shadow-sm"
               >
                 <AppIcon name="volume" bare size={18} />
@@ -1504,7 +1505,7 @@ function ExampleTabContent({
                   </p>
                 </div>
                 <button
-                  onClick={() => word?.audio && new Audio(word.audio).play()}
+                  onClick={() => word?.word && speakWord(word.word, word.audio)}
                   className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#efe9ff] text-[#6d35ff]"
                 >
                   <AppIcon name="volume" bare size={16} />
@@ -1589,7 +1590,7 @@ function SynonymTabContent({
               {word?.word || "sustainable"}
             </h3>
             <button
-              onClick={() => word?.audio && new Audio(word.audio).play()}
+              onClick={() => word?.word && speakWord(word.word, word.audio)}
               className="grid h-9 w-9 place-items-center rounded-xl bg-white text-[#6d35ff] shadow-sm"
             >
               <AppIcon name="volume" bare size={16} />
@@ -1778,7 +1779,7 @@ function AntonymTabContent({
               {word?.word || "sustainable"}
             </h3>
             <button
-              onClick={() => word?.audio && new Audio(word.audio).play()}
+              onClick={() => word?.word && speakWord(word.word, word.audio)}
               className="grid h-9 w-9 place-items-center rounded-xl bg-white text-[#6d35ff] shadow-sm"
             >
               <AppIcon name="volume" bare size={16} />
@@ -1919,7 +1920,7 @@ function RelatedPhraseTabContent({
           <div className="flex items-center gap-3">
             <h3 className="text-2xl font-black text-[#6d35ff]">{baseWord}</h3>
             <button
-              onClick={() => word?.audio && new Audio(word.audio).play()}
+              onClick={() => word?.word && speakWord(word.word, word.audio)}
               className="grid h-9 w-9 place-items-center rounded-xl bg-white text-[#6d35ff] shadow-sm"
             >
               <AppIcon name="volume" bare size={16} />
@@ -1976,7 +1977,7 @@ function RelatedPhraseTabContent({
                     </p>
                   </div>
                   <button
-                    onClick={() => word?.audio && new Audio(word.audio).play()}
+                    onClick={() => word?.word && speakWord(word.word, word.audio)}
                     className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#efe9ff] text-[#6d35ff]"
                   >
                     <AppIcon name="volume" bare size={15} />
@@ -3389,8 +3390,8 @@ function LessonCompletedModal({
               <>
                 <button
                   onClick={() =>
-                    currentReviewWord.audio &&
-                    new Audio(currentReviewWord.audio).play()
+                    currentReviewWord.word &&
+                    speakWord(currentReviewWord.word, currentReviewWord.audio)
                   }
                   className="rounded-xl bg-violet-600 px-5 py-3 font-black text-white"
                 >

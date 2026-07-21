@@ -3,6 +3,7 @@
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { api } from "@/src/lib/axios";
+import { speakWord } from "@/src/lib/tts-api";
 import { AppIcon } from "@/src/Components/UI/AppIcon";
 
 type ReviewWord = {
@@ -416,7 +417,7 @@ function ReviewTable({
                 <div className="flex items-center gap-3">
                   <span className="font-black text-[#101733]">{item.word}</span>
                   <button
-                    onClick={() => item.audio && new Audio(item.audio).play()}
+                    onClick={() => item.word && speakWord(item.word, item.audio)}
                     className="text-[#6d35ff]"
                   >
                     <AppIcon name="volume" bare size={16} />

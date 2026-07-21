@@ -203,7 +203,7 @@ export default function GrammarPage() {
                 <br />
                 để giao tiếp tự nhiên hơn nhé!
               </p>
-              <img src="/poppylingo-logo.png" alt="Mascot" className="h-24 w-24 object-contain" />
+              <img src="/loho/icon.png" alt="Mascot" className="h-24 w-24 object-contain" />
             </div>
           </div>
 
@@ -466,7 +466,7 @@ function RecommendPanel({ text }: { text?: string }) {
           {text || "Học 15 phút ngữ pháp mỗi ngày sẽ giúp bạn tiến bộ nhanh hơn!"}
         </p>
       </div>
-      <img src="/poppylingo-logo.png" alt="Mascot" className="h-24 w-24 object-contain" />
+      <img src="/loho/icon.png" alt="Mascot" className="h-24 w-24 object-contain" />
     </section>
   );
 }

@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { api } from "@/src/lib/axios";
+import { getApiErrorMessage } from "@/src/lib/api-error";
+import { useSpeak } from "@/src/hooks/useSpeak";
 
 type WordStatus = "good" | "warning" | "bad";
 
@@ -12,45 +15,184 @@ type WordFeedback = {
   note: string;
 };
 
-const sentence = "I want to improve my English speaking skills.";
-const ipa = "/aɪ wɑːnt tə ɪmˈpruːv maɪ ˈɪŋɡlɪʃ ˈspiːkɪŋ skɪlz/";
+type FocusSound = {
+  word: string;
+  sound: string;
+  note: string;
+};
 
-const words: WordFeedback[] = [
-  { word: "I", status: "good", correctIpa: "/aɪ/", userIpa: "/aɪ/", note: "Tốt." },
-  { word: "want", status: "good", correctIpa: "/wɑːnt/", userIpa: "/wɑːnt/", note: "Tốt." },
-  { word: "improve", status: "warning", correctIpa: "/ɪmˈpruːv/", userIpa: "/ɪmˈpruv/", note: "Trọng âm cần rõ hơn." },
-  { word: "English", status: "good", correctIpa: "/ˈɪŋɡlɪʃ/", userIpa: "/ˈɪŋɡlɪʃ/", note: "Tốt." },
-  { word: "speaking", status: "good", correctIpa: "/ˈspiːkɪŋ/", userIpa: "/ˈspiːkɪŋ/", note: "Tốt." },
-  { word: "skills", status: "bad", correctIpa: "/skɪlz/", userIpa: "/skɪl/", note: "Bạn đang thiếu âm cuối /z/." },
-];
+type PronunciationExercise = {
+  id: string;
+  title: string;
+  type: string;
+  level: string;
+  text: string;
+  ipa: string;
+  focusSounds: FocusSound[] | null;
+};
+
+type PronunciationFeedback = {
+  wordFeedback: WordFeedback[];
+  errors: { title: string; wrong: string; correct: string; note: string }[];
+  miniDrill: string[];
+  miuNote: string;
+};
+
+type PronunciationResult = {
+  id: string;
+  exerciseId: string;
+  audioUrl: string | null;
+  score: number;
+  clarity: number;
+  stress: number;
+  endingSound: number;
+  fluency: number;
+  feedback: PronunciationFeedback;
+  exercise: PronunciationExercise;
+};
+
+const LEVEL = "A2";
+const GOAL = "Speaking";
+
+function unwrap<T>(payload: unknown): T {
+  return ((payload as { data?: T })?.data ?? payload) as T;
+}
 
 export default function PronunciationPage() {
+  const [exercise, setExercise] = useState<PronunciationExercise | null>(null);
+  const [loadingExercise, setLoadingExercise] = useState(true);
   const [recording, setRecording] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
-  const [selectedWord, setSelectedWord] = useState<WordFeedback>(words[5]);
+  const [result, setResult] = useState<PronunciationResult | null>(null);
+  const [history, setHistory] = useState<PronunciationResult[]>([]);
+  const [selectedWord, setSelectedWord] = useState<WordFeedback | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const playText = (text = sentence, rate = 0.85) => {
-    const speech = new SpeechSynthesisUtterance(text);
-    speech.lang = "en-US";
-    speech.rate = rate;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(speech);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<BlobPart[]>([]);
+
+  const { speak, isSpeaking } = useSpeak();
+
+  const loadExercise = async () => {
+    setLoadingExercise(true);
+    setError(null);
+    setResult(null);
+    setSelectedWord(null);
+
+    try {
+      const { data } = await api.post("/pronunciation/generate", {
+        level: LEVEL,
+        goal: GOAL,
+      });
+      setExercise(unwrap<PronunciationExercise>(data));
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Không tạo được bài luyện phát âm"));
+    } finally {
+      setLoadingExercise(false);
+    }
+  };
+
+  const loadHistory = async () => {
+    try {
+      const { data } = await api.get("/pronunciation/history");
+      setHistory(unwrap<PronunciationResult[]>(data) || []);
+    } catch {
+      // Lịch sử chỉ để hiển thị tiến độ, không chặn luyện tập nếu lỗi.
+    }
+  };
+
+  useEffect(() => {
+    loadExercise();
+    loadHistory();
+  }, []);
+
+  const submitRecording = async (blob: Blob) => {
+    if (!exercise) return;
+
+    setAnalyzing(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("exerciseId", exercise.id);
+      formData.append("audio", blob, "recording.webm");
+
+      const { data } = await api.post("/pronunciation/analyze", formData);
+      const analyzed = unwrap<PronunciationResult>(data);
+      setResult(analyzed);
+      setSelectedWord(analyzed.feedback?.wordFeedback?.[0] ?? null);
+      void loadHistory();
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Không phân tích được phát âm. Thử lại nhé."));
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const startRecording = async () => {
+    if (!exercise || recording || analyzing) return;
+    setError(null);
+
+    if (
+      typeof window === "undefined" ||
+      !navigator.mediaDevices?.getUserMedia ||
+      typeof MediaRecorder === "undefined"
+    ) {
+      setError("Trình duyệt không hỗ trợ ghi âm.");
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      chunksRef.current = [];
+
+      const recorder = new MediaRecorder(stream);
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) chunksRef.current.push(event.data);
+      };
+      recorder.onstop = () => {
+        stream.getTracks().forEach((track) => track.stop());
+        const blob = new Blob(chunksRef.current, {
+          type: recorder.mimeType || "audio/webm",
+        });
+        void submitRecording(blob);
+      };
+
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      setRecording(true);
+    } catch {
+      setError("Không truy cập được microphone. Hãy cấp quyền ghi âm cho trình duyệt.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (!recording) return;
+    mediaRecorderRef.current?.stop();
+    setRecording(false);
   };
 
   const handleRecord = () => {
     if (recording) {
-      setRecording(false);
-      setAnalyzing(true);
-
-      setTimeout(() => {
-        setAnalyzing(false);
-      }, 1800);
-
+      stopRecording();
       return;
     }
-
-    setRecording(true);
+    void startRecording();
   };
+
+  const retryExercise = () => {
+    if (recording) stopRecording();
+    setResult(null);
+    setSelectedWord(null);
+  };
+
+  const nextExercise = () => {
+    if (recording) stopRecording();
+    void loadExercise();
+  };
+
+  const practiceCount = Math.min(history.length, 10);
+  const practicePercent = Math.round((practiceCount / 10) * 100);
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#fff4e8] px-4 py-10">
@@ -59,38 +201,61 @@ export default function PronunciationPage() {
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[330px_1fr]">
           <aside className="space-y-5">
-            <PracticeSummary onPlay={() => playText()} />
-            <TodayProgress />
+            <PracticeSummary
+              exercise={exercise}
+              speaking={exercise ? isSpeaking(`summary-${exercise.id}`) : false}
+              onPlay={() => exercise && speak(`summary-${exercise.id}`, exercise.text, null, "en")}
+            />
+            <TodayProgress count={practiceCount} percent={practicePercent} />
             <PracticeSteps />
           </aside>
 
           <section className="space-y-6">
             <MainPractice
+              exercise={exercise}
+              loading={loadingExercise}
               recording={recording}
               analyzing={analyzing}
+              error={error}
               onRecord={handleRecord}
-              onPlay={() => playText()}
-              onSlow={() => playText(sentence, 0.65)}
+              onNext={nextExercise}
+              onPlay={() => exercise && speak(`main-${exercise.id}`, exercise.text, null, "en")}
+              onSlow={() => exercise && speak(`main-slow-${exercise.id}`, exercise.text, null, "en", 0.6)}
+              speaking={exercise ? isSpeaking(`main-${exercise.id}`) : false}
+              speakingSlow={exercise ? isSpeaking(`main-slow-${exercise.id}`) : false}
             />
 
             {analyzing ? (
               <AnalyzingCard />
-            ) : (
+            ) : result ? (
               <>
-                <ResultCard />
+                <ResultCard result={result} />
                 <WordFeedbackPanel
-                  words={words}
+                  words={result.feedback.wordFeedback}
                   selectedWord={selectedWord}
                   onSelect={setSelectedWord}
                 />
 
-                <div className="grid gap-6 lg:grid-cols-2">
-                  <WordDetail word={selectedWord} onPlay={() => playText(selectedWord.word, 0.75)} />
-                  <MiniDrill onPlay={playText} />
-                </div>
+                {selectedWord && (
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    <WordDetail
+                      word={selectedWord}
+                      speaking={isSpeaking(`word-${selectedWord.word}`)}
+                      onPlay={() => speak(`word-${selectedWord.word}`, selectedWord.word, null, "en", 0.75)}
+                    />
+                    <MiniDrill
+                      drills={result.feedback.miniDrill}
+                      isSpeaking={isSpeaking}
+                      onPlay={speak}
+                      onRetry={retryExercise}
+                    />
+                  </div>
+                )}
 
-                <AiCoach />
+                <AiCoach note={result.feedback.miuNote} />
               </>
+            ) : (
+              <EmptyResultCard hasExercise={!!exercise} />
             )}
           </section>
         </div>
@@ -152,36 +317,49 @@ function MiniHeroStat({ value, label }: { value: string; label: string }) {
   );
 }
 
-function PracticeSummary({ onPlay }: { onPlay: () => void }) {
+function PracticeSummary({
+  exercise,
+  speaking,
+  onPlay,
+}: {
+  exercise: PronunciationExercise | null;
+  speaking: boolean;
+  onPlay: () => void;
+}) {
   return (
     <SoftCard title="Bài luyện hiện tại">
       <div className="rounded-3xl bg-gradient-to-br from-[#fffaf5] to-[#f7f1fb] p-5">
-        <div className="text-sm font-black text-[#ff6b00]">Sentence practice</div>
-        <h3 className="mt-3 text-3xl font-black text-[#1f2a44]">improve</h3>
-        <p className="mt-1 font-bold text-[#5b6b85]">/ɪmˈpruːv/ · verb</p>
+        <div className="text-sm font-black text-[#ff6b00]">
+          {exercise?.type === "sentence" ? "Sentence practice" : exercise?.type || "..."}
+        </div>
+        <h3 className="mt-3 text-xl font-black leading-6 text-[#1f2a44]">
+          {exercise?.text || "Đang tải câu luyện..."}
+        </h3>
+        <p className="mt-1 font-bold text-[#5b6b85]">{exercise?.ipa || ""}</p>
 
         <button
           type="button"
           onClick={onPlay}
-          className="mt-5 w-full rounded-2xl bg-[#1f2a44] py-3 font-black text-white transition hover:bg-[#ff6b00]"
+          disabled={!exercise || speaking}
+          className="mt-5 w-full rounded-2xl bg-[#1f2a44] py-3 font-black text-white transition hover:bg-[#ff6b00] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          🔊 Nghe mẫu
+          {speaking ? "🔊 Đang phát..." : "🔊 Nghe mẫu"}
         </button>
       </div>
     </SoftCard>
   );
 }
 
-function TodayProgress() {
+function TodayProgress({ count, percent }: { count: number; percent: number }) {
   return (
     <SoftCard title="Tiến độ hôm nay">
       <div className="flex items-center justify-between text-sm font-black text-[#1f2a44]">
-        <span>6 / 10 câu</span>
-        <span>60%</span>
+        <span>{count} / 10 câu</span>
+        <span>{percent}%</span>
       </div>
 
       <div className="mt-3 h-3 overflow-hidden rounded-full bg-slate-100">
-        <div className="h-full w-[60%] rounded-full bg-[#ff6b00]" />
+        <div className="h-full rounded-full bg-[#ff6b00]" style={{ width: `${percent}%` }} />
       </div>
 
       <div className="mt-4 rounded-2xl bg-[#fff0dc] px-4 py-3 text-sm font-black text-[#ff6b00]">
@@ -218,17 +396,29 @@ function PracticeSteps() {
 }
 
 function MainPractice({
+  exercise,
+  loading,
   recording,
   analyzing,
+  error,
   onRecord,
+  onNext,
   onPlay,
   onSlow,
+  speaking,
+  speakingSlow,
 }: {
+  exercise: PronunciationExercise | null;
+  loading: boolean;
   recording: boolean;
   analyzing: boolean;
+  error: string | null;
   onRecord: () => void;
+  onNext: () => void;
   onPlay: () => void;
   onSlow: () => void;
+  speaking: boolean;
+  speakingSlow: boolean;
 }) {
   return (
     <div className="relative overflow-hidden rounded-[38px] border border-[#ead8c2] bg-white p-7 shadow-[0_30px_90px_rgba(31,42,68,0.10)]">
@@ -238,46 +428,80 @@ function MainPractice({
       <div className="relative z-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <span className="rounded-full bg-[#fff0dc] px-4 py-2 text-xs font-black text-[#ff6b00]">
-            Sentence practice
+            {exercise?.type === "sentence" ? "Sentence practice" : exercise?.type || "Practice"}
           </span>
 
-          <span className="rounded-full bg-[#f7f1fb] px-4 py-2 text-xs font-black text-[#6b5796]">
-            A2 · Speaking
-          </span>
-        </div>
-
-        <div className="mt-8 text-center">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#fff4e8] text-5xl shadow-inner">
-            🐱
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-[#f7f1fb] px-4 py-2 text-xs font-black text-[#6b5796]">
+              {exercise?.level || LEVEL} · {GOAL}
+            </span>
+            <button
+              type="button"
+              onClick={onNext}
+              disabled={loading}
+              className="rounded-full border border-[#ead8c2] bg-white px-4 py-2 text-xs font-black text-[#5b6b85] transition hover:border-[#ff6b00] hover:text-[#ff6b00] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              🔄 Đổi câu khác
+            </button>
           </div>
-
-          <p className="mt-6 text-4xl font-black leading-tight text-[#1f2a44]">
-            {sentence}
-          </p>
-
-          <p className="mt-3 text-lg font-bold text-[#5b6b85]">{ipa}</p>
-
-          <p className="mx-auto mt-4 max-w-2xl font-bold leading-7 text-[#5b6b85]">
-            Tập trung vào âm <b>/pruːv/</b>, trọng âm trong{" "}
-            <b>improve</b> và âm cuối <b>/z/</b> trong <b>skills</b>.
-          </p>
         </div>
+
+        {loading ? (
+          <div className="mt-10 text-center">
+            <div className="mx-auto flex h-20 w-20 animate-bounce items-center justify-center rounded-full bg-[#fff4e8] text-5xl shadow-inner">
+              🐱
+            </div>
+            <p className="mt-6 font-bold text-[#5b6b85]">Lumi đang soạn câu luyện cho bạn...</p>
+          </div>
+        ) : (
+          <div className="mt-8 text-center">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#fff4e8] text-5xl shadow-inner">
+              🐱
+            </div>
+
+            <p className="mt-6 text-4xl font-black leading-tight text-[#1f2a44]">
+              {exercise?.text || "Chưa có câu luyện."}
+            </p>
+
+            <p className="mt-3 text-lg font-bold text-[#5b6b85]">{exercise?.ipa}</p>
+
+            {!!exercise?.focusSounds?.length && (
+              <p className="mx-auto mt-4 max-w-2xl font-bold leading-7 text-[#5b6b85]">
+                Tập trung vào{" "}
+                {exercise.focusSounds.map((item, index) => (
+                  <span key={item.word}>
+                    <b>{item.sound}</b> trong <b>{item.word}</b>
+                    {index < exercise.focusSounds!.length - 1 ? ", " : "."}
+                  </span>
+                ))}
+              </p>
+            )}
+          </div>
+        )}
+
+        {error && (
+          <div className="mt-6 rounded-2xl bg-red-50 px-5 py-4 text-center font-bold text-red-500">
+            {error}
+          </div>
+        )}
 
         <div className="mt-8 grid gap-3 md:grid-cols-2">
           <button
             type="button"
             onClick={onSlow}
-            className="rounded-2xl bg-[#fff0dc] py-4 font-black text-[#ff6b00] transition hover:scale-[1.01]"
+            disabled={!exercise || speakingSlow}
+            className="rounded-2xl bg-[#fff0dc] py-4 font-black text-[#ff6b00] transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            🐢 Nghe chậm
+            🐢 {speakingSlow ? "Đang phát..." : "Nghe chậm"}
           </button>
 
           <button
             type="button"
             onClick={onPlay}
-            className="rounded-2xl bg-[#1f2a44] py-4 font-black text-white transition hover:bg-[#ff6b00]"
+            disabled={!exercise || speaking}
+            className="rounded-2xl bg-[#1f2a44] py-4 font-black text-white transition hover:bg-[#ff6b00] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            🔊 Nghe mẫu
+            🔊 {speaking ? "Đang phát..." : "Nghe mẫu"}
           </button>
         </div>
 
@@ -285,8 +509,8 @@ function MainPractice({
           <button
             type="button"
             onClick={onRecord}
-            disabled={analyzing}
-            className={`relative flex h-28 w-28 items-center justify-center rounded-full text-5xl text-white shadow-2xl transition hover:scale-105 ${
+            disabled={!exercise || analyzing}
+            className={`relative flex h-28 w-28 items-center justify-center rounded-full text-5xl text-white shadow-2xl transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-60 ${
               recording ? "bg-red-500" : "bg-[#ff6b00]"
             }`}
           >
@@ -300,7 +524,11 @@ function MainPractice({
           </button>
 
           <p className="mt-4 font-black text-[#1f2a44]">
-            {recording ? "Đang nghe bạn nói..." : "Nhấn để bắt đầu ghi âm"}
+            {analyzing
+              ? "Lumi đang phân tích..."
+              : recording
+                ? "Đang nghe bạn nói, nhấn để dừng..."
+                : "Nhấn để bắt đầu ghi âm"}
           </p>
         </div>
 
@@ -355,15 +583,33 @@ function AnalyzingCard() {
   );
 }
 
-function ResultCard() {
+function EmptyResultCard({ hasExercise }: { hasExercise: boolean }) {
+  return (
+    <div className="rounded-[34px] border border-dashed border-[#ead8c2] bg-white/60 p-8 text-center">
+      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#fff4e8] text-4xl">
+        🎙️
+      </div>
+      <h2 className="mt-4 text-2xl font-black text-[#1f2a44]">
+        {hasExercise ? "Chưa có kết quả nào" : "Đang chuẩn bị câu luyện..."}
+      </h2>
+      <p className="mt-2 font-bold text-[#5b6b85]">
+        Nghe mẫu rồi nhấn nút ghi âm để Lumi chấm điểm phát âm của bạn.
+      </p>
+    </div>
+  );
+}
+
+function ResultCard({ result }: { result: PronunciationResult }) {
+  const label = result.score >= 85 ? "Excellent" : result.score >= 70 ? "Good" : result.score >= 50 ? "Cần luyện thêm" : "Cần cố gắng hơn";
+
   return (
     <div className="rounded-[34px] border border-[#ead8c2] bg-white p-7 shadow-[0_30px_90px_rgba(31,42,68,0.10)]">
       <div className="flex flex-col gap-7 lg:flex-row lg:items-center">
         <div className="mx-auto flex h-40 w-40 shrink-0 items-center justify-center rounded-full bg-[#ecfdf5] shadow-inner">
           <div className="flex h-32 w-32 items-center justify-center rounded-full border-[12px] border-emerald-500">
             <div className="text-center">
-              <div className="text-5xl font-black text-emerald-500">86</div>
-              <p className="text-xs font-black text-[#5b6b85]">Excellent</p>
+              <div className="text-5xl font-black text-emerald-500">{result.score}</div>
+              <p className="text-xs font-black text-[#5b6b85]">{label}</p>
             </div>
           </div>
         </div>
@@ -374,15 +620,14 @@ function ResultCard() {
           </h2>
 
           <p className="mt-2 font-bold leading-7 text-[#5b6b85]">
-            Bạn phát âm khá tốt. Cần luyện thêm âm cuối trong “skills” và trọng
-            âm của “improve”.
+            {result.feedback.miuNote || "Lumi đã chấm xong bài luyện của bạn."}
           </p>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <MiniScore label="Độ rõ" value={90} />
-            <MiniScore label="Trọng âm" value={82} />
-            <MiniScore label="Âm cuối" value={78} />
-            <MiniScore label="Độ trôi chảy" value={88} />
+            <MiniScore label="Độ rõ" value={result.clarity} />
+            <MiniScore label="Trọng âm" value={result.stress} />
+            <MiniScore label="Âm cuối" value={result.endingSound} />
+            <MiniScore label="Độ trôi chảy" value={result.fluency} />
           </div>
         </div>
       </div>
@@ -414,9 +659,11 @@ function WordFeedbackPanel({
   onSelect,
 }: {
   words: WordFeedback[];
-  selectedWord: WordFeedback;
+  selectedWord: WordFeedback | null;
   onSelect: (word: WordFeedback) => void;
 }) {
+  if (!words.length) return null;
+
   return (
     <div className="rounded-[34px] border border-[#ead8c2] bg-white p-7 shadow-[0_30px_90px_rgba(31,42,68,0.10)]">
       <div className="flex items-center justify-between">
@@ -428,7 +675,7 @@ function WordFeedbackPanel({
 
       <div className="mt-6 flex flex-wrap gap-3">
         {words.map((item) => {
-          const active = selectedWord.word === item.word;
+          const active = selectedWord?.word === item.word;
 
           return (
             <button
@@ -457,9 +704,11 @@ function WordFeedbackPanel({
 
 function WordDetail({
   word,
+  speaking,
   onPlay,
 }: {
   word: WordFeedback;
+  speaking: boolean;
   onPlay: () => void;
 }) {
   return (
@@ -488,9 +737,10 @@ function WordDetail({
         <button
           type="button"
           onClick={onPlay}
-          className="mt-4 w-full rounded-2xl bg-[#1f2a44] py-3 font-black text-white transition hover:bg-[#ff6b00]"
+          disabled={speaking}
+          className="mt-4 w-full rounded-2xl bg-[#1f2a44] py-3 font-black text-white transition hover:bg-[#ff6b00] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          🔊 Nghe từ này
+          🔊 {speaking ? "Đang phát..." : "Nghe từ này"}
         </button>
       </div>
     </SoftCard>
@@ -507,38 +757,56 @@ function StatusBadge({ status }: { status: WordStatus }) {
   return <span className={`rounded-full px-3 py-2 text-xs font-black ${config}`} />;
 }
 
-function MiniDrill({ onPlay }: { onPlay: (text: string, rate?: number) => void }) {
-  const drills = [
-    "skills",
-    "improve skills",
-    "improve my English",
-    "improve my English speaking skills",
-  ];
-
+function MiniDrill({
+  drills,
+  isSpeaking,
+  onPlay,
+  onRetry,
+}: {
+  drills: string[];
+  isSpeaking: (key: string) => boolean;
+  onPlay: (key: string, text: string, audioUrl?: string | null, lang?: "en" | "vi", rate?: number) => void;
+  onRetry: () => void;
+}) {
   return (
     <SoftCard title="Mini Drill">
       <div className="space-y-3">
-        {drills.map((item) => (
-          <button
-            key={item}
-            type="button"
-            onClick={() => onPlay(item, 0.75)}
-            className="flex w-full items-center justify-between rounded-2xl bg-[#fffaf5] px-4 py-3 text-left font-black text-[#1f2a44] transition hover:bg-[#fff0dc]"
-          >
-            <span>{item}</span>
-            <span>🔊</span>
-          </button>
-        ))}
+        {drills.length ? (
+          drills.map((item) => {
+            const key = `drill-${item}`;
+            const speaking = isSpeaking(key);
+            return (
+              <button
+                key={item}
+                type="button"
+                onClick={() => onPlay(key, item, null, "en", 0.75)}
+                disabled={speaking}
+                className="flex w-full items-center justify-between rounded-2xl bg-[#fffaf5] px-4 py-3 text-left font-black text-[#1f2a44] transition hover:bg-[#fff0dc] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <span>{item}</span>
+                <span>{speaking ? "⏳" : "🔊"}</span>
+              </button>
+            );
+          })
+        ) : (
+          <p className="rounded-2xl bg-[#fffaf5] px-4 py-3 font-bold text-[#5b6b85]">
+            Chưa có drill cho câu này.
+          </p>
+        )}
       </div>
 
-      <button className="mt-4 w-full rounded-2xl bg-[#ff6b00] py-3 font-black text-white shadow-lg shadow-orange-200">
+      <button
+        type="button"
+        onClick={onRetry}
+        className="mt-4 w-full rounded-2xl bg-[#ff6b00] py-3 font-black text-white shadow-lg shadow-orange-200"
+      >
         🎙️ Luyện lại câu này
       </button>
     </SoftCard>
   );
 }
 
-function AiCoach() {
+function AiCoach({ note }: { note: string }) {
   return (
     <div className="rounded-[34px] bg-gradient-to-br from-[#1f2a44] via-[#4d4378] to-[#6b5796] p-7 text-white shadow-2xl">
       <div className="flex items-start gap-4">
@@ -549,20 +817,8 @@ function AiCoach() {
         <div>
           <h2 className="text-3xl font-black">Lumi AI Coach</h2>
           <p className="mt-3 font-bold leading-7 text-white/80">
-            Bạn có tốc độ nói tốt và âm chính khá rõ. Ngày mai nên luyện thêm âm
-            cuối <b>/z/</b>, <b>/v/</b> và trọng âm trong từ có 2 âm tiết.
+            {note || "Luyện thêm vài câu để Lumi đưa ra nhận xét chi tiết hơn nhé."}
           </p>
-
-          <div className="mt-5 flex flex-wrap gap-2">
-            {["ending sound", "word stress", "connected speech"].map((item) => (
-              <span
-                key={item}
-                className="rounded-full bg-white/15 px-4 py-2 text-xs font-black"
-              >
-                {item}
-              </span>
-            ))}
-          </div>
         </div>
       </div>
     </div>

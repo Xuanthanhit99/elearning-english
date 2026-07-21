@@ -18,12 +18,14 @@ export const metadata: Metadata = {
     siteName: "Lumiverse",
     locale: "vi_VN",
     type: "website",
+    images: [{ url: "/loho/og-image.png", width: 1200, height: 630, alt: "Lumiverse" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Lumiverse - Học tiếng Anh với AI",
     description:
       "Học tiếng Anh cá nhân hóa với AI coach, SRS, mission, leaderboard và dashboard tiến bộ.",
+    images: ["/loho/og-image.png"],
   },
 };
 

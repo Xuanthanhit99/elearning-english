@@ -22,6 +22,7 @@ import {
   Volume2,
   X,
 } from "lucide-react";
+import { speakWord } from "@/src/lib/tts-api";
 
 export default function CreateFlashcardPage() {
   return (
@@ -238,7 +239,13 @@ export default function CreateFlashcardPage() {
                   <div>
                     <h4 className="mb-5 text-4xl font-black">
                       example{" "}
-                      <Volume2 className="inline text-purple-600" />
+                      <button
+                        type="button"
+                        onClick={() => speakWord("example")}
+                        className="inline-flex align-middle text-purple-600"
+                      >
+                        <Volume2 />
+                      </button>
                     </h4>
                     <p className="mb-8 text-xl font-black text-purple-600">
                       /ɪɡˈzæmpəl/

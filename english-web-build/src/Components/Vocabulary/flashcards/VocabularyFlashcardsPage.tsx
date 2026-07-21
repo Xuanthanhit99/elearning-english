@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/src/lib/axios";
 import { AppIcon, AppIconName } from "@/src/Components/UI/AppIcon";
+import { useSpeak } from "@/src/hooks/useSpeak";
 
 type TodayVocabulary = {
   id?: string;
@@ -108,6 +109,7 @@ export default function VocabularyFlashcardsPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [reviewed, setReviewed] = useState<Record<string, string>>({});
+  const { speak, isSpeaking } = useSpeak();
 
   const cards = session?.cards || [];
   const activeCard = cards[activeIndex] || null;
@@ -271,6 +273,10 @@ export default function VocabularyFlashcardsPage() {
                       loading={loading}
                       total={cards.length}
                       onFlip={() => setFlipped((value) => !value)}
+                      speaking={activeCard ? isSpeaking(activeCard.wordId) : false}
+                      onSpeak={() =>
+                        activeCard && speak(activeCard.wordId, activeCard.front, activeCard.audio)
+                      }
                     />
 
                     <button
@@ -348,6 +354,8 @@ function FlashcardView({
   loading,
   onFlip,
   total,
+  speaking,
+  onSpeak,
 }: {
   card: Flashcard | null;
   flipped: boolean;
@@ -356,6 +364,8 @@ function FlashcardView({
   loading: boolean;
   onFlip: () => void;
   total: number;
+  speaking: boolean;
+  onSpeak: () => void;
 }) {
   if (loading) {
     return (
@@ -384,7 +394,22 @@ function FlashcardView({
         </span>
         <div className="flex gap-3 text-[#8b91aa]">
           <AppIcon name="star" bare size={24} />
-          <span className="grid h-12 w-12 place-items-center rounded-full bg-[#efe9ff] text-[#6d35ff]">
+          <span
+            role="button"
+            tabIndex={0}
+            aria-label="Nghe phát âm"
+            onClick={(event) => {
+              event.stopPropagation();
+              onSpeak();
+            }}
+            onKeyDown={(event) => {
+              if (event.key !== "Enter" && event.key !== " ") return;
+              event.preventDefault();
+              event.stopPropagation();
+              onSpeak();
+            }}
+            className={`grid h-12 w-12 place-items-center rounded-full bg-[#efe9ff] text-[#6d35ff] transition hover:bg-[#e3d9ff] ${speaking ? "animate-pulse opacity-70" : ""}`}
+          >
             <AppIcon name="volume" bare size={22} />
           </span>
         </div>

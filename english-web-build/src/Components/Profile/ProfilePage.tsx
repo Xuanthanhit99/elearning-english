@@ -3,11 +3,14 @@
 /* eslint-disable @next/next/no-img-element */
 
 import {
+  AtSign,
   Award,
   BookOpenCheck,
   CalendarDays,
+  Camera,
   Edit3,
   Flame,
+  Loader2,
   Mail,
   PawPrint,
   Phone,
@@ -20,8 +23,9 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/src/lib/axios";
+import { getApiErrorMessage } from "@/src/lib/api-error";
 import { DashboardData, getDashboard } from "@/src/lib/dashboard-api";
 import { useTranslation } from "@/src/hooks/useTranslation";
 import { useAuthStore } from "@/src/store/authStore";
@@ -147,6 +151,74 @@ function cleanProfilePayload(form: UpdateProfilePayload) {
   return payload;
 }
 
+type FieldErrors = Partial<Record<keyof UpdateProfilePayload, string>>;
+
+const USERNAME_PATTERN = /^[a-zA-Z0-9_]+$/;
+const VN_PHONE_PATTERN = /^(\+84|0)[0-9]{9,10}$/;
+
+/** Validate phía client khớp với `UpdateProfileDto` (backend) — chỉ báo lỗi khi field có giá trị, vì mọi field ngoài `fullname` đều optional. */
+function validateProfilePayload(payload: Partial<UpdateProfilePayload>, t: (key: string) => string): FieldErrors {
+  const errors: FieldErrors = {};
+
+  if (!payload.fullname || payload.fullname.length < 2) {
+    errors.fullname = t("profile.validation.fullname");
+  } else if (payload.fullname.length > 50) {
+    errors.fullname = t("profile.validation.fullnameMax");
+  }
+
+  if (payload.username) {
+    if (payload.username.length < 4 || payload.username.length > 30) {
+      errors.username = t("profile.validation.usernameLength");
+    } else if (!USERNAME_PATTERN.test(payload.username)) {
+      errors.username = t("profile.validation.usernameFormat");
+    }
+  }
+
+  if (payload.phone && !VN_PHONE_PATTERN.test(payload.phone)) {
+    errors.phone = t("profile.validation.phone");
+  }
+
+  if (payload.bio && payload.bio.length > 160) {
+    errors.bio = t("profile.validation.bioMax");
+  }
+
+  if (payload.goal && payload.goal.length > 120) {
+    errors.goal = t("profile.validation.goalMax");
+  }
+
+  return errors;
+}
+
+/** Map message lỗi từ ValidationPipe backend (vd. "phone must be a valid phone number", "Username đã được sử dụng") về đúng field trong form. */
+function mapBackendErrorsToFields(messages: string[]): FieldErrors {
+  const fieldKeys: (keyof UpdateProfilePayload)[] = [
+    "fullname",
+    "username",
+    "bio",
+    "goal",
+    "phone",
+    "englishLevel",
+    "learningGoal",
+  ];
+  const errors: FieldErrors = {};
+
+  messages.forEach((message) => {
+    const lower = message.toLowerCase();
+    const field = fieldKeys.find((key) => lower.startsWith(key.toLowerCase()));
+    if (field && !errors[field]) errors[field] = message;
+  });
+
+  return errors;
+}
+
+function getValidationMessages(error: unknown): string[] | null {
+  const response = (error as { response?: { data?: { message?: unknown } } })?.response;
+  const message = response?.data?.message;
+  if (Array.isArray(message)) return message.filter((item): item is string => typeof item === "string");
+  if (typeof message === "string") return [message];
+  return null;
+}
+
 function ProfileSkeleton() {
   return (
     <div className="space-y-6 pb-10">
@@ -176,7 +248,11 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [companionOpen, setCompanionOpen] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarPreviewOpen, setAvatarPreviewOpen] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState<UpdateProfilePayload>({
     fullname: "",
     username: "",
@@ -289,6 +365,12 @@ export default function ProfilePage() {
 
   function updateForm(field: keyof UpdateProfilePayload, value: string) {
     setForm((current) => ({ ...current, [field]: value }));
+    setFieldErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
   }
 
   function startEditing() {
@@ -303,15 +385,22 @@ export default function ProfilePage() {
         learningGoal: profile.learningGoal ?? "",
       });
     }
+    setFieldErrors({});
     setEditing(true);
   }
 
   async function saveProfile() {
+    if (saving) return; // chặn spam click submit
+
     const payload = cleanProfilePayload(form);
-    if (!payload.fullname || payload.fullname.length < 2) {
-      setNotice(t("profile.validation.fullname"));
+    const validationErrors = validateProfilePayload(payload, t);
+
+    if (Object.keys(validationErrors).length > 0) {
+      setFieldErrors(validationErrors);
       return;
     }
+
+    setFieldErrors({});
 
     try {
       setSaving(true);
@@ -323,9 +412,49 @@ export default function ProfilePage() {
       setNotice(t("profile.saveSuccess"));
     } catch (saveError) {
       console.error(saveError);
-      setNotice(t("profile.saveError"));
+      const messages = getValidationMessages(saveError);
+      const backendFieldErrors = messages ? mapBackendErrorsToFields(messages) : {};
+
+      if (Object.keys(backendFieldErrors).length > 0) {
+        setFieldErrors(backendFieldErrors);
+        setNotice(t("profile.validation.checkFields"));
+      } else {
+        setNotice(getApiErrorMessage(saveError, t("profile.saveError")));
+      }
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleAvatarSelected(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || !profile) return;
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setNotice(t("profile.avatarUploadError"));
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setNotice(t("profile.avatarUploadError"));
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    try {
+      setAvatarUploading(true);
+      const response = await api.patch<ProfileUser>("/auth/me/avatar", formData);
+      const updated = response.data;
+      setProfile({ ...profile, avatar: updated.avatar });
+      setAuthUser({ ...authUser, ...toAuthUser({ ...profile, avatar: updated.avatar }) });
+      setNotice(t("profile.avatarUpdated"));
+    } catch (uploadError) {
+      console.error(uploadError);
+      setNotice(t("profile.avatarUploadError"));
+    } finally {
+      setAvatarUploading(false);
     }
   }
 
@@ -348,14 +477,42 @@ export default function ProfilePage() {
       <section className="lumiverse-gradient overflow-hidden rounded-[2rem] p-5 text-white shadow-[0_28px_80px_rgba(23,70,255,0.22)] sm:p-7">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-            <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-[2rem] bg-white/16 ring-4 ring-white/20">
-              {profile.avatar ? (
-                <img src={profile.avatar} alt={profile.fullname} className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-3xl font-black">
-                  {initials(profile.fullname)}
-                </div>
-              )}
+            <div className="relative h-28 w-28 shrink-0">
+              <button
+                type="button"
+                onClick={() => profile.avatar && setAvatarPreviewOpen(true)}
+                disabled={!profile.avatar}
+                aria-label={t("profile.viewAvatar")}
+                title={profile.avatar ? t("profile.viewAvatar") : undefined}
+                className="h-full w-full overflow-hidden rounded-[2rem] bg-white/16 ring-4 ring-white/20 transition disabled:cursor-default enabled:hover:brightness-90"
+              >
+                {profile.avatar ? (
+                  <img src={profile.avatar} alt={profile.fullname} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-3xl font-black">
+                    {initials(profile.fullname)}
+                  </div>
+                )}
+              </button>
+
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handleAvatarSelected}
+              />
+
+              <button
+                type="button"
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={avatarUploading}
+                aria-label={t("profile.changeAvatar")}
+                title={t("profile.changeAvatar")}
+                className="absolute -bottom-1.5 -right-1.5 flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--lumiverse-primary-strong)] shadow-lg ring-4 ring-[var(--lumiverse-primary,#1746ff)]/20 transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {avatarUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+              </button>
             </div>
             <div className="min-w-0">
               <LumiverseBadge className="border-white/20 bg-white/12 text-white">
@@ -530,30 +687,45 @@ export default function ProfilePage() {
         </aside>
       </div>
 
-      <LumiverseDialog open={editing} onClose={() => setEditing(false)} titleId="profile-edit-title" className="max-h-[90dvh] overflow-y-auto">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 id="profile-edit-title" className="text-2xl font-black text-[var(--lumiverse-ink)]">
-              {t("profile.edit")}
-            </h2>
-            <p className="mt-1 text-sm font-semibold text-[var(--lumiverse-muted)]">
-              {t("profile.editDescription")}
-            </p>
+      <LumiverseDialog
+        open={editing}
+        onClose={() => setEditing(false)}
+        titleId="profile-edit-title"
+        className="flex max-h-[90dvh] w-full max-w-2xl flex-col overflow-hidden"
+      >
+        <div className="-mx-7 -mt-7 flex items-start justify-between gap-4 border-b border-[var(--lumiverse-border)] px-7 pb-5 pt-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[var(--lumiverse-primary)] dark:bg-white/8">
+              <Edit3 className="h-4.5 w-4.5" />
+            </div>
+            <div>
+              <h2 id="profile-edit-title" className="text-lg font-black leading-tight text-[var(--lumiverse-ink)] sm:text-xl">
+                {t("profile.edit")}
+              </h2>
+              <p className="mt-0.5 text-xs font-semibold text-[var(--lumiverse-muted)]">
+                {t("profile.editDescription")}
+              </p>
+            </div>
           </div>
           <LumiverseDialogCloseButton onClose={() => setEditing(false)} label={t("common.close")} />
         </div>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <ProfileInput label={t("profile.fullname")} value={form.fullname ?? ""} onChange={(value) => updateForm("fullname", value)} />
-          <ProfileInput label={t("profile.username")} value={form.username ?? ""} onChange={(value) => updateForm("username", value)} />
-          <ProfileInput label={t("profile.phone")} value={form.phone ?? ""} onChange={(value) => updateForm("phone", value)} />
-          <ProfileInput label={t("profile.englishLevel")} value={form.englishLevel ?? ""} onChange={(value) => updateForm("englishLevel", value)} />
-          <ProfileInput className="sm:col-span-2" label={t("profile.learningGoal")} value={form.learningGoal ?? ""} onChange={(value) => updateForm("learningGoal", value)} />
-          <ProfileTextarea className="sm:col-span-2" label={t("profile.bio")} value={form.bio ?? ""} onChange={(value) => updateForm("bio", value)} />
-          <ProfileTextarea className="sm:col-span-2" label={t("profile.goal")} value={form.goal ?? ""} onChange={(value) => updateForm("goal", value)} />
+        <div className="-mx-7 min-h-0 flex-1 overflow-y-auto px-7 py-5">
+          <FieldGroup icon={User} title={t("profile.groupBasic")}>
+            <ProfileInput icon={User} label={t("profile.fullname")} value={form.fullname ?? ""} onChange={(value) => updateForm("fullname", value)} error={fieldErrors.fullname} maxLength={50} />
+            <ProfileInput icon={AtSign} label={t("profile.username")} value={form.username ?? ""} onChange={(value) => updateForm("username", value)} error={fieldErrors.username} maxLength={30} placeholder="vd. minh_anh99" />
+            <ProfileInput icon={Phone} label={t("profile.phone")} value={form.phone ?? ""} onChange={(value) => updateForm("phone", value)} error={fieldErrors.phone} placeholder="vd. 0912345678" />
+            <ProfileInput icon={Trophy} label={t("profile.englishLevel")} value={form.englishLevel ?? ""} onChange={(value) => updateForm("englishLevel", value)} error={fieldErrors.englishLevel} />
+            <ProfileInput className="sm:col-span-2" icon={Target} label={t("profile.learningGoal")} value={form.learningGoal ?? ""} onChange={(value) => updateForm("learningGoal", value)} error={fieldErrors.learningGoal} />
+          </FieldGroup>
+
+          <FieldGroup icon={Sparkles} title={t("profile.groupAbout")} className="mt-5 border-t border-[var(--lumiverse-border)] pt-5">
+            <ProfileTextarea label={t("profile.bio")} value={form.bio ?? ""} onChange={(value) => updateForm("bio", value)} error={fieldErrors.bio} maxLength={160} />
+            <ProfileTextarea label={t("profile.goal")} value={form.goal ?? ""} onChange={(value) => updateForm("goal", value)} error={fieldErrors.goal} maxLength={120} />
+          </FieldGroup>
         </div>
 
-        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <div className="-mx-7 -mb-7 flex flex-col-reverse gap-3 border-t border-[var(--lumiverse-border)] px-7 pb-6 pt-4 sm:flex-row sm:justify-end">
           <LumiverseButton type="button" tone="soft" onClick={() => setEditing(false)}>
             <X className="h-4 w-4" />
             {t("common.cancel")}
@@ -564,6 +736,31 @@ export default function ProfilePage() {
           </LumiverseButton>
         </div>
       </LumiverseDialog>
+
+      {avatarPreviewOpen && profile.avatar ? (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setAvatarPreviewOpen(false);
+          }}
+        >
+          <div className="relative max-h-[85dvh] max-w-[min(90vw,32rem)]">
+            <img
+              src={profile.avatar}
+              alt={profile.fullname}
+              className="max-h-[85dvh] w-full rounded-[1.5rem] object-contain shadow-2xl"
+            />
+            <button
+              type="button"
+              onClick={() => setAvatarPreviewOpen(false)}
+              aria-label={t("common.close")}
+              className="absolute -top-3 -right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--lumiverse-ink)] shadow-lg transition hover:scale-105"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <LumiverseDialog open={companionOpen} onClose={() => setCompanionOpen(false)} titleId="profile-companion-title">
         <div className="flex items-start justify-between gap-4">
@@ -595,6 +792,28 @@ export default function ProfilePage() {
   );
 }
 
+function FieldGroup({
+  icon: Icon,
+  title,
+  className,
+  children,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={className}>
+      <div className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-[var(--lumiverse-primary)]">
+        <Icon className="h-3.5 w-3.5" />
+        {title}
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">{children}</div>
+    </div>
+  );
+}
+
 function MiniMetric({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-2xl border border-[var(--lumiverse-border)] bg-white/54 p-4 dark:bg-white/6">
@@ -609,20 +828,37 @@ function ProfileInput({
   value,
   onChange,
   className,
+  icon: Icon,
+  error,
+  maxLength,
+  placeholder,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  error?: string;
+  maxLength?: number;
+  placeholder?: string;
 }) {
   return (
     <label className={className}>
-      <span className="text-sm font-black text-[var(--lumiverse-muted)]">{label}</span>
-      <input
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="lumiverse-input mt-2 min-h-12 w-full px-4 font-bold outline-none"
-      />
+      <span className="text-xs font-black text-[var(--lumiverse-muted)]">{label}</span>
+      <div className="relative mt-1.5">
+        {Icon ? (
+          <Icon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--lumiverse-muted)]" />
+        ) : null}
+        <input
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          maxLength={maxLength}
+          placeholder={placeholder}
+          aria-invalid={!!error}
+          className={`lumiverse-input min-h-11 w-full font-bold outline-none ${Icon ? "pl-10 pr-4" : "px-4"} ${error ? "border-rose-400 focus:border-rose-400" : ""}`}
+        />
+      </div>
+      {error ? <span className="mt-1.5 block text-xs font-bold text-rose-500">{error}</span> : null}
     </label>
   );
 }
@@ -632,21 +868,35 @@ function ProfileTextarea({
   value,
   onChange,
   className,
+  error,
+  maxLength,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  error?: string;
+  maxLength?: number;
 }) {
   return (
     <label className={className}>
-      <span className="text-sm font-black text-[var(--lumiverse-muted)]">{label}</span>
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-xs font-black text-[var(--lumiverse-muted)]">{label}</span>
+        {maxLength ? (
+          <span className="text-[10px] font-bold text-[var(--lumiverse-muted)]">
+            {value.length}/{maxLength}
+          </span>
+        ) : null}
+      </div>
       <textarea
         value={value}
-        rows={3}
+        rows={2}
         onChange={(event) => onChange(event.target.value)}
-        className="lumiverse-input mt-2 w-full resize-none px-4 py-3 font-bold outline-none"
+        maxLength={maxLength}
+        aria-invalid={!!error}
+        className={`lumiverse-input mt-1.5 w-full resize-none px-4 py-3 font-bold outline-none ${error ? "border-rose-400 focus:border-rose-400" : ""}`}
       />
+      {error ? <span className="mt-1.5 block text-xs font-bold text-rose-500">{error}</span> : null}
     </label>
   );
 }

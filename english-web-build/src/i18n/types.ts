@@ -284,8 +284,23 @@ export type Dictionary = {
     retry: string;
     saveSuccess: string;
     saveError: string;
+    changeAvatar: string;
+    viewAvatar: string;
+    avatarHint: string;
+    avatarUploading: string;
+    avatarUpdated: string;
+    avatarUploadError: string;
+    groupBasic: string;
+    groupAbout: string;
     validation: {
       fullname: string;
+      fullnameMax: string;
+      usernameLength: string;
+      usernameFormat: string;
+      phone: string;
+      bioMax: string;
+      goalMax: string;
+      checkFields: string;
     };
     companion: {
       title: string;

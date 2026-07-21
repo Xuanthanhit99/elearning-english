@@ -10,6 +10,7 @@ import ResponsiveContainer from "../UI/ResponsiveContainer";
 import AppHeader from "./AppHeader";
 import AppSidebar from "./AppSidebar";
 import MobileNavigation from "./MobileNavigation";
+import MiuChatWidget from "@/src/Components/MiuChatModal/MiuChatWidget";
 
 function AppShellLoading() {
   return (
@@ -184,6 +185,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       </main>
 
       {focusMode ? null : <MobileNavigation onOpenMenu={() => setMobileOpen(true)} />}
+      {focusMode ? null : <MiuChatWidget />}
 
       <style jsx global>{`
         .app-shell-content > main,

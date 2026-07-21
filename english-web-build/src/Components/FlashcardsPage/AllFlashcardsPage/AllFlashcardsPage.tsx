@@ -22,6 +22,7 @@ import {
   Volume2,
   X,
 } from "lucide-react";
+import { speakWord } from "@/src/lib/tts-api";
 
 const cards = [
   {
@@ -373,7 +374,11 @@ function Flashcard({ item }: any) {
   return (
     <div className="rounded-2xl border border-purple-100 bg-white p-5 shadow-sm">
       <div className="mb-8 flex justify-between">
-        <button className="rounded-lg bg-purple-50 p-2 text-purple-600">
+        <button
+          type="button"
+          onClick={() => speakWord(item.word)}
+          className="rounded-lg bg-purple-50 p-2 text-purple-600 transition hover:bg-purple-100"
+        >
           <Volume2 size={18} />
         </button>
         <Heart
