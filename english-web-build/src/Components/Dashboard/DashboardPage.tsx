@@ -4,9 +4,14 @@ import {
   Award,
   Bell,
   BookOpen,
+  CalendarDays,
   CheckCircle2,
   ChevronRight,
+  Clock3,
+  FileText,
   Flame,
+  Headphones,
+  Mic2,
   PawPrint,
   Play,
   RefreshCcw,
@@ -18,6 +23,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { DashboardData, DashboardMission, getDashboard } from "@/src/lib/dashboard-api";
+import { getWeeklyLeaderboard } from "@/src/lib/leaderboard-api";
+import type { LeaderboardResponse } from "@/src/types/leaderboard";
 import { useTranslation } from "@/src/hooks/useTranslation";
 import {
   LumiverseBadge,
@@ -37,6 +44,75 @@ const skillRoutes: Record<string, string> = {
   READING: "/reading",
   WRITING: "/writing",
 };
+
+const skillModules = [
+  {
+    key: "VOCABULARY",
+    fallbackKey: "vocabulary",
+    label: "Vocabulary",
+    description: "Review words, SRS and topic vocabulary.",
+    href: "/vocabulary",
+    icon: BookOpen,
+    accent: "from-emerald-500/16 via-teal-400/10 to-cyan-400/10",
+    iconClass: "bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200",
+  },
+  {
+    key: "GRAMMAR",
+    fallbackKey: "grammar",
+    label: "Grammar",
+    description: "Practice rules through focused lessons.",
+    href: "/grammar",
+    icon: CheckCircle2,
+    accent: "from-blue-500/16 via-sky-400/10 to-cyan-400/10",
+    iconClass: "bg-blue-100 text-blue-700 dark:bg-blue-400/15 dark:text-blue-200",
+  },
+  {
+    key: "READING",
+    fallbackKey: "reading",
+    label: "Reading",
+    description: "Read and strengthen comprehension.",
+    href: "/reading",
+    icon: FileText,
+    accent: "from-amber-500/16 via-orange-400/10 to-yellow-400/10",
+    iconClass: "bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-200",
+  },
+  {
+    key: "LISTENING",
+    fallbackKey: "listening",
+    label: "Listening",
+    description: "Train active listening and dictation.",
+    href: "/listening",
+    icon: Headphones,
+    accent: "from-violet-500/16 via-indigo-400/10 to-blue-400/10",
+    iconClass: "bg-violet-100 text-violet-700 dark:bg-violet-400/15 dark:text-violet-200",
+  },
+  {
+    key: "SPEAKING",
+    fallbackKey: "speaking",
+    label: "Speaking",
+    description: "Practice pronunciation and fluency.",
+    href: "/speaking",
+    icon: Mic2,
+    accent: "from-fuchsia-500/16 via-pink-400/10 to-rose-400/10",
+    iconClass: "bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-400/15 dark:text-fuchsia-200",
+  },
+  {
+    key: "WRITING",
+    fallbackKey: "writing",
+    label: "Writing",
+    description: "Improve writing with structured feedback.",
+    href: "/writing",
+    icon: FileText,
+    accent: "from-rose-500/16 via-orange-400/10 to-amber-400/10",
+    iconClass: "bg-rose-100 text-rose-700 dark:bg-rose-400/15 dark:text-rose-200",
+  },
+] as const;
+
+type LeaderboardState =
+  | { status: "loading"; data: null; error: null }
+  | { status: "ready"; data: LeaderboardResponse; error: null }
+  | { status: "empty"; data: null; error: null }
+  | { status: "error"; data: null; error: string };
 
 const dateLocales: Record<string, string> = {
   vi: "vi-VN",
@@ -96,14 +172,44 @@ export default function DashboardPage() {
   const { dict, locale } = useTranslation();
   const d = dict.dashboard;
   const [data, setData] = useState<DashboardData | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardState>({
+    status: "loading",
+    data: null,
+    error: null,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   async function loadDashboard() {
     setLoading(true);
     setError(null);
+    setLeaderboard({ status: "loading", data: null, error: null });
     try {
-      setData(await getDashboard());
+      const [dashboardResult, leaderboardResult] = await Promise.allSettled([
+        getDashboard(),
+        getWeeklyLeaderboard(),
+      ]);
+
+      if (dashboardResult.status === "fulfilled") {
+        setData(dashboardResult.value);
+      } else {
+        setData(null);
+        setError(d.loadError);
+      }
+
+      if (leaderboardResult.status === "fulfilled") {
+        setLeaderboard(
+          leaderboardResult.value.entries.length > 0 || leaderboardResult.value.currentUser
+            ? { status: "ready", data: leaderboardResult.value, error: null }
+            : { status: "empty", data: null, error: null },
+        );
+      } else {
+        setLeaderboard({
+          status: "error",
+          data: null,
+          error: "Leaderboard is unavailable right now.",
+        });
+      }
     } catch {
       setError(d.loadError);
     } finally {
@@ -114,19 +220,36 @@ export default function DashboardPage() {
   useEffect(() => {
     let mounted = true;
 
-    getDashboard()
-      .then((dashboard) => {
+    Promise.allSettled([getDashboard(), getWeeklyLeaderboard()]).then(
+      ([dashboardResult, leaderboardResult]) => {
         if (!mounted) return;
-        setData(dashboard);
-        setError(null);
-      })
-      .catch(() => {
-        if (!mounted) return;
-        setError(d.loadError);
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
+
+        if (dashboardResult.status === "fulfilled") {
+          setData(dashboardResult.value);
+          setError(null);
+        } else {
+          setData(null);
+          setError(d.loadError);
+        }
+
+        if (leaderboardResult.status === "fulfilled") {
+          setLeaderboard(
+            leaderboardResult.value.entries.length > 0 ||
+              leaderboardResult.value.currentUser
+              ? { status: "ready", data: leaderboardResult.value, error: null }
+              : { status: "empty", data: null, error: null },
+          );
+        } else {
+          setLeaderboard({
+            status: "error",
+            data: null,
+            error: "Leaderboard is unavailable right now.",
+          });
+        }
+
+        setLoading(false);
+      },
+    );
 
     return () => {
       mounted = false;
@@ -204,7 +327,9 @@ export default function DashboardPage() {
 
         <aside className="space-y-6">
           <MissionsPanel missions={data.todayMissions.items} summary={dailySummary} />
-          <PetPanel />
+          <TodayGoalPanel data={data} dailyPercent={dailyPercent} />
+          <LeaderboardPanel state={leaderboard} />
+          <PetPanel data={data} />
           <AchievementsPanel data={data} />
           <NotificationsPanel data={data} />
         </aside>
@@ -320,41 +445,62 @@ function QuickActions({ actions }: { actions: DashboardData["quickActions"] }) {
 }
 
 function SkillsPanel({ data }: { data: DashboardData }) {
+  const progressByKey = new Map(
+    data.skillProgress.map((skill) => [skill.key.toLowerCase(), skill]),
+  );
+
   return (
     <LumiverseCard className="p-5">
       <LumiverseSectionHeader
-        title="Skill progress"
-        description="Progress comes from placement and real learning results."
+        title="Learning modules"
+        description="Six core skills with progress from real learning results when available."
       />
-      {data.skillProgress.length > 0 ? (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {data.skillProgress.map((skill) => {
-            const href = skill.href || skillRoutes[skill.key] || "/learn";
-            return (
-              <Link
-                key={skill.key}
-                href={href}
-                className="rounded-3xl border border-[var(--lumiverse-border)] bg-white/54 p-4 transition hover:-translate-y-0.5 hover:border-blue-200 dark:bg-white/6"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate font-black text-[var(--lumiverse-ink)]">{skill.label}</p>
-                    <p className="mt-1 truncate text-xs font-bold text-[var(--lumiverse-muted)]">
-                      {skill.level ?? skill.status ?? "Not determined"}
-                    </p>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {skillModules.map((module) => {
+          const skill =
+            progressByKey.get(module.key.toLowerCase()) ??
+            progressByKey.get(module.fallbackKey);
+          const href = skill?.href || skillRoutes[module.key] || module.href;
+          const Icon = module.icon;
+
+          return (
+            <Link
+              key={module.key}
+              href={href}
+              className={`group rounded-3xl border border-[var(--lumiverse-border)] bg-gradient-to-br ${module.accent} p-4 transition hover:-translate-y-0.5 hover:border-blue-200 dark:bg-white/6`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${module.iconClass}`}>
+                  <Icon aria-hidden className="h-5 w-5" />
+                </span>
+                <ChevronRight
+                  aria-hidden
+                  className="h-5 w-5 shrink-0 text-[var(--lumiverse-muted)] transition group-hover:text-[var(--lumiverse-primary)]"
+                />
+              </div>
+              <p className="mt-4 truncate text-lg font-black text-[var(--lumiverse-ink)]">
+                {skill?.label ?? module.label}
+              </p>
+              <p className="mt-1 line-clamp-2 min-h-10 text-sm font-bold leading-5 text-[var(--lumiverse-muted)]">
+                {skill?.level ?? skill?.status ?? module.description}
+              </p>
+              {skill ? (
+                <>
+                  <div className="mt-4 flex items-center justify-between text-xs font-black text-[var(--lumiverse-muted)]">
+                    <span>Progress</span>
+                    <span>{clampPercent(skill.percent)}%</span>
                   </div>
-                  <span className="shrink-0 text-xl font-black text-[var(--lumiverse-primary)]">
-                    {skill.percent}%
-                  </span>
-                </div>
-                <LumiverseProgress value={skill.percent} className="mt-4 h-2" />
-              </Link>
-            );
-          })}
-        </div>
-      ) : (
-        <LumiverseState title="No skill progress yet." description="Complete placement or a lesson to begin tracking skills." tone="empty" />
-      )}
+                  <LumiverseProgress value={skill.percent} className="mt-2 h-2" />
+                </>
+              ) : (
+                <p className="mt-4 rounded-2xl border border-dashed border-[var(--lumiverse-border)] px-3 py-2 text-xs font-black text-[var(--lumiverse-muted)]">
+                  No progress yet
+                </p>
+              )}
+            </Link>
+          );
+        })}
+      </div>
     </LumiverseCard>
   );
 }
@@ -529,12 +675,188 @@ function MissionsPanel({
   );
 }
 
-function PetPanel() {
+function TodayGoalPanel({
+  data,
+  dailyPercent,
+}: {
+  data: DashboardData;
+  dailyPercent: number;
+}) {
+  const targetMinutes = data.today?.targetStudyMinutes ?? 0;
+  const studyMinutes = data.today?.studyMinutes ?? 0;
+  const activeDays = data.week?.activeDays ?? 0;
+  const targetDays = data.week?.targetDays ?? 0;
+
   return (
     <LumiverseCard className="p-5">
       <LumiverseSectionHeader
-        title="Learning companion"
+        title="Today's goal"
+        description={
+          targetMinutes > 0
+            ? `${studyMinutes}/${targetMinutes} minutes studied`
+            : "Daily goal data appears after settings and study activity are available."
+        }
+      />
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+        <div className="rounded-3xl bg-blue-50/70 p-4 dark:bg-white/8">
+          <div className="flex items-center justify-between gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[var(--lumiverse-primary)] shadow-sm dark:bg-white/10">
+              <Clock3 aria-hidden className="h-5 w-5" />
+            </span>
+            <span className="text-2xl font-black text-[var(--lumiverse-ink)]">
+              {clampPercent(dailyPercent)}%
+            </span>
+          </div>
+          <LumiverseProgress value={dailyPercent} className="mt-4" />
+        </div>
+        <div className="rounded-3xl border border-[var(--lumiverse-border)] bg-white/54 p-4 dark:bg-white/6">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200">
+              <CalendarDays aria-hidden className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <p className="font-black text-[var(--lumiverse-ink)]">
+                {targetDays > 0 ? `${activeDays}/${targetDays} active days` : `${activeDays} active days`}
+              </p>
+              <p className="text-xs font-bold text-[var(--lumiverse-muted)]">
+                Weekly rhythm from real activity
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </LumiverseCard>
+  );
+}
+
+function LeaderboardPanel({ state }: { state: LeaderboardState }) {
+  const entries = state.status === "ready" ? state.data.entries.slice(0, 5) : [];
+  const currentUser = state.status === "ready" ? state.data.currentUser : null;
+
+  return (
+    <LumiverseCard className="p-5">
+      <LumiverseSectionHeader
+        title="Weekly leaderboard"
+        description="Top learners from the current leaderboard period."
+        action={
+          <Link href="/leaderboard" className="text-sm font-black text-[var(--lumiverse-primary)]">
+            View all
+          </Link>
+        }
+      />
+      {state.status === "loading" ? (
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <LumiverseSkeleton key={index} className="h-14 rounded-2xl" />
+          ))}
+        </div>
+      ) : state.status === "error" ? (
+        <LumiverseState title="Leaderboard unavailable" description={state.error} tone="error" />
+      ) : state.status === "empty" ? (
+        <LumiverseState title="No leaderboard entries yet." tone="empty" />
+      ) : (
+        <div className="space-y-3">
+          {entries.map((entry) => (
+            <div
+              key={`${entry.rank}-${entry.user.id}`}
+              className={[
+                "flex items-center gap-3 rounded-2xl border p-3",
+                entry.isCurrentUser
+                  ? "border-blue-200 bg-blue-50/70 dark:border-blue-400/30 dark:bg-blue-400/10"
+                  : "border-[var(--lumiverse-border)] bg-white/54 dark:bg-white/6",
+              ].join(" ")}
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-sm font-black text-amber-700 dark:bg-amber-400/15 dark:text-amber-200">
+                #{entry.rank}
+              </span>
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-50 text-xs font-black text-[var(--lumiverse-primary)] dark:bg-white/10">
+                {entry.user.avatarUrl || entry.user.avatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={entry.user.avatarUrl ?? entry.user.avatar ?? ""}
+                    alt={entry.user.displayName}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  entry.user.displayName.slice(0, 2).toUpperCase()
+                )}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-black text-[var(--lumiverse-ink)]">
+                  {entry.user.displayName}
+                </span>
+                <span className="block text-xs font-bold text-[var(--lumiverse-muted)]">
+                  {entry.periodXp.toLocaleString()} XP
+                </span>
+              </span>
+            </div>
+          ))}
+          {currentUser && !entries.some((entry) => entry.isCurrentUser) ? (
+            <div className="rounded-2xl border border-blue-200 bg-blue-50/70 p-3 text-sm font-black text-[var(--lumiverse-primary)] dark:border-blue-400/30 dark:bg-blue-400/10">
+              Your rank: #{currentUser.rank} · {currentUser.periodXp.toLocaleString()} XP
+            </div>
+          ) : null}
+        </div>
+      )}
+    </LumiverseCard>
+  );
+}
+
+function PetPanel({ data }: { data: DashboardData }) {
+  const pet = data.pet;
+
+  if (pet?.isChosen) {
+    return (
+      <LumiverseCard className="p-5">
+        <LumiverseSectionHeader
+          title="Lumiverse companion"
+          description="Real companion data from your account."
+          action={
+            <Link href="/profile" className="text-sm font-black text-[var(--lumiverse-primary)]">
+              Profile
+            </Link>
+          }
+        />
+        <div className="rounded-3xl border border-[var(--lumiverse-border)] bg-white/54 p-4 dark:bg-white/6">
+          <div className="flex items-center gap-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-50 text-[var(--lumiverse-primary)] dark:bg-white/10">
+              <PawPrint size={30} />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-lg font-black text-[var(--lumiverse-ink)]">
+                {pet.petName}
+              </p>
+              <p className="mt-1 text-sm font-bold text-[var(--lumiverse-muted)]">
+                Level {pet.level} · {pet.xp.toLocaleString()} XP
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs font-black text-[var(--lumiverse-muted)]">
+            <span className="rounded-2xl bg-emerald-50 px-2 py-2 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200">
+              Energy {pet.energy}
+            </span>
+            <span className="rounded-2xl bg-pink-50 px-2 py-2 text-pink-700 dark:bg-pink-400/15 dark:text-pink-200">
+              Happy {pet.happiness}
+            </span>
+            <span className="rounded-2xl bg-amber-50 px-2 py-2 text-amber-700 dark:bg-amber-400/15 dark:text-amber-200">
+              HP {pet.hp}
+            </span>
+          </div>
+        </div>
+      </LumiverseCard>
+    );
+  }
+
+  return (
+    <LumiverseCard className="p-5">
+      <LumiverseSectionHeader
+        title="Lumiverse companion"
         description="This companion experience is planned, but it is not active yet."
+        action={
+          <Link href="/profile" className="text-sm font-black text-[var(--lumiverse-primary)]">
+            Profile
+          </Link>
+        }
       />
       <div className="rounded-3xl border border-dashed border-[var(--lumiverse-border)] bg-blue-50/60 p-4 dark:bg-white/6">
         <div className="flex items-center gap-4">

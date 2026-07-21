@@ -45,7 +45,12 @@ function shouldAttemptRefresh(error: AxiosError) {
 
 function redirectToLogin() {
   if (typeof window === "undefined") return;
-  if (window.location.pathname.startsWith("/auth")) return;
+  if (
+    window.location.pathname.startsWith("/auth") ||
+    window.location.pathname.startsWith("/login")
+  ) {
+    return;
+  }
 
   window.location.href = buildLoginUrl(
     `${window.location.pathname}${window.location.search}${window.location.hash}`,

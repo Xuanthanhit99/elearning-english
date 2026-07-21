@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/src/store/authStore";
 import { useEffect, useRef, useState } from "react";
-import LearningPetPanel from "@/src/Components/Pets/LearningPetPanel";
 import AppLogo from "@/src/Components/UI/AppLogo";
 import { api } from "@/src/lib/axios";
 
@@ -28,10 +27,6 @@ export default function Header() {
     pathname.startsWith("/pronunciation") ||
     pathname.startsWith("/placement") ||
     pathname.startsWith("/placement-test");
-
-  useEffect(() => {
-    setOpenTools(false);
-  }, [pathname]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -242,14 +237,14 @@ export default function Header() {
           ) : (
             <>
               <Link
-                href="/auth"
+                href="/login"
                 className="inline-flex items-center justify-center rounded-full px-5 py-3 font-extrabold text-[#5b6b85] hover:bg-[#fff4e8] hover:text-[#1f2a44]"
               >
                 Đăng nhập
               </Link>
 
               <Link
-                href="/auth"
+                href="/login"
                 className="inline-flex items-center justify-center rounded-full bg-[#ff6b00] px-7 py-3 font-extrabold text-white shadow-lg shadow-orange-200"
               >
                 Bắt đầu học ngay

@@ -13,7 +13,7 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  { icon: "home", label: "Trang chủ", href: "/", match: (path) => path === "/" },
+  { icon: "home", label: "Trang chủ", href: "/dashboard", match: (path) => path === "/dashboard" },
   { icon: "book", label: "Khóa học", href: "/courses" },
   { icon: "book", label: "Từ vựng", href: "/vocabulary" },
   { icon: "graduation", label: "Ngữ pháp", href: "/grammar" },

@@ -179,7 +179,7 @@ export default function AppHeader({
       disconnectNotificationSocket();
       clearNotifications();
       setProfileOpen(false);
-      router.push("/auth");
+      router.push("/");
     }
   }
 

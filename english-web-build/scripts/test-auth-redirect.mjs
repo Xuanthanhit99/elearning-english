@@ -5,25 +5,33 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import ts from "typescript";
 
-const sourcePath = new URL("../src/lib/auth-redirect.ts", import.meta.url);
-const source = readFileSync(sourcePath, "utf8");
-const compiled = ts.transpileModule(source, {
-  compilerOptions: {
-    module: ts.ModuleKind.CommonJS,
-    target: ts.ScriptTarget.ES2022,
-  },
-}).outputText;
-
 const tempDir = mkdtempSync(join(tmpdir(), "lumiverse-auth-redirect-"));
-const modulePath = join(tempDir, "auth-redirect.cjs");
-writeFileSync(modulePath, compiled);
+
+function compileFixture(sourceFile, outputFile) {
+  const sourcePath = new URL(sourceFile, import.meta.url);
+  const source = readFileSync(sourcePath, "utf8");
+  const compiled = ts.transpileModule(source, {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2022,
+    },
+  }).outputText;
+
+  writeFileSync(join(tempDir, outputFile), compiled);
+}
+
+compileFixture("../src/lib/auth-redirect.ts", "auth-redirect.js");
+compileFixture("../src/lib/auth-route-policy.ts", "auth-route-policy.js");
 
 try {
   const {
     buildLoginUrl,
     isSafeRedirectPath,
     normalizeRedirectPath,
-  } = await import(pathToFileURL(modulePath).href);
+  } = await import(pathToFileURL(join(tempDir, "auth-redirect.js")).href);
+  const { getAuthRouteDecision } = await import(
+    pathToFileURL(join(tempDir, "auth-route-policy.js")).href
+  );
 
   const valid = [
     "/dashboard",
@@ -58,9 +66,69 @@ try {
 
   assert.equal(
     buildLoginUrl("/dashboard?tab=progress#week"),
-    "/auth?redirect=%2Fdashboard%3Ftab%3Dprogress%23week",
+    "/login?redirect=%2Fdashboard%3Ftab%3Dprogress%23week",
   );
-  assert.equal(buildLoginUrl("https://evil.example"), "/auth");
+  assert.equal(buildLoginUrl("https://evil.example"), "/login");
+
+  assert.deepEqual(
+    getAuthRouteDecision({
+      pathname: "/",
+      search: "",
+      isLoggedIn: false,
+    }),
+    { type: "next" },
+    "guest opening / should see the public homepage",
+  );
+
+  assert.deepEqual(
+    getAuthRouteDecision({
+      pathname: "/",
+      search: "",
+      isLoggedIn: true,
+    }),
+    { type: "next" },
+    "authenticated opening / should still see the public homepage",
+  );
+
+  assert.deepEqual(
+    getAuthRouteDecision({
+      pathname: "/dashboard",
+      search: "",
+      isLoggedIn: false,
+    }),
+    { type: "redirect", href: "/login?redirect=%2Fdashboard" },
+    "guest opening /dashboard should go to login with safe redirect",
+  );
+
+  assert.deepEqual(
+    getAuthRouteDecision({
+      pathname: "/login",
+      search: "",
+      isLoggedIn: true,
+    }),
+    { type: "redirect", href: "/dashboard" },
+    "login without redirect should default to dashboard",
+  );
+
+  assert.deepEqual(
+    getAuthRouteDecision({
+      pathname: "/login",
+      search: "?redirect=/vocabulary",
+      isLoggedIn: true,
+    }),
+    { type: "redirect", href: "/vocabulary" },
+    "valid internal redirect should be preserved",
+  );
+
+  assert.deepEqual(
+    getAuthRouteDecision({
+      pathname: "/login",
+      search: "?redirect=https%3A%2F%2Fevil.example",
+      isLoggedIn: true,
+    }),
+    { type: "redirect", href: "/dashboard" },
+    "malicious redirect should fall back to dashboard",
+  );
 } finally {
   rmSync(tempDir, { force: true, recursive: true });
 }

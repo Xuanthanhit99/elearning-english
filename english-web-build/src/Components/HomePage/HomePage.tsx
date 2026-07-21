@@ -10,7 +10,6 @@ import {
   LumiverseSectionHeader,
 } from "@/src/Components/UI/Lumiverse";
 import { buildLoginUrl } from "@/src/lib/auth-redirect";
-import { useAuthStore } from "@/src/store/authStore";
 import {
   ArrowRight,
   BookOpen,
@@ -148,24 +147,23 @@ const stats = [
 ];
 
 export default function HomePage() {
-  const user = useAuthStore((state) => state.user) as UserSummary | null;
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <main className="min-h-screen overflow-x-clip bg-[var(--lumiverse-bg)] text-[var(--lumiverse-ink)]">
       <PublicHeader
-        user={user}
+        user={null}
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
       />
 
-      <Hero user={user} />
+      <Hero user={null} />
       <TrustStrip />
       <ProductPillars />
       <SkillsSection />
       <AiLearningSection />
       <CommunitySection />
-      <FinalCta user={user} />
+      <FinalCta user={null} />
       <Footer />
     </main>
   );
@@ -210,7 +208,7 @@ function PublicHeader({
             </Link>
           ) : (
             <>
-              <Link href="/auth" className="lumiverse-button-soft text-sm">
+              <Link href="/login" className="lumiverse-button-soft text-sm">
                 Sign in
               </Link>
               <Link
@@ -584,7 +582,7 @@ function Footer() {
           <Link href={buildLoginUrl("/placement")}>Placement</Link>
           <Link href={buildLoginUrl("/learning-path")}>Learning path</Link>
           <Link href={buildLoginUrl("/community")}>Community</Link>
-          <Link href="/auth">Sign in</Link>
+          <Link href="/login">Sign in</Link>
         </nav>
 
         <p className="text-sm font-semibold text-[var(--lumiverse-muted)]">

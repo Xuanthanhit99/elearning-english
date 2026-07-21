@@ -240,8 +240,7 @@ export default function StudySidebar({
     >
       <AppLogo />
       <nav className="mt-9 space-y-1">
-        <SidebarLeaf item={{ icon: "home", label: c.navHome, href: "/" }} />
-        <SidebarLeaf item={{ icon: "book", label: c.navDashboard, href: "/dashboard" }} />
+        <SidebarLeaf item={{ icon: "home", label: c.navHome, href: "/dashboard" }} />
 
         <SectionTitle>{c.sectionLearning}</SectionTitle>
         <div className="relative">

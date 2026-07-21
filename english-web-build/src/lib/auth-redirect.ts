@@ -1,5 +1,5 @@
 export const DEFAULT_AUTHENTICATED_PATH = "/dashboard";
-export const LOGIN_PATH = "/auth";
+export const LOGIN_PATH = "/login";
 
 const BLOCKED_PREFIXES = ["/auth", "/login", "/register"];
 

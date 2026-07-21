@@ -13,7 +13,6 @@ import {
   History,
   Home,
   Landmark,
-  LayoutDashboard,
   MessageCircle,
   Mic2,
   NotebookPen,
@@ -54,8 +53,7 @@ function buildGroups(t: (key: string) => string): SidebarGroup[] {
     {
       title: "Main",
       items: [
-        { label: t("sidebar.home"), href: "/", icon: Home },
-        { label: t("sidebar.dashboard"), href: "/dashboard", icon: LayoutDashboard },
+        { label: t("sidebar.home"), href: "/dashboard", icon: Home },
         { label: t("sidebar.todayLesson"), href: "/learn", icon: BookOpen },
         { label: t("sidebar.learningPath"), href: "/learning-path", icon: Compass },
       ],
