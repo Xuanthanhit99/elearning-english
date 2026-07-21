@@ -30,7 +30,10 @@ type ArenaQuestion = {
   skill: string;
   prompt: string;
   options?: string[];
-  answer: string;
+  // Phase A: backend giờ chỉ trả answer/explanation sau khi chính user đã
+  // tự trả lời câu này (hoặc trận đã kết thúc) — trước đó field này sẽ
+  // không có trong response, không phải lỗi.
+  answer?: string;
   explanation?: string;
   points: number;
 };
@@ -63,7 +66,7 @@ type Room = {
   isParticipant: boolean;
   participants: Participant[];
   events: RoomEvent[];
-  matches?: { id: string; winnerTeam?: "A" | "B" | null; result?: any; questions: ArenaQuestion[]; answers: ArenaAnswer[] }[];
+  matches?: { id: string; winnerTeam?: "A" | "B" | null; result?: any; expiresAt?: string | null; questions: ArenaQuestion[]; answers: ArenaAnswer[] }[];
   host?: { fullname?: string };
 };
 
@@ -344,7 +347,7 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
                       );
                     })}
                   </div>
-                  {currentAnswers.length > 0 && (
+                  {currentAnswers.length > 0 && currentQuestion.answer && (
                     <div className="mt-4 rounded-2xl bg-blue-50 p-4 text-sm font-bold leading-6 text-[var(--lumiverse-ink)]">
                       Có {currentAnswers.length} lượt trả lời câu này. Đáp án đúng: {currentQuestion.answer}.
                       {currentQuestion.explanation ? ` ${currentQuestion.explanation}` : ""}

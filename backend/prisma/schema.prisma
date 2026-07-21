@@ -959,6 +959,11 @@ model ArenaMatch {
   winnerTeam String?
   result     Json?
   startedAt  DateTime  @default(now())
+  // Server-side deadline for the whole match (Phase A hardening): computed at
+  // countdown-end time as countdownEndsAt + room.durationSec. Nullable so
+  // legacy matches created before this field existed are treated as having
+  // no deadline (never late), instead of failing/crashing.
+  expiresAt  DateTime?
   finishedAt DateTime?
 
   room      ArenaRoom        @relation(fields: [roomId], references: [id])
@@ -982,6 +987,10 @@ model ArenaRewardLog {
 
   match ArenaMatch @relation(fields: [matchId], references: [id])
   user  User       @relation(fields: [userId], references: [id])
+
+  // Phase A hardening: each user gets at most one reward record per match —
+  // defense-in-depth against double reward if finish is triggered twice.
+  @@unique([matchId, userId])
 }
 
 model ArenaQueue {
