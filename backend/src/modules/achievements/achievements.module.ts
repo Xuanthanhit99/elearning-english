@@ -6,6 +6,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
 import { ACHIEVEMENT_QUEUE } from './achievements.constants';
 import { AchievementsController } from './achievements.controller';
 import { AchievementsListener } from './achievements.listener';
+import { ArenaAchievementListener } from './arena-achievement.listener';
 import { AchievementsProcessor } from './achievements.processor';
 import { AchievementsService } from './achievements.service';
 
@@ -17,7 +18,12 @@ import { AchievementsService } from './achievements.service';
     BullModule.registerQueue({ name: ACHIEVEMENT_QUEUE }),
   ],
   controllers: [AchievementsController],
-  providers: [AchievementsService, AchievementsListener, AchievementsProcessor],
+  providers: [
+    AchievementsService,
+    AchievementsListener,
+    ArenaAchievementListener,
+    AchievementsProcessor,
+  ],
   exports: [AchievementsService],
 })
 export class AchievementsModule {}

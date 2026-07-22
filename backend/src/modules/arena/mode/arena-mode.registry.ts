@@ -23,6 +23,10 @@ export const ARENA_MODE_CAPABILITIES: Record<ArenaMode, ArenaModeCapability> = {
     supportsBattleMechanics: true,
     supportsPowerUps: true,
     supportsAiQuestions: true,
+    grantsXp: true,
+    grantsGold: true,
+    grantsArenaPoints: true,
+    participatesInSeason: true,
   },
   FRIEND_CHALLENGE: {
     mode: 'FRIEND_CHALLENGE',
@@ -34,6 +38,14 @@ export const ARENA_MODE_CAPABILITIES: Record<ArenaMode, ArenaModeCapability> = {
     supportsBattleMechanics: true,
     supportsPowerUps: true,
     supportsAiQuestions: true,
+    // Casual/private play still feels rewarding (XP/gold), but never
+    // touches ELO/season standing — matches the existing pre-F1 behavior
+    // where gold/food/trophy were already granted unconditionally
+    // regardless of affectsElo.
+    grantsXp: true,
+    grantsGold: true,
+    grantsArenaPoints: false,
+    participatesInSeason: false,
   },
   AI_PRACTICE: {
     mode: 'AI_PRACTICE',
@@ -45,6 +57,10 @@ export const ARENA_MODE_CAPABILITIES: Record<ArenaMode, ArenaModeCapability> = {
     supportsBattleMechanics: false,
     supportsPowerUps: false,
     supportsAiQuestions: true,
+    grantsXp: false,
+    grantsGold: false,
+    grantsArenaPoints: false,
+    participatesInSeason: false,
   },
   SURVIVAL: {
     mode: 'SURVIVAL',
@@ -56,6 +72,10 @@ export const ARENA_MODE_CAPABILITIES: Record<ArenaMode, ArenaModeCapability> = {
     supportsBattleMechanics: false,
     supportsPowerUps: false,
     supportsAiQuestions: true,
+    grantsXp: false,
+    grantsGold: false,
+    grantsArenaPoints: false,
+    participatesInSeason: false,
   },
   BLITZ: {
     mode: 'BLITZ',
@@ -67,6 +87,10 @@ export const ARENA_MODE_CAPABILITIES: Record<ArenaMode, ArenaModeCapability> = {
     supportsBattleMechanics: false,
     supportsPowerUps: false,
     supportsAiQuestions: true,
+    grantsXp: false,
+    grantsGold: false,
+    grantsArenaPoints: false,
+    participatesInSeason: false,
   },
   TOURNAMENT_LEGACY: {
     mode: 'TOURNAMENT_LEGACY',
@@ -83,6 +107,16 @@ export const ARENA_MODE_CAPABILITIES: Record<ArenaMode, ArenaModeCapability> = {
     supportsBattleMechanics: false,
     supportsPowerUps: false,
     supportsAiQuestions: true,
+    // Gold/Arena Points preserve the exact pre-F1 unconditional-gold /
+    // affectsElo-gated-arenaPoint behavior for any surviving legacy rows.
+    // XP is a brand-new reward type that never existed for this legacy
+    // path — deliberately not retrofitted onto it, and it's excluded from
+    // the new season system entirely (compatibility-only, not a
+    // product-supported path going forward).
+    grantsXp: false,
+    grantsGold: true,
+    grantsArenaPoints: true,
+    participatesInSeason: false,
   },
 };
 

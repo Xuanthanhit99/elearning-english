@@ -231,6 +231,8 @@ model User {
   arenaRoomEvents   ArenaRoomEvent[]
   arenaMatchPowerUps ArenaMatchPowerUp[]
   arenaQuestionHistory ArenaUserQuestionHistory[]
+  arenaRatingHistory ArenaRatingHistory[]
+  arenaProgressionRecords ArenaProgressionRecord[]
 
   communityPosts    CommunityPost[]    @relation("CommunityPostAuthor")
   communityComments CommunityComment[] @relation("CommunityCommentAuthor")
@@ -913,6 +915,46 @@ enum ArenaTeamFormat {
   TEAM_3V3
 }
 
+// Phase F1: threshold-based (from absolute mmr), deliberately a separate
+// enum from the Leaderboard module's LeagueTier (rank-position-based) even
+// though the value names mirror it for product familiarity — see
+// docs/arena-phase-f-design.md Part 7 for why these must not be shared.
+enum ArenaTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+  DIAMOND
+  MASTER
+  LEGEND
+}
+
+// Phase F1: mirrors LeaderboardSeasonStatus's shape intentionally (ops
+// familiarity) but is its own enum — ArenaSeason is a separate table, never
+// shares rows with LeaderboardSeason (see docs/arena-phase-f-design.md
+// Part 11 F0.5-4: XpService's own active-season lookup does not filter by
+// period type, so a shared table would risk corrupting the weekly XP
+// league for the whole app).
+enum ArenaSeasonStatus {
+  UPCOMING
+  ACTIVE
+  CALCULATING
+  COMPLETED
+  CANCELLED
+}
+
+// Phase F1: per-participant progression-application orchestration state —
+// distinct from ArenaRewardLog (an immutable audit record, written only on
+// success). This is the reconciliation job's checkpoint: PENDING/PROCESSING
+// let it detect a crash mid-application; FAILED lets it detect and retry a
+// genuine error without silently losing the gap.
+enum ArenaProgressionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 model ArenaProfile {
   id            String    @id @default(uuid())
   userId        String    @unique
@@ -927,6 +969,17 @@ model ArenaProfile {
   gold          Int       @default(0)
   trophy        Int       @default(0)
   lastMatchAt   DateTime?
+  // Phase F1: current tier is a denormalized read of resolveArenaTier(mmr),
+  // recomputed every time mmr changes (finalizeMatch's progression
+  // dispatcher) — never edited independently of mmr.
+  tier            ArenaTier @default(BRONZE)
+  seasonWinCount  Int       @default(0)
+  seasonLoseCount Int       @default(0)
+  // Phase F1: date-compare (not timestamp-compare) dedup for the daily/
+  // first-win XP bonuses — same "compare calendar day" idiom already used
+  // by pets.service.ts's streak tracking.
+  lastDailyBonusAt    DateTime?
+  lastFirstWinBonusAt DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -966,6 +1019,12 @@ model ArenaRoom {
   teamFormat            ArenaTeamFormat?
   preparationError      String?
   preparationStartedAt  DateTime?
+  // Phase F1 (forward-compat only, unused until a future phase — Phase
+  // F0.5 finding F0.5-8): tags "this room belongs to a larger construct"
+  // (tournament bracket, guild war, custom event) without requiring a
+  // schema change when that phase arrives.
+  contextType     String?
+  contextId       String?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
@@ -973,6 +1032,8 @@ model ArenaRoom {
   participants ArenaParticipant[]
   matches      ArenaMatch[]
   events       ArenaRoomEvent[]
+
+  @@index([contextType, contextId])
 }
 
 model ArenaParticipant {
@@ -1033,6 +1094,8 @@ model ArenaMatch {
   powerUpUsages   ArenaPowerUpUsage[]
   battleEvents    ArenaBattleEvent[]
   questionHistory ArenaUserQuestionHistory[]
+  ratingHistory       ArenaRatingHistory[]
+  progressionRecords  ArenaProgressionRecord[]
 }
 
 enum ArenaPowerUpType {
@@ -1279,6 +1342,92 @@ model ArenaUserQuestionHistory {
   match ArenaMatch @relation(fields: [matchId], references: [id])
 
   @@index([userId, seenAt])
+}
+
+/// Phase F1: rotates independently of LeaderboardSeason (see ArenaSeasonStatus
+/// docblock for why). Never soft-deleted — closed seasons remain queryable
+/// for historical standings.
+model ArenaSeason {
+  id        String            @id @default(uuid())
+  name      String
+  startsAt  DateTime
+  endsAt    DateTime
+  status    ArenaSeasonStatus @default(UPCOMING)
+  isActive  Boolean           @default(false)
+  metadata  Json?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  ratingHistory      ArenaRatingHistory[]
+  progressionRecords ArenaProgressionRecord[]
+
+  // Partial-unique-style guard against overlapping active seasons is
+  // enforced at the application layer (ArenaSeasonService, CAS via
+  // updateMany) rather than a DB constraint, since Postgres has no native
+  // "at most one row with isActive=true" constraint without a partial
+  // unique index tied to a fixed value — this index just makes the
+  // "find the active season" query cheap, not the uniqueness guarantee
+  // itself.
+  @@index([isActive, startsAt, endsAt])
+  @@index([status])
+}
+
+/// Phase F1: one row per participant per match — the audit trail for
+/// "what did rating do during this match," and the idempotency guard
+/// (`@@unique([matchId, userId])`) preventing a retried/duplicated
+/// progression dispatch from ever applying a second rating delta.
+model ArenaRatingHistory {
+  id           String    @id @default(uuid())
+  matchId      String
+  userId       String
+  seasonId     String?
+  previousMmr  Int
+  nextMmr      Int
+  mmrDelta     Int
+  previousTier ArenaTier
+  nextTier     ArenaTier
+  opponentId   String?
+  createdAt    DateTime  @default(now())
+
+  match  ArenaMatch   @relation(fields: [matchId], references: [id])
+  user   User         @relation(fields: [userId], references: [id])
+  season ArenaSeason? @relation(fields: [seasonId], references: [id])
+
+  @@unique([matchId, userId])
+  @@index([userId, createdAt])
+  @@index([seasonId])
+}
+
+/// Phase F1: per-participant progression-application orchestration state
+/// (see ArenaProgressionStatus docblock). This is NOT the reward audit
+/// trail — that remains ArenaRewardLog, untouched. This table exists only
+/// so the reconciliation job (docs/arena-progression-sequence.md §7) can
+/// find and safely resume incomplete work: a row's presence in a non-
+/// COMPLETED status is the signal, `leaseExpiresAt` prevents two
+/// reconciliation passes from double-claiming the same gap concurrently.
+model ArenaProgressionRecord {
+  id              String                 @id @default(uuid())
+  matchId         String
+  userId          String
+  seasonId        String?
+  status          ArenaProgressionStatus @default(PENDING)
+  attempts        Int                    @default(0)
+  leaseExpiresAt  DateTime?
+  lastError       String?
+  xpTransactionId String?
+  ratingHistoryId String?
+  rewardLogId     String?
+  completedAt     DateTime?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  match  ArenaMatch   @relation(fields: [matchId], references: [id])
+  user   User         @relation(fields: [userId], references: [id])
+  season ArenaSeason? @relation(fields: [seasonId], references: [id])
+
+  @@unique([matchId, userId])
+  @@index([status, leaseExpiresAt])
+  @@index([userId])
 }
 
 model CommunityLike {

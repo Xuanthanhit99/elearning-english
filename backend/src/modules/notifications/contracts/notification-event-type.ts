@@ -9,6 +9,13 @@ export enum NotificationEventType {
   COMMUNITY_ACTIVITY = 'COMMUNITY_ACTIVITY',
   AI_FEEDBACK_READY = 'AI_FEEDBACK_READY',
   SYSTEM_NOTIFICATION = 'SYSTEM_NOTIFICATION',
+  // Phase F1 — Arena progression. Deliberately its own enum value even
+  // though it shares its name with the Achievement `eventType` string of
+  // the same real-world event ("user got promoted") — the two live in
+  // different tables/fields and are never compared to each other; see
+  // docs/arena-progression-sequence.md §4 on why these naming layers must
+  // not be assumed interchangeable despite sometimes sharing a name.
+  ARENA_PROMOTED = 'ARENA_PROMOTED',
 }
 
 export enum NotificationEventPriority {

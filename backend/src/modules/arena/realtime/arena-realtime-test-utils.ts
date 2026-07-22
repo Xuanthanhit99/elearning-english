@@ -5,9 +5,10 @@
 // cross-instance/disconnect-grace behavior needs a real Postgres + Redis to
 // prove anything.
 import { randomUUID } from 'crypto';
+import { BullModule } from '@nestjs/bullmq';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { JwtService } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { Test } from '@nestjs/testing';
 import cookieParser from 'cookie-parser';
@@ -29,10 +30,38 @@ import { ArenaModule } from '../arena.module';
  * DB dependency (see its `validate()`), so importing just it + PassportModule
  * — not the full `AuthModule` (OAuth strategies, mail, etc.) — is sufficient
  * and avoids pulling in unrelated env-var requirements.
+ *
+ * Phase F1: `ArenaModule` now imports `LeaderboardModule`, whose own
+ * `LeaderboardCookieAuthService` needs a bare `JwtService` — in production
+ * this comes for free from `AuthModule` (`@Global()`, exports `JwtModule`),
+ * which this harness deliberately doesn't import (see above). Registering
+ * `JwtModule` here with `global: true` (a `@nestjs/jwt` option) reproduces
+ * just that one effect for every module in this test app, without pulling
+ * in the rest of `AuthModule`.
+ *
+ * `ArenaModule`/`LeaderboardModule`/`NotificationsModule`/`AchievementsModule`
+ * (the achievement listener side) all register BullMQ queues now, each of
+ * which needs a real `Worker` backed by a real Redis connection —
+ * `BullModule.forRoot({connection})` (same shape as `app.module.ts`'s
+ * `BullModule.forRootAsync`) provides that connection app-wide, same as
+ * production.
  */
 export async function buildArenaTestApp() {
   const moduleRef = await Test.createTestingModule({
-    imports: [EventEmitterModule.forRoot(), PrismaModule, PassportModule, ArenaModule],
+    imports: [
+      EventEmitterModule.forRoot(),
+      PrismaModule,
+      PassportModule,
+      JwtModule.register({ global: true, secret: getJwtAccessSecret() }),
+      BullModule.forRoot({
+        connection: {
+          host: process.env.REDIS_HOST ?? '127.0.0.1',
+          port: Number(process.env.REDIS_PORT ?? 6379),
+          password: process.env.REDIS_PASSWORD || undefined,
+        },
+      }),
+      ArenaModule,
+    ],
     providers: [JwtStrategy],
   }).compile();
 
@@ -273,6 +302,9 @@ export async function cleanupArenaTestData(
   await prisma.arenaParticipantBattleState.deleteMany({ where: { matchId: { in: matchIds } } });
   // Phase BC-Reconciliation child table — same FK-ordering requirement.
   await prisma.arenaUserQuestionHistory.deleteMany({ where: { matchId: { in: matchIds } } });
+  // Phase F1 child tables — same FK-ordering requirement.
+  await prisma.arenaProgressionRecord.deleteMany({ where: { matchId: { in: matchIds } } });
+  await prisma.arenaRatingHistory.deleteMany({ where: { matchId: { in: matchIds } } });
   await prisma.arenaMatch.deleteMany({ where: { roomId: { in: roomIds } } });
   await prisma.arenaRoomEvent.deleteMany({ where: { roomId: { in: roomIds } } });
   await prisma.arenaParticipant.deleteMany({ where: { roomId: { in: roomIds } } });

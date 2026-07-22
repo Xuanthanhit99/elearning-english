@@ -151,6 +151,25 @@ export function createNotificationTemplateRegistry(
       },
     },
     {
+      eventType: NotificationEventType.ARENA_PROMOTED,
+      eventVersion: 1,
+      templateKey: 'arena-promoted.v1',
+      render: ({ metadata }) => {
+        const tierLabel = getText(metadata, 'tierLabel', 'hang moi');
+        return safeResult({
+          templateKey: 'arena-promoted.v1',
+          title: getText(metadata, 'title', 'Thang hang Arena!'),
+          body: getText(
+            metadata,
+            'message',
+            `Chuc mung! Ban da duoc thang len ${tierLabel} tren Arena.`,
+          ),
+          actionUrl: getInternalHref(urls, metadata, urls.arena()),
+          metadata: { tierLabel },
+        });
+      },
+    },
+    {
       eventType: NotificationEventType.LEADERBOARD_REWARD_GRANTED,
       eventVersion: 1,
       templateKey: 'leaderboard-reward-granted.v1',

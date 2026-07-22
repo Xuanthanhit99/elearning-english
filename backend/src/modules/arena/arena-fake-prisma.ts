@@ -153,6 +153,11 @@ export class FakePrisma {
   ]);
   arenaBattleEventTable = new Table('ArenaBattleEvent', [['matchId', 'sequence']]);
   arenaUserQuestionHistoryTable = new Table('ArenaUserQuestionHistory');
+  // Phase F1
+  arenaSeasonTable = new Table('ArenaSeason');
+  arenaRatingHistoryTable = new Table('ArenaRatingHistory', [['matchId', 'userId']]);
+  arenaProgressionRecordTable = new Table('ArenaProgressionRecord', [['matchId', 'userId']]);
+  xpTransactionTable = new Table('XpTransaction', [['idempotencyKey']]);
 
   private mutex: Promise<unknown> = Promise.resolve();
 
@@ -209,6 +214,11 @@ export class FakePrisma {
         gold: 0,
         trophy: 0,
         lastMatchAt: null,
+        tier: 'BRONZE',
+        seasonWinCount: 0,
+        seasonLoseCount: 0,
+        lastDailyBonusAt: null,
+        lastFirstWinBonusAt: null,
         ...data,
       });
     },
@@ -444,9 +454,27 @@ export class FakePrisma {
   };
 
   arenaMatch = {
-    findUnique: async ({ where }: { where: { id: string } }) => {
+    findUnique: async ({
+      where,
+      include,
+    }: {
+      where: { id: string };
+      include?: { room?: { include?: { participants?: boolean } } };
+    }) => {
       const row = this.arenaMatchTable.findById(where.id);
-      return row ? this.hydrateMatch(row) : null;
+      if (!row) return null;
+      const hydrated = this.hydrateMatch(row) as Row;
+      if (include?.room) {
+        const roomRow = this.arenaRoomTable.findById(row.roomId);
+        const room: Row | null = roomRow ? clone(roomRow) : null;
+        if (room && include.room.include?.participants) {
+          room.participants = this.arenaParticipantTable.rows
+            .filter((p) => p.roomId === row.roomId)
+            .map((p) => clone(p));
+        }
+        hydrated.room = room;
+      }
+      return hydrated;
     },
     findFirst: async ({
       where,
@@ -611,6 +639,11 @@ export class FakePrisma {
         (r) => r.matchId === matchId && r.userId === userId,
       );
       return row ? clone(row) : null;
+    },
+    findMany: async ({ where }: { where?: Row } = {}) => {
+      return this.arenaRewardLogTable.rows
+        .filter((r) => matchesSimpleWhere(r, where))
+        .map((r) => clone(r));
     },
     deleteMany: async ({ where }: { where: Row }) => {
       const before = this.arenaRewardLogTable.rows.length;
@@ -826,6 +859,112 @@ export class FakePrisma {
         this.arenaUserQuestionHistoryTable.insert({ seenAt: new Date(), ...item }),
       );
       return { count: data.length };
+    },
+  };
+
+  // Phase F1
+  arenaSeason = {
+    findFirst: async ({ where }: { where?: Row } = {}) => {
+      const rows = this.arenaSeasonTable.rows
+        .filter((r) => matchesSimpleWhere(r, where))
+        .sort((a, b) => b.startsAt.getTime() - a.startsAt.getTime());
+      return rows[0] ? clone(rows[0]) : null;
+    },
+    create: async ({ data }: { data: Row }) => {
+      return this.arenaSeasonTable.insert({
+        status: 'ACTIVE',
+        isActive: true,
+        metadata: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        ...data,
+      });
+    },
+  };
+
+  arenaRatingHistory = {
+    findUnique: async ({ where }: { where: Row }) => {
+      if (where.id) {
+        const row = this.arenaRatingHistoryTable.findById(where.id);
+        return row ? clone(row) : null;
+      }
+      const { matchId, userId } = where.matchId_userId;
+      const row = this.arenaRatingHistoryTable.rows.find(
+        (r) => r.matchId === matchId && r.userId === userId,
+      );
+      return row ? clone(row) : null;
+    },
+    create: async ({ data }: { data: Row }) => {
+      return this.arenaRatingHistoryTable.insert({ createdAt: new Date(), ...data });
+    },
+  };
+
+  arenaProgressionRecord = {
+    findUnique: async ({ where }: { where: { matchId_userId: { matchId: string; userId: string } } }) => {
+      const { matchId, userId } = where.matchId_userId;
+      const row = this.arenaProgressionRecordTable.rows.find(
+        (r) => r.matchId === matchId && r.userId === userId,
+      );
+      return row ? clone(row) : null;
+    },
+    findMany: async ({ where }: { where?: Row } = {}) => {
+      return this.arenaProgressionRecordTable.rows
+        .filter((r) => matchesSimpleWhere(r, where))
+        .map((r) => clone(r));
+    },
+    create: async ({ data }: { data: Row }) => {
+      return this.arenaProgressionRecordTable.insert({
+        status: 'PENDING',
+        attempts: 0,
+        seasonId: null,
+        leaseExpiresAt: null,
+        lastError: null,
+        xpTransactionId: null,
+        ratingHistoryId: null,
+        rewardLogId: null,
+        completedAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        ...data,
+      });
+    },
+    update: async ({
+      where,
+      data,
+    }: {
+      where: { matchId_userId: { matchId: string; userId: string } };
+      data: Row;
+    }) => {
+      const { matchId, userId } = where.matchId_userId;
+      const row = this.arenaProgressionRecordTable.rows.find(
+        (r) => r.matchId === matchId && r.userId === userId,
+      );
+      if (!row) throw new Error('ArenaProgressionRecord not found');
+      applyData(row, { updatedAt: new Date(), ...data });
+      return clone(row);
+    },
+    updateMany: async ({ where, data }: { where: Row; data: Row }) => {
+      const rows = this.arenaProgressionRecordTable.rows.filter((r) =>
+        matchesSimpleWhere(r, where),
+      );
+      rows.forEach((row) => applyData(row, { updatedAt: new Date(), ...data }));
+      return { count: rows.length };
+    },
+  };
+
+  xpTransaction = {
+    findUnique: async ({ where }: { where: Row }) => {
+      if (where.id) {
+        const row = this.xpTransactionTable.findById(where.id);
+        return row ? clone(row) : null;
+      }
+      const row = this.xpTransactionTable.rows.find(
+        (r) => r.idempotencyKey === where.idempotencyKey,
+      );
+      return row ? clone(row) : null;
+    },
+    create: async ({ data }: { data: Row }) => {
+      return this.xpTransactionTable.insert({ earnedAt: new Date(), reversedAt: null, ...data });
     },
   };
 

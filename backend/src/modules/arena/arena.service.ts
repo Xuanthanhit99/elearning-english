@@ -45,6 +45,7 @@ import {
 import { ArenaQuestionHistoryService } from './question/arena-question-history.service';
 import { createQuestionContentHash } from './question/arena-question-hash.util';
 import { ArenaQuestionCandidate } from './question/arena-question.types';
+import { ArenaProgressionDispatcherService } from './progression/arena-progression-dispatcher.service';
 /** Internal signal: the room left PREPARING (or its participant set changed) mid-preparation — bail out quietly, not a failure to report. */
 class RoomStateChangedError extends Error {}
 
@@ -59,6 +60,7 @@ export class ArenaService {
     private readonly powerUps: ArenaPowerUpService,
     private readonly questionPipeline: ArenaQuestionPipelineService,
     private readonly questionHistory: ArenaQuestionHistoryService,
+    private readonly progressionDispatcher: ArenaProgressionDispatcherService,
   ) {}
 
   private async bumpRoomRevision(roomId: string) {
@@ -82,24 +84,11 @@ export class ArenaService {
   private normalizeAnswer(answer: string) {
     return answer.trim().toLowerCase().replace(/\s+/g, ' ');
   }
-  private expectedScore(playerMmr: number, opponentMmr: number) {
-    return 1 / (1 + Math.pow(10, (opponentMmr - playerMmr) / 400));
-  }
-
-  private eloDelta(playerMmr: number, opponentMmr: number, won: boolean) {
-    const k = 40;
-    const raw = Math.round(
-      k * ((won ? 1 : 0) - this.expectedScore(playerMmr, opponentMmr)),
-    );
-    return won ? Math.max(6, raw) : Math.min(-4, raw);
-  }
-
-  private getStreakFoodMultiplier(streak: number) {
-    if (streak >= 10) return 1.5;
-    if (streak >= 5) return 1.3;
-    if (streak >= 3) return 1.1;
-    return 1;
-  }
+  // Phase F1: ELO/streak-multiplier math moved to
+  // `progression/arena-rating-engine.ts` / `progression/arena-pet-reward.util.ts`
+  // — reward/rating application itself moved out of `finalizeMatch`'s
+  // transaction into `ArenaProgressionDispatcherService` (see
+  // docs/arena-progression-sequence.md).
 
   private async getOrCreateProfile(
     userId: string,
@@ -1397,7 +1386,18 @@ export class ArenaService {
       }
     }
 
-    return this.finalizeMatch(roomId);
+    const result = await this.finalizeMatch(roomId);
+
+    // Phase F1 (Part 9): per-caller progression summary — never the
+    // opponent's XP/reward breakdown, only the calling user's own. The
+    // pre-existing `rewards` array (both participants' mmr/gold deltas,
+    // Phase A) is untouched — this is an additive field alongside it.
+    const resolved = resolveArenaMode(room);
+    const progression = result.match
+      ? await this.progressionDispatcher.getProgressionSummary(result.match.id, userId)
+      : null;
+
+    return { ...result, mode: resolved.mode, teamFormat: resolved.teamFormat, progression };
   }
 
   /**
@@ -1451,15 +1451,14 @@ export class ArenaService {
     const winnerTeam: 'A' | 'B' =
       options?.forcedWinnerTeam ?? (teamBScore > teamAScore ? 'B' : 'A');
 
-    // Phase BC-Reconciliation: only modes whose capability registry has
-    // `affectsElo: true` may change ELO — never inferred from team format.
-    // FRIEND_CHALLENGE (and anything else non-ELO) still records win/loss
-    // counts and gold/food/trophy rewards, just leaves mmr/arenaPoint
-    // untouched.
-    const affectsElo = getModeCapability(resolveArenaMode(room).mode).affectsElo;
-
     let didFinalize = false;
 
+    // Phase F1 (corrected per Phase F0.5 finding F0.5-1): this transaction
+    // is now ONLY winner computation + the CAS `finishedAt` flip + the room
+    // status flip — reward/rating/XP application moved to
+    // `ArenaProgressionDispatcherService.processMatch()`, called AFTER this
+    // transaction commits (below), because `XpService.awardXpWithSideEffects()`
+    // manages its own transaction and cannot be nested inside this one.
     const outcome = await this.prisma.$transaction(async (tx) => {
       const claimed = await tx.arenaMatch.updateMany({
         where: { id: openMatch.id, finishedAt: null },
@@ -1488,110 +1487,6 @@ export class ArenaService {
 
       didFinalize = true;
 
-      const profiles = new Map<
-        string,
-        Awaited<ReturnType<typeof this.getOrCreateProfile>>
-      >();
-      for (const participant of room.participants) {
-        profiles.set(
-          participant.userId,
-          await this.getOrCreateProfile(participant.userId, tx),
-        );
-      }
-
-      const avgA = Math.round(
-        teamA.reduce(
-          (sum, item) => sum + (profiles.get(item.userId)?.mmr || 1500),
-          0,
-        ) / Math.max(1, teamA.length),
-      );
-      const avgB = Math.round(
-        teamB.reduce(
-          (sum, item) => sum + (profiles.get(item.userId)?.mmr || 1500),
-          0,
-        ) / Math.max(1, teamB.length),
-      );
-
-      const rewards: any[] = [];
-
-      for (const participant of room.participants) {
-        const profile = profiles.get(participant.userId)!;
-        const won = participant.team === winnerTeam;
-        const opponentAvg = participant.team === 'A' ? avgB : avgA;
-        const mmrDelta = affectsElo ? this.eloDelta(profile.mmr, opponentAvg, won) : 0;
-        const nextMmr = affectsElo ? Math.max(100, profile.mmr + mmrDelta) : profile.mmr;
-        const nextStreak = won ? profile.winStreak + 1 : 0;
-        const foodMultiplier = won
-          ? this.getStreakFoodMultiplier(nextStreak)
-          : 0.35;
-        const foodDelta = Math.round((won ? 40 : 12) * foodMultiplier);
-        const goldDelta = won ? 20 : 6;
-        const trophyDelta = won ? 1 : 0;
-        const arenaDelta = affectsElo ? (won ? Math.max(6, mmrDelta) : mmrDelta) : 0;
-
-        await tx.arenaProfile.update({
-          where: { userId: participant.userId },
-          data: {
-            mmr: nextMmr,
-            arenaPoint: Math.max(0, profile.arenaPoint + arenaDelta),
-            winCount: profile.winCount + (won ? 1 : 0),
-            loseCount: profile.loseCount + (won ? 0 : 1),
-            winStreak: nextStreak,
-            bestWinStreak: Math.max(profile.bestWinStreak, nextStreak),
-            arenaFood: profile.arenaFood + foodDelta,
-            gold: profile.gold + goldDelta,
-            trophy: profile.trophy + trophyDelta,
-            level: Math.floor(nextMmr / 250),
-            lastMatchAt: new Date(),
-          },
-        });
-
-        await tx.petProfile.updateMany({
-          where: { userId: participant.userId },
-          data: {
-            food: { increment: foodDelta },
-            coins: { increment: goldDelta },
-            xp: { increment: won ? 20 : 8 },
-          },
-        });
-
-        try {
-          const reward = await tx.arenaRewardLog.create({
-            data: {
-              matchId: openMatch.id,
-              userId: participant.userId,
-              isWinner: won,
-              mmrBefore: profile.mmr,
-              mmrAfter: nextMmr,
-              arenaDelta,
-              foodDelta,
-              goldDelta,
-              trophyDelta,
-            },
-          });
-          rewards.push(reward);
-        } catch (error) {
-          if (
-            error instanceof Prisma.PrismaClientKnownRequestError &&
-            error.code === 'P2002'
-          ) {
-            // Đã có reward log cho user này trong match (lớp bảo vệ thứ 2)
-            // -> không cộng thưởng thêm, chỉ trả lại bản ghi đã có.
-            const existingReward = await tx.arenaRewardLog.findUnique({
-              where: {
-                matchId_userId: {
-                  matchId: openMatch.id,
-                  userId: participant.userId,
-                },
-              },
-            });
-            if (existingReward) rewards.push(existingReward);
-          } else {
-            throw error;
-          }
-        }
-      }
-
       await tx.arenaRoom.update({
         where: { id: roomId },
         data: { status: 'FINISHED', revision: { increment: 1 } },
@@ -1600,15 +1495,27 @@ export class ArenaService {
       const finalMatch = await tx.arenaMatch.findUnique({
         where: { id: openMatch.id },
       });
-      return { match: finalMatch, rewards };
+      return { match: finalMatch, rewards: [] as unknown[] };
     });
 
     if (didFinalize) {
+      // Per-participant, post-commit, one XpService/own-transaction call
+      // each — see docs/arena-progression-sequence.md §§3,6. Awaited here
+      // (not fire-and-forget) so `finishMatch`'s caller/response and every
+      // existing test that reads reward data immediately after this call
+      // keep seeing fully-applied results, same timing as before F1.
+      await this.progressionDispatcher.processMatch(openMatch.id);
+
       this.eventPublisher.publish({
         type: ARENA_MATCH_FINISHED,
         roomId,
         matchId: openMatch.id,
       });
+
+      const rewards = await this.prisma.arenaRewardLog.findMany({
+        where: { matchId: openMatch.id },
+      });
+      return { match: outcome.match, rewards };
     }
 
     return outcome;

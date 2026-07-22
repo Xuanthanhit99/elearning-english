@@ -5,8 +5,10 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { XpService } from 'src/modules/leaderboard/xp.service';
 import { ArenaService } from './arena.service';
 import { FakePrisma } from './arena-fake-prisma';
+import { FakeXpService } from './arena-fake-xp-service';
 import { ArenaEventPublisher } from './realtime/arena-event-publisher';
 import { ArenaBattleEngineService } from './battle/arena-battle-engine.service';
 import { ArenaBattleStateService } from './battle/arena-battle-state.service';
@@ -17,6 +19,8 @@ import { ArenaAiQuestionSource } from './question/arena-ai-question-source';
 import { ArenaQuestionFallbackSource } from './question/arena-question-fallback-source';
 import { ArenaQuestionHistoryService } from './question/arena-question-history.service';
 import { ArenaQuestionPipelineService } from './question/arena-question-pipeline.service';
+import { ArenaSeasonService } from './progression/arena-season.service';
+import { ArenaProgressionDispatcherService } from './progression/arena-progression-dispatcher.service';
 import { CreateArenaRoomDto } from './dto/create-arena-room.dto';
 import { JoinArenaRoomDto } from './dto/join-arena-room.dto';
 import { QueueArenaDto } from './dto/queue-arena.dto';
@@ -74,6 +78,9 @@ describe('ArenaService (Phase A hardening)', () => {
         ArenaQuestionFallbackSource,
         ArenaQuestionHistoryService,
         ArenaQuestionPipelineService,
+        ArenaSeasonService,
+        ArenaProgressionDispatcherService,
+        { provide: XpService, useValue: new FakeXpService(fake) },
       ],
     }).compile();
 

@@ -34,6 +34,10 @@ export class NotificationActionUrlBuilder {
     return '/notifications';
   }
 
+  arena() {
+    return '/arena';
+  }
+
   ensureInternalPath(path: string) {
     if (!path.startsWith('/') || path.startsWith('//')) {
       throw new Error('Notification action URL must be an internal path.');
