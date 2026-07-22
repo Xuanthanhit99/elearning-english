@@ -229,6 +229,8 @@ model User {
   arenaAnswers      ArenaAnswer[]
   arenaQueue        ArenaQueue?
   arenaRoomEvents   ArenaRoomEvent[]
+  arenaMatchPowerUps ArenaMatchPowerUp[]
+  arenaQuestionHistory ArenaUserQuestionHistory[]
 
   communityPosts    CommunityPost[]    @relation("CommunityPostAuthor")
   communityComments CommunityComment[] @relation("CommunityCommentAuthor")
@@ -870,9 +872,17 @@ model PetReward {
 
 enum ArenaRoomStatus {
   WAITING
+  // Phase BC-Reconciliation: claimed by one request (CAS), running the
+  // question pipeline outside any DB transaction. Never held by two
+  // concurrent requests — see ArenaService's preparation state machine.
+  PREPARING
   PLAYING
   FINISHED
   CANCELLED
+  // Phase BC-Reconciliation: question pipeline exhausted every source
+  // (AI + reusable + static fallback) without reaching the required count.
+  // Retryable — the next ready-toggle re-claims PREPARING.
+  FAILED
 }
 
 enum ArenaVisibility {
@@ -883,6 +893,24 @@ enum ArenaVisibility {
 enum ArenaTeam {
   A
   B
+}
+
+// Phase BC-Reconciliation: separate from ArenaTeamFormat on purpose — mode
+// is "what ruleset/economy", team format is "how many players per side".
+enum ArenaMode {
+  RANKED
+  AI_PRACTICE
+  SURVIVAL
+  BLITZ
+  FRIEND_CHALLENGE
+  TOURNAMENT_LEGACY
+}
+
+enum ArenaTeamFormat {
+  SOLO
+  SOLO_1V1
+  TEAM_2V2
+  TEAM_3V3
 }
 
 model ArenaProfile {
@@ -927,6 +955,17 @@ model ArenaRoom {
   pingEnabled     Boolean         @default(true)
   status          ArenaRoomStatus @default(WAITING)
   countdownEndsAt DateTime?
+  // Gate D-Recovery: monotonic counter bumped on every mutation reflected in
+  // the room snapshot (join/ready/leave/countdown/answer/finish), so
+  // realtime clients can discard stale/out-of-order pushes.
+  revision        Int             @default(1)
+  // Phase BC-Reconciliation: canonical mode/team-format — nullable so
+  // pre-migration rows fall back to legacy `gameMode` mapping via
+  // resolveArenaMode() instead of requiring a backfill-to-NOT-NULL step.
+  mode                  ArenaMode?
+  teamFormat            ArenaTeamFormat?
+  preparationError      String?
+  preparationStartedAt  DateTime?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
@@ -950,6 +989,8 @@ model ArenaParticipant {
   room ArenaRoom @relation(fields: [roomId], references: [id])
   user User      @relation(fields: [userId], references: [id])
 
+  battleStates ArenaParticipantBattleState[]
+
   @@unique([roomId, userId])
 }
 
@@ -965,11 +1006,166 @@ model ArenaMatch {
   // no deadline (never late), instead of failing/crashing.
   expiresAt  DateTime?
   finishedAt DateTime?
+  // Gate D-Recovery: same purpose as ArenaRoom.revision, scoped to
+  // match/battle-state changes (answer submitted, match finished).
+  revision   Int       @default(1)
 
-  room      ArenaRoom        @relation(fields: [roomId], references: [id])
-  rewards   ArenaRewardLog[]
-  questions ArenaQuestion[]
-  answers   ArenaAnswer[]
+  // Gate E: per-question activation/deadline, SOLO_1V1 only (see
+  // ArenaBattleEngineService). Null/unset for every other mode and for
+  // matches created before Gate E, which keep the original "answer any
+  // question anytime" behavior.
+  activeQuestionOrder Int?
+  questionActivatedAt DateTime?
+  questionDeadlineAt  DateTime?
+  // Atomic counter for ArenaBattleEvent.sequence — incremented via
+  // `UPDATE ... SET "eventSequence" = "eventSequence" + 1 RETURNING` inside
+  // the same transaction as the event insert (same CAS-in-transaction style
+  // as finalizeMatch, not a new locking primitive).
+  eventSequence       Int       @default(0)
+
+  room            ArenaRoom                    @relation(fields: [roomId], references: [id])
+  rewards         ArenaRewardLog[]
+  questions       ArenaQuestion[]
+  answers         ArenaAnswer[]
+  battleStates    ArenaParticipantBattleState[]
+  powerUps        ArenaMatchPowerUp[]
+  powerUpEffects  ArenaPowerUpEffect[]
+  powerUpUsages   ArenaPowerUpUsage[]
+  battleEvents    ArenaBattleEvent[]
+  questionHistory ArenaUserQuestionHistory[]
+}
+
+enum ArenaPowerUpType {
+  DOUBLE_SCORE
+  SHIELD
+  FREEZE
+  TIME_BOOST
+}
+
+enum ArenaPowerUpEffectStatus {
+  PENDING
+  ACTIVE
+  CONSUMED
+  EXPIRED
+  BLOCKED
+}
+
+enum ArenaBattleEventType {
+  ANSWER_CORRECT
+  ANSWER_WRONG
+  ANSWER_LATE
+  COMBO_INCREASED
+  COMBO_BROKEN
+  POWER_UP_USED
+  POWER_UP_BLOCKED
+  POWER_UP_APPLIED
+  POWER_UP_CONSUMED
+  SCORE_UPDATED
+  PLAYER_FORFEITED
+  MATCH_FINISHED
+}
+
+/// Gate E: per-match, per-participant combo/streak/multiplier state.
+/// Match-scoped (not room-scoped like ArenaParticipant.score) so combo
+/// resets each match instead of bleeding across rematches in the same room.
+model ArenaParticipantBattleState {
+  id                    String    @id @default(uuid())
+  matchId               String
+  participantId         String
+  score                 Int       @default(0)
+  combo                 Int       @default(0)
+  maxCombo              Int       @default(0)
+  correctStreak         Int       @default(0)
+  wrongStreak           Int       @default(0)
+  multiplierBasisPoints Int       @default(10000)
+  shieldCharges         Int       @default(0)
+  deadlineOverrideAt    DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  match       ArenaMatch       @relation(fields: [matchId], references: [id])
+  participant ArenaParticipant @relation(fields: [participantId], references: [id])
+
+  @@unique([matchId, participantId])
+}
+
+/// Gate E: per-match power-up loadout + remaining uses. Created idempotently
+/// at match-start time from ARENA_POWER_UP_DEFINITIONS — identical for both
+/// SOLO_1V1 players, never sourced from ArenaProfile/gold (no pay-to-win).
+model ArenaMatchPowerUp {
+  id            String           @id @default(uuid())
+  matchId       String
+  userId        String
+  type          ArenaPowerUpType
+  remainingUses Int
+  usedCount     Int              @default(0)
+  cooldownUntil DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  match ArenaMatch @relation(fields: [matchId], references: [id])
+  user  User       @relation(fields: [userId], references: [id])
+
+  @@unique([matchId, userId, type])
+}
+
+/// Gate E: an active/resolved power-up effect targeting a participant
+/// (self or opponent). `appliesFromQuestionOrder` anchors DOUBLE_SCORE/
+/// FREEZE to a specific question boundary instead of wall-clock time.
+model ArenaPowerUpEffect {
+  id                       String                    @id @default(uuid())
+  matchId                  String
+  sourceUserId             String
+  targetUserId             String
+  type                     ArenaPowerUpType
+  status                   ArenaPowerUpEffectStatus  @default(PENDING)
+  appliesFromQuestionOrder Int?
+  expiresAt                DateTime?
+  remainingTriggers        Int?
+  createdAt                DateTime                  @default(now())
+  consumedAt               DateTime?
+
+  match ArenaMatch @relation(fields: [matchId], references: [id])
+
+  @@index([matchId, targetUserId, status])
+}
+
+/// Gate E: idempotency + audit log for `arena:power-up:use`. Unlike
+/// ArenaAnswer's natural-key idempotency (@@unique([questionId,userId])),
+/// power-up use isn't naturally unique per question, so this follows the
+/// explicit-key style already used by XpTransaction/AchievementRewardTransaction.
+model ArenaPowerUpUsage {
+  id              String           @id @default(uuid())
+  matchId         String
+  userId          String
+  type            ArenaPowerUpType
+  targetUserId    String?
+  clientRequestId String
+  result          String
+  createdAt       DateTime         @default(now())
+
+  match ArenaMatch @relation(fields: [matchId], references: [id])
+
+  @@unique([matchId, userId, clientRequestId])
+}
+
+/// Gate E: append-only battle event log, ordered by ArenaMatch.eventSequence.
+/// `payload` must never contain an unrevealed answer/explanation.
+model ArenaBattleEvent {
+  id           String               @id @default(uuid())
+  matchId      String
+  sequence     Int
+  type         ArenaBattleEventType
+  actorUserId  String?
+  targetUserId String?
+  questionId   String?
+  payload      Json
+  createdAt    DateTime             @default(now())
+
+  match ArenaMatch @relation(fields: [matchId], references: [id])
+
+  @@unique([matchId, sequence])
+  @@index([matchId, createdAt])
 }
 
 model ArenaRewardLog {
@@ -1034,11 +1230,17 @@ model ArenaQuestion {
   mediaUrl    String?
   points      Int      @default(10)
   createdAt   DateTime @default(now())
+  // Phase BC-Reconciliation: SHA-256 of normalized type+prompt+options+answer
+  // (see arena-question-hash.util.ts). Nullable — legacy rows never had one;
+  // Postgres unique constraints don't conflict on NULLs, so this stays a
+  // clean guard for newly-persisted questions without a backfill step.
+  contentHash String?
 
   match   ArenaMatch    @relation(fields: [matchId], references: [id])
   answers ArenaAnswer[]
 
   @@unique([matchId, order])
+  @@unique([matchId, contentHash])
 }
 
 model ArenaAnswer {
@@ -1056,6 +1258,27 @@ model ArenaAnswer {
   user     User          @relation(fields: [userId], references: [id])
 
   @@unique([questionId, userId])
+}
+
+/// Phase BC-Reconciliation: per-user recently-seen-question ledger, used by
+/// ArenaQuestionPipelineService to bias new question sets away from content
+/// a participant has already seen recently. Only written for questions
+/// actually persisted into a match (never for rejected/fallback candidates
+/// that didn't make the cut, never on a failed preparation).
+model ArenaUserQuestionHistory {
+  id          String   @id @default(uuid())
+  userId      String
+  contentHash String
+  matchId     String
+  mode        String?
+  skill       String
+  topic       String?
+  seenAt      DateTime @default(now())
+
+  user  User       @relation(fields: [userId], references: [id])
+  match ArenaMatch @relation(fields: [matchId], references: [id])
+
+  @@index([userId, seenAt])
 }
 
 model CommunityLike {

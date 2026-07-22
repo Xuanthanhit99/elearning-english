@@ -1,4 +1,4 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
 import {
@@ -27,5 +27,17 @@ export class AchievementsProcessor extends WorkerHost {
       `Achievement event processed eventId=${job.data.eventId} processed=${result.processed} unlocked=${result.unlocked.length}`,
     );
     return result;
+  }
+
+  // Foundation-hardening addition (Phase F0.6): every processor backing a
+  // "critical" domain event must surface failures at the worker level, not
+  // just via internal try/catch — matches the shape already used by
+  // WritingProcessor/SpeakingProcessingProcessor/ListeningJobProcessor.
+  @OnWorkerEvent('failed')
+  onFailed(job: Job<AchievementActivityEvent> | undefined, error: Error) {
+    this.logger.error(
+      `Achievement job failed eventId=${job?.data?.eventId} jobId=${job?.id}`,
+      error.stack,
+    );
   }
 }

@@ -16,6 +16,7 @@ import {
 } from './leaderboard.constants';
 import { AwardXpDto } from './dto/award-xp.dto';
 import { LeaderboardRealtimeGateway } from './socket/leaderboard-realtime.gateway';
+import { withSerializableRetry } from './xp-transaction-retry.util';
 
 @Injectable()
 export class XpService {
@@ -47,93 +48,97 @@ export class XpService {
       Math.max(0, finalXp),
     );
 
-    const result = await this.prisma.$transaction(
-      async (tx) => {
-        const profile = await tx.userXpProfile.upsert({
-          where: { userId: input.userId },
-          create: {
-            userId: input.userId,
-            totalXp: Math.max(0, finalXp),
-            currentLevel: this.levelFromXp(Math.max(0, finalXp)),
-            lastXpEarnedAt: new Date(),
+    const result = await withSerializableRetry(
+      () =>
+        this.prisma.$transaction(
+          async (tx) => {
+            const profile = await tx.userXpProfile.upsert({
+              where: { userId: input.userId },
+              create: {
+                userId: input.userId,
+                totalXp: Math.max(0, finalXp),
+                currentLevel: this.levelFromXp(Math.max(0, finalXp)),
+                lastXpEarnedAt: new Date(),
+              },
+              update: {
+                totalXp: { increment: finalXp },
+                lastXpEarnedAt: new Date(),
+              },
+            });
+
+            const refreshedProfile = await tx.userXpProfile.findUniqueOrThrow({
+              where: { id: profile.id },
+            });
+
+            if (refreshedProfile.totalXp < 0) {
+              await tx.userXpProfile.update({
+                where: { id: profile.id },
+                data: { totalXp: 0 },
+              });
+            }
+
+            const safeTotalXp = Math.max(0, refreshedProfile.totalXp);
+            const level = this.levelFromXp(safeTotalXp);
+
+            const updatedProfile = await tx.userXpProfile.update({
+              where: { id: profile.id },
+              data: { currentLevel: level },
+            });
+
+            await tx.user.update({
+              where: { id: input.userId },
+              data: { xp: safeTotalXp, level },
+            });
+
+            const transaction = await tx.xpTransaction.create({
+              data: {
+                userId: input.userId,
+                xpProfileId: profile.id,
+                sourceType: input.sourceType,
+                sourceId: input.sourceId,
+                skill: input.skill,
+                baseXp: input.baseXp,
+                bonusXp: input.bonusXp ?? 0,
+                finalXp,
+                reason: input.reason,
+                idempotencyKey: input.idempotencyKey,
+                metadata: input.metadata as Prisma.InputJsonValue | undefined,
+              },
+            });
+
+            const activeSeason = await tx.leaderboardSeason.findFirst({
+              where: {
+                isActive: true,
+                status: LeaderboardSeasonStatus.ACTIVE,
+                startsAt: { lte: new Date() },
+                endsAt: { gt: new Date() },
+              },
+            });
+
+            let entry: { id: string; groupId: string; periodXp: number } | null =
+              null;
+            if (activeSeason && !updatedProfile.optedOut) {
+              entry = await this.ensureWeeklyEntry(
+                tx,
+                input.userId,
+                profile.id,
+                activeSeason.id,
+              );
+              entry = await tx.leaderboardEntry.update({
+                where: { id: entry.id },
+                data: {
+                  periodXp: { increment: finalXp },
+                  lastXpAt: new Date(),
+                },
+                select: { id: true, groupId: true, periodXp: true },
+              });
+            }
+
+            return { transaction, profile: updatedProfile, activeSeason, entry };
           },
-          update: {
-            totalXp: { increment: finalXp },
-            lastXpEarnedAt: new Date(),
-          },
-        });
-
-        const refreshedProfile = await tx.userXpProfile.findUniqueOrThrow({
-          where: { id: profile.id },
-        });
-
-        if (refreshedProfile.totalXp < 0) {
-          await tx.userXpProfile.update({
-            where: { id: profile.id },
-            data: { totalXp: 0 },
-          });
-        }
-
-        const safeTotalXp = Math.max(0, refreshedProfile.totalXp);
-        const level = this.levelFromXp(safeTotalXp);
-
-        const updatedProfile = await tx.userXpProfile.update({
-          where: { id: profile.id },
-          data: { currentLevel: level },
-        });
-
-        await tx.user.update({
-          where: { id: input.userId },
-          data: { xp: safeTotalXp, level },
-        });
-
-        const transaction = await tx.xpTransaction.create({
-          data: {
-            userId: input.userId,
-            xpProfileId: profile.id,
-            sourceType: input.sourceType,
-            sourceId: input.sourceId,
-            skill: input.skill,
-            baseXp: input.baseXp,
-            bonusXp: input.bonusXp ?? 0,
-            finalXp,
-            reason: input.reason,
-            idempotencyKey: input.idempotencyKey,
-            metadata: input.metadata as Prisma.InputJsonValue | undefined,
-          },
-        });
-
-        const activeSeason = await tx.leaderboardSeason.findFirst({
-          where: {
-            isActive: true,
-            status: LeaderboardSeasonStatus.ACTIVE,
-            startsAt: { lte: new Date() },
-            endsAt: { gt: new Date() },
-          },
-        });
-
-        let entry: { id: string; groupId: string; periodXp: number } | null =
-          null;
-        if (activeSeason && !updatedProfile.optedOut) {
-          entry = await this.ensureWeeklyEntry(
-            tx,
-            input.userId,
-            profile.id,
-            activeSeason.id,
-          );
-          entry = await tx.leaderboardEntry.update({
-            where: { id: entry.id },
-            data: {
-              periodXp: { increment: finalXp },
-              lastXpAt: new Date(),
-            },
-            select: { id: true, groupId: true, periodXp: true },
-          });
-        }
-
-        return { transaction, profile: updatedProfile, activeSeason, entry };
-      },
-      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+          { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+        ),
+      { logger: this.logger },
     );
 
     if (result.activeSeason && result.entry) {
@@ -159,6 +164,16 @@ export class XpService {
     return { duplicated: false, ...result };
   }
 
+  /**
+   * `sideEffects(tx)` may run more than once per call: the whole transaction
+   * retries from scratch on a Serializable-isolation conflict (P2034, see
+   * `xp-transaction-retry.util.ts`), and a P2034 means Postgres rolled back
+   * everything from the failed attempt — so `sideEffects` must only write
+   * through the given `tx` (never an external side effect like an HTTP
+   * call or a direct, non-transactional Redis write), same constraint as
+   * before retry support existed, just now exercised more than once when a
+   * conflict occurs.
+   */
   async awardXpWithSideEffects<T>(
     input: AwardXpDto,
     sideEffects: (tx: Prisma.TransactionClient) => Promise<T>,
@@ -190,101 +205,105 @@ export class XpService {
     );
 
     try {
-      const result = await this.prisma.$transaction(
-        async (tx) => {
-          const profile = await tx.userXpProfile.upsert({
-            where: { userId: input.userId },
-            create: {
-              userId: input.userId,
-              totalXp: Math.max(0, finalXp),
-              currentLevel: this.levelFromXp(Math.max(0, finalXp)),
-              lastXpEarnedAt: new Date(),
+      const result = await withSerializableRetry(
+        () =>
+          this.prisma.$transaction(
+            async (tx) => {
+              const profile = await tx.userXpProfile.upsert({
+                where: { userId: input.userId },
+                create: {
+                  userId: input.userId,
+                  totalXp: Math.max(0, finalXp),
+                  currentLevel: this.levelFromXp(Math.max(0, finalXp)),
+                  lastXpEarnedAt: new Date(),
+                },
+                update: {
+                  totalXp: { increment: finalXp },
+                  lastXpEarnedAt: new Date(),
+                },
+              });
+
+              const refreshedProfile = await tx.userXpProfile.findUniqueOrThrow({
+                where: { id: profile.id },
+              });
+
+              if (refreshedProfile.totalXp < 0) {
+                await tx.userXpProfile.update({
+                  where: { id: profile.id },
+                  data: { totalXp: 0 },
+                });
+              }
+
+              const safeTotalXp = Math.max(0, refreshedProfile.totalXp);
+              const level = this.levelFromXp(safeTotalXp);
+
+              const updatedProfile = await tx.userXpProfile.update({
+                where: { id: profile.id },
+                data: { currentLevel: level },
+              });
+
+              await tx.user.update({
+                where: { id: input.userId },
+                data: { xp: safeTotalXp, level },
+              });
+
+              const transaction = await tx.xpTransaction.create({
+                data: {
+                  userId: input.userId,
+                  xpProfileId: profile.id,
+                  sourceType: input.sourceType,
+                  sourceId: input.sourceId,
+                  skill: input.skill,
+                  baseXp: input.baseXp,
+                  bonusXp: input.bonusXp ?? 0,
+                  finalXp,
+                  reason: input.reason,
+                  idempotencyKey: input.idempotencyKey,
+                  metadata: input.metadata as Prisma.InputJsonValue | undefined,
+                },
+              });
+
+              const sideEffectResult = await sideEffects(tx);
+
+              const activeSeason = await tx.leaderboardSeason.findFirst({
+                where: {
+                  isActive: true,
+                  status: LeaderboardSeasonStatus.ACTIVE,
+                  startsAt: { lte: new Date() },
+                  endsAt: { gt: new Date() },
+                },
+              });
+
+              let entry: { id: string; groupId: string; periodXp: number } | null =
+                null;
+              if (activeSeason && !updatedProfile.optedOut) {
+                entry = await this.ensureWeeklyEntry(
+                  tx,
+                  input.userId,
+                  profile.id,
+                  activeSeason.id,
+                );
+                entry = await tx.leaderboardEntry.update({
+                  where: { id: entry.id },
+                  data: {
+                    periodXp: { increment: finalXp },
+                    lastXpAt: new Date(),
+                  },
+                  select: { id: true, groupId: true, periodXp: true },
+                });
+              }
+
+              return {
+                transaction,
+                profile: updatedProfile,
+                activeSeason,
+                entry,
+                sideEffectResult,
+              };
             },
-            update: {
-              totalXp: { increment: finalXp },
-              lastXpEarnedAt: new Date(),
-            },
-          });
-
-          const refreshedProfile = await tx.userXpProfile.findUniqueOrThrow({
-            where: { id: profile.id },
-          });
-
-          if (refreshedProfile.totalXp < 0) {
-            await tx.userXpProfile.update({
-              where: { id: profile.id },
-              data: { totalXp: 0 },
-            });
-          }
-
-          const safeTotalXp = Math.max(0, refreshedProfile.totalXp);
-          const level = this.levelFromXp(safeTotalXp);
-
-          const updatedProfile = await tx.userXpProfile.update({
-            where: { id: profile.id },
-            data: { currentLevel: level },
-          });
-
-          await tx.user.update({
-            where: { id: input.userId },
-            data: { xp: safeTotalXp, level },
-          });
-
-          const transaction = await tx.xpTransaction.create({
-            data: {
-              userId: input.userId,
-              xpProfileId: profile.id,
-              sourceType: input.sourceType,
-              sourceId: input.sourceId,
-              skill: input.skill,
-              baseXp: input.baseXp,
-              bonusXp: input.bonusXp ?? 0,
-              finalXp,
-              reason: input.reason,
-              idempotencyKey: input.idempotencyKey,
-              metadata: input.metadata as Prisma.InputJsonValue | undefined,
-            },
-          });
-
-          const sideEffectResult = await sideEffects(tx);
-
-          const activeSeason = await tx.leaderboardSeason.findFirst({
-            where: {
-              isActive: true,
-              status: LeaderboardSeasonStatus.ACTIVE,
-              startsAt: { lte: new Date() },
-              endsAt: { gt: new Date() },
-            },
-          });
-
-          let entry: { id: string; groupId: string; periodXp: number } | null =
-            null;
-          if (activeSeason && !updatedProfile.optedOut) {
-            entry = await this.ensureWeeklyEntry(
-              tx,
-              input.userId,
-              profile.id,
-              activeSeason.id,
-            );
-            entry = await tx.leaderboardEntry.update({
-              where: { id: entry.id },
-              data: {
-                periodXp: { increment: finalXp },
-                lastXpAt: new Date(),
-              },
-              select: { id: true, groupId: true, periodXp: true },
-            });
-          }
-
-          return {
-            transaction,
-            profile: updatedProfile,
-            activeSeason,
-            entry,
-            sideEffectResult,
-          };
-        },
-        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+            { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+          ),
+        { logger: this.logger },
       );
 
       if (result.activeSeason && result.entry) {

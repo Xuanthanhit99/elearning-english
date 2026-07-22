@@ -2,6 +2,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Queue } from 'bullmq';
+import { runCriticalEventHandler } from '../../common/events/critical-event-handler.util';
 import { LearningActivityCompletedEvent } from '../learning-xp/events/learning-activity-completed.event';
 import {
   ACHIEVEMENT_QUEUE,
@@ -33,7 +34,11 @@ export class AchievementsListener {
       metadata: event.metadata,
     };
 
-    try {
+    // Foundation-hardening (Phase F0.6): same try/catch + Logger.error
+    // behavior as before, now via the shared reusable helper so every
+    // future critical-event listener (including Arena's) doesn't hand-roll
+    // this — see docs/arena-progression-sequence.md's domain-event standard.
+    await runCriticalEventHandler(this.logger, 'learning.activity.completed', async () => {
       await this.queue.add(AchievementJobName.PROCESS_EVENT, payload, {
         jobId: payload.eventId,
         attempts: 3,
@@ -41,11 +46,6 @@ export class AchievementsListener {
         removeOnComplete: 1000,
         removeOnFail: 500,
       });
-    } catch (error) {
-      this.logger.error(
-        `Queue achievement event failed: ${payload.eventId}`,
-        error instanceof Error ? error.stack : String(error),
-      );
-    }
+    });
   }
 }

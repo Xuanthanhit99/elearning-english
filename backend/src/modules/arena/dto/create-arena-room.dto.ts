@@ -8,6 +8,17 @@
   MaxLength,
   Min,
 } from 'class-validator';
+import { ArenaMode, ArenaTeamFormat } from '@prisma/client';
+
+const ARENA_MODES: ArenaMode[] = [
+  'RANKED',
+  'AI_PRACTICE',
+  'SURVIVAL',
+  'BLITZ',
+  'FRIEND_CHALLENGE',
+  'TOURNAMENT_LEGACY',
+];
+const ARENA_TEAM_FORMATS: ArenaTeamFormat[] = ['SOLO', 'SOLO_1V1', 'TEAM_2V2', 'TEAM_3V3'];
 
 export class CreateArenaRoomDto {
   @IsString()
@@ -22,8 +33,21 @@ export class CreateArenaRoomDto {
   @MaxLength(40)
   password?: string;
 
+  // Legacy shape — still accepted for backward compatibility. Optional now
+  // that `mode`/`teamFormat` exist; ArenaService requires at least one of
+  // the two representations and rejects a conflicting combination.
+  @IsOptional()
   @IsIn(['SOLO_1V1', 'TEAM_2V2', 'TEAM_3V3', 'TOURNAMENT'])
-  gameMode: string;
+  gameMode?: string;
+
+  // Canonical shape (Phase BC-Reconciliation).
+  @IsOptional()
+  @IsIn(ARENA_MODES)
+  mode?: ArenaMode;
+
+  @IsOptional()
+  @IsIn(ARENA_TEAM_FORMATS)
+  teamFormat?: ArenaTeamFormat;
 
   @IsIn(['Vocabulary', 'Grammar', 'Listening', 'Pronunciation', 'Mixed'])
   skill: string;

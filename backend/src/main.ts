@@ -8,9 +8,14 @@ import express from 'express';
 import helmet from 'helmet';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { getAllowedOrigins } from './config/cors.config';
+import { RedisIoAdapter } from './realtime/redis-io.adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  const redisIoAdapter = new RedisIoAdapter(app);
+  redisIoAdapter.connectToRedis();
+  app.useWebSocketAdapter(redisIoAdapter);
 
   app.use(
     helmet({

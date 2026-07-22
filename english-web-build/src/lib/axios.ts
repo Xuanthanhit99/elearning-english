@@ -57,7 +57,11 @@ function redirectToLogin() {
   );
 }
 
-async function refreshSession() {
+// Exported so realtime socket clients (e.g. arena-socket.ts) can await the
+// same single-flight refresh the REST interceptor uses on 401 — one
+// in-flight `/auth/refresh` call regardless of how many tabs/sockets/
+// requests trigger it concurrently.
+export async function refreshSession() {
   if (!refreshPromise) {
     refreshPromise = authApi
       .post("/auth/refresh")

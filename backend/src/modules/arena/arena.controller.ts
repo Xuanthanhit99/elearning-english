@@ -80,6 +80,11 @@ export class ArenaController {
     return this.arenaService.leaveRoom(req.user.id, roomId);
   }
 
+  @Post('rooms/:roomId/retry')
+  retryPreparation(@Req() req: any, @Param('roomId') roomId: string) {
+    return this.arenaService.retryPreparation(req.user.id, roomId);
+  }
+
   @Post('rooms/:roomId/events')
   createEvent(
     @Req() req: any,

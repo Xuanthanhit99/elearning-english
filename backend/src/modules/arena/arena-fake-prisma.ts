@@ -90,9 +90,30 @@ class Table {
   }
 }
 
+function applyData(row: Row, data: Row) {
+  for (const [key, value] of Object.entries(data)) {
+    if (
+      value &&
+      typeof value === 'object' &&
+      !(value instanceof Date) &&
+      'increment' in value
+    ) {
+      row[key] = (row[key] ?? 0) + (value as Row).increment;
+    } else {
+      row[key] = value;
+    }
+  }
+}
+
 function matchesSimpleWhere(row: Row, where: Row = {}): boolean {
   return Object.entries(where).every(([key, cond]) => {
     if (cond === undefined) return true;
+    if (key === 'OR') {
+      return (cond as Row[]).some((branch) => matchesSimpleWhere(row, branch));
+    }
+    if (key === 'AND') {
+      return (cond as Row[]).every((branch) => matchesSimpleWhere(row, branch));
+    }
     const value = row[key];
     if (cond !== null && typeof cond === 'object' && !Array.isArray(cond)) {
       if ('not' in cond) return value !== cond.not;
@@ -120,6 +141,18 @@ export class FakePrisma {
   arenaAnswerTable = new Table('ArenaAnswer', [['questionId', 'userId']]);
   arenaRewardLogTable = new Table('ArenaRewardLog', [['matchId', 'userId']]);
   petProfileTable = new Table('PetProfile');
+  arenaParticipantBattleStateTable = new Table('ArenaParticipantBattleState', [
+    ['matchId', 'participantId'],
+  ]);
+  arenaMatchPowerUpTable = new Table('ArenaMatchPowerUp', [
+    ['matchId', 'userId', 'type'],
+  ]);
+  arenaPowerUpEffectTable = new Table('ArenaPowerUpEffect');
+  arenaPowerUpUsageTable = new Table('ArenaPowerUpUsage', [
+    ['matchId', 'userId', 'clientRequestId'],
+  ]);
+  arenaBattleEventTable = new Table('ArenaBattleEvent', [['matchId', 'sequence']]);
+  arenaUserQuestionHistoryTable = new Table('ArenaUserQuestionHistory');
 
   private mutex: Promise<unknown> = Promise.resolve();
 
@@ -222,6 +255,7 @@ export class FakePrisma {
         targetCorrect: null,
         bestOf: null,
         password: null,
+        revision: 1,
         ...roomData,
       });
       if (participants?.create) {
@@ -245,8 +279,15 @@ export class FakePrisma {
     update: async ({ where, data }: { where: { id: string }; data: Row }) => {
       const row = this.arenaRoomTable.findById(where.id);
       if (!row) throw new Error('ArenaRoom not found');
-      Object.assign(row, data);
+      applyData(row, data);
       return clone(row);
+    },
+    updateMany: async ({ where, data }: { where: Row; data: Row }) => {
+      const rows = this.arenaRoomTable.rows.filter((r) =>
+        matchesSimpleWhere(r, where),
+      );
+      rows.forEach((row) => applyData(row, data));
+      return { count: rows.length };
     },
     delete: async ({ where }: { where: { id: string } }) => {
       const index = this.arenaRoomTable.rows.findIndex(
@@ -284,6 +325,11 @@ export class FakePrisma {
   }
 
   arenaParticipant = {
+    count: async ({ where }: { where?: Row } = {}) => {
+      return this.arenaParticipantTable.rows.filter((r) =>
+        matchesSimpleWhere(r, where),
+      ).length;
+    },
     findUnique: async ({
       where,
     }: {
@@ -322,14 +368,14 @@ export class FakePrisma {
         (r) => r.roomId === roomId && r.userId === userId,
       );
       if (!row) throw new Error('ArenaParticipant not found');
-      Object.assign(row, data);
+      applyData(row, data);
       return clone(row);
     },
     updateMany: async ({ where, data }: { where: Row; data: Row }) => {
       const rows = this.arenaParticipantTable.rows.filter((r) =>
         matchesSimpleWhere(r, where),
       );
-      rows.forEach((row) => Object.assign(row, data));
+      rows.forEach((row) => applyData(row, data));
       return { count: rows.length };
     },
     delete: async ({
@@ -430,6 +476,11 @@ export class FakePrisma {
         expiresAt: null,
         winnerTeam: null,
         result: null,
+        revision: 1,
+        activeQuestionOrder: null,
+        questionActivatedAt: null,
+        questionDeadlineAt: null,
+        eventSequence: 0,
         ...data,
       });
       return this.hydrateMatch(row);
@@ -437,14 +488,14 @@ export class FakePrisma {
     update: async ({ where, data }: { where: { id: string }; data: Row }) => {
       const row = this.arenaMatchTable.findById(where.id);
       if (!row) throw new Error('ArenaMatch not found');
-      Object.assign(row, data);
+      applyData(row, data);
       return this.hydrateMatch(row);
     },
     updateMany: async ({ where, data }: { where: Row; data: Row }) => {
       const rows = this.arenaMatchTable.rows.filter((r) =>
         matchesSimpleWhere(r, where),
       );
-      rows.forEach((row) => Object.assign(row, data));
+      rows.forEach((row) => applyData(row, data));
       return { count: rows.length };
     },
     deleteMany: async ({ where }: { where: Row }) => {
@@ -466,8 +517,38 @@ export class FakePrisma {
       const row = this.arenaQuestionTable.findById(where.id);
       return row ? clone(row) : null;
     },
+    findFirst: async ({ where }: { where: Row }) => {
+      const row = this.arenaQuestionTable.rows.find((r) =>
+        matchesSimpleWhere(r, where),
+      );
+      return row ? clone(row) : null;
+    },
+    findMany: async ({
+      where,
+      orderBy,
+      take,
+    }: {
+      where?: Row;
+      orderBy?: { createdAt?: 'asc' | 'desc' };
+      take?: number;
+    } = {}) => {
+      let rows = this.arenaQuestionTable.rows.filter((r) =>
+        matchesSimpleWhere(r, where),
+      );
+      if (orderBy?.createdAt) {
+        rows = [...rows].sort((a, b) =>
+          orderBy.createdAt === 'asc'
+            ? a.createdAt.getTime() - b.createdAt.getTime()
+            : b.createdAt.getTime() - a.createdAt.getTime(),
+        );
+      }
+      if (typeof take === 'number') rows = rows.slice(0, take);
+      return rows.map((r) => clone(r));
+    },
     createMany: async ({ data }: { data: Row[] }) => {
-      data.forEach((item) => this.arenaQuestionTable.insert(item));
+      data.forEach((item) =>
+        this.arenaQuestionTable.insert({ createdAt: new Date(), ...item }),
+      );
       return { count: data.length };
     },
     deleteMany: async ({ where }: { where: Row }) => {
@@ -556,6 +637,210 @@ export class FakePrisma {
       }
       return { count: rows.length };
     },
+  };
+
+  arenaParticipantBattleState = {
+    findUnique: async ({
+      where,
+    }: {
+      where: { matchId_participantId: { matchId: string; participantId: string } };
+    }) => {
+      const { matchId, participantId } = where.matchId_participantId;
+      const row = this.arenaParticipantBattleStateTable.rows.find(
+        (r) => r.matchId === matchId && r.participantId === participantId,
+      );
+      return row ? clone(row) : null;
+    },
+    create: async ({ data }: { data: Row }) => {
+      return this.arenaParticipantBattleStateTable.insert({
+        score: 0,
+        combo: 0,
+        maxCombo: 0,
+        correctStreak: 0,
+        wrongStreak: 0,
+        multiplierBasisPoints: 10000,
+        shieldCharges: 0,
+        deadlineOverrideAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        ...data,
+      });
+    },
+    update: async ({ where, data }: { where: { id: string }; data: Row }) => {
+      const row = this.arenaParticipantBattleStateTable.findById(where.id);
+      if (!row) throw new Error('ArenaParticipantBattleState not found');
+      applyData(row, data);
+      row.updatedAt = new Date();
+      return clone(row);
+    },
+    updateMany: async ({ where, data }: { where: Row; data: Row }) => {
+      const rows = this.arenaParticipantBattleStateTable.rows.filter((r) =>
+        matchesSimpleWhere(r, where),
+      );
+      rows.forEach((row) => {
+        applyData(row, data);
+        row.updatedAt = new Date();
+      });
+      return { count: rows.length };
+    },
+  };
+
+  arenaMatchPowerUp = {
+    findUnique: async ({
+      where,
+    }: {
+      where: { matchId_userId_type: { matchId: string; userId: string; type: string } };
+    }) => {
+      const { matchId, userId, type } = where.matchId_userId_type;
+      const row = this.arenaMatchPowerUpTable.rows.find(
+        (r) => r.matchId === matchId && r.userId === userId && r.type === type,
+      );
+      return row ? clone(row) : null;
+    },
+    findMany: async ({ where }: { where?: Row } = {}) => {
+      return this.arenaMatchPowerUpTable.rows
+        .filter((r) => matchesSimpleWhere(r, where))
+        .map((r) => clone(r));
+    },
+    createMany: async ({
+      data,
+      skipDuplicates,
+    }: {
+      data: Row[];
+      skipDuplicates?: boolean;
+    }) => {
+      let count = 0;
+      for (const item of data) {
+        const exists = this.arenaMatchPowerUpTable.rows.some(
+          (r) =>
+            r.matchId === item.matchId &&
+            r.userId === item.userId &&
+            r.type === item.type,
+        );
+        if (exists) {
+          if (skipDuplicates) continue;
+          p2002('Unique constraint failed on ArenaMatchPowerUp');
+        }
+        this.arenaMatchPowerUpTable.insert({
+          usedCount: 0,
+          cooldownUntil: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          ...item,
+        });
+        count += 1;
+      }
+      return { count };
+    },
+    updateMany: async ({ where, data }: { where: Row; data: Row }) => {
+      const rows = this.arenaMatchPowerUpTable.rows.filter((r) =>
+        matchesSimpleWhere(r, where),
+      );
+      rows.forEach((row) => {
+        applyData(row, data);
+        row.updatedAt = new Date();
+      });
+      return { count: rows.length };
+    },
+  };
+
+  arenaPowerUpEffect = {
+    create: async ({ data }: { data: Row }) => {
+      return this.arenaPowerUpEffectTable.insert({
+        status: 'PENDING',
+        appliesFromQuestionOrder: null,
+        expiresAt: null,
+        remainingTriggers: null,
+        createdAt: new Date(),
+        consumedAt: null,
+        ...data,
+      });
+    },
+    findFirst: async ({ where }: { where: Row }) => {
+      const row = this.arenaPowerUpEffectTable.rows.find((r) =>
+        matchesSimpleWhere(r, where),
+      );
+      return row ? clone(row) : null;
+    },
+    updateMany: async ({ where, data }: { where: Row; data: Row }) => {
+      const rows = this.arenaPowerUpEffectTable.rows.filter((r) =>
+        matchesSimpleWhere(r, where),
+      );
+      rows.forEach((row) => applyData(row, data));
+      return { count: rows.length };
+    },
+  };
+
+  arenaPowerUpUsage = {
+    create: async ({ data }: { data: Row }) => {
+      return this.arenaPowerUpUsageTable.insert({
+        createdAt: new Date(),
+        ...data,
+      });
+    },
+    findUnique: async ({
+      where,
+    }: {
+      where: {
+        matchId_userId_clientRequestId: {
+          matchId: string;
+          userId: string;
+          clientRequestId: string;
+        };
+      };
+    }) => {
+      const { matchId, userId, clientRequestId } = where.matchId_userId_clientRequestId;
+      const row = this.arenaPowerUpUsageTable.rows.find(
+        (r) =>
+          r.matchId === matchId &&
+          r.userId === userId &&
+          r.clientRequestId === clientRequestId,
+      );
+      return row ? clone(row) : null;
+    },
+    update: async ({ where, data }: { where: { id: string }; data: Row }) => {
+      const row = this.arenaPowerUpUsageTable.findById(where.id);
+      if (!row) throw new Error('ArenaPowerUpUsage not found');
+      applyData(row, data);
+      return clone(row);
+    },
+  };
+
+  arenaBattleEvent = {
+    create: async ({ data }: { data: Row }) => {
+      return this.arenaBattleEventTable.insert({
+        createdAt: new Date(),
+        ...data,
+      });
+    },
+  };
+
+  arenaUserQuestionHistory = {
+    findMany: async ({ where }: { where?: Row } = {}) => {
+      return this.arenaUserQuestionHistoryTable.rows
+        .filter((r) => matchesSimpleWhere(r, where))
+        .map((r) => clone(r));
+    },
+    createMany: async ({ data }: { data: Row[] }) => {
+      data.forEach((item) =>
+        this.arenaUserQuestionHistoryTable.insert({ seenAt: new Date(), ...item }),
+      );
+      return { count: data.length };
+    },
+  };
+
+  /**
+   * Only ever called by ArenaBattleEventService.append with the exact
+   * `UPDATE "ArenaMatch" SET "eventSequence" = "eventSequence" + 1 WHERE id
+   * = $1 RETURNING "eventSequence"` shape — not a general SQL engine.
+   */
+  $queryRaw = async (strings: TemplateStringsArray, ...values: unknown[]) => {
+    void strings;
+    const matchId = values[0] as string;
+    const match = this.arenaMatchTable.findById(matchId);
+    if (!match) throw new Error('ArenaMatch not found');
+    match.eventSequence = (match.eventSequence ?? 0) + 1;
+    return [{ eventSequence: match.eventSequence }];
   };
 
   $executeRawUnsafe = async (_sql: string) => {

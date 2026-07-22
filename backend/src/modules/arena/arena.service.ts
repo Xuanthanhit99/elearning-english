@@ -14,141 +14,69 @@ import { QueueArenaDto } from './dto/queue-arena.dto';
 import { CreateArenaEventDto } from './dto/create-arena-event.dto';
 import { SubmitArenaAnswerDto } from './dto/submit-arena-answer.dto';
 import { SetArenaReadyDto } from './dto/set-arena-ready.dto';
-import { GoogleGenAI } from '@google/genai';
-// type ArenaQuestionSeed = {
-//   type: string;
-//   skill: string;
-//   prompt: string;
-//   options?: string[];
-//   answer: string;
-//   explanation?: string;
-//   points?: number;
-// };
-
-// const QUESTION_BANK: ArenaQuestionSeed[] = [
-//   { type: 'MULTIPLE_CHOICE', skill: 'Vocabulary', prompt: 'Apple nghĩa là gì?', options: ['Quả táo', 'Quyển sách', 'Con mèo', 'Cái ghế'], answer: 'Quả táo', explanation: 'Apple là quả táo.' },
-//   { type: 'MULTIPLE_CHOICE', skill: 'Vocabulary', prompt: 'Travel nghĩa là gì?', options: ['Du lịch', 'Nấu ăn', 'Ngủ', 'Vẽ'], answer: 'Du lịch' },
-//   { type: 'FILL_BLANK', skill: 'Grammar', prompt: 'I ___ a student.', options: ['am', 'is', 'are', 'be'], answer: 'am', explanation: 'I đi với am.' },
-//   { type: 'MULTIPLE_CHOICE', skill: 'Grammar', prompt: 'She ___ coffee every morning.', options: ['drink', 'drinks', 'drinking', 'to drink'], answer: 'drinks' },
-//   { type: 'ORDER_SENTENCE', skill: 'Grammar', prompt: 'Sắp xếp câu: go / school / I / to', options: ['I go to school', 'School I go to', 'Go I to school', 'To school go I'], answer: 'I go to school' },
-//   { type: 'LISTENING_PLACEHOLDER', skill: 'Listening', prompt: 'Nghe câu: "How are you today?". Người nói hỏi gì?', options: ['Bạn khỏe không hôm nay?', 'Bạn tên gì?', 'Bạn ở đâu?', 'Bạn học gì?'], answer: 'Bạn khỏe không hôm nay?' },
-//   { type: 'PRONUNCIATION_PLACEHOLDER', skill: 'Pronunciation', prompt: 'Đọc từ "Opportunity". Phase demo: chọn phiên âm gần đúng.', options: ['/ˌɑːpərˈtuːnəti/', '/kæt/', '/bʊk/', '/hæpi/'], answer: '/ˌɑːpərˈtuːnəti/' },
-//   { type: 'FLASH', skill: 'Vocabulary', prompt: 'Flash 5 giây: 🐶. Chọn từ đúng.', options: ['dog', 'cat', 'bird', 'fish'], answer: 'dog' },
-//   { type: 'MATCHING_PLACEHOLDER', skill: 'Mixed', prompt: 'Ghép nghĩa: happy', options: ['vui vẻ', 'buồn', 'nhanh', 'sạch'], answer: 'vui vẻ' },
-//   { type: 'MULTIPLE_CHOICE', skill: 'Mixed', prompt: 'Which sentence is correct?', options: ['I am happy.', 'I is happy.', 'I are happy.', 'I be happy.'], answer: 'I am happy.' },
-// ];
-
-export type ArenaQuestionType =
-  | 'MULTIPLE_CHOICE'
-  | 'FILL_BLANK'
-  | 'ORDER_SENTENCE'
-  | 'LISTENING_PLACEHOLDER'
-  | 'PRONUNCIATION_PLACEHOLDER'
-  | 'FLASH'
-  | 'MATCHING_PLACEHOLDER';
-
-export type ArenaQuestionSeed = {
-  type: ArenaQuestionType;
-  skill: string;
-  level: string;
-  topic: string;
-  prompt: string;
-  options: string[];
-  answer: string;
-  explanation?: string;
-};
-
-const MODE_SIZE: Record<string, { teamSize: number; maxPlayers: number }> = {
-  SOLO_1V1: { teamSize: 1, maxPlayers: 2 },
-  TEAM_2V2: { teamSize: 2, maxPlayers: 4 },
-  TEAM_3V3: { teamSize: 3, maxPlayers: 6 },
-  TOURNAMENT: { teamSize: 1, maxPlayers: 64 },
-};
+import { ArenaEventPublisher } from './realtime/arena-event-publisher';
+import {
+  ARENA_ANSWER_SUBMITTED,
+  ARENA_MATCH_FINISHED,
+  ARENA_MATCH_STARTED,
+  ARENA_ROOM_UPDATED,
+} from './realtime/arena-domain-event';
+import { ArenaBattleEngineService } from './battle/arena-battle-engine.service';
+import { ArenaBattleStateService } from './battle/arena-battle-state.service';
+import { ArenaBattleEventService } from './battle/arena-battle-event.service';
+import { ArenaPowerUpService } from './battle/arena-power-up.service';
+import { getArenaQuestionWindowMs } from './battle/arena-battle.constants';
+import { getModeCapability } from './mode/arena-mode.registry';
+import {
+  resolveArenaMode,
+  resolveRequestedArenaMode,
+} from './mode/arena-mode-resolver.util';
+import {
+  areRequiredPlayersReady,
+  getArenaPreparationTimeoutMs,
+  getCapacityForTeamFormat,
+  isRoomAtCapacity,
+  isStalePreparingRoom,
+} from './mode/arena-capacity.util';
+import {
+  ArenaQuestionPipelineService,
+  ArenaQuestionPreparationError,
+} from './question/arena-question-pipeline.service';
+import { ArenaQuestionHistoryService } from './question/arena-question-history.service';
+import { createQuestionContentHash } from './question/arena-question-hash.util';
+import { ArenaQuestionCandidate } from './question/arena-question.types';
+/** Internal signal: the room left PREPARING (or its participant set changed) mid-preparation — bail out quietly, not a failure to report. */
+class RoomStateChangedError extends Error {}
 
 @Injectable()
 export class ArenaService {
-  constructor(private readonly prisma: PrismaService) {}
-  private ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY,
-  });
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventPublisher: ArenaEventPublisher,
+    private readonly battleEngine: ArenaBattleEngineService,
+    private readonly battleState: ArenaBattleStateService,
+    private readonly battleEvents: ArenaBattleEventService,
+    private readonly powerUps: ArenaPowerUpService,
+    private readonly questionPipeline: ArenaQuestionPipelineService,
+    private readonly questionHistory: ArenaQuestionHistoryService,
+  ) {}
 
-  async generateQuestions(input: {
-    skill: string;
-    level: string;
-    questionSet: string;
-    count: number;
-  }) {
-    try {
-      const prompt = `
-Generate ${input.count} English learning arena questions.
-
-Config:
-- Skill: ${input.skill}
-- Level: ${input.level}
-- Topic: ${input.questionSet}
-
-Return ONLY JSON array.
-
-Rules:
-- Each question has exactly 4 options.
-- answer must be one of options.
-- Vietnamese prompt is allowed.
-- Do not return markdown.
-`;
-
-      const res = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-        },
-      });
-
-      return JSON.parse(res.text ?? '[]');
-    } catch (error) {
-      console.error('Gemini generate questions failed:', error);
-      throw new BadRequestException('Không tạo được câu hỏi từ AI');
-    }
+  private async bumpRoomRevision(roomId: string) {
+    await this.prisma.arenaRoom
+      .update({
+        where: { id: roomId },
+        data: { revision: { increment: 1 } },
+      })
+      .catch(() => undefined);
   }
 
-  // private buildQuestions(skill: string, topic: string, difficulty: string) {
-  //   const pool = QUESTION_BANK.filter((item) => skill === 'Mixed' || item.skill === skill || item.skill === 'Mixed');
-  //   const selected = (pool.length ? pool : QUESTION_BANK).slice(0, 8);
-
-  //   return selected.map((item, index) => ({
-  //     order: index + 1,
-  //     type: item.type,
-  //     skill: skill === 'Mixed' ? item.skill : skill,
-  //     prompt: `${item.prompt} (${topic} · ${difficulty})`,
-  //     options: item.options || [],
-  //     answer: item.answer,
-  //     explanation: item.explanation,
-  //     points: item.points || 10,
-  //   }));
-  // }
-
-  private async buildQuestions(
-    skill: string,
-    topic: string,
-    difficulty: string,
-  ) {
-    const questions: ArenaQuestionSeed[] = await this.generateQuestions({
-      skill,
-      level: difficulty,
-      questionSet: topic,
-      count: 8,
-    });
-
-    return questions.map((item, index) => ({
-      order: index + 1,
-      type: item.type,
-      skill: item.skill || skill,
-      prompt: item.prompt,
-      options: item.options || [],
-      answer: item.answer,
-      explanation: item.explanation,
-      points: 10,
-    }));
+  private async bumpMatchRevision(matchId: string) {
+    await this.prisma.arenaMatch
+      .update({
+        where: { id: matchId },
+        data: { revision: { increment: 1 } },
+      })
+      .catch(() => undefined);
   }
 
   private normalizeAnswer(answer: string) {
@@ -231,10 +159,34 @@ Rules:
 
   async createRoom(userId: string, dto: CreateArenaRoomDto) {
     await this.getOrCreateProfile(userId);
-    const size = MODE_SIZE[dto.gameMode] || MODE_SIZE.SOLO_1V1;
+
+    const resolved = resolveRequestedArenaMode({
+      gameMode: dto.gameMode,
+      mode: dto.mode,
+      teamFormat: dto.teamFormat,
+    });
+    const capability = getModeCapability(resolved.mode);
+    if (!capability.enabled) {
+      throw new BadRequestException(
+        `Chế độ "${resolved.mode}" hiện chưa khả dụng.`,
+      );
+    }
+    if (!capability.supportedTeamFormats.includes(resolved.teamFormat)) {
+      throw new BadRequestException(
+        `Chế độ "${resolved.mode}" không hỗ trợ đội hình "${resolved.teamFormat}".`,
+      );
+    }
+    if (resolved.mode === 'FRIEND_CHALLENGE' && dto.visibility !== 'PRIVATE') {
+      throw new BadRequestException('Friend Challenge chỉ hỗ trợ phòng riêng tư (PRIVATE).');
+    }
+    if (!capability.supportsPrivateRooms && dto.visibility === 'PRIVATE') {
+      throw new BadRequestException(`Chế độ "${resolved.mode}" không hỗ trợ phòng riêng tư.`);
+    }
+
+    const size = getCapacityForTeamFormat(resolved.teamFormat);
     const existingRoom = await this.prisma.arenaRoom.findFirst({
       where: {
-        status: { in: ['WAITING', 'PLAYING'] },
+        status: { in: ['WAITING', 'PREPARING', 'PLAYING'] },
         OR: [{ hostId: userId }, { participants: { some: { userId } } }],
       },
       orderBy: { updatedAt: 'desc' },
@@ -247,7 +199,9 @@ Rules:
         name: dto.name,
         visibility: dto.visibility,
         password: dto.visibility === 'PRIVATE' ? dto.password : null,
-        gameMode: dto.gameMode,
+        gameMode: dto.gameMode ?? resolved.teamFormat,
+        mode: resolved.mode,
+        teamFormat: resolved.teamFormat,
         skill: dto.skill,
         winCondition: dto.winCondition,
         durationSec: dto.durationSec,
@@ -307,14 +261,15 @@ Rules:
       if (
         updatedRoom &&
         updatedRoom.status === 'WAITING' &&
-        updatedRoom.participants.length >= 2 &&
-        updatedRoom.participants.every((participant) => participant.ready)
+        areRequiredPlayersReady(updatedRoom)
       ) {
         await this.beginRoomCountdown(updatedRoom);
       }
+      await this.bumpRoomRevision(roomId);
+      this.eventPublisher.publish({ type: ARENA_ROOM_UPDATED, roomId, actorUserId: userId });
       return this.includeRoom(roomId);
     }
-    if (room.participants.length >= room.maxPlayers)
+    if (isRoomAtCapacity(room))
       throw new BadRequestException('Phòng đã đầy');
 
     const teamACount = room.participants.filter(
@@ -339,12 +294,13 @@ Rules:
     if (
       updatedRoom &&
       updatedRoom.status === 'WAITING' &&
-      updatedRoom.participants.length >= 2 &&
-      updatedRoom.participants.every((participant) => participant.ready)
+      areRequiredPlayersReady(updatedRoom)
     ) {
       await this.beginRoomCountdown(updatedRoom);
     }
 
+    await this.bumpRoomRevision(roomId);
+    this.eventPublisher.publish({ type: ARENA_ROOM_UPDATED, roomId, actorUserId: userId });
     return this.includeRoom(roomId);
   }
 
@@ -376,6 +332,13 @@ Rules:
           include: {
             questions: { orderBy: { order: 'asc' } },
             answers: true,
+            // Gate E: combo/score/streak per participant (public — same
+            // visibility as ArenaParticipant.score/correct/wrong already
+            // has) and currently-relevant power-up effects (only
+            // ACTIVE/BLOCKED — no need to ship the full historical log for
+            // room rendering; ArenaBattleEvent is the audit trail for that).
+            battleStates: true,
+            powerUpEffects: { where: { status: { in: ['ACTIVE', 'BLOCKED'] } } },
           },
           orderBy: { startedAt: 'desc' },
           take: 1,
@@ -444,15 +407,47 @@ Rules:
       this.sanitizeMatchForUser(match, userId),
     );
 
+    // Gate E: own power-up loadout (remaining uses/cooldown) is private —
+    // never included for the opponent, only the caller's own. Only fetched
+    // for the currently-open match, if any.
+    const openMatch = room.matches.find((match) => !match.finishedAt);
+    const myPowerUps = openMatch
+      ? await this.prisma.arenaMatchPowerUp.findMany({
+          where: { matchId: openMatch.id, userId },
+        })
+      : [];
+
     return {
       ...room,
       matches,
       isParticipant,
+      myPowerUps,
       serverTime: new Date().toISOString(),
     };
   }
 
   async enterQueue(userId: string, dto: QueueArenaDto) {
+    const resolved = resolveRequestedArenaMode({
+      gameMode: dto.gameMode,
+      mode: dto.mode,
+      teamFormat: dto.teamFormat,
+    });
+    const capability = getModeCapability(resolved.mode);
+    if (!capability.enabled) {
+      throw new BadRequestException(`Chế độ "${resolved.mode}" hiện chưa khả dụng.`);
+    }
+    if (!capability.supportsPublicMatchmaking) {
+      throw new BadRequestException(
+        `Chế độ "${resolved.mode}" không hỗ trợ ghép trận công khai.`,
+      );
+    }
+    if (!capability.supportedTeamFormats.includes(resolved.teamFormat)) {
+      throw new BadRequestException(
+        `Chế độ "${resolved.mode}" không hỗ trợ đội hình "${resolved.teamFormat}".`,
+      );
+    }
+    const legacyGameMode = dto.gameMode ?? resolved.teamFormat;
+
     // Phase A: chống double-match race condition. Toàn bộ chuỗi
     // "tìm đối thủ -> tạo room -> xoá queue" phải nằm trong 1 transaction,
     // và dùng Postgres advisory transaction lock (khoá theo 1 key cố định
@@ -486,7 +481,7 @@ Rules:
       const opponent = await tx.arenaQueue.findFirst({
         where: {
           userId: { not: userId },
-          gameMode: dto.gameMode,
+          gameMode: legacyGameMode,
           skill: dto.skill,
           difficulty: dto.difficulty,
           topic: dto.topic,
@@ -496,13 +491,15 @@ Rules:
       });
 
       if (opponent) {
-        const size = MODE_SIZE[dto.gameMode] || MODE_SIZE.SOLO_1V1;
+        const size = getCapacityForTeamFormat(resolved.teamFormat);
         const room = await tx.arenaRoom.create({
           data: {
             hostId: opponent.userId,
             name: `Matchmaking ${dto.skill} ${dto.difficulty}`,
             visibility: 'PUBLIC',
-            gameMode: dto.gameMode,
+            gameMode: legacyGameMode,
+            mode: resolved.mode,
+            teamFormat: resolved.teamFormat,
             skill: dto.skill,
             winCondition: 'TIME',
             durationSec: 180,
@@ -510,7 +507,7 @@ Rules:
             topic: dto.topic,
             teamSize: size.teamSize,
             maxPlayers: size.maxPlayers,
-            voiceChat: dto.gameMode !== 'SOLO_1V1',
+            voiceChat: resolved.teamFormat !== 'SOLO_1V1',
             emojiEnabled: true,
             pingEnabled: true,
             participants: {
@@ -533,7 +530,7 @@ Rules:
       const queue = await tx.arenaQueue.upsert({
         where: { userId },
         update: {
-          gameMode: dto.gameMode,
+          gameMode: legacyGameMode,
           skill: dto.skill,
           difficulty: dto.difficulty,
           topic: dto.topic,
@@ -543,7 +540,7 @@ Rules:
         },
         create: {
           userId,
-          gameMode: dto.gameMode,
+          gameMode: legacyGameMode,
           skill: dto.skill,
           difficulty: dto.difficulty,
           topic: dto.topic,
@@ -569,15 +566,56 @@ Rules:
     await this.prisma.arenaQueue.deleteMany({ where: { userId } });
     return { ok: true };
   }
+  /**
+   * Room preparation state machine (Phase BC-Reconciliation). Replaces the
+   * old unconditional "just start it" flow:
+   *   1. CAS claim WAITING (or a stale PREPARING) -> PREPARING.
+   *   2. Defensive capability re-check.
+   *   3. Question pipeline — OUTSIDE any DB transaction (it calls Gemini).
+   *   4. Short transaction: re-verify still PREPARING with the same
+   *      participants, persist match/questions/history, init battle state
+   *      if supported, flip to PLAYING.
+   *   5. Pipeline or persistence failure -> FAILED (+ sanitized reason),
+   *      retryable via `retryPreparation`.
+   */
   private async beginRoomCountdown(
     room: Prisma.ArenaRoomGetPayload<{
       include: { participants: true; matches: true };
     }>,
   ) {
+    const staleThreshold = new Date(Date.now() - getArenaPreparationTimeoutMs());
+    const claimed = await this.prisma.arenaRoom.updateMany({
+      where: {
+        id: room.id,
+        OR: [
+          { status: 'WAITING' },
+          { status: 'PREPARING', preparationStartedAt: { lt: staleThreshold } },
+        ],
+      },
+      data: { status: 'PREPARING', preparationStartedAt: new Date(), preparationError: null },
+    });
+    if (claimed.count === 0) {
+      // Another request already owns preparation and it isn't stale yet —
+      // idempotent no-op, let that request finish (no duplicate match).
+      return;
+    }
+
+    await this.bumpRoomRevision(room.id);
+    this.eventPublisher.publish({ type: ARENA_ROOM_UPDATED, roomId: room.id });
+
+    const resolved = resolveArenaMode(room);
+    const capability = getModeCapability(resolved.mode);
+    const supportsBattle =
+      capability.supportsBattleMechanics && resolved.teamFormat === 'SOLO_1V1';
+
+    if (!capability.enabled || !capability.supportedTeamFormats.includes(resolved.teamFormat)) {
+      await this.failRoomPreparation(room.id, 'Chế độ hoặc đội hình này chưa được hỗ trợ.');
+      return;
+    }
+
     const countdownEndsAt = new Date(Date.now() + 5000);
     // Phase A: deadline cho toàn bộ trận (server-authoritative), tính từ lúc
-    // countdown kết thúc + thời lượng trận (durationSec đã có sẵn trên
-    // ArenaRoom nhưng trước đây chưa được dùng để chặn late-answer).
+    // countdown kết thúc + thời lượng trận.
     const durationSec = room.durationSec ?? 180;
     const expiresAt = new Date(countdownEndsAt.getTime() + durationSec * 1000);
 
@@ -599,29 +637,202 @@ Rules:
     });
 
     if (existingQuestionCount === 0) {
-      const questions = await this.buildQuestions(
-        room.skill,
-        room.topic,
-        room.difficulty,
-      );
+      let candidates: ArenaQuestionCandidate[];
+      try {
+        candidates = await this.questionPipeline.prepareQuestionSet({
+          skill: room.skill,
+          topic: room.topic,
+          difficulty: room.difficulty,
+          mode: resolved.mode,
+          userIds: room.participants.map((participant) => participant.userId),
+          count: 8,
+        });
+      } catch (error) {
+        await this.failRoomPreparation(
+          room.id,
+          error instanceof ArenaQuestionPreparationError
+            ? error.message
+            : 'Không chuẩn bị được câu hỏi cho trận đấu.',
+        );
+        return;
+      }
 
-      await this.prisma.arenaQuestion.createMany({
-        data: questions.map((question) => ({
-          ...question,
+      try {
+        await this.persistPreparedMatch({
+          room,
           matchId: match.id,
-        })),
+          candidates,
+          mode: resolved.mode,
+          topic: room.topic,
+          supportsBattle,
+          countdownEndsAt,
+        });
+      } catch (error) {
+        if (!(error instanceof RoomStateChangedError)) {
+          await this.failRoomPreparation(room.id, 'Không lưu được dữ liệu trận đấu.');
+        }
+        return;
+      }
+    } else {
+      await this.prisma.arenaRoom.update({
+        where: { id: room.id },
+        data: {
+          status: 'PLAYING',
+          countdownEndsAt,
+          preparationStartedAt: null,
+          preparationError: null,
+          revision: { increment: 1 },
+        },
       });
     }
 
-    await this.prisma.arenaParticipant.updateMany({
-      where: { roomId: room.id },
-      data: { score: 0, correct: 0, wrong: 0 },
-    });
+    if (supportsBattle) {
+      // Idempotent (createMany + skipDuplicates) — safe even if this is a
+      // re-entry after a stale-PREPARING reclaim.
+      await this.powerUps.initializeLoadout(
+        match.id,
+        room.participants.map((participant) => participant.userId),
+      );
+    }
 
-    await this.prisma.arenaRoom.update({
-      where: { id: room.id },
-      data: { status: 'PLAYING', countdownEndsAt },
+    this.eventPublisher.publish({
+      type: ARENA_MATCH_STARTED,
+      roomId: room.id,
+      matchId: match.id,
     });
+  }
+
+  private async persistPreparedMatch(input: {
+    room: Prisma.ArenaRoomGetPayload<{ include: { participants: true; matches: true } }>;
+    matchId: string;
+    candidates: ArenaQuestionCandidate[];
+    mode: string;
+    topic: string;
+    supportsBattle: boolean;
+    countdownEndsAt: Date;
+  }) {
+    await this.prisma.$transaction(async (tx) => {
+      const current = await tx.arenaRoom.findUnique({
+        where: { id: input.room.id },
+        include: { participants: true },
+      });
+      if (!current || current.status !== 'PREPARING') {
+        throw new RoomStateChangedError();
+      }
+      const currentIds = new Set(current.participants.map((participant) => participant.userId));
+      const originalIds = new Set(
+        input.room.participants.map((participant) => participant.userId),
+      );
+      const sameParticipants =
+        currentIds.size === originalIds.size &&
+        [...currentIds].every((id) => originalIds.has(id));
+      if (!sameParticipants) {
+        throw new RoomStateChangedError();
+      }
+
+      const questionRows = input.candidates.map((candidate, index) => ({
+        matchId: input.matchId,
+        order: index + 1,
+        type: candidate.type,
+        skill: candidate.skill,
+        prompt: candidate.prompt,
+        options: candidate.options,
+        answer: candidate.answer,
+        explanation: candidate.explanation,
+        points: candidate.points,
+        contentHash: createQuestionContentHash(candidate),
+      }));
+      await tx.arenaQuestion.createMany({ data: questionRows });
+
+      await this.questionHistory.recordSeen(
+        tx,
+        current.participants.flatMap((participant) =>
+          questionRows.map((question) => ({
+            userId: participant.userId,
+            contentHash: question.contentHash,
+            matchId: input.matchId,
+            mode: input.mode,
+            skill: question.skill,
+            topic: input.topic,
+          })),
+        ),
+      );
+
+      await tx.arenaParticipant.updateMany({
+        where: { roomId: input.room.id },
+        data: { score: 0, correct: 0, wrong: 0 },
+      });
+
+      if (input.supportsBattle) {
+        const questionActivatedAt = input.countdownEndsAt;
+        const questionDeadlineAt = new Date(
+          questionActivatedAt.getTime() + getArenaQuestionWindowMs(),
+        );
+        await tx.arenaMatch.update({
+          where: { id: input.matchId },
+          data: { activeQuestionOrder: 1, questionActivatedAt, questionDeadlineAt },
+        });
+      }
+
+      await tx.arenaRoom.update({
+        where: { id: input.room.id },
+        data: {
+          status: 'PLAYING',
+          countdownEndsAt: input.countdownEndsAt,
+          preparationStartedAt: null,
+          preparationError: null,
+          revision: { increment: 1 },
+        },
+      });
+    });
+  }
+
+  private async failRoomPreparation(roomId: string, reason: string) {
+    await this.prisma.arenaRoom
+      .update({ where: { id: roomId }, data: { status: 'FAILED', preparationError: reason } })
+      .catch(() => undefined);
+    await this.bumpRoomRevision(roomId);
+    this.eventPublisher.publish({ type: ARENA_ROOM_UPDATED, roomId });
+  }
+
+  /**
+   * Retries preparation for a room stuck in FAILED — resets it to WAITING
+   * (CAS, idempotent under a race with another retry call) and, if every
+   * required player is still ready, immediately re-triggers preparation.
+   */
+  async retryPreparation(userId: string, roomId: string) {
+    const room = await this.prisma.arenaRoom.findUnique({
+      where: { id: roomId },
+      include: { participants: true },
+    });
+    if (!room) throw new NotFoundException('Không tìm thấy phòng Arena');
+    if (!room.participants.some((participant) => participant.userId === userId)) {
+      throw new ForbiddenException('Bạn chưa ở trong phòng này');
+    }
+    if (room.status !== 'FAILED') {
+      throw new BadRequestException('Phòng không ở trạng thái lỗi, không cần thử lại.');
+    }
+
+    const claimed = await this.prisma.arenaRoom.updateMany({
+      where: { id: roomId, status: 'FAILED' },
+      data: { status: 'WAITING', preparationError: null, revision: { increment: 1 } },
+    });
+    if (claimed.count > 0) {
+      this.eventPublisher.publish({ type: ARENA_ROOM_UPDATED, roomId, actorUserId: userId });
+    }
+
+    const updatedRoom = await this.prisma.arenaRoom.findUnique({
+      where: { id: roomId },
+      include: {
+        participants: true,
+        matches: { where: { finishedAt: null }, take: 1 },
+      },
+    });
+    if (updatedRoom && updatedRoom.status === 'WAITING' && areRequiredPlayersReady(updatedRoom)) {
+      await this.beginRoomCountdown(updatedRoom);
+    }
+
+    return this.includeRoom(roomId);
   }
 
   async startRoom(userId: string, roomId: string) {
@@ -646,6 +857,8 @@ Rules:
     }
 
     await this.beginRoomCountdown(room);
+    await this.bumpRoomRevision(roomId);
+    this.eventPublisher.publish({ type: ARENA_ROOM_UPDATED, roomId, actorUserId: userId });
     return this.includeRoom(roomId);
   }
 
@@ -654,7 +867,11 @@ Rules:
       where: { id: roomId },
     });
     if (!room) throw new NotFoundException('Không tìm thấy phòng Arena');
-    if (room.status !== 'WAITING')
+    // A stale-PREPARING room (see `beginRoomCountdown`'s CAS claim) is also
+    // accepted here — it's the "next ready-toggle" that reclaims it, per the
+    // state machine's own doc comment. `beginRoomCountdown` re-verifies
+    // staleness itself via the same CAS claim before doing anything.
+    if (room.status !== 'WAITING' && !isStalePreparingRoom(room))
       throw new BadRequestException('Chỉ có thể sẵn sàng khi phòng đang chờ');
 
     await this.prisma.arenaParticipant.update({
@@ -671,13 +888,14 @@ Rules:
     });
     if (
       updatedRoom &&
-      updatedRoom.status === 'WAITING' &&
-      updatedRoom.participants.length >= 2 &&
-      updatedRoom.participants.every((participant) => participant.ready)
+      (updatedRoom.status === 'WAITING' || isStalePreparingRoom(updatedRoom)) &&
+      areRequiredPlayersReady(updatedRoom)
     ) {
       await this.beginRoomCountdown(updatedRoom);
     }
 
+    await this.bumpRoomRevision(roomId);
+    this.eventPublisher.publish({ type: ARENA_ROOM_UPDATED, roomId, actorUserId: userId });
     return this.includeRoom(roomId);
   }
 
@@ -732,12 +950,15 @@ Rules:
       this.prisma.arenaParticipant.delete({
         where: { roomId_userId: { roomId, userId } },
       }),
+      this.prisma.arenaRoom.update({
+        where: { id: roomId },
+        data: {
+          revision: { increment: 1 },
+          ...(nextHost ? { hostId: nextHost.userId } : {}),
+        },
+      }),
       ...(nextHost
         ? [
-            this.prisma.arenaRoom.update({
-              where: { id: roomId },
-              data: { hostId: nextHost.userId },
-            }),
             this.prisma.arenaRoomEvent.create({
               data: {
                 roomId,
@@ -768,6 +989,7 @@ Rules:
     ]);
 
     await this.prisma.arenaQueue.deleteMany({ where: { userId } });
+    this.eventPublisher.publish({ type: ARENA_ROOM_UPDATED, roomId, actorUserId: userId });
     return {
       deleted: false,
       hostChanged: Boolean(nextHost),
@@ -792,6 +1014,8 @@ Rules:
       include: { user: { select: { id: true, fullname: true, avatar: true } } },
     });
 
+    await this.bumpRoomRevision(roomId);
+    this.eventPublisher.publish({ type: ARENA_ROOM_UPDATED, roomId, actorUserId: userId });
     return event;
   }
 
@@ -826,17 +1050,70 @@ Rules:
     });
     if (!match) throw new NotFoundException('Không tìm thấy trận đấu Arena');
 
+    // Gate E: per-question activation/deadline, battle-mechanics-capable
+    // modes at SOLO_1V1 team format only — every other mode/team-format
+    // keeps the exact Phase A "answer any question, single match-wide
+    // deadline" behavior below unchanged.
+    const answerBattleMode = resolveArenaMode(room);
+    const isSolo =
+      getModeCapability(answerBattleMode.mode).supportsBattleMechanics &&
+      answerBattleMode.teamFormat === 'SOLO_1V1' &&
+      Boolean(match.activeQuestionOrder);
+    if (isSolo && question.order !== match.activeQuestionOrder) {
+      throw new BadRequestException(
+        'Đây không phải câu hỏi đang mở, vui lòng chờ câu hỏi hiện tại.',
+      );
+    }
+
+    let battleStateBefore: Awaited<
+      ReturnType<typeof this.battleState.getOrCreate>
+    > | null = null;
+    let armedDoubleScore = false;
+    if (isSolo) {
+      battleStateBefore = await this.battleState.getOrCreate(match.id, participant.id);
+      const effect = await this.prisma.arenaPowerUpEffect.findFirst({
+        where: {
+          matchId: match.id,
+          targetUserId: userId,
+          type: 'DOUBLE_SCORE',
+          status: 'ACTIVE',
+        },
+      });
+      armedDoubleScore = Boolean(
+        effect && (effect.appliesFromQuestionOrder ?? 0) <= (match.activeQuestionOrder ?? 0),
+      );
+    }
+
     // Phase A: deadline server-side. Quá hạn -> vẫn ghi nhận answer (để flow
     // tiến lên, không throw lỗi làm match treo) nhưng luôn tính 0 điểm bất kể
     // đáp án đúng/sai, không tin timestamp do client gửi.
-    const isLate = Boolean(
-      match.expiresAt && Date.now() > match.expiresAt.getTime(),
+    const now = Date.now();
+    const isLateByMatch = Boolean(match.expiresAt && now > match.expiresAt.getTime());
+    const perQuestionDeadline = isSolo
+      ? (battleStateBefore?.deadlineOverrideAt ?? match.questionDeadlineAt)
+      : null;
+    const isLateByQuestion = Boolean(
+      perQuestionDeadline && now > perQuestionDeadline.getTime(),
     );
+    const isLate = isLateByMatch || isLateByQuestion;
     const isCorrect =
       !isLate &&
       this.normalizeAnswer(dto.answer) ===
         this.normalizeAnswer(question.answer);
-    const points = isCorrect ? question.points : 0;
+
+    const outcome = isSolo
+      ? this.battleEngine.calculateAnswerOutcome({
+          basePoints: question.points,
+          isCorrect,
+          isLate,
+          comboBefore: battleStateBefore?.combo ?? 0,
+          questionActivatedAt: match.questionActivatedAt,
+          answeredAt: new Date(now),
+          windowMs: getArenaQuestionWindowMs(),
+          powerUpMultiplierBasisPoints: armedDoubleScore ? 20000 : 10000,
+        })
+      : null;
+    const points = isSolo ? outcome!.finalScore : isCorrect ? question.points : 0;
 
     // Phase A: mỗi user chỉ có 1 answer chính thức cho mỗi câu hỏi.
     // - Lần submit đầu tiên: create.
@@ -848,6 +1125,7 @@ Rules:
     // request đồng thời cho cùng câu hỏi chỉ có đúng 1 request tạo được row,
     // request còn lại rơi vào nhánh catch bên dưới.
     let answer: Awaited<ReturnType<typeof this.prisma.arenaAnswer.findFirst>>;
+    let isNewAnswer = false;
     try {
       answer = await this.prisma.arenaAnswer.create({
         data: {
@@ -859,6 +1137,7 @@ Rules:
           points,
         },
       });
+      isNewAnswer = true;
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -882,6 +1161,22 @@ Rules:
       }
     }
 
+    if (isSolo && isNewAnswer) {
+      await this.applySoloBattleOutcome({
+        matchId: match.id,
+        roomId,
+        participantId: participant.id,
+        userId,
+        questionId,
+        activeQuestionOrder: match.activeQuestionOrder!,
+        isCorrect,
+        isLate,
+        armedDoubleScore,
+        comboAfter: outcome!.comboAfter,
+        scoreDelta: points,
+      });
+    }
+
     const answers = await this.prisma.arenaAnswer.findMany({
       where: { matchId: question.matchId, userId },
     });
@@ -901,6 +1196,14 @@ Rules:
       this.prisma.arenaAnswer.count({ where: { matchId: question.matchId } }),
       this.prisma.arenaParticipant.findMany({ where: { roomId } }),
     ]);
+    await this.bumpMatchRevision(question.matchId);
+    this.eventPublisher.publish({
+      type: ARENA_ANSWER_SUBMITTED,
+      roomId,
+      matchId: question.matchId,
+      actorUserId: userId,
+    });
+
     if (
       !match.finishedAt &&
       questionCount > 0 &&
@@ -909,7 +1212,132 @@ Rules:
       await this.finalizeMatch(roomId);
     }
 
-    return { answer, score, correct, wrong, late: isLate };
+    return {
+      answer,
+      score,
+      correct,
+      wrong,
+      late: isLate,
+      ...(isSolo && outcome
+        ? {
+            combo: outcome.comboAfter,
+            comboMultiplierBasisPoints: outcome.comboMultiplierBasisPoints,
+            speedBonusBasisPoints: outcome.speedBonusBasisPoints,
+            powerUpApplied: armedDoubleScore,
+          }
+        : {}),
+    };
+  }
+
+  /**
+   * Gate E, SOLO_1V1 only: persists everything a scored answer implies on
+   * top of the ArenaAnswer row Phase A already writes — combo/streak/
+   * multiplier state, DOUBLE_SCORE consumption, the battle event log, and
+   * advancing to the next question once both participants have answered
+   * the current one. Only called for a genuinely new answer (never a
+   * duplicate retry), so nothing here can double-apply.
+   */
+  private async applySoloBattleOutcome(input: {
+    matchId: string;
+    roomId: string;
+    participantId: string;
+    userId: string;
+    questionId: string;
+    activeQuestionOrder: number;
+    isCorrect: boolean;
+    isLate: boolean;
+    armedDoubleScore: boolean;
+    comboAfter: number;
+    scoreDelta: number;
+  }) {
+    const awarded = input.isCorrect && !input.isLate;
+
+    await this.prisma.$transaction(async (tx) => {
+      const stateBefore = await this.battleState.getOrCreate(
+        input.matchId,
+        input.participantId,
+        tx,
+      );
+      const comboBroken = !awarded && stateBefore.combo > 0;
+
+      await this.battleState.applyAnswerOutcome(tx, {
+        matchId: input.matchId,
+        participantId: input.participantId,
+        awarded,
+        comboAfter: input.comboAfter,
+        scoreDelta: input.scoreDelta,
+      });
+
+      if (input.armedDoubleScore) {
+        await tx.arenaPowerUpEffect.updateMany({
+          where: {
+            matchId: input.matchId,
+            targetUserId: input.userId,
+            type: 'DOUBLE_SCORE',
+            status: 'ACTIVE',
+          },
+          data: { status: 'CONSUMED', consumedAt: new Date(), remainingTriggers: 0 },
+        });
+        await this.battleEvents.append(tx, {
+          matchId: input.matchId,
+          type: 'POWER_UP_CONSUMED',
+          actorUserId: input.userId,
+          questionId: input.questionId,
+          payload: { powerUpType: 'DOUBLE_SCORE' },
+        });
+      }
+
+      await this.battleEvents.append(tx, {
+        matchId: input.matchId,
+        type: awarded ? 'ANSWER_CORRECT' : input.isLate ? 'ANSWER_LATE' : 'ANSWER_WRONG',
+        actorUserId: input.userId,
+        questionId: input.questionId,
+        payload: { points: input.scoreDelta, combo: awarded ? input.comboAfter : 0 },
+      });
+
+      if (awarded) {
+        await this.battleEvents.append(tx, {
+          matchId: input.matchId,
+          type: 'COMBO_INCREASED',
+          actorUserId: input.userId,
+          questionId: input.questionId,
+          payload: { combo: input.comboAfter },
+        });
+      } else if (comboBroken) {
+        await this.battleEvents.append(tx, {
+          matchId: input.matchId,
+          type: 'COMBO_BROKEN',
+          actorUserId: input.userId,
+          questionId: input.questionId,
+          payload: { previousCombo: stateBefore.combo },
+        });
+      }
+
+      const answerCountForQuestion = await tx.arenaAnswer.count({
+        where: { questionId: input.questionId },
+      });
+      const participantCount = await tx.arenaParticipant.count({
+        where: { roomId: input.roomId },
+      });
+
+      if (answerCountForQuestion >= participantCount) {
+        const nextOrder = input.activeQuestionOrder + 1;
+        const now = new Date();
+        const nextDeadline = new Date(now.getTime() + getArenaQuestionWindowMs());
+        await tx.arenaMatch.update({
+          where: { id: input.matchId },
+          data: {
+            activeQuestionOrder: nextOrder,
+            questionActivatedAt: now,
+            questionDeadlineAt: nextDeadline,
+          },
+        });
+        await tx.arenaParticipantBattleState.updateMany({
+          where: { matchId: input.matchId },
+          data: { deadlineOverrideAt: null },
+        });
+      }
+    });
   }
 
   /**
@@ -985,7 +1413,10 @@ Rules:
    *    thứ 2 (defense in depth) phòng trường hợp gọi finalize trùng theo
    *    hướng khác.
    */
-  private async finalizeMatch(roomId: string) {
+  private async finalizeMatch(
+    roomId: string,
+    options?: { forcedWinnerTeam?: 'A' | 'B'; reason?: string },
+  ) {
     const room = await this.prisma.arenaRoom.findUnique({
       where: { id: roomId },
       include: { participants: true },
@@ -1017,9 +1448,19 @@ Rules:
     const teamB = room.participants.filter((item) => item.team === 'B');
     const teamAScore = teamA.reduce((sum, item) => sum + item.score, 0);
     const teamBScore = teamB.reduce((sum, item) => sum + item.score, 0);
-    const winnerTeam: 'A' | 'B' = teamBScore > teamAScore ? 'B' : 'A';
+    const winnerTeam: 'A' | 'B' =
+      options?.forcedWinnerTeam ?? (teamBScore > teamAScore ? 'B' : 'A');
 
-    return this.prisma.$transaction(async (tx) => {
+    // Phase BC-Reconciliation: only modes whose capability registry has
+    // `affectsElo: true` may change ELO — never inferred from team format.
+    // FRIEND_CHALLENGE (and anything else non-ELO) still records win/loss
+    // counts and gold/food/trophy rewards, just leaves mmr/arenaPoint
+    // untouched.
+    const affectsElo = getModeCapability(resolveArenaMode(room).mode).affectsElo;
+
+    let didFinalize = false;
+
+    const outcome = await this.prisma.$transaction(async (tx) => {
       const claimed = await tx.arenaMatch.updateMany({
         where: { id: openMatch.id, finishedAt: null },
         data: {
@@ -1028,9 +1469,10 @@ Rules:
             source: 'server',
             teamAScore,
             teamBScore,
-            reason: 'server_computed_from_scores',
+            reason: options?.reason ?? 'server_computed_from_scores',
           },
           finishedAt: new Date(),
+          revision: { increment: 1 },
         },
       });
 
@@ -1043,6 +1485,8 @@ Rules:
         });
         return { match: finished, rewards: finished?.rewards ?? [] };
       }
+
+      didFinalize = true;
 
       const profiles = new Map<
         string,
@@ -1074,8 +1518,8 @@ Rules:
         const profile = profiles.get(participant.userId)!;
         const won = participant.team === winnerTeam;
         const opponentAvg = participant.team === 'A' ? avgB : avgA;
-        const mmrDelta = this.eloDelta(profile.mmr, opponentAvg, won);
-        const nextMmr = Math.max(100, profile.mmr + mmrDelta);
+        const mmrDelta = affectsElo ? this.eloDelta(profile.mmr, opponentAvg, won) : 0;
+        const nextMmr = affectsElo ? Math.max(100, profile.mmr + mmrDelta) : profile.mmr;
         const nextStreak = won ? profile.winStreak + 1 : 0;
         const foodMultiplier = won
           ? this.getStreakFoodMultiplier(nextStreak)
@@ -1083,7 +1527,7 @@ Rules:
         const foodDelta = Math.round((won ? 40 : 12) * foodMultiplier);
         const goldDelta = won ? 20 : 6;
         const trophyDelta = won ? 1 : 0;
-        const arenaDelta = won ? Math.max(6, mmrDelta) : mmrDelta;
+        const arenaDelta = affectsElo ? (won ? Math.max(6, mmrDelta) : mmrDelta) : 0;
 
         await tx.arenaProfile.update({
           where: { userId: participant.userId },
@@ -1150,13 +1594,58 @@ Rules:
 
       await tx.arenaRoom.update({
         where: { id: roomId },
-        data: { status: 'FINISHED' },
+        data: { status: 'FINISHED', revision: { increment: 1 } },
       });
 
       const finalMatch = await tx.arenaMatch.findUnique({
         where: { id: openMatch.id },
       });
       return { match: finalMatch, rewards };
+    });
+
+    if (didFinalize) {
+      this.eventPublisher.publish({
+        type: ARENA_MATCH_FINISHED,
+        roomId,
+        matchId: openMatch.id,
+      });
+    }
+
+    return outcome;
+  }
+
+  /**
+   * Gate D-Recovery: server-driven forfeit when a SOLO_1V1 participant fails
+   * to reconnect within the disconnect-grace window (see
+   * `ArenaGateway`/`ArenaPresenceService`). Reuses the exact same
+   * CAS-protected `finalizeMatch` transaction as every other finish path —
+   * the only difference is the winner is supplied instead of computed from
+   * scores. Idempotent for the same reason `finalizeMatch` already is: a
+   * second forfeit call (or a race with a normal finish) just hits the
+   * `finishedAt: null` guard and no-ops.
+   */
+  async forfeitParticipant(roomId: string, userId: string) {
+    const room = await this.prisma.arenaRoom.findUnique({
+      where: { id: roomId },
+      include: { participants: true },
+    });
+    if (!room) return null;
+    if (resolveArenaMode(room).teamFormat !== 'SOLO_1V1') return null;
+    if (room.status !== 'PLAYING') return null;
+
+    const participant = room.participants.find((item) => item.userId === userId);
+    if (!participant) return null;
+
+    const openMatch = await this.prisma.arenaMatch.findFirst({
+      where: { roomId, finishedAt: null },
+      orderBy: { startedAt: 'desc' },
+    });
+    if (!openMatch) return null;
+
+    const forcedWinnerTeam = participant.team === 'A' ? 'B' : 'A';
+    return this.finalizeMatch(roomId, {
+      forcedWinnerTeam,
+      reason: 'disconnect_forfeit',
     });
   }
 }

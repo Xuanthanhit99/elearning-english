@@ -1,0 +1,17 @@
+export const ARENA_POWER_UP_NOT_AVAILABLE = 'ARENA_POWER_UP_NOT_AVAILABLE';
+export const ARENA_POWER_UP_OUT_OF_USES = 'ARENA_POWER_UP_OUT_OF_USES';
+export const ARENA_POWER_UP_ON_COOLDOWN = 'ARENA_POWER_UP_ON_COOLDOWN';
+export const ARENA_POWER_UP_INVALID_TARGET = 'ARENA_POWER_UP_INVALID_TARGET';
+export const ARENA_POWER_UP_INVALID_QUESTION = 'ARENA_POWER_UP_INVALID_QUESTION';
+export const ARENA_POWER_UP_NOT_SUPPORTED = 'ARENA_POWER_UP_NOT_SUPPORTED';
+export const ARENA_POWER_UP_REQUEST_CONFLICT = 'ARENA_POWER_UP_REQUEST_CONFLICT';
+export const ARENA_MATCH_NOT_PLAYING = 'ARENA_MATCH_NOT_PLAYING';
+export const ARENA_EFFECT_ALREADY_ACTIVE = 'ARENA_EFFECT_ALREADY_ACTIVE';
+export const ARENA_TOO_LATE = 'ARENA_TOO_LATE';
+
+export class ArenaPowerUpError extends Error {
+  constructor(public readonly code: string, message?: string) {
+    super(message ?? code);
+    this.name = 'ArenaPowerUpError';
+  }
+}

@@ -2,6 +2,8 @@
 
 import { api } from "@/src/lib/axios";
 import { useAuthStore } from "@/src/store/authStore";
+import { useArenaRealtime } from "@/src/hooks/useArenaRealtime";
+import { usePowerUpAction, type ArenaPowerUpType } from "@/src/lib/arena-socket";
 import { useEffect, useMemo, useState } from "react";
 
 type RoomEvent = {
@@ -47,14 +49,40 @@ type ArenaAnswer = {
   points: number;
 };
 
+type ArenaBattleState = {
+  participantId: string;
+  score: number;
+  combo: number;
+  maxCombo: number;
+  multiplierBasisPoints: number;
+  shieldCharges: number;
+};
+
+type ArenaPowerUpEffect = {
+  sourceUserId: string;
+  targetUserId: string;
+  type: ArenaPowerUpType;
+  status: "ACTIVE" | "BLOCKED";
+};
+
+type ArenaMatchPowerUp = {
+  type: ArenaPowerUpType;
+  remainingUses: number;
+  cooldownUntil?: string | null;
+};
+
 type Room = {
   id: string;
   name: string;
   hostId: string;
-  status: "WAITING" | "PLAYING" | "FINISHED" | "CANCELLED";
+  status: "WAITING" | "PREPARING" | "PLAYING" | "FINISHED" | "CANCELLED" | "FAILED";
   countdownEndsAt?: string | null;
   serverTime?: string;
+  revision?: number;
   gameMode: string;
+  mode?: string | null;
+  teamFormat?: string | null;
+  preparationError?: string | null;
   skill: string;
   difficulty: string;
   topic: string;
@@ -66,11 +94,39 @@ type Room = {
   isParticipant: boolean;
   participants: Participant[];
   events: RoomEvent[];
-  matches?: { id: string; winnerTeam?: "A" | "B" | null; result?: any; expiresAt?: string | null; questions: ArenaQuestion[]; answers: ArenaAnswer[] }[];
+  matches?: {
+    id: string;
+    winnerTeam?: "A" | "B" | null;
+    result?: any;
+    expiresAt?: string | null;
+    questions: ArenaQuestion[];
+    answers: ArenaAnswer[];
+    battleStates?: ArenaBattleState[];
+    powerUpEffects?: ArenaPowerUpEffect[];
+  }[];
+  myPowerUps?: ArenaMatchPowerUp[];
   host?: { fullname?: string };
 };
 
 const EMOJIS = ["🔥", "👏", "😆", "💪", "⚡", "🎯"];
+
+const POWER_UP_LABELS: Record<ArenaPowerUpType, { name: string; icon: string; description: string }> = {
+  DOUBLE_SCORE: { name: "Nhân đôi điểm", icon: "✨", description: "Câu đúng tiếp theo được x2 điểm" },
+  SHIELD: { name: "Khiên chắn", icon: "🛡️", description: "Chặn 1 hiệu ứng bất lợi từ đối thủ" },
+  TIME_BOOST: { name: "Cộng giờ", icon: "⏱️", description: "Thêm thời gian trả lời câu hiện tại" },
+  FREEZE: { name: "Đóng băng", icon: "❄️", description: "Rút ngắn thời gian trả lời của đối thủ" },
+};
+
+const POWER_UP_ERROR_MESSAGES: Record<string, string> = {
+  ARENA_POWER_UP_OUT_OF_USES: "Bạn đã dùng hết lượt power-up này trong trận.",
+  ARENA_POWER_UP_ON_COOLDOWN: "Power-up đang hồi chiêu, chờ chút nhé.",
+  ARENA_POWER_UP_INVALID_TARGET: "Không tìm thấy đối thủ hợp lệ.",
+  ARENA_POWER_UP_INVALID_QUESTION: "Không thể dùng lúc này (đối thủ đã trả lời hoặc chưa có câu hỏi).",
+  ARENA_POWER_UP_NOT_SUPPORTED: "Power-up này không khả dụng ở chế độ hiện tại.",
+  ARENA_MATCH_NOT_PLAYING: "Trận chưa bắt đầu hoặc đã kết thúc.",
+  ARENA_POWER_UP_REQUEST_CONFLICT: "Yêu cầu bị xung đột, thử lại.",
+  INVALID_SESSION: "Phiên kết nối realtime không hợp lệ, thử tải lại trang.",
+};
 const PINGS = ["Tập trung", "Cần trợ giúp", "Đẩy tốc độ", "Good job", "Phòng thủ", "Finish now"];
 
 export default function ArenaRoomPage({ roomId }: { roomId: string }) {
@@ -95,11 +151,22 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
     }
   };
 
+  const { connected: realtimeConnected } = useArenaRealtime<Room>(roomId, (snapshot) => {
+    setRoom(snapshot);
+    setLoading(false);
+  });
+
   useEffect(() => {
     fetchRoom();
+  }, [roomId]);
+
+  // Realtime push keeps the room in sync while the arena socket is
+  // connected; REST polling is only the fallback for when it isn't.
+  useEffect(() => {
+    if (realtimeConnected) return;
     const timer = window.setInterval(fetchRoom, 3000);
     return () => window.clearInterval(timer);
-  }, [roomId]);
+  }, [roomId, realtimeConnected]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 500);
@@ -128,6 +195,9 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
   const latestHostChange = room?.events.find((event) => event.type === "HOST_CHANGED");
   const showHostChangedModal = Boolean(latestHostChange && latestHostChange.id !== dismissedHostEventId);
 
+  const myActiveEffects = activeMatch?.powerUpEffects?.filter((effect) => effect.targetUserId === user?.id) || [];
+  const isFrozenByOpponent = myActiveEffects.some((effect) => effect.type === "FREEZE" && effect.status === "ACTIVE");
+
   const sendEvent = async (type: "EMOJI" | "PING" | "CHAT", payload: any) => {
     try {
       await api.post(`/arena/rooms/${roomId}/events`, { type, payload });
@@ -147,6 +217,17 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
     } catch (error: any) {
       console.error(error);
       setMessage(error?.response?.data?.message || "Chưa cập nhật được trạng thái sẵn sàng.");
+    }
+  };
+
+  const retryPreparation = async () => {
+    try {
+      await api.post(`/arena/rooms/${roomId}/retry`);
+      setMessage("Đang thử chuẩn bị lại trận đấu...");
+      await fetchRoom();
+    } catch (error: any) {
+      console.error(error);
+      setMessage(error?.response?.data?.message || "Chưa thử lại được, vui lòng thử lại sau.");
     }
   };
 
@@ -174,6 +255,19 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
     }
   };
 
+  const usePowerUp = async (type: ArenaPowerUpType) => {
+    const ack = await usePowerUpAction(roomId, type);
+    if ("error" in ack) {
+      setMessage(POWER_UP_ERROR_MESSAGES[ack.error] || "Không dùng được power-up này.");
+      return;
+    }
+    setMessage(
+      ack.status === "BLOCKED"
+        ? `${POWER_UP_LABELS[type].name} đã bị đối thủ chặn bằng khiên!`
+        : `Đã dùng ${POWER_UP_LABELS[type].name}.`,
+    );
+  };
+
   if (loading) {
     return <main className="min-h-screen bg-[var(--background)] p-8 font-black text-[var(--lumiverse-ink)]">Đang tải phòng Arena...</main>;
   }
@@ -192,10 +286,14 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
             </button>
             <h1 className="mt-2 text-3xl font-black">{room.name}</h1>
             <p className="mt-2 font-bold text-white/70">
-              {room.gameMode} · {room.skill} · {room.difficulty} · {room.topic} · {room.status}
+              {room.mode || room.gameMode}
+              {room.teamFormat ? ` · ${room.teamFormat}` : ""} · {room.skill} · {room.difficulty} · {room.topic} · {room.status}
+              {" · "}
+              {room.participants.length}/{room.maxPlayers} người chơi
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Badge active={realtimeConnected}>{realtimeConnected ? "Realtime" : "Đang kết nối lại..."}</Badge>
             <Badge active={room.voiceChat}>Voice chat</Badge>
             <Badge active={room.emojiEnabled}>Emoji</Badge>
             <Badge active={room.pingEnabled}>Ping</Badge>
@@ -211,7 +309,7 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
               {myParticipant?.ready ? "Bạn đã sẵn sàng" : "Chuẩn bị vào trận"}
             </h2>
             <p className="mt-3 font-bold leading-7 text-[var(--lumiverse-muted)]">
-              {readyCount}/{room.participants.length} người chơi đã sẵn sàng. Khi đủ người, trận sẽ tự đếm ngược 5 giây và mở câu hỏi.
+              {readyCount}/{room.maxPlayers} người chơi đã sẵn sàng ({room.participants.length}/{room.maxPlayers} đã vào phòng). Khi đủ người, trận sẽ tự đếm ngược 5 giây và mở câu hỏi.
             </p>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <button
@@ -220,6 +318,38 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
                 className={`rounded-2xl px-5 py-4 font-black text-white ${myParticipant?.ready ? "bg-[var(--lumiverse-muted)]" : "bg-emerald-600"}`}
               >
                 {myParticipant?.ready ? "Hủy sẵn sàng" : "Tôi sẵn sàng"}
+              </button>
+              <button type="button" onClick={leaveToLobby} className="rounded-2xl bg-blue-50 px-5 py-4 font-black text-[var(--lumiverse-primary)]">
+                Thoát về lobby
+              </button>
+            </div>
+          </ArenaModal>
+        )}
+
+        {room.status === "PREPARING" && (
+          <ArenaModal>
+            <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Đang chuẩn bị trận đấu</p>
+            <h2 className="mt-2 text-3xl font-black text-[var(--lumiverse-ink)]">Đang tạo câu hỏi...</h2>
+            <p className="mt-3 font-bold leading-7 text-[var(--lumiverse-muted)]">
+              Hệ thống đang chuẩn bị bộ câu hỏi cho trận đấu. Việc này chỉ mất vài giây.
+            </p>
+          </ArenaModal>
+        )}
+
+        {room.status === "FAILED" && room.isParticipant && (
+          <ArenaModal>
+            <p className="text-sm font-extrabold uppercase tracking-wide text-red-600">Chuẩn bị trận đấu thất bại</p>
+            <h2 className="mt-2 text-3xl font-black text-[var(--lumiverse-ink)]">Có lỗi xảy ra</h2>
+            <p className="mt-3 font-bold leading-7 text-[var(--lumiverse-muted)]">
+              {room.preparationError || "Không chuẩn bị được câu hỏi cho trận đấu."}
+            </p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={retryPreparation}
+                className="rounded-2xl bg-emerald-600 px-5 py-4 font-black text-white"
+              >
+                Thử lại
               </button>
               <button type="button" onClick={leaveToLobby} className="rounded-2xl bg-blue-50 px-5 py-4 font-black text-[var(--lumiverse-primary)]">
                 Thoát về lobby
@@ -301,10 +431,53 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
             </div>
 
             <div className="grid gap-6 md:grid-cols-[1fr_auto_1fr]">
-              <TeamColumn title="Đội A" participants={teamA} tone="orange" />
+              <TeamColumn title="Đội A" participants={teamA} tone="orange" battleStates={activeMatch?.battleStates} />
               <div className="flex items-center justify-center text-4xl font-black text-[var(--lumiverse-primary)]">VS</div>
-              <TeamColumn title="Đội B" participants={teamB} tone="blue" />
+              <TeamColumn title="Đội B" participants={teamB} tone="blue" battleStates={activeMatch?.battleStates} />
             </div>
+
+            {room.gameMode === "SOLO_1V1" && room.status === "PLAYING" && matchReady && (
+              <div className="mt-6 rounded-[26px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Power-up</p>
+                  {isFrozenByOpponent && (
+                    <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-black text-sky-700">
+                      ❄️ Bạn đang bị đóng băng!
+                    </span>
+                  )}
+                </div>
+                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                  {(room.myPowerUps || []).map((powerUp) => {
+                    const label = POWER_UP_LABELS[powerUp.type];
+                    const onCooldown = Boolean(powerUp.cooldownUntil && new Date(powerUp.cooldownUntil).getTime() > now);
+                    const disabled = powerUp.remainingUses <= 0 || onCooldown;
+                    return (
+                      <button
+                        key={powerUp.type}
+                        type="button"
+                        onClick={() => usePowerUp(powerUp.type)}
+                        disabled={disabled}
+                        aria-label={`${label.name}: ${label.description}. Còn ${powerUp.remainingUses} lượt.`}
+                        className={`rounded-2xl border px-4 py-3 text-left transition ${
+                          disabled
+                            ? "cursor-not-allowed border-[var(--lumiverse-border)] bg-white/60 opacity-60"
+                            : "border-[var(--lumiverse-primary)] bg-white hover:shadow-md"
+                        }`}
+                      >
+                        <div className="text-2xl">{label.icon}</div>
+                        <div className="mt-1 text-sm font-black text-[var(--lumiverse-ink)]">{label.name}</div>
+                        <div className="text-xs font-bold text-[var(--lumiverse-muted)]">
+                          {onCooldown ? "Đang hồi chiêu" : `Còn ${powerUp.remainingUses} lượt`}
+                        </div>
+                      </button>
+                    );
+                  })}
+                  {!room.myPowerUps?.length && (
+                    <div className="text-sm font-bold text-[var(--lumiverse-muted)]">Không có power-up khả dụng.</div>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="mt-8 rounded-[26px] border border-[var(--lumiverse-border)] bg-white p-5 shadow-sm">
               <div className="flex items-start justify-between gap-4">
@@ -418,24 +591,47 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
   );
 }
 
-function TeamColumn({ title, participants, tone }: { title: string; participants: Participant[]; tone: "orange" | "blue" }) {
+function TeamColumn({
+  title,
+  participants,
+  tone,
+  battleStates,
+}: {
+  title: string;
+  participants: Participant[];
+  tone: "orange" | "blue";
+  battleStates?: ArenaBattleState[];
+}) {
   const bg = tone === "orange" ? "bg-blue-50" : "bg-sky-50";
   const text = tone === "orange" ? "text-[var(--lumiverse-primary)]" : "text-sky-700";
   return (
     <div className={`rounded-[26px] ${bg} p-5`}>
       <h2 className={`text-xl font-black ${text}`}>{title}</h2>
       <div className="mt-4 space-y-3">
-        {participants.length ? participants.map((participant) => (
-          <div key={participant.id} className="rounded-2xl bg-white px-4 py-3 shadow-sm">
-            <div className="flex items-center justify-between gap-2">
-              <div className="font-black text-[var(--lumiverse-ink)]">{participant.user?.fullname || "Player"}</div>
-              <span className={`rounded-full px-2 py-1 text-[10px] font-black ${participant.ready ? "bg-emerald-100 text-emerald-700" : "bg-blue-50 text-[var(--lumiverse-primary)]"}`}>
-                {participant.ready ? "READY" : "CHỜ"}
-              </span>
+        {participants.length ? participants.map((participant) => {
+          const battle = battleStates?.find((state) => state.participantId === participant.id);
+          return (
+            <div key={participant.id} className="rounded-2xl bg-white px-4 py-3 shadow-sm">
+              <div className="flex items-center justify-between gap-2">
+                <div className="font-black text-[var(--lumiverse-ink)]">{participant.user?.fullname || "Player"}</div>
+                <span className={`rounded-full px-2 py-1 text-[10px] font-black ${participant.ready ? "bg-emerald-100 text-emerald-700" : "bg-blue-50 text-[var(--lumiverse-primary)]"}`}>
+                  {participant.ready ? "READY" : "CHỜ"}
+                </span>
+              </div>
+              <div className="text-xs font-bold text-[var(--lumiverse-muted)]">Score {participant.score} · Đúng {participant.correct} · Sai {participant.wrong}</div>
+              {battle && battle.combo > 0 && (
+                <div className="mt-1 flex items-center gap-2">
+                  <span className="rounded-full bg-orange-100 px-2 py-1 text-[10px] font-black text-orange-700">
+                    🔥 Combo x{battle.combo}
+                  </span>
+                  <span className="text-[10px] font-black text-[var(--lumiverse-muted)]">
+                    Nhân {(battle.multiplierBasisPoints / 10000).toFixed(2)}x
+                  </span>
+                </div>
+              )}
             </div>
-            <div className="text-xs font-bold text-[var(--lumiverse-muted)]">Score {participant.score} · Đúng {participant.correct} · Sai {participant.wrong}</div>
-          </div>
-        )) : <div className="rounded-2xl border border-dashed border-white bg-white/60 px-4 py-6 text-center font-bold text-[var(--lumiverse-muted)]">Đang chờ người chơi</div>}
+          );
+        }) : <div className="rounded-2xl border border-dashed border-white bg-white/60 px-4 py-6 text-center font-bold text-[var(--lumiverse-muted)]">Đang chờ người chơi</div>}
       </div>
     </div>
   );

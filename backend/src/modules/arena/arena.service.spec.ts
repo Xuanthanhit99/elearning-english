@@ -7,6 +7,16 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ArenaService } from './arena.service';
 import { FakePrisma } from './arena-fake-prisma';
+import { ArenaEventPublisher } from './realtime/arena-event-publisher';
+import { ArenaBattleEngineService } from './battle/arena-battle-engine.service';
+import { ArenaBattleStateService } from './battle/arena-battle-state.service';
+import { ArenaBattleEventService } from './battle/arena-battle-event.service';
+import { ArenaPowerUpService } from './battle/arena-power-up.service';
+import { getArenaQuestionWindowMs } from './battle/arena-battle.constants';
+import { ArenaAiQuestionSource } from './question/arena-ai-question-source';
+import { ArenaQuestionFallbackSource } from './question/arena-question-fallback-source';
+import { ArenaQuestionHistoryService } from './question/arena-question-history.service';
+import { ArenaQuestionPipelineService } from './question/arena-question-pipeline.service';
 import { CreateArenaRoomDto } from './dto/create-arena-room.dto';
 import { JoinArenaRoomDto } from './dto/join-arena-room.dto';
 import { QueueArenaDto } from './dto/queue-arena.dto';
@@ -38,15 +48,14 @@ describe('ArenaService (Phase A hardening)', () => {
   let service: ArenaService;
   let fake: FakePrisma;
 
-  const mockQuestions = Array.from({ length: 8 }, (_, index) => ({
-    type: 'MULTIPLE_CHOICE',
+  const mockCandidates = Array.from({ length: 8 }, (_, index) => ({
+    type: 'MULTIPLE_CHOICE' as const,
     skill: 'Vocabulary',
-    level: 'A1',
-    topic: 'Animals',
     prompt: `Question ${index + 1}`,
     options: ['A', 'B', 'C', 'D'],
     answer: 'A',
     explanation: `Explanation ${index + 1}`,
+    points: 10,
   }));
 
   beforeEach(async () => {
@@ -56,11 +65,21 @@ describe('ArenaService (Phase A hardening)', () => {
       providers: [
         ArenaService,
         { provide: PrismaService, useValue: fake },
+        { provide: ArenaEventPublisher, useValue: { publish: jest.fn() } },
+        ArenaBattleEngineService,
+        ArenaBattleStateService,
+        ArenaBattleEventService,
+        ArenaPowerUpService,
+        ArenaAiQuestionSource,
+        ArenaQuestionFallbackSource,
+        ArenaQuestionHistoryService,
+        ArenaQuestionPipelineService,
       ],
     }).compile();
 
     service = module.get<ArenaService>(ArenaService);
-    jest.spyOn(service, 'generateQuestions').mockResolvedValue(mockQuestions);
+    const pipeline = module.get<ArenaQuestionPipelineService>(ArenaQuestionPipelineService);
+    jest.spyOn(pipeline, 'prepareQuestionSet').mockResolvedValue(mockCandidates);
   });
 
   const roomDto = (): CreateArenaRoomDto =>
@@ -81,9 +100,31 @@ describe('ArenaService (Phase A hardening)', () => {
     return room.id;
   }
 
+  // Gate E added ArenaMatch.questionActivatedAt/questionDeadlineAt, set from
+  // the *original* (5s-future) countdownEndsAt by beginRoomCountdown when
+  // the match starts. Rewinding only `countdownEndsAt` (as these Phase A
+  // tests already did, before Gate E existed) would leave those fields
+  // stale — `questionActivatedAt` still ~5s in the "future" relative to
+  // `Date.now()` at assertion time — which the SOLO_1V1 speed-bonus
+  // calculation would read as a negative elapsed time, clamp to 0, and
+  // score it as an instant (max speed bonus) answer. Rewinding them here
+  // too keeps these pre-Gate-E test assertions (flat `points: 10` for a
+  // normal correct answer) accurate: comfortably past the speed-bonus
+  // window (no bonus) but still inside the per-question deadline (not late).
   function expireCountdown(roomId: string) {
     const row = fake.arenaRoomTable.findById(roomId)!;
     row.countdownEndsAt = new Date(Date.now() - 1000);
+
+    const match = fake.arenaMatchTable.rows.find(
+      (m) => m.roomId === roomId && !m.finishedAt,
+    );
+    if (match?.activeQuestionOrder) {
+      const windowMs = getArenaQuestionWindowMs();
+      match.questionActivatedAt = new Date(Date.now() - windowMs * 0.9);
+      match.questionDeadlineAt = new Date(
+        match.questionActivatedAt.getTime() + windowMs,
+      );
+    }
   }
 
   function getOpenMatchId(roomId: string) {
