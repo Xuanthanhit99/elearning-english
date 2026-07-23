@@ -46,8 +46,26 @@ import { ArenaQuestionHistoryService } from './question/arena-question-history.s
 import { createQuestionContentHash } from './question/arena-question-hash.util';
 import { ArenaQuestionCandidate } from './question/arena-question.types';
 import { ArenaProgressionDispatcherService } from './progression/arena-progression-dispatcher.service';
+import { ArenaSeasonService } from './progression/arena-season.service';
+import { ArenaReconciliationService } from './progression/arena-reconciliation.service';
+import {
+  arenaTierRank,
+  resolveArenaDecayStatus,
+  resolveArenaPlacementStatus,
+  resolveArenaRatingLifecycleStage,
+} from './progression/arena-rating-engine';
 /** Internal signal: the room left PREPARING (or its participant set changed) mid-preparation — bail out quietly, not a failure to report. */
 class RoomStateChangedError extends Error {}
+
+function envBool(name: string, fallback: boolean): boolean {
+  const raw = process.env[name];
+  if (raw === undefined) return fallback;
+  return ['1', 'true', 'yes', 'on'].includes(raw.trim().toLowerCase());
+}
+
+const getArenaEnabled = () => envBool('ARENA_ENABLED', true);
+const getArenaRankedEnabled = () => envBool('ARENA_RANKED_ENABLED', true);
+const getArenaMatchmakingEnabled = () => envBool('ARENA_MATCHMAKING_ENABLED', true);
 
 @Injectable()
 export class ArenaService {
@@ -61,6 +79,8 @@ export class ArenaService {
     private readonly questionPipeline: ArenaQuestionPipelineService,
     private readonly questionHistory: ArenaQuestionHistoryService,
     private readonly progressionDispatcher: ArenaProgressionDispatcherService,
+    private readonly seasonService: ArenaSeasonService,
+    private readonly reconciliation: ArenaReconciliationService,
   ) {}
 
   private async bumpRoomRevision(roomId: string) {
@@ -84,6 +104,44 @@ export class ArenaService {
   private normalizeAnswer(answer: string) {
     return answer.trim().toLowerCase().replace(/\s+/g, ' ');
   }
+
+  private assertArenaEnabled() {
+    if (!getArenaEnabled()) {
+      throw new BadRequestException('Arena is temporarily disabled.');
+    }
+  }
+
+  async getAdminOperations() {
+    const [seasonCounts, queueCount, openMatches, progressionCounts, failedRewards, fairPlayCount] = await Promise.all([
+      this.prisma.arenaSeason.groupBy({ by: ['status'], _count: { _all: true } }),
+      this.prisma.arenaQueue.count(),
+      this.prisma.arenaMatch.count({ where: { finishedAt: null } }),
+      this.prisma.arenaProgressionRecord.groupBy({ by: ['status'], _count: { _all: true } }),
+      this.prisma.arenaSeasonResult.count({ where: { rewardStatus: 'FAILED' } }),
+      this.prisma.arenaFairPlayLog.count({ where: { createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } } }),
+    ]);
+    return {
+      featureFlags: {
+        arenaEnabled: getArenaEnabled(),
+        rankedEnabled: getArenaRankedEnabled(),
+        matchmakingEnabled: getArenaMatchmakingEnabled(),
+      },
+      seasons: seasonCounts,
+      queueCount,
+      openMatches,
+      progressionCounts,
+      failedSeasonRewards: failedRewards,
+      fairPlayFlagsLast24h: fairPlayCount,
+    };
+  }
+
+  runAdminReconciliation() {
+    return this.reconciliation.reconcile();
+  }
+
+  runAdminSeasonLifecycle() {
+    return this.seasonService.runLifecycle();
+  }
   // Phase F1: ELO/streak-multiplier math moved to
   // `progression/arena-rating-engine.ts` / `progression/arena-pet-reward.util.ts`
   // — reward/rating application itself moved out of `finalizeMatch`'s
@@ -103,16 +161,131 @@ export class ArenaService {
   }
 
   async getMyProfile(userId: string) {
+    this.assertArenaEnabled();
     const profile = await this.getOrCreateProfile(userId);
     const total = profile.winCount + profile.loseCount;
+    const ratedMatchCount = await this.prisma.arenaRatingHistory.count({ where: { userId } });
+    const placement = this.buildPlacementStatus(profile.placementMatchesRemaining);
 
     return {
       ...profile,
       winRate: total === 0 ? 0 : Math.round((profile.winCount / total) * 100),
+      ...placement,
+      ratedMatchCount,
+      ratingLifecycleStage: resolveArenaRatingLifecycleStage({
+        placementMatchesRemaining: placement.placementMatchesRemaining,
+        ratedMatchCount,
+      }),
+      ...resolveArenaDecayStatus({
+        tier: profile.tier,
+        placementMatchesRemaining: placement.placementMatchesRemaining,
+        lastMatchAt: profile.lastMatchAt,
+        lastRatingDecayAt: profile.lastRatingDecayAt,
+      }),
+    };
+  }
+
+  /**
+   * Phase F2.1 (design doc Part 3): `isInPlacement` is derived, never
+   * stored — a second boolean column would just be a redundant, possibly-
+   * stale mirror of `placementMatchesRemaining > 0`. Delegates to the pure,
+   * independently-unit-tested `resolveArenaPlacementStatus` (same validated
+   * total the K-factor selection and the migration's schema default all
+   * agree on), so this response can never silently disagree with what
+   * actually gated the player's matches.
+   */
+  private buildPlacementStatus(placementMatchesRemainingRaw: number) {
+    return resolveArenaPlacementStatus(placementMatchesRemainingRaw);
+  }
+
+  /**
+   * Phase F1 (Part 8): own `ArenaRatingHistory`, cursor-paginated —
+   * powers the rating-over-time chart (Part 9). Read-only, own rows only —
+   * never another user's rating history (no `userId` param accepted from
+   * the client, always the authenticated caller, same convention as
+   * `getMyProfile`).
+   */
+  async getRatingHistory(
+    userId: string,
+    options: { take?: string; cursor?: string; tierChangesOnly?: string; seasonId?: string },
+  ) {
+    this.assertArenaEnabled();
+    const takeRaw = Number(options.take);
+    const take = Number.isFinite(takeRaw) && takeRaw > 0 ? Math.min(takeRaw, 100) : 20;
+    const where: Prisma.ArenaRatingHistoryWhereInput = {
+      userId,
+      ...(options.seasonId ? { seasonId: options.seasonId } : {}),
+    };
+
+    const rows = await this.prisma.arenaRatingHistory.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: take + 1,
+      ...(options.cursor ? { cursor: { id: options.cursor }, skip: 1 } : {}),
+      include: {
+        match: {
+          include: {
+            room: {
+              select: {
+                gameMode: true,
+                teamFormat: true,
+                participants: {
+                  include: { user: { select: { id: true, fullname: true, avatar: true } } },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const hasMore = rows.length > take;
+    const pageRows = hasMore ? rows.slice(0, take) : rows;
+    const items =
+      options.tierChangesOnly === 'true'
+        ? pageRows.filter((row) => row.previousTier !== row.nextTier)
+        : pageRows;
+
+    return {
+      items: items.map((row) => {
+        const opponent = row.opponentId
+          ? row.match.room.participants.find((participant) => participant.userId === row.opponentId)?.user ?? null
+          : null;
+        return {
+          ...row,
+          promoted: arenaTierRank(row.nextTier) > arenaTierRank(row.previousTier),
+          demoted: arenaTierRank(row.nextTier) < arenaTierRank(row.previousTier),
+          mode: row.match.room.gameMode,
+          teamFormat: row.match.room.teamFormat,
+          opponent,
+        };
+      }),
+      nextCursor: hasMore && pageRows.length > 0 ? pageRows[pageRows.length - 1].id : null,
+    };
+  }
+
+  async getCurrentSeason(userId: string) {
+    this.assertArenaEnabled();
+    const [season, profile] = await Promise.all([
+      this.seasonService.getActiveSeason(),
+      this.getMyProfile(userId),
+    ]);
+    const seasonPeak = season
+      ? await this.prisma.arenaRatingHistory.aggregate({
+          where: { userId, seasonId: season.id },
+          _max: { nextMmr: true },
+        })
+      : null;
+
+    return {
+      season,
+      profile,
+      seasonPeakMmr: seasonPeak?._max.nextMmr ?? profile.mmr,
     };
   }
 
   async getLobby(userId: string) {
+    this.assertArenaEnabled();
     const profile = await this.getMyProfile(userId);
     const rooms = await this.prisma.arenaRoom.findMany({
       where: { status: 'WAITING' },
@@ -147,6 +320,7 @@ export class ArenaService {
   }
 
   async createRoom(userId: string, dto: CreateArenaRoomDto) {
+    this.assertArenaEnabled();
     await this.getOrCreateProfile(userId);
 
     const resolved = resolveRequestedArenaMode({
@@ -155,6 +329,9 @@ export class ArenaService {
       teamFormat: dto.teamFormat,
     });
     const capability = getModeCapability(resolved.mode);
+    if (capability.participatesInSeason && !getArenaRankedEnabled()) {
+      throw new BadRequestException('Arena ranked play is temporarily disabled.');
+    }
     if (!capability.enabled) {
       throw new BadRequestException(
         `Chế độ "${resolved.mode}" hiện chưa khả dụng.`,
@@ -170,6 +347,10 @@ export class ArenaService {
     }
     if (!capability.supportsPrivateRooms && dto.visibility === 'PRIVATE') {
       throw new BadRequestException(`Chế độ "${resolved.mode}" không hỗ trợ phòng riêng tư.`);
+    }
+
+    if (capability.participatesInSeason) {
+      await this.seasonService.requireActiveSeason();
     }
 
     const size = getCapacityForTeamFormat(resolved.teamFormat);
@@ -406,22 +587,43 @@ export class ArenaService {
         })
       : [];
 
+    // Phase F1.1 (design doc Part 8/9 — "minimal result/API progression
+    // payload"): the most recent match (matches[0], already ordered
+    // newest-first) gets its own-caller progression summary attached the
+    // same way `finishMatch`'s response already does, via the same
+    // read-only, idempotent-safe `getProgressionSummary` — so the result UI
+    // has real XP/rating data available whenever a room snapshot shows a
+    // finished match, not only right after the caller's own finish request.
+    const latestMatch = room.matches[0];
+    const progression =
+      latestMatch && latestMatch.finishedAt
+        ? await this.progressionDispatcher.getProgressionSummary(latestMatch.id, userId)
+        : null;
+
     return {
       ...room,
       matches,
       isParticipant,
       myPowerUps,
+      progression,
       serverTime: new Date().toISOString(),
     };
   }
 
   async enterQueue(userId: string, dto: QueueArenaDto) {
+    this.assertArenaEnabled();
+    if (!getArenaMatchmakingEnabled()) {
+      throw new BadRequestException('Arena matchmaking is temporarily disabled.');
+    }
     const resolved = resolveRequestedArenaMode({
       gameMode: dto.gameMode,
       mode: dto.mode,
       teamFormat: dto.teamFormat,
     });
     const capability = getModeCapability(resolved.mode);
+    if (capability.participatesInSeason && !getArenaRankedEnabled()) {
+      throw new BadRequestException('Arena ranked play is temporarily disabled.');
+    }
     if (!capability.enabled) {
       throw new BadRequestException(`Chế độ "${resolved.mode}" hiện chưa khả dụng.`);
     }
@@ -434,6 +636,9 @@ export class ArenaService {
       throw new BadRequestException(
         `Chế độ "${resolved.mode}" không hỗ trợ đội hình "${resolved.teamFormat}".`,
       );
+    }
+    if (capability.participatesInSeason) {
+      await this.seasonService.requireActiveSeason();
     }
     const legacyGameMode = dto.gameMode ?? resolved.teamFormat;
 
@@ -467,17 +672,44 @@ export class ArenaService {
       const now = new Date();
       const ownRange = this.getSearchRange(now, profile.mmr);
 
-      const opponent = await tx.arenaQueue.findFirst({
+      const opponentBaseWhere = {
+        userId: { not: userId },
+        gameMode: legacyGameMode,
+        skill: dto.skill,
+        difficulty: dto.difficulty,
+        topic: dto.topic,
+        mmr: { gte: ownRange.min, lte: ownRange.max },
+      };
+
+      // Phase F2.1 — Placement Matchmaking Policy (see
+      // docs/arena-phase-f-design.md's F2.0.2 refinement: a documented
+      // *soft preference*, never a gate). Try a same-placement-status
+      // opponent first — one extra indexed lookup through the existing
+      // ArenaQueue->User->ArenaProfile relation, no denormalized column,
+      // no new table. If none is available in this exact instant, fall
+      // back to the unconstrained query immediately (same transaction,
+      // same tick) — this can never exclude an otherwise-valid candidate
+      // and never waits longer than the existing mmr-range widening
+      // (`ownRange`, computed above) already allows; that widening remains
+      // the sole authority on the actual candidate pool.
+      const ownIsInPlacement = profile.placementMatchesRemaining > 0;
+      const preferredOpponent = await tx.arenaQueue.findFirst({
         where: {
-          userId: { not: userId },
-          gameMode: legacyGameMode,
-          skill: dto.skill,
-          difficulty: dto.difficulty,
-          topic: dto.topic,
-          mmr: { gte: ownRange.min, lte: ownRange.max },
+          ...opponentBaseWhere,
+          user: {
+            arenaProfile: {
+              placementMatchesRemaining: ownIsInPlacement ? { gt: 0 } : { equals: 0 },
+            },
+          },
         },
         orderBy: { createdAt: 'asc' },
       });
+      const opponent =
+        preferredOpponent ??
+        (await tx.arenaQueue.findFirst({
+          where: opponentBaseWhere,
+          orderBy: { createdAt: 'asc' },
+        }));
 
       if (opponent) {
         const size = getCapacityForTeamFormat(resolved.teamFormat);
@@ -594,6 +826,9 @@ export class ArenaService {
 
     const resolved = resolveArenaMode(room);
     const capability = getModeCapability(resolved.mode);
+    const activeSeason = capability.participatesInSeason
+      ? await this.seasonService.requireActiveSeason()
+      : null;
     const supportsBattle =
       capability.supportsBattleMechanics && resolved.teamFormat === 'SOLO_1V1';
 
@@ -611,7 +846,7 @@ export class ArenaService {
     const match =
       room.matches[0] ||
       (await this.prisma.arenaMatch.create({
-        data: { roomId: room.id, expiresAt },
+        data: { roomId: room.id, seasonId: activeSeason?.id ?? null, expiresAt },
       }));
 
     if (!match.expiresAt) {
@@ -1392,10 +1627,25 @@ export class ArenaService {
     // opponent's XP/reward breakdown, only the calling user's own. The
     // pre-existing `rewards` array (both participants' mmr/gold deltas,
     // Phase A) is untouched — this is an additive field alongside it.
+    //
+    // Phase F2.1: prefer the freshly-computed outcome from THIS request's
+    // own `finalizeMatch` -> `processMatch` call (`result.progressionResults`,
+    // only present when this exact call was the one that finalized the
+    // match) over a fresh `getProgressionSummary` read — the summary read
+    // always treats an already-COMPLETED record as a replay and never
+    // reports `placementCompleted`/`promoted`/`demoted` (those are only
+    // ever correct on the original completing call). Falls back to the
+    // summary read for the idempotent "already finished by an earlier
+    // request" case, where there is no fresh result to prefer.
     const resolved = resolveArenaMode(room);
-    const progression = result.match
-      ? await this.progressionDispatcher.getProgressionSummary(result.match.id, userId)
-      : null;
+    const freshOwnOutcome = (result as any).progressionResults?.find(
+      (entry: { userId: string }) => entry.userId === userId,
+    );
+    const progression = freshOwnOutcome
+      ? freshOwnOutcome
+      : result.match
+        ? await this.progressionDispatcher.getProgressionSummary(result.match.id, userId)
+        : null;
 
     return { ...result, mode: resolved.mode, teamFormat: resolved.teamFormat, progression };
   }
@@ -1504,7 +1754,17 @@ export class ArenaService {
       // (not fire-and-forget) so `finishMatch`'s caller/response and every
       // existing test that reads reward data immediately after this call
       // keep seeing fully-applied results, same timing as before F1.
-      await this.progressionDispatcher.processMatch(openMatch.id);
+      //
+      // Phase F2.1: the array is captured (not discarded) so `finishMatch`
+      // can surface the CALLING user's freshly-computed outcome —
+      // including `placementCompleted`/`promoted`/`demoted`, which are
+      // only ever correctly populated on the original completing call
+      // (`finalizeCompletedProgression`), never on a later replay read via
+      // `getProgressionSummary`/`loadCompletedOutcome`. Without this, a
+      // match that completes placement (or promotes/demotes) on this exact
+      // request would report `placementCompleted: false` in its own finish
+      // response — a real, newly-discovered gap this phase fixes.
+      const progressionResults = await this.progressionDispatcher.processMatch(openMatch.id);
 
       this.eventPublisher.publish({
         type: ARENA_MATCH_FINISHED,
@@ -1515,7 +1775,7 @@ export class ArenaService {
       const rewards = await this.prisma.arenaRewardLog.findMany({
         where: { matchId: openMatch.id },
       });
-      return { match: outcome.match, rewards };
+      return { match: outcome.match, rewards, progressionResults };
     }
 
     return outcome;

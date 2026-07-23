@@ -170,6 +170,63 @@ export function createNotificationTemplateRegistry(
       },
     },
     {
+      eventType: NotificationEventType.ARENA_TIER_DEMOTED,
+      eventVersion: 1,
+      templateKey: 'arena-tier-demoted.v1',
+      render: ({ metadata }) => {
+        const tierLabel = getText(metadata, 'tierLabel', 'hang hien tai');
+        return safeResult({
+          templateKey: 'arena-tier-demoted.v1',
+          title: getText(metadata, 'title', 'Cap nhat hang Arena'),
+          body: getText(
+            metadata,
+            'message',
+            `Hang Arena cua ban hien tai la ${tierLabel}. Tiep tuc chien dau de len lai nhe.`,
+          ),
+          actionUrl: getInternalHref(urls, metadata, urls.arena()),
+          metadata: { tierLabel },
+        });
+      },
+    },
+    {
+      eventType: NotificationEventType.ARENA_PLACEMENT_COMPLETED,
+      eventVersion: 1,
+      templateKey: 'arena-placement-completed.v1',
+      render: ({ metadata }) => {
+        const tierLabel = getText(metadata, 'tierLabel', 'hang cua ban');
+        return safeResult({
+          templateKey: 'arena-placement-completed.v1',
+          title: getText(metadata, 'title', 'Xep hang xong roi!'),
+          body: getText(
+            metadata,
+            'message',
+            `Ban da hoan thanh cac tran xep hang. Hang Arena hien tai: ${tierLabel}.`,
+          ),
+          actionUrl: getInternalHref(urls, metadata, urls.arena()),
+          metadata: { tierLabel },
+        });
+      },
+    },
+    {
+      eventType: NotificationEventType.ARENA_RATING_DECAYED,
+      eventVersion: 1,
+      templateKey: 'arena-rating-decayed.v1',
+      render: ({ metadata }) => {
+        const mmrDelta = getText(metadata, 'mmrDelta', 'mot it');
+        return safeResult({
+          templateKey: 'arena-rating-decayed.v1',
+          title: getText(metadata, 'title', 'Diem Arena da giam do vang mat'),
+          body: getText(
+            metadata,
+            'message',
+            `Diem Arena cua ban giam ${mmrDelta} sau thoi gian khong thi dau xep hang.`,
+          ),
+          actionUrl: getInternalHref(urls, metadata, urls.arena()),
+          metadata: { mmrDelta },
+        });
+      },
+    },
+    {
       eventType: NotificationEventType.LEADERBOARD_REWARD_GRANTED,
       eventVersion: 1,
       templateKey: 'leaderboard-reward-granted.v1',

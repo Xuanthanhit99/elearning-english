@@ -1,5 +1,5 @@
 import { BullModule } from '@nestjs/bullmq';
-import { Module } from '@nestjs/common';
+import { Module, OnModuleDestroy } from '@nestjs/common';
 import Redis from 'ioredis';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { PrismaModule } from '../../prisma/prisma.module';
@@ -22,6 +22,21 @@ import { SocialLeaderboardController } from './social-leaderboard.controller';
 import { SocialLeaderboardService } from './social-leaderboard.service';
 import { XpService } from './xp.service';
 
+class LeaderboardRedisClient extends Redis implements OnModuleDestroy {
+  constructor() {
+    super({
+      host: process.env.REDIS_HOST ?? '127.0.0.1',
+      port: Number(process.env.REDIS_PORT ?? 6379),
+      password: process.env.REDIS_PASSWORD || undefined,
+      maxRetriesPerRequest: null,
+    });
+  }
+
+  async onModuleDestroy() {
+    await this.quit();
+  }
+}
+
 @Module({
   imports: [
     PrismaModule,
@@ -38,13 +53,7 @@ import { XpService } from './xp.service';
   providers: [
     {
       provide: LEADERBOARD_REDIS,
-      useFactory: () =>
-        new Redis({
-          host: process.env.REDIS_HOST ?? '127.0.0.1',
-          port: Number(process.env.REDIS_PORT ?? 6379),
-          password: process.env.REDIS_PASSWORD || undefined,
-          maxRetriesPerRequest: null,
-        }),
+      useClass: LeaderboardRedisClient,
     },
     LeaderboardCookieAuthService,
     LeaderboardRealtimeGateway,

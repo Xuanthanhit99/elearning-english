@@ -19,5 +19,7 @@ COPY prisma ./prisma
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=build /app/dist ./dist
+RUN mkdir -p uploads/community && chown -R node:node /app/uploads
+USER node
 EXPOSE 3002
 CMD ["node", "dist/src/main.js"]

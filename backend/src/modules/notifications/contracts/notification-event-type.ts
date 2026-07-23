@@ -16,6 +16,10 @@ export enum NotificationEventType {
   // docs/arena-progression-sequence.md §4 on why these naming layers must
   // not be assumed interchangeable despite sometimes sharing a name.
   ARENA_PROMOTED = 'ARENA_PROMOTED',
+  ARENA_TIER_DEMOTED = 'ARENA_TIER_DEMOTED',
+  // Phase F2.1 — fired at most once per account (lifetime placement).
+  ARENA_PLACEMENT_COMPLETED = 'ARENA_PLACEMENT_COMPLETED',
+  ARENA_RATING_DECAYED = 'ARENA_RATING_DECAYED',
 }
 
 export enum NotificationEventPriority {

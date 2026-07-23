@@ -215,10 +215,14 @@ export class FakePrisma {
         trophy: 0,
         lastMatchAt: null,
         tier: 'BRONZE',
+        peakMmr: 1500,
+        peakTier: 'BRONZE',
         seasonWinCount: 0,
         seasonLoseCount: 0,
         lastDailyBonusAt: null,
         lastFirstWinBonusAt: null,
+        placementMatchesRemaining: 5,
+        lastRatingDecayAt: null,
         ...data,
       });
     },
@@ -629,12 +633,12 @@ export class FakePrisma {
         ...data,
       });
     },
-    findUnique: async ({
-      where,
-    }: {
-      where: { matchId_userId: { matchId: string; userId: string } };
-    }) => {
-      const { matchId, userId } = where.matchId_userId;
+    findUnique: async ({ where }: { where: Row }) => {
+      if (where.id) {
+        const row = this.arenaRewardLogTable.findById(where.id as string);
+        return row ? clone(row) : null;
+      }
+      const { matchId, userId } = where.matchId_userId as { matchId: string; userId: string };
       const row = this.arenaRewardLogTable.rows.find(
         (r) => r.matchId === matchId && r.userId === userId,
       );
@@ -883,6 +887,9 @@ export class FakePrisma {
   };
 
   arenaRatingHistory = {
+    count: async ({ where }: { where?: Row } = {}) => {
+      return this.arenaRatingHistoryTable.rows.filter((r) => matchesSimpleWhere(r, where)).length;
+    },
     findUnique: async ({ where }: { where: Row }) => {
       if (where.id) {
         const row = this.arenaRatingHistoryTable.findById(where.id);

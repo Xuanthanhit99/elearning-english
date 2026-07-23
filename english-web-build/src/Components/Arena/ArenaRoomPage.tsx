@@ -106,6 +106,46 @@ type Room = {
   }[];
   myPowerUps?: ArenaMatchPowerUp[];
   host?: { fullname?: string };
+  // Phase F1.1: own-caller progression summary for the most recent match —
+  // additive, optional (null until a match has actually been finalized).
+  progression?: {
+    status: "COMPLETED" | "PENDING" | "PROCESSING" | "FAILED" | "SKIPPED";
+    previousMmr?: number;
+    nextMmr?: number;
+    mmrDelta?: number;
+    previousTier?: string;
+    nextTier?: string;
+    promoted?: boolean;
+    demoted?: boolean;
+    xpAwarded?: number;
+    goldAwarded?: number;
+    arenaPointsAwarded?: number;
+    rewardBreakdown?: {
+      baseXp?: number;
+      winLossXp?: number;
+      accuracyBonusXp?: number;
+      comboBonusXp?: number;
+      firstWinBonusXp?: number;
+      dailyBonusXp?: number;
+      streakBonusXp?: number;
+      totalXp?: number;
+      reasonBreakdown?: string[];
+    };
+    // Phase F2.1 — true only on the specific match whose progression
+    // transitioned placementMatchesRemaining from >0 to 0.
+    placementCompleted?: boolean;
+    placementMatchesRemaining?: number;
+  } | null;
+};
+
+const ARENA_TIER_LABELS_VI: Record<string, string> = {
+  BRONZE: "Đồng",
+  SILVER: "Bạc",
+  GOLD: "Vàng",
+  PLATINUM: "Bạch kim",
+  DIAMOND: "Kim cương",
+  MASTER: "Cao thủ",
+  LEGEND: "Huyền thoại",
 };
 
 const EMOJIS = ["🔥", "👏", "😆", "💪", "⚡", "🎯"];
@@ -380,6 +420,54 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
                 Đội A: {activeMatch.result.teamAScore ?? "-"} điểm · Đội B: {activeMatch.result.teamBScore ?? "-"} điểm
               </div>
             )}
+
+            {room.progression?.status === "COMPLETED" && (
+              <div className="mt-4 rounded-2xl bg-[var(--lumiverse-card)] p-4 text-[var(--lumiverse-ink)]">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-black">
+                  {typeof room.progression.xpAwarded === "number" && (
+                    <span>+{room.progression.xpAwarded} XP</span>
+                  )}
+                  {typeof room.progression.goldAwarded === "number" && room.progression.goldAwarded > 0 && (
+                    <span>+{room.progression.goldAwarded} Vàng</span>
+                  )}
+                  {typeof room.progression.mmrDelta === "number" && room.progression.mmrDelta !== 0 && (
+                    <span>
+                      Điểm xếp hạng {room.progression.mmrDelta > 0 ? "+" : ""}
+                      {room.progression.mmrDelta} ({room.progression.previousMmr} → {room.progression.nextMmr})
+                    </span>
+                  )}
+                </div>
+                {room.progression.previousTier && room.progression.nextTier && room.progression.previousTier !== room.progression.nextTier && (
+                  <p className="mt-2 font-bold text-[var(--lumiverse-primary)]">
+                    {room.progression.promoted ? "Thăng hạng" : "Rớt hạng"}: {ARENA_TIER_LABELS_VI[room.progression.previousTier] || room.progression.previousTier} → {ARENA_TIER_LABELS_VI[room.progression.nextTier] || room.progression.nextTier}
+                  </p>
+                )}
+                {room.progression.placementCompleted && (
+                  <div className="mt-4 rounded-2xl border-2 border-[var(--lumiverse-primary)] bg-white p-4">
+                    <p className="text-xs font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">
+                      Hoàn thành xếp hạng!
+                    </p>
+                    <p className="mt-1 text-2xl font-black text-[var(--lumiverse-ink)]">
+                      Hạng của bạn: {(room.progression.nextTier && ARENA_TIER_LABELS_VI[room.progression.nextTier]) || room.progression.nextTier || "—"}
+                    </p>
+                    {typeof room.progression.nextMmr === "number" && (
+                      <p className="mt-1 font-bold text-[var(--lumiverse-muted)]">MMR: {room.progression.nextMmr}</p>
+                    )}
+                  </div>
+                )}
+                {room.progression.rewardBreakdown?.reasonBreakdown && room.progression.rewardBreakdown.reasonBreakdown.length > 0 && (
+                  <p className="mt-2 text-sm font-bold text-[var(--lumiverse-muted)]">
+                    {room.progression.rewardBreakdown.reasonBreakdown.join(" · ")}
+                  </p>
+                )}
+              </div>
+            )}
+            {room.progression && room.progression.status !== "COMPLETED" && room.progression.status !== "SKIPPED" && (
+              <div className="mt-4 rounded-2xl bg-[var(--lumiverse-card)] p-4 text-sm font-bold text-[var(--lumiverse-muted)]">
+                Đang xử lý phần thưởng, vui lòng tải lại sau ít phút…
+              </div>
+            )}
+
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <button type="button" onClick={() => setResultDismissed(true)} className="rounded-2xl bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] px-5 py-4 font-black text-white">
                 Xem lại phòng

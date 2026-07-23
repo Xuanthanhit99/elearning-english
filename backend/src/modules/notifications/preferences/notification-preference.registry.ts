@@ -92,6 +92,38 @@ const ALWAYS_ENABLED_EVENT_TYPES = new Map<NotificationEventType, string>([
     NotificationEventType.SYSTEM_NOTIFICATION,
     'System notifications are required in-app notifications.',
   ],
+  // Phase F2.1 fix: neither ARENA_PROMOTED (F1) nor ARENA_PLACEMENT_COMPLETED
+  // (F2.1) were registered anywhere in this policy — any event type absent
+  // from both NOTIFICATION_PREFERENCE_RULES and this map makes
+  // getNotificationPreferencePolicy() throw UNSUPPORTED_EVENT, which
+  // NotificationsProcessor.createFromEvent surfaces as a failed job,
+  // silently never creating a Notification row. This means Arena
+  // promotion notifications have never actually worked end-to-end since
+  // F1 shipped — no existing test asserted a real `Notification` row for
+  // either type, only that the event/job was published/enqueued. A
+  // dedicated preference key (e.g. `arenaNotification`) is the more
+  // correct long-term fix but requires a new `UserSettings` column — a
+  // schema change explicitly out of scope for F2.1 (see
+  // docs/arena-phase-f2-1-placement-implementation-report.md). Registering
+  // both as always-enabled here is the scoped, non-schema-touching fix;
+  // revisit with a real preference toggle in a later phase if product
+  // wants users to be able to mute these specifically.
+  [
+    NotificationEventType.ARENA_PROMOTED,
+    'Arena tier promotion is a rare, high-value moment; no dedicated preference column exists yet (see F2.1 report).',
+  ],
+  [
+    NotificationEventType.ARENA_TIER_DEMOTED,
+    'Arena tier demotion uses the existing Arena progression notification path; no dedicated preference column exists yet.',
+  ],
+  [
+    NotificationEventType.ARENA_PLACEMENT_COMPLETED,
+    'Arena placement completion fires at most once per account; no dedicated preference column exists yet (see F2.1 report).',
+  ],
+  [
+    NotificationEventType.ARENA_RATING_DECAYED,
+    'Arena rating decay is an infrequent account-status notification; no dedicated preference column exists yet.',
+  ],
 ]);
 
 export const NOTIFICATION_PREFERENCE_KEYS = NOTIFICATION_PREFERENCE_RULES.map(

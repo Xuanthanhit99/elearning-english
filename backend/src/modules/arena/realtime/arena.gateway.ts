@@ -17,6 +17,7 @@ import { ArenaPresenceService } from './arena-presence.service';
 import { arenaRoomChannel, arenaUserChannel, getArenaDisconnectGraceMs } from './arena-realtime.constants';
 import { ArenaService } from '../arena.service';
 import { ArenaPowerUpService } from '../battle/arena-power-up.service';
+import { ArenaRateLimiterService } from '../rate-limit/arena-rate-limiter.service';
 
 type AuthenticatedArenaSocket = Socket & {
   data: {
@@ -41,6 +42,7 @@ export class ArenaGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly presence: ArenaPresenceService,
     private readonly arenaService: ArenaService,
     private readonly powerUps: ArenaPowerUpService,
+    private readonly rateLimiter: ArenaRateLimiterService,
   ) {}
 
   handleConnection(client: AuthenticatedArenaSocket) {
@@ -96,6 +98,11 @@ export class ArenaGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: AuthenticatedArenaSocket,
     @MessageBody() body: { roomId: string },
   ) {
+    try {
+      await this.rateLimiter.consume(client.data.user?.id, 'reconnectResume');
+    } catch {
+      return { joined: false, error: 'ARENA_RATE_LIMITED' };
+    }
     return this.joinRoomChannel(client, body?.roomId);
   }
 

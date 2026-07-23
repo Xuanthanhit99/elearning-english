@@ -222,17 +222,19 @@ model User {
   grammarTopicProgress  GrammarTopicProgress[]
   grammarLessonNotes    GrammarLessonNote[]
 
-  arenaProfile      ArenaProfile?
-  arenaRooms        ArenaRoom[]
-  arenaParticipants ArenaParticipant[]
-  arenaRewards      ArenaRewardLog[]
-  arenaAnswers      ArenaAnswer[]
-  arenaQueue        ArenaQueue?
-  arenaRoomEvents   ArenaRoomEvent[]
-  arenaMatchPowerUps ArenaMatchPowerUp[]
-  arenaQuestionHistory ArenaUserQuestionHistory[]
-  arenaRatingHistory ArenaRatingHistory[]
+  arenaProfile            ArenaProfile?
+  arenaRooms              ArenaRoom[]
+  arenaParticipants       ArenaParticipant[]
+  arenaRewards            ArenaRewardLog[]
+  arenaAnswers            ArenaAnswer[]
+  arenaQueue              ArenaQueue?
+  arenaRoomEvents         ArenaRoomEvent[]
+  arenaMatchPowerUps      ArenaMatchPowerUp[]
+  arenaQuestionHistory    ArenaUserQuestionHistory[]
+  arenaRatingHistory      ArenaRatingHistory[]
   arenaProgressionRecords ArenaProgressionRecord[]
+  arenaSeasonResults      ArenaSeasonResult[]
+  arenaFairPlayLogs       ArenaFairPlayLog[]
 
   communityPosts    CommunityPost[]    @relation("CommunityPostAuthor")
   communityComments CommunityComment[] @relation("CommunityCommentAuthor")
@@ -956,77 +958,88 @@ enum ArenaProgressionStatus {
 }
 
 model ArenaProfile {
-  id            String    @id @default(uuid())
-  userId        String    @unique
-  mmr           Int       @default(1500)
-  arenaPoint    Int       @default(1500)
-  level         Int       @default(1)
-  winCount      Int       @default(0)
-  loseCount     Int       @default(0)
-  winStreak     Int       @default(0)
-  bestWinStreak Int       @default(0)
-  arenaFood     Int       @default(0)
-  gold          Int       @default(0)
-  trophy        Int       @default(0)
-  lastMatchAt   DateTime?
+  id                        String    @id @default(uuid())
+  userId                    String    @unique
+  mmr                       Int       @default(1500)
+  arenaPoint                Int       @default(1500)
+  level                     Int       @default(1)
+  winCount                  Int       @default(0)
+  loseCount                 Int       @default(0)
+  winStreak                 Int       @default(0)
+  bestWinStreak             Int       @default(0)
+  arenaFood                 Int       @default(0)
+  gold                      Int       @default(0)
+  trophy                    Int       @default(0)
+  lastMatchAt               DateTime?
   // Phase F1: current tier is a denormalized read of resolveArenaTier(mmr),
   // recomputed every time mmr changes (finalizeMatch's progression
   // dispatcher) — never edited independently of mmr.
-  tier            ArenaTier @default(BRONZE)
-  seasonWinCount  Int       @default(0)
-  seasonLoseCount Int       @default(0)
+  tier                      ArenaTier @default(BRONZE)
+  peakMmr                   Int       @default(1500)
+  peakTier                  ArenaTier @default(BRONZE)
+  seasonWinCount            Int       @default(0)
+  seasonLoseCount           Int       @default(0)
   // Phase F1: date-compare (not timestamp-compare) dedup for the daily/
   // first-win XP bonuses — same "compare calendar day" idiom already used
   // by pets.service.ts's streak tracking.
-  lastDailyBonusAt    DateTime?
-  lastFirstWinBonusAt DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  lastDailyBonusAt          DateTime?
+  lastFirstWinBonusAt       DateTime?
+  // Phase F2.1: counts down from ARENA_PLACEMENT_MATCHES (default 5) on
+  // each eligible RANKED match (affectsElo:true, meaningful attempt made —
+  // see arena-progression.constants.ts), floored at 0. isInPlacement is
+  // derived as (placementMatchesRemaining > 0), never stored separately —
+  // see docs/arena-phase-f2-design.md Part B / F2.0.1 Review naming-
+  // collision note: deliberately Arena-prefixed, unrelated to the
+  // English-level PlacementTest/UserPlacement model family.
+  placementMatchesRemaining Int       @default(5)
+  lastRatingDecayAt         DateTime?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 }
 
 model ArenaRoom {
-  id              String          @id @default(uuid())
-  hostId          String
-  name            String
-  visibility      ArenaVisibility @default(PUBLIC)
-  password        String?
-  gameMode        String
-  skill           String
-  winCondition    String
-  durationSec     Int?
-  maxWrong        Int?
-  targetCorrect   Int?
-  bestOf          Int?
-  difficulty      String
-  topic           String
-  teamSize        Int             @default(1)
-  maxPlayers      Int             @default(2)
-  voiceChat       Boolean         @default(false)
-  emojiEnabled    Boolean         @default(true)
-  pingEnabled     Boolean         @default(true)
-  status          ArenaRoomStatus @default(WAITING)
-  countdownEndsAt DateTime?
+  id                   String           @id @default(uuid())
+  hostId               String
+  name                 String
+  visibility           ArenaVisibility  @default(PUBLIC)
+  password             String?
+  gameMode             String
+  skill                String
+  winCondition         String
+  durationSec          Int?
+  maxWrong             Int?
+  targetCorrect        Int?
+  bestOf               Int?
+  difficulty           String
+  topic                String
+  teamSize             Int              @default(1)
+  maxPlayers           Int              @default(2)
+  voiceChat            Boolean          @default(false)
+  emojiEnabled         Boolean          @default(true)
+  pingEnabled          Boolean          @default(true)
+  status               ArenaRoomStatus  @default(WAITING)
+  countdownEndsAt      DateTime?
   // Gate D-Recovery: monotonic counter bumped on every mutation reflected in
   // the room snapshot (join/ready/leave/countdown/answer/finish), so
   // realtime clients can discard stale/out-of-order pushes.
-  revision        Int             @default(1)
+  revision             Int              @default(1)
   // Phase BC-Reconciliation: canonical mode/team-format — nullable so
   // pre-migration rows fall back to legacy `gameMode` mapping via
   // resolveArenaMode() instead of requiring a backfill-to-NOT-NULL step.
-  mode                  ArenaMode?
-  teamFormat            ArenaTeamFormat?
-  preparationError      String?
-  preparationStartedAt  DateTime?
+  mode                 ArenaMode?
+  teamFormat           ArenaTeamFormat?
+  preparationError     String?
+  preparationStartedAt DateTime?
   // Phase F1 (forward-compat only, unused until a future phase — Phase
   // F0.5 finding F0.5-8): tags "this room belongs to a larger construct"
   // (tournament bracket, guild war, custom event) without requiring a
   // schema change when that phase arrives.
-  contextType     String?
-  contextId       String?
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  contextType          String?
+  contextId            String?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
 
   host         User               @relation(fields: [hostId], references: [id])
   participants ArenaParticipant[]
@@ -1058,6 +1071,7 @@ model ArenaParticipant {
 model ArenaMatch {
   id         String    @id @default(uuid())
   roomId     String
+  seasonId   String?
   winnerTeam String?
   result     Json?
   startedAt  DateTime  @default(now())
@@ -1084,18 +1098,22 @@ model ArenaMatch {
   // as finalizeMatch, not a new locking primitive).
   eventSequence       Int       @default(0)
 
-  room            ArenaRoom                    @relation(fields: [roomId], references: [id])
-  rewards         ArenaRewardLog[]
-  questions       ArenaQuestion[]
-  answers         ArenaAnswer[]
-  battleStates    ArenaParticipantBattleState[]
-  powerUps        ArenaMatchPowerUp[]
-  powerUpEffects  ArenaPowerUpEffect[]
-  powerUpUsages   ArenaPowerUpUsage[]
-  battleEvents    ArenaBattleEvent[]
-  questionHistory ArenaUserQuestionHistory[]
-  ratingHistory       ArenaRatingHistory[]
-  progressionRecords  ArenaProgressionRecord[]
+  room               ArenaRoom                     @relation(fields: [roomId], references: [id])
+  season             ArenaSeason?                  @relation(fields: [seasonId], references: [id])
+  rewards            ArenaRewardLog[]
+  questions          ArenaQuestion[]
+  answers            ArenaAnswer[]
+  battleStates       ArenaParticipantBattleState[]
+  powerUps           ArenaMatchPowerUp[]
+  powerUpEffects     ArenaPowerUpEffect[]
+  powerUpUsages      ArenaPowerUpUsage[]
+  battleEvents       ArenaBattleEvent[]
+  questionHistory    ArenaUserQuestionHistory[]
+  ratingHistory      ArenaRatingHistory[]
+  progressionRecords ArenaProgressionRecord[]
+  fairPlayLogs        ArenaFairPlayLog[]
+
+  @@index([seasonId])
 }
 
 enum ArenaPowerUpType {
@@ -1176,16 +1194,16 @@ model ArenaMatchPowerUp {
 /// (self or opponent). `appliesFromQuestionOrder` anchors DOUBLE_SCORE/
 /// FREEZE to a specific question boundary instead of wall-clock time.
 model ArenaPowerUpEffect {
-  id                       String                    @id @default(uuid())
+  id                       String                   @id @default(uuid())
   matchId                  String
   sourceUserId             String
   targetUserId             String
   type                     ArenaPowerUpType
-  status                   ArenaPowerUpEffectStatus  @default(PENDING)
+  status                   ArenaPowerUpEffectStatus @default(PENDING)
   appliesFromQuestionOrder Int?
   expiresAt                DateTime?
   remainingTriggers        Int?
-  createdAt                DateTime                  @default(now())
+  createdAt                DateTime                 @default(now())
   consumedAt               DateTime?
 
   match ArenaMatch @relation(fields: [matchId], references: [id])
@@ -1350,16 +1368,25 @@ model ArenaUserQuestionHistory {
 model ArenaSeason {
   id        String            @id @default(uuid())
   name      String
+  seasonCode String?          @unique
+  seasonNumber Int?           @unique
   startsAt  DateTime
   endsAt    DateTime
   status    ArenaSeasonStatus @default(UPCOMING)
   isActive  Boolean           @default(false)
+  activatedAt DateTime?
+  closingStartedAt DateTime?
+  closedAt DateTime?
+  rewardsDistributedAt DateTime?
+  resetAppliedAt DateTime?
   metadata  Json?
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
 
+  matches            ArenaMatch[]
   ratingHistory      ArenaRatingHistory[]
   progressionRecords ArenaProgressionRecord[]
+  results            ArenaSeasonResult[]
 
   // Partial-unique-style guard against overlapping active seasons is
   // enforced at the application layer (ArenaSeasonService, CAS via
@@ -1370,6 +1397,63 @@ model ArenaSeason {
   // itself.
   @@index([isActive, startsAt, endsAt])
   @@index([status])
+}
+
+model ArenaSeasonResult {
+  id               String   @id @default(uuid())
+  seasonId         String
+  userId           String
+  finalMmr         Int
+  finalTier        ArenaTier
+  peakMmr          Int
+  peakTier         ArenaTier
+  matches          Int
+  wins             Int
+  losses           Int
+  winRate          Int
+  finalRank        Int?
+  rewardTier       String
+  rewardPayload    Json?
+  rewardStatus     String   @default("PENDING")
+  rewardXpStatus   String   @default("PENDING")
+  rewardGoldStatus String   @default("PENDING")
+  rewardArenaPointStatus String @default("PENDING")
+  rewardNotificationStatus String @default("PENDING")
+  rewardGrantedAt  DateTime?
+  resetPreviousMmr Int?
+  resetNextMmr     Int?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  season ArenaSeason @relation(fields: [seasonId], references: [id])
+  user   User        @relation(fields: [userId], references: [id])
+
+  @@unique([seasonId, userId])
+  @@index([seasonId, finalRank])
+  @@index([rewardStatus])
+  @@index([rewardXpStatus])
+  @@index([rewardGoldStatus])
+  @@index([rewardArenaPointStatus])
+}
+
+model ArenaFairPlayLog {
+  id               String   @id @default(uuid())
+  matchId          String?
+  userId           String
+  opponentId       String?
+  seasonId         String?
+  reason           String
+  ratingSuppressed Boolean  @default(false)
+  rewardSuppressed Boolean  @default(false)
+  metadata         Json?
+  createdAt        DateTime @default(now())
+
+  match ArenaMatch? @relation(fields: [matchId], references: [id])
+  user  User        @relation(fields: [userId], references: [id])
+
+  @@unique([matchId, userId, reason])
+  @@index([userId, createdAt])
+  @@index([seasonId])
 }
 
 /// Phase F1: one row per participant per match — the audit trail for

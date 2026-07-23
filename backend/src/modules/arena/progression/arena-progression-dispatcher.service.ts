@@ -5,13 +5,22 @@ import { XpService } from 'src/modules/leaderboard/xp.service';
 import { getModeCapability } from '../mode/arena-mode.registry';
 import { resolveArenaMode } from '../mode/arena-mode-resolver.util';
 import { ArenaEventPublisher } from '../realtime/arena-event-publisher';
-import { ARENA_MATCH_COMPLETED, ARENA_RATING_CHANGED } from '../realtime/arena-domain-event';
+import {
+  ARENA_MATCH_COMPLETED,
+  ARENA_PLACEMENT_COMPLETED,
+  ARENA_RATING_CHANGED,
+} from '../realtime/arena-domain-event';
 import { ArenaSeasonService } from './arena-season.service';
 import {
   ArenaMatchOutcome,
   applyEloDelta,
+  arenaTierRank,
   calculateEloDelta,
-  getArenaKFactor,
+  getArenaPlacementMatchesTotal,
+  resolveArenaKFactor,
+  resolveArenaPeak,
+  resolveArenaPlacementTransition,
+  resolveArenaDisplayedTierTransition,
   resolveArenaTier,
 } from './arena-rating-engine';
 import { calculateArenaMatchReward } from './arena-reward-calculator';
@@ -24,6 +33,9 @@ function envInt(name: string, fallback: number): number {
 
 /** How long a PROCESSING claim is honored before the reconciliation job (or another dispatch attempt) may reclaim it — same stale-lease idiom as Phase BC-Reconciliation's room-preparation state machine. */
 export const getArenaProgressionLeaseMs = () => envInt('ARENA_PROGRESSION_LEASE_MS', 60000);
+const getArenaRepeatOpponentWindowHours = () => envInt('ARENA_REPEAT_OPPONENT_WINDOW_HOURS', 24);
+const getArenaRepeatOpponentRewardedMatchLimit = () => envInt('ARENA_REPEAT_OPPONENT_REWARDED_MATCH_LIMIT', 3);
+const getArenaRepeatOpponentRatingLimit = () => envInt('ARENA_REPEAT_OPPONENT_RATING_LIMIT', 5);
 
 export type ArenaProgressionOutcome = {
   status: 'COMPLETED' | 'PENDING' | 'PROCESSING' | 'FAILED' | 'SKIPPED';
@@ -40,6 +52,19 @@ export type ArenaProgressionOutcome = {
   goldAwarded?: number;
   arenaPointsAwarded?: number;
   rewardBreakdown?: Record<string, unknown>;
+  /**
+   * Phase F2.1: true only on the specific match/participant response whose
+   * progression transaction transitioned placementMatchesRemaining from >0
+   * to 0 — never inferred from "is the profile currently at 0" (see
+   * docs/arena-phase-f2-1-placement-implementation-report.md's "Placement
+   * completion" section for why that would be wrong on later matches).
+   * Omitted/false on idempotent replay of an already-COMPLETED record and
+   * on the narrow crash-recovery path (`recoverFromExistingRewardLog`) —
+   * same documented precedent as `promoted`/`demoted`, which this codebase
+   * already only returns on the original completing call, never on replay.
+   */
+  placementCompleted?: boolean;
+  placementMatchesRemaining?: number;
 };
 
 function isP2002(error: unknown): boolean {
@@ -84,24 +109,25 @@ export class ArenaProgressionDispatcherService {
    * (see `ArenaReconciliationService`) finishes whatever this loop
    * couldn't.
    */
-  async processMatch(matchId: string): Promise<ArenaProgressionOutcome[]> {
+  async processMatch(matchId: string): Promise<Array<ArenaProgressionOutcome & { userId: string }>> {
     const match = await this.prisma.arenaMatch.findUnique({
       where: { id: matchId },
       include: { room: { include: { participants: true } } },
     });
     if (!match || !match.finishedAt) return [];
 
-    const results: ArenaProgressionOutcome[] = [];
+    const results: Array<ArenaProgressionOutcome & { userId: string }> = [];
     for (const participant of match.room.participants) {
       try {
-        results.push(await this.applyMatchRewards(matchId, participant.userId));
+        const outcome = await this.applyMatchRewards(matchId, participant.userId);
+        results.push({ ...outcome, userId: participant.userId });
       } catch (error) {
         this.logger.error(
           `Arena progression failed matchId=${matchId} userId=${participant.userId}: ${
             error instanceof Error ? error.message : String(error)
           }`,
         );
-        results.push({ status: 'SKIPPED' });
+        results.push({ status: 'SKIPPED', userId: participant.userId });
       }
     }
     return results;
@@ -250,14 +276,54 @@ export class ArenaProgressionDispatcherService {
         ? room.participants.find((p) => p.userId !== userId)?.userId
         : undefined;
 
-    const profile = await this.getOrCreateProfile(userId);
+    const [profile, ratedMatchCount] = await Promise.all([
+      this.getOrCreateProfile(userId),
+      capability.affectsElo ? this.prisma.arenaRatingHistory.count({ where: { userId } }) : Promise.resolve(0),
+    ]);
+    const repeatWindowStart = new Date(Date.now() - getArenaRepeatOpponentWindowHours() * 60 * 60 * 1000);
+    const repeatedOpponentCount =
+      capability.affectsElo && opponentId
+        ? await this.prisma.arenaRatingHistory.count({
+            where: { userId, opponentId, createdAt: { gte: repeatWindowStart } },
+          })
+        : 0;
+    const rewardSuppressed = repeatedOpponentCount >= getArenaRepeatOpponentRewardedMatchLimit();
+    const ratingSuppressed = repeatedOpponentCount >= getArenaRepeatOpponentRatingLimit();
+    const effectiveAffectsElo = capability.affectsElo && !ratingSuppressed;
 
-    const mmrDelta = capability.affectsElo
-      ? calculateEloDelta(profile.mmr, opponentAvg, outcome, getArenaKFactor())
+    const kFactor = resolveArenaKFactor({
+      placementMatchesRemaining: profile.placementMatchesRemaining,
+      ratedMatchCount,
+    });
+    const mmrDelta = effectiveAffectsElo
+      ? calculateEloDelta(profile.mmr, opponentAvg, outcome, kFactor)
       : 0;
-    const nextMmr = capability.affectsElo ? applyEloDelta(profile.mmr, mmrDelta) : profile.mmr;
-    const previousTier = resolveArenaTier(profile.mmr);
-    const nextTier = resolveArenaTier(nextMmr);
+    const nextMmr = effectiveAffectsElo ? applyEloDelta(profile.mmr, mmrDelta) : profile.mmr;
+    const previousTier = effectiveAffectsElo ? profile.tier : resolveArenaTier(profile.mmr);
+    const nextTier = effectiveAffectsElo
+      ? resolveArenaDisplayedTierTransition({ previousTier, nextMmr })
+      : previousTier;
+    const peak = effectiveAffectsElo
+      ? resolveArenaPeak({ previousPeakMmr: profile.peakMmr, currentMmr: nextMmr })
+      : { peakMmr: profile.peakMmr, peakTier: profile.peakTier };
+
+    // Phase F2.1 placement counter — see docs/arena-phase-f2-design.md
+    // Part 6 (zero-effort exemption) and Part 5 (decrement invariants).
+    // `meaningfulAttempt` is evaluated against this participant's OWN
+    // persisted correct/wrong counts (never client-supplied), applied
+    // uniformly to win or loss: a walkover win with zero answers on either
+    // side carries the same "no real skill signal" property as a
+    // zero-effort loss, so it is exempted the same way — simpler and more
+    // consistent than a win/loss-conditional rule, and still the narrowest
+    // rule the currently-persisted data supports. Rating/XP/gold continue
+    // to apply per the existing, unmodified reward/rating formulas
+    // regardless of this exemption — only the placement SLOT is affected.
+    const meaningfulAttempt = participant.correct + participant.wrong > 0;
+    const { nextPlacementMatchesRemaining, placementCompleted } = resolveArenaPlacementTransition({
+      previousPlacementMatchesRemaining: profile.placementMatchesRemaining,
+      affectsElo: effectiveAffectsElo,
+      meaningfulAttempt,
+    });
 
     const battleState = await this.prisma.arenaParticipantBattleState.findUnique({
       where: { matchId_participantId: { matchId, participantId: participant.id } },
@@ -268,7 +334,11 @@ export class ArenaProgressionDispatcherService {
     const isFirstWinToday = won && !isSameCalendarDay(profile.lastFirstWinBonusAt, now);
     const nextWinStreak = won ? profile.winStreak + 1 : 0;
 
-    const season = capability.participatesInSeason ? await this.seasonService.getActiveSeason() : null;
+    const season = capability.participatesInSeason
+      ? match.seasonId
+        ? { id: match.seasonId }
+        : await this.seasonService.getActiveSeason()
+      : null;
 
     const reward = calculateArenaMatchReward({
       outcome,
@@ -280,9 +350,9 @@ export class ArenaProgressionDispatcherService {
       isFirstMatchToday,
       mmrDelta,
       capability: {
-        grantsXp: capability.grantsXp,
-        grantsGold: capability.grantsGold,
-        grantsArenaPoints: capability.grantsArenaPoints,
+        grantsXp: capability.grantsXp && !rewardSuppressed,
+        grantsGold: capability.grantsGold && !rewardSuppressed,
+        grantsArenaPoints: capability.grantsArenaPoints && !rewardSuppressed,
       },
     });
 
@@ -290,7 +360,9 @@ export class ArenaProgressionDispatcherService {
     // Points calculator) — preserved unchanged so this behavior stays
     // stable now that reward application has moved out of
     // `finalizeMatch`'s transaction.
-    const petReward = calculateArenaPetReward({ won, winStreakAfter: nextWinStreak });
+    const petReward = rewardSuppressed
+      ? { foodDelta: 0, petXp: 0 }
+      : calculateArenaPetReward({ won, winStreakAfter: nextWinStreak });
 
     const applyProfileWrites = async (tx: Prisma.TransactionClient) => {
       await tx.arenaProfile.update({
@@ -298,6 +370,8 @@ export class ArenaProgressionDispatcherService {
         data: {
           mmr: nextMmr,
           tier: nextTier,
+          peakMmr: peak.peakMmr,
+          peakTier: peak.peakTier,
           arenaPoint: Math.max(0, profile.arenaPoint + reward.arenaPoints),
           gold: profile.gold + reward.gold,
           arenaFood: profile.arenaFood + petReward.foodDelta,
@@ -309,6 +383,7 @@ export class ArenaProgressionDispatcherService {
           winStreak: nextWinStreak,
           bestWinStreak: Math.max(profile.bestWinStreak, nextWinStreak),
           level: Math.floor(nextMmr / 250),
+          placementMatchesRemaining: nextPlacementMatchesRemaining,
           lastMatchAt: now,
           lastDailyBonusAt: isFirstMatchToday ? now : profile.lastDailyBonusAt,
           lastFirstWinBonusAt: isFirstWinToday ? now : profile.lastFirstWinBonusAt,
@@ -325,7 +400,7 @@ export class ArenaProgressionDispatcherService {
       });
 
       let ratingHistoryId: string | null = null;
-      if (capability.affectsElo || previousTier !== nextTier) {
+      if (effectiveAffectsElo || previousTier !== nextTier) {
         try {
           const ratingHistory = await tx.arenaRatingHistory.create({
             data: {
@@ -419,6 +494,30 @@ export class ArenaProgressionDispatcherService {
       rewardLogId = written.rewardLogId;
     }
 
+    if ((rewardSuppressed || ratingSuppressed) && opponentId) {
+      await this.prisma.arenaFairPlayLog
+        .create({
+          data: {
+            matchId,
+            userId,
+            opponentId,
+            seasonId: season?.id ?? null,
+            reason: 'REPEAT_OPPONENT',
+            ratingSuppressed,
+            rewardSuppressed,
+            metadata: {
+              repeatedOpponentCount,
+              windowHours: getArenaRepeatOpponentWindowHours(),
+              rewardLimit: getArenaRepeatOpponentRewardedMatchLimit(),
+              ratingLimit: getArenaRepeatOpponentRatingLimit(),
+            },
+          },
+        })
+        .catch((error) => {
+          if (!isP2002(error)) throw error;
+        });
+    }
+
     return this.finalizeCompletedProgression({
       matchId,
       userId,
@@ -437,6 +536,8 @@ export class ArenaProgressionDispatcherService {
       goldAwarded: reward.gold,
       arenaPointsAwarded: reward.arenaPoints,
       rewardBreakdown: { ...reward },
+      placementCompleted,
+      placementMatchesRemaining: nextPlacementMatchesRemaining,
     });
   }
 
@@ -465,6 +566,8 @@ export class ArenaProgressionDispatcherService {
     goldAwarded: number;
     arenaPointsAwarded: number;
     rewardBreakdown?: Record<string, unknown>;
+    placementCompleted?: boolean;
+    placementMatchesRemaining?: number;
   }): Promise<ArenaProgressionOutcome> {
     await this.prisma.arenaProgressionRecord.update({
       where: { matchId_userId: { matchId: input.matchId, userId: input.userId } },
@@ -511,6 +614,21 @@ export class ArenaProgressionDispatcherService {
         occurredAt,
       });
     }
+    if (input.placementCompleted) {
+      this.eventPublisher.publish({
+        type: ARENA_PLACEMENT_COMPLETED,
+        roomId: input.roomId,
+        matchId: input.matchId,
+        userId: input.userId,
+        seasonId: input.seasonId,
+        outcome: input.outcome,
+        previousTier: input.previousTier,
+        nextTier: input.nextTier,
+        placementMatchesRemaining: input.placementMatchesRemaining ?? 0,
+        placementMatchesTotal: getArenaPlacementMatchesTotal(),
+        occurredAt,
+      });
+    }
 
     return {
       status: 'COMPLETED',
@@ -527,6 +645,8 @@ export class ArenaProgressionDispatcherService {
       goldAwarded: input.goldAwarded,
       arenaPointsAwarded: input.arenaPointsAwarded,
       rewardBreakdown: input.rewardBreakdown,
+      placementCompleted: input.placementCompleted ?? false,
+      placementMatchesRemaining: input.placementMatchesRemaining,
     };
   }
 
@@ -536,16 +656,35 @@ export class ArenaProgressionDispatcherService {
    * `ArenaProgressionRecord` never reached COMPLETED. Recovers the linked
    * rows by lookup and finishes bookkeeping — never recomputes or
    * re-applies mmr/gold/XP.
+   *
+   * Documented limitation (Phase F2.1): this path cannot precisely
+   * re-derive whether THIS match was the one that completed placement —
+   * doing so would require durably storing this match's "before" placement
+   * count somewhere, and F2.1 deliberately adds exactly one new column
+   * (`ArenaProfile.placementMatchesRemaining` itself), not a second one for
+   * this narrow crash window. The window this path covers is the time
+   * between the profile-write transaction committing and the following
+   * `ArenaProgressionRecord` COMPLETED update — two sequential, fast,
+   * non-I/O-heavy statements with no blocking work between them. Choosing
+   * `placementCompleted: false` here is the conservative, safe-by-default
+   * choice: mmr/gold/XP were already correctly, exactly-once applied by
+   * the original attempt regardless of this flag; the only consequence of
+   * under-reporting here is a possible missed "placement complete" banner/
+   * notification for this vanishingly rare case, never a double-applied
+   * reward or a duplicate notification (the `arena:placement:{recipientId}:completed`
+   * deduplication key, lifetime-scoped, backstops that separately — see
+   * `ArenaNotificationListener`).
    */
   private async recoverFromExistingRewardLog(
     matchId: string,
     userId: string,
     rewardLog: { id: string; isWinner: boolean; mmrBefore: number; mmrAfter: number; arenaDelta: number; goldDelta: number },
   ): Promise<ArenaProgressionOutcome> {
-    const [ratingHistory, xpTransaction, participant] = await Promise.all([
+    const [ratingHistory, xpTransaction, participant, profile] = await Promise.all([
       this.prisma.arenaRatingHistory.findUnique({ where: { matchId_userId: { matchId, userId } } }),
       this.prisma.xpTransaction.findUnique({ where: { idempotencyKey: `arena:xp:${matchId}:${userId}` } }),
       this.prisma.arenaParticipant.findFirst({ where: { userId, room: { matches: { some: { id: matchId } } } } }),
+      this.prisma.arenaProfile.findUnique({ where: { userId } }),
     ]);
 
     return this.finalizeCompletedProgression({
@@ -566,12 +705,13 @@ export class ArenaProgressionDispatcherService {
       goldAwarded: rewardLog.goldDelta,
       arenaPointsAwarded: rewardLog.arenaDelta,
       rewardBreakdown: (xpTransaction?.metadata as Record<string, unknown>) ?? undefined,
+      placementCompleted: false,
+      placementMatchesRemaining: profile?.placementMatchesRemaining,
     });
   }
 
   private tierRank(tier: string): number {
-    const order = ['BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'MASTER', 'LEGEND'];
-    return order.indexOf(tier);
+    return arenaTierRank(tier);
   }
 
   private async getOrCreateProfile(userId: string) {
@@ -580,6 +720,17 @@ export class ArenaProgressionDispatcherService {
     return this.prisma.arenaProfile.create({ data: { userId } });
   }
 
+  /**
+   * Pure replay of an already-COMPLETED record (used by
+   * `getProgressionSummary` and by `applyMatchRewards`'s own idempotent-
+   * replay short-circuit) — never re-derives `promoted`/`demoted` (a
+   * pre-existing F1 behavior: those are only ever returned on the original
+   * completing call, see `finalizeCompletedProgression`) and, by the same
+   * precedent, never re-derives `placementCompleted` either — a replay
+   * reports the CURRENT `placementMatchesRemaining` (accurate, live) but
+   * not whether *this specific historical match* was the one that
+   * completed placement.
+   */
   private async loadCompletedOutcome(record: {
     matchId: string;
     userId: string;
@@ -588,7 +739,7 @@ export class ArenaProgressionDispatcherService {
     ratingHistoryId: string | null;
     rewardLogId: string | null;
   }): Promise<ArenaProgressionOutcome> {
-    const [ratingHistory, rewardLog, xpTransaction] = await Promise.all([
+    const [ratingHistory, rewardLog, xpTransaction, profile] = await Promise.all([
       record.ratingHistoryId
         ? this.prisma.arenaRatingHistory.findUnique({ where: { id: record.ratingHistoryId } })
         : null,
@@ -598,6 +749,7 @@ export class ArenaProgressionDispatcherService {
       record.xpTransactionId
         ? this.prisma.xpTransaction.findUnique({ where: { id: record.xpTransactionId } })
         : null,
+      this.prisma.arenaProfile.findUnique({ where: { userId: record.userId } }),
     ]);
 
     return {
@@ -613,6 +765,8 @@ export class ArenaProgressionDispatcherService {
       goldAwarded: rewardLog?.goldDelta ?? 0,
       arenaPointsAwarded: rewardLog?.arenaDelta ?? 0,
       rewardBreakdown: (xpTransaction?.metadata as Record<string, unknown>) ?? undefined,
+      placementCompleted: false,
+      placementMatchesRemaining: profile?.placementMatchesRemaining,
     };
   }
 }

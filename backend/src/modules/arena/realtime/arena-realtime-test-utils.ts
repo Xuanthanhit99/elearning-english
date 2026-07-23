@@ -304,13 +304,23 @@ export async function cleanupArenaTestData(
   await prisma.arenaUserQuestionHistory.deleteMany({ where: { matchId: { in: matchIds } } });
   // Phase F1 child tables — same FK-ordering requirement.
   await prisma.arenaProgressionRecord.deleteMany({ where: { matchId: { in: matchIds } } });
+  await prisma.arenaFairPlayLog.deleteMany({ where: { matchId: { in: matchIds } } });
   await prisma.arenaRatingHistory.deleteMany({ where: { matchId: { in: matchIds } } });
   await prisma.arenaMatch.deleteMany({ where: { roomId: { in: roomIds } } });
   await prisma.arenaRoomEvent.deleteMany({ where: { roomId: { in: roomIds } } });
   await prisma.arenaParticipant.deleteMany({ where: { roomId: { in: roomIds } } });
   await prisma.arenaRoom.deleteMany({ where: { id: { in: roomIds } } });
   await prisma.arenaQueue.deleteMany({ where: { userId: { in: userIds } } });
+  await prisma.arenaSeasonResult.deleteMany({ where: { userId: { in: userIds } } });
+  await prisma.arenaFairPlayLog.deleteMany({ where: { userId: { in: userIds } } });
   await prisma.arenaProfile.deleteMany({ where: { userId: { in: userIds } } });
   await prisma.petProfile.deleteMany({ where: { userId: { in: userIds } } });
+  await prisma.xpTransaction.deleteMany({ where: { userId: { in: userIds } } });
+  await prisma.userXpProfile.deleteMany({ where: { userId: { in: userIds } } });
+  // Phase F2.1: ARENA_PROMOTED/ARENA_PLACEMENT_COMPLETED notifications now
+  // actually reach a real `Notification` row (see the F2.1 preference-
+  // registry fix) — must delete before the User row or the FK constraint
+  // rejects the delete.
+  await prisma.notification.deleteMany({ where: { recipientUserId: { in: userIds } } });
   await prisma.user.deleteMany({ where: { id: { in: userIds } } });
 }

@@ -21,6 +21,7 @@ import { ArenaQuestionHistoryService } from './question/arena-question-history.s
 import { ArenaQuestionPipelineService } from './question/arena-question-pipeline.service';
 import { ArenaSeasonService } from './progression/arena-season.service';
 import { ArenaProgressionDispatcherService } from './progression/arena-progression-dispatcher.service';
+import { ArenaReconciliationService } from './progression/arena-reconciliation.service';
 import { CreateArenaRoomDto } from './dto/create-arena-room.dto';
 import { JoinArenaRoomDto } from './dto/join-arena-room.dto';
 import { QueueArenaDto } from './dto/queue-arena.dto';
@@ -64,6 +65,17 @@ describe('ArenaService (Phase A hardening)', () => {
 
   beforeEach(async () => {
     fake = new FakePrisma();
+    fake.arenaSeasonTable.insert({
+      id: 'fake-active-arena-season',
+      name: 'Fake Active Arena Season',
+      seasonCode: 'fake-active',
+      seasonNumber: 1,
+      startsAt: new Date(Date.now() - 1000),
+      endsAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      status: 'ACTIVE',
+      isActive: true,
+      activatedAt: new Date(Date.now() - 1000),
+    });
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -80,6 +92,7 @@ describe('ArenaService (Phase A hardening)', () => {
         ArenaQuestionPipelineService,
         ArenaSeasonService,
         ArenaProgressionDispatcherService,
+        { provide: ArenaReconciliationService, useValue: { reconcile: jest.fn() } },
         { provide: XpService, useValue: new FakeXpService(fake) },
       ],
     }).compile();
@@ -538,9 +551,10 @@ describe('ArenaService (Phase A hardening)', () => {
         (p) => p.userId === 'host-20',
       )!;
       // Both players start at mmr 1500 (equal), so eloDelta() for a single
-      // win is round(40 * (1 - 0.5)) = 20. If the reward loop had run twice
-      // (no CAS protection), this would be 40 instead.
-      expect(hostProfile.mmr - 1500).toBe(20);
+      // Fresh profiles are in placement, so the first ranked win uses
+      // K=80: round(80 * (1 - 0.5)) = 40. If the reward loop had run twice
+      // (no CAS protection), this would be 80 instead.
+      expect(hostProfile.mmr - 1500).toBe(40);
     });
 
     it('returns the same (already-finished) result on a request that arrives after completion', async () => {

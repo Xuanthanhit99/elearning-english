@@ -12,6 +12,12 @@ export const ARENA_MATCH_FINISHED = 'arena.match.finished';
 // matching this codebase's established EventEmitter2 convention).
 export const ARENA_MATCH_COMPLETED = 'arena.match.completed';
 export const ARENA_RATING_CHANGED = 'arena.rating.changed';
+// Phase F2.1 — fired at most once per account (lifetime placement, see
+// docs/arena-phase-f2-design.md), on the exact match whose progression
+// transaction transitions placementMatchesRemaining from >0 to 0. Same
+// publish mechanism/critical-listener convention as the two events above.
+export const ARENA_PLACEMENT_COMPLETED = 'arena.placement.completed';
+export const ARENA_DECAY_APPLIED = 'arena.decay.applied';
 
 export type ArenaDomainEventType =
   | typeof ARENA_ROOM_UPDATED
@@ -19,7 +25,9 @@ export type ArenaDomainEventType =
   | typeof ARENA_ANSWER_SUBMITTED
   | typeof ARENA_MATCH_FINISHED
   | typeof ARENA_MATCH_COMPLETED
-  | typeof ARENA_RATING_CHANGED;
+  | typeof ARENA_RATING_CHANGED
+  | typeof ARENA_PLACEMENT_COMPLETED
+  | typeof ARENA_DECAY_APPLIED;
 
 export type ArenaDomainEvent = {
   type: ArenaDomainEventType;
@@ -43,6 +51,9 @@ export type ArenaDomainEvent = {
   xpAwarded?: number;
   goldAwarded?: number;
   arenaPointsAwarded?: number;
+  // Phase F2.1 — only populated for ARENA_PLACEMENT_COMPLETED.
+  placementMatchesRemaining?: number;
+  placementMatchesTotal?: number;
 };
 
 export type ArenaDomainEventInput = Omit<ArenaDomainEvent, 'occurredAt'> & {

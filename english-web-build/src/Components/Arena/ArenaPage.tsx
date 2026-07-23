@@ -14,6 +14,20 @@ type ArenaProfile = {
   gold: number;
   trophy: number;
   winRate: number;
+  tier?: string;
+  peakMmr?: number;
+  peakTier?: string;
+  ratedMatchCount?: number;
+  ratingLifecycleStage?: "PLACEMENT" | "PROVISIONAL" | "ESTABLISHED";
+  decayEligible?: boolean;
+  decayDaysRemaining?: number;
+  // Phase F2.1 — additive fields, always present from GET /arena/lobby
+  // (profile.*) once the backend migration is applied; optional here only
+  // so this type still compiles against any cached/mocked older response.
+  placementMatchesRemaining?: number;
+  placementMatchesTotal?: number;
+  placementMatchesCompleted?: number;
+  isInPlacement?: boolean;
 };
 
 type ArenaRoom = {
@@ -33,6 +47,11 @@ type ArenaRoom = {
   pingEnabled: boolean;
   participants: { id: string; team: "A" | "B"; user?: { fullname?: string } }[];
   host?: { fullname?: string };
+};
+
+type ArenaSeasonSummary = {
+  season?: { name?: string; endsAt?: string } | null;
+  seasonPeakMmr?: number;
 };
 
 const MODES = [
@@ -72,6 +91,7 @@ const defaultForm = {
 
 export default function ArenaPage() {
   const [profile, setProfile] = useState<ArenaProfile | null>(null);
+  const [seasonSummary, setSeasonSummary] = useState<ArenaSeasonSummary | null>(null);
   const [rooms, setRooms] = useState<ArenaRoom[]>([]);
   const [myActiveRoom, setMyActiveRoom] = useState<any>(null);
   const [form, setForm] = useState<any>(defaultForm);
@@ -81,6 +101,7 @@ export default function ArenaPage() {
   const [queueing, setQueueing] = useState(false);
   const [passwordRoom, setPasswordRoom] = useState<ArenaRoom | null>(null);
   const [roomPassword, setRoomPassword] = useState("");
+  const [placementIntroDismissed, setPlacementIntroDismissed] = useState(false);
 
   const selectedMode = useMemo(
     () => MODES.find((mode) => mode.id === form.gameMode) || MODES[0],
@@ -90,10 +111,14 @@ export default function ArenaPage() {
   const fetchLobby = async (silent = false) => {
     try {
       if (!silent) setLoading(true);
-      const res = await api.get("/arena/lobby");
-      setProfile(res.data.profile);
-      setRooms(res.data.rooms || []);
-      setMyActiveRoom(res.data.myActiveRoom || null);
+      const [lobbyRes, seasonRes] = await Promise.all([
+        api.get("/arena/lobby"),
+        api.get("/arena/season/current"),
+      ]);
+      setProfile(lobbyRes.data.profile);
+      setRooms(lobbyRes.data.rooms || []);
+      setMyActiveRoom(lobbyRes.data.myActiveRoom || null);
+      setSeasonSummary(seasonRes.data);
     } catch (error) {
       console.error(error);
       setMessage("Bạn cần đăng nhập để vào Arena.");
@@ -210,10 +235,36 @@ export default function ArenaPage() {
             </div>
           </div>
 
-          <ProfileCard profile={profile} loading={loading} />
+          <ProfileCard profile={profile} seasonSummary={seasonSummary} loading={loading} />
         </div>
 
         {message && <div className="rounded-2xl bg-white px-5 py-4 font-extrabold text-[var(--lumiverse-primary)] shadow-sm">{message}</div>}
+
+        {profile?.isInPlacement &&
+          (profile.placementMatchesCompleted ?? 0) === 0 &&
+          !placementIntroDismissed && (
+            <div className="rounded-[26px] border border-[var(--lumiverse-border)] bg-white p-6 shadow-sm">
+              <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">
+                Trận xếp hạng đầu tiên
+              </p>
+              <h2 className="mt-2 text-2xl font-black text-[var(--lumiverse-ink)]">
+                Chơi {profile.placementMatchesTotal ?? 5} trận xếp hạng để xác định hạng khởi điểm
+              </h2>
+              <p className="mt-3 font-bold leading-7 text-[var(--lumiverse-muted)]">
+                Kết quả {profile.placementMatchesTotal ?? 5} trận đầu tiên (thắng lẫn thua) sẽ quyết định hạng Arena
+                khởi điểm của bạn. Trong lúc xếp hạng, việc mất kết nối/kết nối lại vẫn diễn ra bình thường và
+                phần thưởng (XP, Vàng, Arena Point) vẫn được cộng như các trận khác. Đối thủ của bạn có thể là người
+                đang xếp hạng hoặc người chơi đã có hạng — không có gì đảm bảo bạn chỉ gặp người đang xếp hạng.
+              </p>
+              <button
+                type="button"
+                onClick={() => setPlacementIntroDismissed(true)}
+                className="mt-4 rounded-2xl bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] px-6 py-3 font-black text-white"
+              >
+                Đã hiểu
+              </button>
+            </div>
+          )}
 
         {myActiveRoom && (
           <div className="rounded-[26px] border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
@@ -409,12 +460,42 @@ export default function ArenaPage() {
   );
 }
 
-function ProfileCard({ profile, loading }: { profile: ArenaProfile | null; loading: boolean }) {
+function ProfileCard({
+  profile,
+  seasonSummary,
+  loading,
+}: {
+  profile: ArenaProfile | null;
+  seasonSummary: ArenaSeasonSummary | null;
+  loading: boolean;
+}) {
   return (
     <div className="rounded-[34px] border border-[var(--lumiverse-border)] bg-white p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
       <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Hồ sơ Arena</p>
       {loading ? (
         <div className="mt-5 font-bold text-[var(--lumiverse-muted)]">Đang tải...</div>
+      ) : profile?.isInPlacement ? (
+        <>
+          {/* Phase F2.1: while isInPlacement, show placement progress instead
+              of a finalized tier/rank badge — the current mmr number is
+              still shown (never hidden from its own owner), but framed as
+              provisional, not a permanent rank. */}
+          <div className="mt-4 text-3xl font-black text-[var(--lumiverse-primary)]">
+            Xếp hạng {profile.placementMatchesCompleted ?? 0}/{profile.placementMatchesTotal ?? 5}
+          </div>
+          <p className="mt-1 font-bold text-[var(--lumiverse-muted)]">
+            MMR tạm thời {profile?.mmr || 1500} · Chưa xác định hạng chính thức
+          </p>
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            <Stat label="Arena" value={profile?.arenaPoint || 1500} />
+            <Stat label="Food" value={profile?.arenaFood || 0} />
+            <Stat label="Gold" value={profile?.gold || 0} />
+            <Stat label="Streak" value={profile?.winStreak || 0} />
+          </div>
+          <p className="mt-4 text-xs font-black uppercase tracking-wide text-[var(--lumiverse-muted)]">
+            {profile.ratingLifecycleStage || "PLACEMENT"} · Peak {profile.peakMmr || profile.mmr || 1500}
+          </p>
+        </>
       ) : (
         <>
           <div className="mt-4 text-5xl font-black text-[var(--lumiverse-ink)]">{profile?.mmr || 1500}</div>
@@ -425,6 +506,19 @@ function ProfileCard({ profile, loading }: { profile: ArenaProfile | null; loadi
             <Stat label="Gold" value={profile?.gold || 0} />
             <Stat label="Streak" value={profile?.winStreak || 0} />
           </div>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <Stat label="Peak" value={profile?.peakMmr || profile?.mmr || 1500} />
+            <Stat label="Rated" value={profile?.ratedMatchCount || 0} />
+          </div>
+          <p className="mt-4 text-xs font-black uppercase tracking-wide text-[var(--lumiverse-muted)]">
+            {profile?.tier || "BRONZE"} · {profile?.ratingLifecycleStage || "PROVISIONAL"}
+            {profile?.decayEligible ? " · Decay eligible" : profile?.decayDaysRemaining ? ` · Decay in ${profile.decayDaysRemaining}d` : ""}
+          </p>
+          {seasonSummary?.season && (
+            <p className="mt-2 text-sm font-bold text-[var(--lumiverse-muted)]">
+              {seasonSummary.season.name || "Arena Season"} · Season peak {seasonSummary.seasonPeakMmr || profile?.mmr || 1500}
+            </p>
+          )}
         </>
       )}
     </div>
