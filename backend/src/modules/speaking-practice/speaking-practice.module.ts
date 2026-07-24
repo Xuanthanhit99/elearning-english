@@ -5,9 +5,10 @@ import { SpeakingService } from '../speaking/speaking.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LearningXpModule } from '../learning-xp/learning-xp.module';
 import { SettingsModule } from '../settings/settings.module';
+import { GeminiModule } from '../gemini/gemini.module';
 
 @Module({
-  imports: [LearningXpModule, SettingsModule],
+  imports: [LearningXpModule, SettingsModule, GeminiModule],
   controllers: [SpeakingPracticeController],
   providers: [SpeakingPracticeService, SpeakingService, PrismaService],
   exports: [SpeakingPracticeService],

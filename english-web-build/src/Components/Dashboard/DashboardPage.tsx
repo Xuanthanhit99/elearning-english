@@ -742,7 +742,7 @@ function TodayGoalPanel({
 function LeaderboardPanel({ state }: { state: LeaderboardState }) {
   const entries = state.status === "ready" ? state.data.entries.slice(0, 5) : [];
   const currentUser = state.status === "ready" ? state.data.currentUser : null;
-
+  console.log("entries", entries);
   return (
     <LumiverseCard className="p-5">
       <LumiverseSectionHeader
