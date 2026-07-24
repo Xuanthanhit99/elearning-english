@@ -13,7 +13,7 @@ export default function GlobalError({
       <body className="min-h-screen p-6">
         <main className="mx-auto flex min-h-[calc(100vh-48px)] max-w-3xl items-center justify-center">
           <section className="lumiverse-card w-full p-8 text-center">
-            <p className="text-sm font-black uppercase tracking-wide text-rose-500">
+            <p className="text-sm font-black uppercase tracking-wide text-[var(--lumiverse-danger)]">
               Có lỗi xảy ra
             </p>
             <h1 className="mt-3 text-3xl font-black text-[var(--lumiverse-ink)]">

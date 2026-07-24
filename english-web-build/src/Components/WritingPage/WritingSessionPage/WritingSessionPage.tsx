@@ -180,7 +180,14 @@ export default function WritingSessionPage() {
     return () => clearInterval(timer);
   }, [timerRunning]);
 
-  if (!data && !error) return <div className="p-10">Loading...</div>;
+  if (!data && !error) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 p-10 text-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-violet-100 border-t-violet-600" />
+        <p className="font-semibold text-[#09083f]">Đang tải bài viết của bạn...</p>
+      </div>
+    );
+  }
 
   if (error && !data) {
     return (
@@ -196,7 +203,7 @@ export default function WritingSessionPage() {
     );
   }
 
-  if (!data) return <div className="p-10">KhÃ´ng cÃ³ dá»¯ liá»‡u phiÃªn viáº¿t.</div>;
+  if (!data) return <div className="p-10">Không có dữ liệu phiên viết.</div>;
 
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">

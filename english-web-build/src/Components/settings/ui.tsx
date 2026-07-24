@@ -12,13 +12,13 @@ export function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6">
+    <section className="lumiverse-card p-5 sm:p-6">
       <div className="mb-5">
-        <h2 className="text-lg font-bold text-slate-950 dark:text-white">
+        <h2 className="text-lg font-black text-[var(--lumiverse-ink)]">
           {title}
         </h2>
         {description && (
-          <p className="mt-1 text-sm text-slate-500">{description}</p>
+          <p className="mt-1 text-sm font-semibold text-[var(--lumiverse-muted)]">{description}</p>
         )}
       </div>
       <div className="space-y-4">{children}</div>
@@ -36,13 +36,13 @@ export function Field({
   children: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 last:border-0 last:pb-0 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 border-b border-[var(--lumiverse-border)] pb-4 last:border-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between">
       <div className="max-w-xl">
-        <div className="font-medium text-slate-900 dark:text-slate-100">
+        <div className="font-bold text-[var(--lumiverse-ink)]">
           {label}
         </div>
         {description && (
-          <div className="mt-1 text-sm text-slate-500">{description}</div>
+          <div className="mt-1 text-sm font-semibold text-[var(--lumiverse-muted)]">{description}</div>
         )}
       </div>
       <div className="sm:min-w-52">{children}</div>
@@ -65,7 +65,7 @@ export function Toggle({
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={`relative h-7 w-12 rounded-full transition ${
-        checked ? 'bg-violet-600' : 'bg-slate-300 dark:bg-slate-700'
+        checked ? 'bg-[var(--lumiverse-primary)]' : 'bg-[var(--lumiverse-muted)]/30'
       } ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
       aria-pressed={checked}
     >
@@ -91,7 +91,7 @@ export function Select({
     <select
       value={value}
       onChange={(event) => onChange(event.target.value)}
-      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none ring-violet-500 focus:ring-2 dark:border-slate-700 dark:bg-slate-900"
+      className="lumiverse-input w-full px-3 py-2 text-sm font-semibold outline-none focus:ring-2 focus:ring-[var(--lumiverse-focus)]"
     >
       {options.map((option) => (
         <option key={String(option.value)} value={option.value}>

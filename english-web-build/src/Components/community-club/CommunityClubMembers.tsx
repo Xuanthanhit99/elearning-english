@@ -60,7 +60,7 @@ export function CommunityClubMembers({
   }
 
   return (
-    <div className="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-3xl border-2 border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-5 shadow-sm">
       <h3 className="text-lg font-extrabold text-slate-950">
         Thành viên
       </h3>
@@ -89,7 +89,7 @@ export function CommunityClubMembers({
                   <Crown size={13} className="text-amber-500" />
                 )}
                 {member.role === 'ADMIN' && (
-                  <Shield size={13} className="text-indigo-600" />
+                  <Shield size={13} className="text-[var(--lumiverse-primary)]" />
                 )}
                 {member.role}
               </div>
@@ -120,7 +120,7 @@ export function CommunityClubMembers({
               <button
                 type="button"
                 onClick={() => void remove(member)}
-                className="rounded-xl bg-red-50 p-2 text-red-600"
+                className="rounded-xl bg-[var(--lumiverse-danger-soft)] p-2 text-[var(--lumiverse-danger)]"
               >
                 <UserMinus size={17} />
               </button>

@@ -43,7 +43,7 @@ function shouldAttemptRefresh(error: AxiosError) {
   );
 }
 
-function redirectToLogin() {
+export function redirectToLogin() {
   if (typeof window === "undefined") return;
   if (
     window.location.pathname.startsWith("/auth") ||

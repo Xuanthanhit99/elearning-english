@@ -1,5 +1,5 @@
 import { api } from '@/src/lib/axios';
-import type { ApiEnvelope, SpeakingPracticeDetail, SpeakingProcessingStatus, SpeakingResultResponse, SpeakingUploadResponse } from './speaking-processing.types';
+import type { ApiEnvelope, SpeakingPracticeDetail, SpeakingProcessingStatus, SpeakingResultResponse, SpeakingRetryProcessingResponse, SpeakingUploadResponse } from './speaking-processing.types';
 
 function unwrap<T>(value: T | ApiEnvelope<T>): T {
   return typeof value === 'object' && value !== null && 'data' in value
@@ -28,6 +28,11 @@ export async function uploadSpeakingAudio(input: {
 export async function getSpeakingProcessingStatus(sessionId: string) {
   const response = await api.get(`/speaking/sessions/${sessionId}/status`);
   return unwrap<SpeakingProcessingStatus>(response.data);
+}
+
+export async function retrySpeakingProcessing(sessionId: string) {
+  const response = await api.post(`/speaking/sessions/${sessionId}/retry-processing`);
+  return unwrap<SpeakingRetryProcessingResponse>(response.data);
 }
 
 export async function getSpeakingResult(sessionId: string) {

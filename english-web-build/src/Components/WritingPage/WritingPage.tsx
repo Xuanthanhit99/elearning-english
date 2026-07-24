@@ -3,40 +3,11 @@
 import {
   BookOpen,
   Bookmark,
-  CheckCircle,
-  ChevronDown,
-  Diamond,
   Edit3,
-  Flame,
-  Gift,
-  Home,
   Lightbulb,
-  Mic,
-  PenTool,
-  Search,
   Send,
-  Settings,
-  ShieldQuestion,
-  ShoppingBag,
-  Star,
-  Trophy,
   Undo2,
-  User,
-  Volume2,
-  X,
 } from "lucide-react";
-
-const navItems = [
-  { label: "Trang chủ", icon: Home },
-  { label: "Tổng quan", icon: BookOpen },
-  { label: "Từ vựng", icon: BookOpen },
-  { label: "Ngữ pháp", icon: ShieldQuestion },
-  { label: "Nghe", icon: Volume2 },
-  { label: "Nói", icon: Mic },
-  { label: "Đọc hiểu", icon: BookOpen },
-  { label: "Viết", icon: PenTool, active: true },
-  { label: "Flashcards", icon: Star },
-];
 
 const words = [
   ["memorable (adj)", "đáng nhớ"],
@@ -51,124 +22,8 @@ export default function WritingPage() {
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#17105f]">
       <div className="flex">
-        <aside className="fixed left-0 top-0 h-screen w-[280px] border-r border-purple-100 bg-white px-5 py-6">
-          <div className="mb-10 flex items-center gap-3">
-            <div className="text-3xl">🦊</div>
-            <h1 className="text-3xl font-black">
-              Study<span className="text-purple-600">Arena</span>
-            </h1>
-          </div>
 
-          <nav className="space-y-2">
-            <p className="px-3 text-xs font-bold uppercase tracking-widest text-purple-400">
-              Học tập
-            </p>
-
-            {navItems.map((item) => {
-              const Icon = item.icon;
-
-              return (
-                <button
-                  key={item.label}
-                  className={`flex w-full items-center gap-4 rounded-xl px-4 py-3 text-sm font-bold transition ${
-                    item.active
-                      ? "border border-purple-300 bg-purple-50 text-purple-700"
-                      : "text-[#21145f] hover:bg-purple-50"
-                  }`}
-                >
-                  <Icon size={19} />
-                  {item.label}
-                </button>
-              );
-            })}
-
-            <p className="px-3 pt-6 text-xs font-bold uppercase tracking-widest text-purple-400">
-              Cộng đồng
-            </p>
-
-            {["Cộng đồng", "Hỏi đáp", "Thành tích"].map((item) => (
-              <button
-                key={item}
-                className="flex w-full items-center gap-4 rounded-xl px-4 py-3 text-sm font-bold hover:bg-purple-50"
-              >
-                <Trophy size={18} />
-                {item}
-              </button>
-            ))}
-
-            <p className="px-3 pt-6 text-xs font-bold uppercase tracking-widest text-purple-400">
-              Khác
-            </p>
-
-            {[
-              ["Khoá học", BookOpen],
-              ["Shop", ShoppingBag],
-              ["Cài đặt", Settings],
-            ].map(([label, Icon]: any) => (
-              <button
-                key={label}
-                className="flex w-full items-center gap-4 rounded-xl px-4 py-3 text-sm font-bold hover:bg-purple-50"
-              >
-                <Icon size={18} />
-                {label}
-              </button>
-            ))}
-          </nav>
-
-          <div className="absolute bottom-6 left-5 right-5 rounded-2xl bg-purple-50 p-5">
-            <div className="mb-3 flex items-center gap-2 font-black text-purple-700">
-              👑 Nâng cấp Premium
-            </div>
-            <p className="mb-4 text-sm leading-6 text-purple-500">
-              Học không giới hạn, nhận nhiều đặc quyền hấp dẫn!
-            </p>
-            <button className="rounded-xl bg-purple-600 px-5 py-3 text-sm font-bold text-white">
-              Nâng cấp ngay
-            </button>
-          </div>
-        </aside>
-
-        <main className="ml-[280px] flex-1">
-          <header className="sticky top-0 z-10 flex h-[92px] items-center justify-between border-b border-purple-100 bg-white/90 px-9 backdrop-blur">
-            <div className="relative w-[520px]">
-              <Search
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-400"
-                size={22}
-              />
-              <input
-                placeholder="Tìm bài học, từ vựng, ngữ pháp..."
-                className="h-14 w-full rounded-xl border border-purple-200 bg-white pl-12 pr-4 font-medium outline-none focus:border-purple-500"
-              />
-            </div>
-
-            <div className="flex items-center gap-8">
-              <TopStat icon={<Flame className="text-red-500" />} value="18" label="Streak" />
-              <TopStat icon={<Star className="text-yellow-400" />} value="2,450" label="XP hôm nay" />
-              <TopStat icon={<Diamond className="text-sky-400" />} value="5,230" label="Xu" />
-
-              <div className="relative">
-                <Gift className="text-purple-600" />
-              </div>
-
-              <div className="relative">
-                <span className="absolute -right-2 -top-2 rounded-full bg-red-500 px-1.5 text-xs text-white">
-                  3
-                </span>
-                🔔
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="grid h-11 w-11 place-items-center rounded-full bg-cyan-100 text-xl">
-                  👩
-                </div>
-                <div>
-                  <p className="text-sm font-black">Minh Anh</p>
-                  <p className="text-xs text-purple-400">Level 18</p>
-                </div>
-                <ChevronDown size={16} />
-              </div>
-            </div>
-          </header>
+        <main className="flex-1">
 
           <div className="grid grid-cols-[1fr_430px] gap-10 px-9 py-8">
             <section>
@@ -379,26 +234,6 @@ function Badge({ children }: { children: React.ReactNode }) {
     <span className="rounded-xl bg-green-100 px-5 py-2 font-black text-green-600">
       {children}
     </span>
-  );
-}
-
-function TopStat({
-  icon,
-  value,
-  label,
-}: {
-  icon: React.ReactNode;
-  value: string;
-  label: string;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      {icon}
-      <div>
-        <p className="font-black">{value}</p>
-        <p className="text-xs font-bold text-purple-400">{label}</p>
-      </div>
-    </div>
   );
 }
 

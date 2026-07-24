@@ -138,8 +138,9 @@ export default function AppSidebar({
   return (
     <>
       <aside
+        data-testid="app-sidebar-desktop"
         className={[
-          "fixed inset-y-0 left-0 z-40 hidden border-r border-[var(--lumiverse-border)] bg-white/78 shadow-[12px_0_44px_rgba(22,45,100,0.08)] backdrop-blur-2xl transition-[width] duration-300 dark:bg-slate-950/78 lg:block",
+          "fixed inset-y-0 left-0 z-40 hidden border-r border-[var(--lumiverse-border)] bg-[var(--lumiverse-shell-surface)] shadow-[12px_0_44px_rgba(22,45,100,0.08)] backdrop-blur-2xl transition-[width] duration-300 lg:block",
           collapsed ? "w-[96px]" : "w-[280px]",
         ].join(" ")}
       >
@@ -158,13 +159,14 @@ export default function AppSidebar({
           type="button"
           aria-label={t("sidebar.closeMenu")}
           onClick={() => onMobileOpenChange(false)}
-          className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-50 bg-[var(--lumiverse-overlay)] backdrop-blur-sm lg:hidden"
         />
       )}
 
       <aside
+        data-testid="app-sidebar-mobile-drawer"
         className={[
-          "fixed inset-y-0 left-0 z-50 w-[86vw] max-w-[330px] border-r border-[var(--lumiverse-border)] bg-white/92 shadow-2xl backdrop-blur-2xl transition-transform duration-300 dark:bg-slate-950/92 lg:hidden",
+          "fixed inset-y-0 left-0 z-50 w-[86vw] max-w-[330px] border-r border-[var(--lumiverse-border)] bg-[var(--lumiverse-shell-surface-strong)] shadow-2xl backdrop-blur-2xl transition-transform duration-300 lg:hidden",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
         ].join(" ")}
       >
@@ -265,7 +267,7 @@ function SidebarContent({
                       collapsed ? "justify-center px-0" : "gap-3 px-3",
                       active
                         ? "bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] text-white shadow-[0_16px_34px_rgba(23,70,255,0.24)]"
-                        : "text-[var(--lumiverse-muted)] hover:-translate-y-0.5 hover:bg-white/76 hover:text-[var(--lumiverse-primary)] dark:hover:bg-white/8",
+                        : "text-[var(--lumiverse-muted)] hover:-translate-y-0.5 hover:bg-[var(--lumiverse-hover-tint)] hover:text-[var(--lumiverse-primary)]",
                     ].join(" ")}
                   >
                     <Icon size={19} strokeWidth={2.5} className="shrink-0" />
@@ -288,7 +290,7 @@ function SidebarContent({
             type="button"
             aria-label={t("sidebar.expand")}
             onClick={onToggleCollapsed}
-            className="flex h-12 w-full items-center justify-center rounded-2xl bg-blue-50 text-[var(--lumiverse-primary)] dark:bg-white/8"
+            className="flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]"
           >
             <ChevronRight size={18} />
           </button>

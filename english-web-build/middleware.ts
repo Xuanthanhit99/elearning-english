@@ -3,7 +3,7 @@ import { getAuthRouteDecision } from "./src/lib/auth-route-policy";
 
 const AUTH_COOKIE = "logged_in";
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const isLoggedIn = request.cookies.get(AUTH_COOKIE)?.value === "true";
   const decision = getAuthRouteDecision({ pathname, search, isLoggedIn });

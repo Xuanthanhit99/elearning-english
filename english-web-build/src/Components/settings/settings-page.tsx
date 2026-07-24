@@ -93,7 +93,7 @@ export default function SettingsPage() {
   if (!settings) {
     return (
       <div className="grid min-h-[60vh] place-items-center">
-        <div className="text-sm text-slate-500">{t('common.loading')}</div>
+        <div className="text-sm font-semibold text-[var(--lumiverse-muted)]">{t('common.loading')}</div>
       </div>
     );
   }
@@ -211,32 +211,32 @@ export default function SettingsPage() {
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-violet-600">
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[var(--lumiverse-primary)]">
             <SlidersHorizontal className="h-4 w-4" />
             {t('settings.badge')}
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-slate-950 dark:text-white">
+          <h1 className="text-3xl font-black tracking-tight text-[var(--lumiverse-ink)]">
             {t('settings.title')}
           </h1>
-          <p className="mt-2 text-slate-500">
+          <p className="mt-2 font-semibold text-[var(--lumiverse-muted)]">
             {t('settings.subtitle')}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           {message && (
-            <span className="text-sm text-slate-500">{message}</span>
+            <span className="text-sm font-semibold text-[var(--lumiverse-muted)]">{message}</span>
           )}
           <button
             onClick={reset}
-            className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold dark:border-slate-700"
+            className="lumiverse-button-soft px-4 py-2 text-sm font-semibold"
           >
             {t('settings.reset')}
           </button>
           <button
             onClick={save}
             disabled={saving}
-            className="rounded-xl bg-violet-600 px-5 py-2 text-sm font-bold text-white disabled:opacity-60"
+            className="lumiverse-button-primary px-5 py-2 text-sm disabled:opacity-60"
           >
             {saving ? t('settings.saving') : t('settings.save')}
           </button>
@@ -245,7 +245,7 @@ export default function SettingsPage() {
 
       <div className="grid gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
         <aside className="lg:sticky lg:top-6 lg:self-start">
-          <div className="flex gap-2 overflow-x-auto rounded-2xl border border-slate-200 bg-white p-2 dark:border-slate-800 dark:bg-slate-950 lg:flex-col">
+          <div className="lumiverse-card flex gap-2 overflow-x-auto p-2 lg:flex-col">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const active = activeTab === tab.id;
@@ -255,8 +255,8 @@ export default function SettingsPage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex shrink-0 items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition ${
                     active
-                      ? 'bg-violet-50 text-violet-700 dark:bg-violet-950/40'
-                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-900'
+                      ? 'bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]'
+                      : 'text-[var(--lumiverse-muted)] hover:bg-[var(--lumiverse-hover-tint)]'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -344,7 +344,7 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       patch('preferredStudyTime', e.target.value)
                     }
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-900"
+                    className="lumiverse-input w-full px-3 py-2"
                   />
                 </Field>
                 <Field
@@ -482,7 +482,7 @@ export default function SettingsPage() {
                   onChange={(e) =>
                     patch('dailyReminderTime', e.target.value)
                   }
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900"
+                  className="lumiverse-input w-full px-3 py-2 disabled:opacity-50"
                 />
               </Field>
               {[
@@ -514,7 +514,7 @@ export default function SettingsPage() {
                     patch('communityNickname', e.target.value || null)
                   }
                   placeholder="Tên hiển thị trong Community"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-900"
+                  className="lumiverse-input w-full px-3 py-2"
                 />
               </Field>
               <Field label="Ai có thể nhắn tin">
@@ -648,7 +648,7 @@ export default function SettingsPage() {
                 <Field label="Xuất dữ liệu cài đặt">
                   <a
                     href={settingsApi.exportUrl}
-                    className="inline-flex rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold dark:border-slate-700"
+                    className="inline-flex lumiverse-button-soft px-4 py-2 text-sm font-semibold"
                   >
                     Tải JSON
                   </a>
@@ -657,14 +657,14 @@ export default function SettingsPage() {
 
               <SectionCard title="Thiết bị đăng nhập">
                 {devices.length === 0 && (
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm font-semibold text-[var(--lumiverse-muted)]">
                     Chưa có dữ liệu thiết bị.
                   </p>
                 )}
                 {devices?.map((device) => (
                   <div
                     key={device.id}
-                    className="flex flex-col gap-3 rounded-2xl border border-slate-200 p-4 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between"
+                    className="flex flex-col gap-3 rounded-2xl border border-[var(--lumiverse-border)] p-4 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div>
                       <div className="font-semibold">
@@ -675,7 +675,7 @@ export default function SettingsPage() {
                           </span>
                         )}
                       </div>
-                      <div className="mt-1 text-sm text-slate-500">
+                      <div className="mt-1 text-sm font-semibold text-[var(--lumiverse-muted)]">
                         {[device.browser, device.os, device.ipAddress]
                           .filter(Boolean)
                           .join(' · ')}
@@ -683,7 +683,7 @@ export default function SettingsPage() {
                     </div>
                     {!device.current && (
                       <button
-                        className="rounded-xl border border-red-200 px-3 py-2 text-sm font-semibold text-red-600"
+                        className="rounded-xl border border-[var(--lumiverse-danger)]/30 px-3 py-2 text-sm font-semibold text-[var(--lumiverse-danger)]"
                         onClick={async () => {
                           await settingsApi.revokeDevice(device.id);
                           setDevices((current) =>
@@ -751,19 +751,19 @@ export default function SettingsPage() {
       </div>
 
       {twoFactorSetup && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/50 p-4">
-          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-950">
+        <div className="fixed inset-0 z-50 grid place-items-center bg-[var(--lumiverse-overlay)] p-4">
+          <div className="lumiverse-card w-full max-w-lg p-6 shadow-2xl">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-xl font-black text-slate-950 dark:text-white">
+                <h2 className="text-xl font-black text-[var(--lumiverse-ink)]">
                   Bật xác thực hai bước
                 </h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm font-semibold text-[var(--lumiverse-muted)]">
                   Quét mã QR bằng Google Authenticator, Authy hoặc ứng dụng OTP tương tự.
                 </p>
               </div>
               <button
-                className="rounded-xl border border-slate-200 px-3 py-1 text-sm font-semibold dark:border-slate-700"
+                className="lumiverse-button-soft px-3 py-1 text-sm font-semibold"
                 onClick={() => setTwoFactorSetup(null)}
               >
                 Đóng
@@ -771,7 +771,7 @@ export default function SettingsPage() {
             </div>
 
             <div className="mt-5 grid gap-5 sm:grid-cols-[180px_minmax(0,1fr)]">
-              <div className="rounded-2xl border border-slate-200 bg-white p-3 dark:border-slate-800">
+              <div className="rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] p-3">
                 <Image
                   src={twoFactorSetup.qrCodeDataUrl}
                   alt="2FA QR code"
@@ -783,15 +783,15 @@ export default function SettingsPage() {
               </div>
               <div className="space-y-4">
                 <div>
-                  <div className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  <div className="text-sm font-semibold text-[var(--lumiverse-ink)]">
                     Mã nhập thủ công
                   </div>
-                  <code className="mt-2 block break-all rounded-xl bg-slate-100 p-3 text-xs dark:bg-slate-900">
+                  <code className="mt-2 block break-all rounded-xl bg-[var(--lumiverse-card-soft)] p-3 text-xs">
                     {twoFactorSetup.manualEntryKey}
                   </code>
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  <label className="text-sm font-semibold text-[var(--lumiverse-ink)]">
                     Nhập mã OTP 6 số
                   </label>
                   <input
@@ -799,7 +799,7 @@ export default function SettingsPage() {
                     onChange={(event) => setTwoFactorOtp(event.target.value)}
                     maxLength={6}
                     inputMode="numeric"
-                    className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-900"
+                    className="mt-2 lumiverse-input w-full px-3 py-2"
                     placeholder="123456"
                   />
                 </div>
@@ -821,14 +821,14 @@ export default function SettingsPage() {
 
             <div className="mt-6 flex justify-end gap-3">
               <button
-                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold dark:border-slate-700"
+                className="lumiverse-button-soft px-4 py-2 text-sm font-semibold"
                 onClick={() => setTwoFactorSetup(null)}
               >
                 Để sau
               </button>
               <button
                 disabled={twoFactorBusy || twoFactorRecoveryCodes.length > 0}
-                className="rounded-xl bg-violet-600 px-5 py-2 text-sm font-bold text-white disabled:opacity-60"
+                className="lumiverse-button-primary px-5 py-2 text-sm disabled:opacity-60"
                 onClick={confirmTwoFactor}
               >
                 {twoFactorBusy ? 'Đang xác minh...' : 'Xác nhận bật 2FA'}
@@ -839,12 +839,12 @@ export default function SettingsPage() {
       )}
 
       {twoFactorDisableOpen && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/50 p-4">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-950">
-            <h2 className="text-xl font-black text-slate-950 dark:text-white">
+        <div className="fixed inset-0 z-50 grid place-items-center bg-[var(--lumiverse-overlay)] p-4">
+          <div className="lumiverse-card w-full max-w-md p-6 shadow-2xl">
+            <h2 className="text-xl font-black text-[var(--lumiverse-ink)]">
               Tắt xác thực hai bước
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm font-semibold text-[var(--lumiverse-muted)]">
               Nhập mật khẩu, mã OTP hoặc recovery code để xác minh.
             </p>
 
@@ -859,7 +859,7 @@ export default function SettingsPage() {
                     password: event.target.value,
                   }))
                 }
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-900"
+                className="lumiverse-input w-full px-3 py-2"
               />
               <input
                 placeholder="Mã OTP"
@@ -872,7 +872,7 @@ export default function SettingsPage() {
                     otp: event.target.value,
                   }))
                 }
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-900"
+                className="lumiverse-input w-full px-3 py-2"
               />
               <input
                 placeholder="Recovery code"
@@ -883,20 +883,20 @@ export default function SettingsPage() {
                     recoveryCode: event.target.value,
                   }))
                 }
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-900"
+                className="lumiverse-input w-full px-3 py-2"
               />
             </div>
 
             <div className="mt-6 flex justify-end gap-3">
               <button
-                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold dark:border-slate-700"
+                className="lumiverse-button-soft px-4 py-2 text-sm font-semibold"
                 onClick={() => setTwoFactorDisableOpen(false)}
               >
                 Hủy
               </button>
               <button
                 disabled={twoFactorBusy}
-                className="rounded-xl bg-red-600 px-5 py-2 text-sm font-bold text-white disabled:opacity-60"
+                className="rounded-xl bg-[var(--lumiverse-danger)] px-5 py-2 text-sm font-bold text-white disabled:opacity-60"
                 onClick={disableTwoFactor}
               >
                 {twoFactorBusy ? 'Đang tắt...' : 'Tắt 2FA'}

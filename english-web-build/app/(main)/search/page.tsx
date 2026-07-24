@@ -39,10 +39,10 @@ function ResultCard({ item }: { item: UnifiedSearchResult }) {
   return (
     <Link
       href={item.href}
-      className="group block rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-violet-200 hover:bg-violet-50"
+      className="group block rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-[var(--lumiverse-primary)]/25 hover:bg-[var(--lumiverse-hover-tint)]"
     >
       <div className="flex gap-4">
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-violet-100 text-sm font-black text-violet-700">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[var(--lumiverse-primary-soft)] text-sm font-black text-[var(--lumiverse-primary)]">
           {item.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
@@ -59,7 +59,7 @@ function ResultCard({ item }: { item: UnifiedSearchResult }) {
               </span>
             )}
             {item.skill && (
-              <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-black text-violet-700">
+              <span className="rounded-full bg-[var(--lumiverse-primary-soft)] px-2 py-0.5 text-xs font-black text-[var(--lumiverse-primary)]">
                 {item.skill}
               </span>
             )}
@@ -78,7 +78,7 @@ function ResultCard({ item }: { item: UnifiedSearchResult }) {
             ))}
           </div>
         </div>
-        <ArrowRight className="mt-1 shrink-0 text-slate-300 transition group-hover:text-violet-600" size={20} />
+        <ArrowRight className="mt-1 shrink-0 text-slate-300 transition group-hover:text-[var(--lumiverse-primary)]" size={20} />
       </div>
     </Link>
   );
@@ -150,7 +150,7 @@ export default function SearchPage() {
 
   return (
     <div className="space-y-6 pb-10">
-      <section className="rounded-[2rem] bg-gradient-to-br from-violet-600 to-sky-500 p-6 text-white shadow-lg shadow-violet-100">
+      <section className="rounded-[2rem] bg-[linear-gradient(135deg,var(--lumiverse-primary),var(--lumiverse-violet))] p-6 text-white shadow-lg shadow-violet-100">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-black">
@@ -162,7 +162,7 @@ export default function SearchPage() {
               Search vocabulary, grammar, reading, listening, speaking, writing and community content.
             </p>
           </div>
-          <Link href="/discover" className="rounded-2xl bg-white px-5 py-3 font-black text-violet-700">
+          <Link href="/discover" className="rounded-2xl bg-white px-5 py-3 font-black text-[var(--lumiverse-primary)]">
             Explore discovery
           </Link>
         </div>
@@ -178,7 +178,7 @@ export default function SearchPage() {
               setQ(event.target.value);
             }}
             placeholder="Search lessons, words, topics..."
-            className="h-13 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-12 pr-4 text-base font-bold outline-none focus:border-violet-400 focus:bg-white"
+            className="h-13 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-12 pr-4 text-base font-bold outline-none focus:border-[var(--lumiverse-primary)] focus:bg-white"
             aria-label="Search content"
           />
         </label>
@@ -221,7 +221,7 @@ export default function SearchPage() {
           </div>
           {items.map((item) => <ResultCard key={`${item.type}:${item.id}`} item={item} />)}
           {nextOffset !== null && (
-            <button type="button" onClick={() => load(nextOffset)} disabled={loadingMore} className="w-full rounded-2xl border border-violet-200 bg-white px-5 py-3 font-black text-violet-700 disabled:opacity-60">
+            <button type="button" onClick={() => load(nextOffset)} disabled={loadingMore} className="w-full rounded-2xl border border-[var(--lumiverse-primary)]/25 bg-white px-5 py-3 font-black text-[var(--lumiverse-primary)] disabled:opacity-60">
               {loadingMore ? "Loading..." : "Load more"}
             </button>
           )}

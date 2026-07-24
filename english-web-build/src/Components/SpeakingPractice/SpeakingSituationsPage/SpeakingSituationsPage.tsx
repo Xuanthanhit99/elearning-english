@@ -1,24 +1,12 @@
 "use client";
 
 import {
-  Home,
-  BookOpen,
   Mic,
-  Headphones,
-  PenTool,
-  Trophy,
-  Search,
-  Flame,
   Star,
-  Gem,
-  Gift,
-  Bell,
   Heart,
   Clock,
-  Users,
   Volume2,
   Lightbulb,
-  ShieldCheck,
 } from "lucide-react";
 
 const situations = [
@@ -115,89 +103,12 @@ const categories = [
   "Khác",
 ];
 
-const menus = [
-  { label: "Trang chủ", icon: Home },
-  { label: "Tổng quan", icon: ShieldCheck },
-  { label: "Từ vựng", icon: BookOpen },
-  { label: "Ngữ pháp", icon: BookOpen },
-  { label: "Nghe", icon: Headphones },
-  { label: "Nói", icon: Mic, active: true },
-  { label: "Đọc hiểu", icon: BookOpen },
-  { label: "Viết", icon: PenTool },
-  { label: "Flashcards", icon: Star },
-  { label: "Cộng đồng", icon: Users },
-  { label: "Thành tích", icon: Trophy },
-];
-
 export default function SpeakingSituationsPage() {
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#121447]">
       <div className="flex">
-        <aside className="fixed left-0 top-0 h-screen w-[285px] border-r border-violet-100 bg-white px-5 py-6">
-          <div className="mb-9 flex items-center gap-3">
-            <div className="text-4xl">🦊</div>
-            <h1 className="text-3xl font-black">
-              Study<span className="text-violet-600">Arena</span>
-            </h1>
-          </div>
 
-          <nav className="space-y-2">
-            {menus.map((item) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={item.label}
-                  className={`flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-bold ${
-                    item.active
-                      ? "bg-violet-100 text-violet-700"
-                      : "text-slate-600 hover:bg-violet-50"
-                  }`}
-                >
-                  <Icon size={19} />
-                  {item.label}
-                </div>
-              );
-            })}
-          </nav>
-
-          <div className="absolute bottom-6 left-5 right-5 rounded-2xl bg-violet-100 p-4">
-            <div className="font-extrabold text-violet-700">🎁 Nâng cấp Premium</div>
-            <p className="mt-2 text-xs text-slate-600">
-              Học không giới hạn, nhận nhiều đặc quyền hấp dẫn!
-            </p>
-            <button className="mt-4 rounded-xl bg-violet-600 px-5 py-2 text-sm font-bold text-white">
-              Nâng cấp ngay
-            </button>
-          </div>
-        </aside>
-
-        <main className="ml-[285px] flex-1">
-          <header className="sticky top-0 z-20 flex h-20 items-center justify-between border-b border-violet-100 bg-white/90 px-10 backdrop-blur">
-            <div className="flex w-[520px] items-center gap-3 rounded-2xl border border-violet-200 bg-white px-5 py-3 text-slate-400">
-              <Search size={22} />
-              <input
-                className="w-full outline-none"
-                placeholder="Tìm bài học, từ vựng, ngữ pháp..."
-              />
-            </div>
-
-            <div className="flex items-center gap-8">
-              <Stat icon={<Flame className="text-red-500" />} value="18" label="Streak" />
-              <Stat icon={<Star className="text-yellow-400" />} value="2,450" label="XP hôm nay" />
-              <Stat icon={<Gem className="text-blue-500" />} value="5,230" label="Xu" />
-              <Gift className="text-violet-600" />
-              <Bell className="text-slate-500" />
-              <div className="flex items-center gap-3">
-                <div className="grid size-12 place-items-center rounded-full bg-orange-100 text-2xl">
-                  👩
-                </div>
-                <div>
-                  <div className="font-bold">Minh Anh</div>
-                  <div className="text-xs text-slate-500">Level 18</div>
-                </div>
-              </div>
-            </div>
-          </header>
+        <main className="flex-1">
 
           <div className="grid grid-cols-[1fr_420px] gap-8 px-10 py-8">
             <section>
@@ -268,18 +179,6 @@ export default function SpeakingSituationsPage() {
             </aside>
           </div>
         </main>
-      </div>
-    </div>
-  );
-}
-
-function Stat({ icon, value, label }: any) {
-  return (
-    <div className="flex items-center gap-2">
-      {icon}
-      <div>
-        <div className="font-black">{value}</div>
-        <div className="text-xs text-slate-500">{label}</div>
       </div>
     </div>
   );

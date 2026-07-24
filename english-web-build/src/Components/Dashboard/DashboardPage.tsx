@@ -352,8 +352,8 @@ function WelcomeHero({
   const subtitle = cta?.subtitle ?? data.learningPath?.currentPhase?.title ?? "Open your learning path to continue.";
 
   return (
-    <section className="relative isolate overflow-hidden rounded-[2rem] border border-white/50 bg-[linear-gradient(135deg,#071a88,#1746ff_48%,#7c3cff)] p-5 text-white shadow-[0_28px_80px_rgba(23,70,255,0.22)] sm:p-7">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_82%_18%,rgba(255,191,36,0.28),transparent_16rem),radial-gradient(circle_at_18%_20%,rgba(18,183,255,0.28),transparent_18rem)]" />
+    <section className="relative isolate overflow-hidden rounded-[2rem] border border-white/50 bg-[linear-gradient(135deg,var(--lumiverse-primary-strong),var(--lumiverse-primary)_48%,var(--lumiverse-violet))] p-5 text-white shadow-[0_28px_80px_rgba(20,103,232,0.22)] sm:p-7">
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_82%_18%,rgba(255,182,72,0.28),transparent_16rem),radial-gradient(circle_at_18%_20%,rgba(23,182,230,0.28),transparent_18rem)]" />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
         <div className="min-w-0">
           <LumiverseBadge className="border-white/20 bg-white/12 text-white">
@@ -428,7 +428,7 @@ function QuickActions({ actions }: { actions: DashboardData["quickActions"] }) {
           href={action.href}
           className="group lumiverse-card flex min-w-0 items-center gap-3 p-4 transition hover:-translate-y-0.5 hover:border-blue-200"
         >
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[var(--lumiverse-primary)] dark:bg-white/8">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]">
             {action.icon === "target" ? <Target size={20} /> : action.icon === "refresh" ? <RefreshCcw size={20} /> : <Play size={20} fill="currentColor" />}
           </span>
           <span className="min-w-0 flex-1">
@@ -519,7 +519,7 @@ function LearningPathPanel({ data }: { data: DashboardData }) {
       />
       {data.learningPath ? (
         <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-3xl bg-blue-50/70 p-5 dark:bg-white/8">
+          <div className="rounded-3xl bg-[var(--lumiverse-primary-soft)] p-5">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--lumiverse-primary)]">
               Current level
             </p>
@@ -580,7 +580,7 @@ function WeeklyActivityPanel({
       <div className="grid h-56 grid-cols-7 items-end gap-2 sm:gap-4">
         {data.weeklyActivity.map((item) => (
           <div key={item.date} className="flex h-full min-w-0 flex-col justify-end gap-2">
-            <div className="flex min-h-0 flex-1 items-end rounded-2xl bg-blue-50/80 px-2 pb-2 dark:bg-white/8">
+            <div className="flex min-h-0 flex-1 items-end rounded-2xl bg-[var(--lumiverse-primary-soft)] px-2 pb-2">
               <div
                 className="w-full rounded-xl bg-gradient-to-t from-[var(--lumiverse-primary)] to-[var(--lumiverse-cyan)]"
                 style={{ height: `${Math.max(8, (item.xp / maxWeeklyXp) * 100)}%` }}
@@ -608,7 +608,7 @@ function RecentActivityPanel({ data, locale }: { data: DashboardData; locale: st
         <div className="divide-y divide-[var(--lumiverse-border)]">
           {data.recentSessions.map((session) => (
             <Link key={`${session.type}-${session.id}`} href={session.href} className="flex items-center gap-3 py-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[var(--lumiverse-primary)] dark:bg-white/8">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]">
                 <BookOpen size={20} />
               </span>
               <span className="min-w-0 flex-1">
@@ -698,7 +698,7 @@ function TodayGoalPanel({
         }
       />
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-        <div className="rounded-3xl bg-blue-50/70 p-4 dark:bg-white/8">
+        <div className="rounded-3xl bg-[var(--lumiverse-primary-soft)] p-4">
           <div className="flex items-center justify-between gap-3">
             <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[var(--lumiverse-primary)] shadow-sm dark:bg-white/10">
               <Clock3 aria-hidden className="h-5 w-5" />
@@ -762,14 +762,14 @@ function LeaderboardPanel({ state }: { state: LeaderboardState }) {
               className={[
                 "flex items-center gap-3 rounded-2xl border p-3",
                 entry.isCurrentUser
-                  ? "border-blue-200 bg-blue-50/70 dark:border-blue-400/30 dark:bg-blue-400/10"
+                  ? "border-[var(--lumiverse-primary)]/25 bg-[var(--lumiverse-primary-soft)]"
                   : "border-[var(--lumiverse-border)] bg-white/54 dark:bg-white/6",
               ].join(" ")}
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-sm font-black text-amber-700 dark:bg-amber-400/15 dark:text-amber-200">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[var(--lumiverse-ranking-soft)] text-sm font-black text-[var(--lumiverse-ranking)]">
                 #{entry.rank}
               </span>
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-50 text-xs font-black text-[var(--lumiverse-primary)] dark:bg-white/10">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--lumiverse-primary-soft)] text-xs font-black text-[var(--lumiverse-primary)]">
                 {entry.user.avatarUrl || entry.user.avatar ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -819,7 +819,7 @@ function PetPanel({ data }: { data: DashboardData }) {
         />
         <div className="rounded-3xl border border-[var(--lumiverse-border)] bg-white/54 p-4 dark:bg-white/6">
           <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-50 text-[var(--lumiverse-primary)] dark:bg-white/10">
+            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]">
               <PawPrint size={30} />
             </div>
             <div className="min-w-0">
@@ -858,7 +858,7 @@ function PetPanel({ data }: { data: DashboardData }) {
           </Link>
         }
       />
-      <div className="rounded-3xl border border-dashed border-[var(--lumiverse-border)] bg-blue-50/60 p-4 dark:bg-white/6">
+      <div className="rounded-3xl border border-dashed border-[var(--lumiverse-border)] bg-[var(--lumiverse-primary-soft)] p-4">
         <div className="flex items-center gap-4">
           <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-white text-[var(--lumiverse-primary)] shadow-sm dark:bg-white/10">
             <PawPrint size={30} />
@@ -884,8 +884,8 @@ function AchievementsPanel({ data }: { data: DashboardData }) {
       {data.recentAchievements.length > 0 ? (
         <div className="space-y-3">
           {data.recentAchievements.slice(0, 4).map((achievement) => (
-            <Link key={achievement.id} href={achievement.href} className="flex items-center gap-3 rounded-2xl bg-amber-50/70 p-3 dark:bg-white/8">
-              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-amber-600 dark:bg-white/10">
+            <Link key={achievement.id} href={achievement.href} className="flex items-center gap-3 rounded-2xl bg-[var(--lumiverse-ranking-soft)] p-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--lumiverse-card)] text-[var(--lumiverse-ranking)]">
                 <Award size={18} />
               </span>
               <span className="min-w-0 flex-1">

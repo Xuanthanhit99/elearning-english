@@ -89,7 +89,7 @@ export default function NotificationDrawer({
             <button
               type="button"
               onClick={() => void markAllRead()}
-              className="rounded-xl bg-[var(--lumiverse-card-soft)] px-3 py-2 text-xs font-black text-[var(--lumiverse-primary)] transition hover:bg-white/80 dark:hover:bg-white/10"
+              className="rounded-xl bg-[var(--lumiverse-card-soft)] px-3 py-2 text-xs font-black text-[var(--lumiverse-primary)] transition hover:bg-[var(--lumiverse-hover-tint)]"
             >
               Doc tat ca
             </button>

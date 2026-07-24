@@ -238,12 +238,12 @@ export default function ArenaPage() {
           <ProfileCard profile={profile} seasonSummary={seasonSummary} loading={loading} />
         </div>
 
-        {message && <div className="rounded-2xl bg-white px-5 py-4 font-extrabold text-[var(--lumiverse-primary)] shadow-sm">{message}</div>}
+        {message && <div className="rounded-2xl bg-[var(--lumiverse-card)] px-5 py-4 font-extrabold text-[var(--lumiverse-primary)] shadow-sm">{message}</div>}
 
         {profile?.isInPlacement &&
           (profile.placementMatchesCompleted ?? 0) === 0 &&
           !placementIntroDismissed && (
-            <div className="rounded-[26px] border border-[var(--lumiverse-border)] bg-white p-6 shadow-sm">
+            <div className="rounded-[26px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-6 shadow-sm">
               <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">
                 Trận xếp hạng đầu tiên
               </p>
@@ -288,7 +288,7 @@ export default function ArenaPage() {
         )}
 
         <div className="grid gap-6 xl:grid-cols-[440px_1fr]">
-          <section className="rounded-[30px] border border-[var(--lumiverse-border)] bg-white p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
+          <section className="rounded-[30px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
             <div className="mb-5">
               <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Tạo phòng</p>
               <h2 className="mt-1 text-2xl font-black text-[var(--lumiverse-ink)]">{selectedMode.title}</h2>
@@ -334,8 +334,8 @@ export default function ArenaPage() {
                       onClick={() => setForm({ ...form, winCondition: condition.id })}
                       className={`rounded-2xl border px-4 py-3 text-left ${
                         form.winCondition === condition.id
-                          ? "border-[var(--lumiverse-primary)] bg-blue-50"
-                          : "border-[var(--lumiverse-border)] bg-white"
+                          ? "border-[var(--lumiverse-primary)] bg-[var(--lumiverse-primary-soft)]"
+                          : "border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)]"
                       }`}
                     >
                       <div className="font-black text-[var(--lumiverse-ink)]">{condition.label}</div>
@@ -374,13 +374,13 @@ export default function ArenaPage() {
           </section>
 
           <section className="space-y-6">
-            <div className="rounded-[30px] border border-[var(--lumiverse-border)] bg-white p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
+            <div className="rounded-[30px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
               <div className="mb-5 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Lobby</p>
                   <h2 className="text-2xl font-black text-[var(--lumiverse-ink)]">Phòng đang chờ</h2>
                 </div>
-                <button type="button" onClick={() => fetchLobby()} className="rounded-full bg-blue-50 px-4 py-2 text-sm font-black text-[var(--lumiverse-primary)]">Làm mới</button>
+                <button type="button" onClick={() => fetchLobby()} className="rounded-full bg-[var(--lumiverse-primary-soft)] px-4 py-2 text-sm font-black text-[var(--lumiverse-primary)]">Làm mới</button>
               </div>
 
               <div className="grid gap-4 lg:grid-cols-2">
@@ -405,7 +405,7 @@ export default function ArenaPage() {
           width: 100%;
           border-radius: 16px;
           border: 1px solid var(--lumiverse-border);
-          background: white;
+          background: var(--lumiverse-card);
           padding: 0 14px;
           font-weight: 800;
           color: var(--lumiverse-ink);
@@ -415,8 +415,8 @@ export default function ArenaPage() {
       `}</style>
 
       {passwordRoom && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4">
-          <div className="w-full max-w-md rounded-[28px] bg-white p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--lumiverse-overlay)] px-4">
+          <div className="w-full max-w-md rounded-[28px] bg-[var(--lumiverse-card)] p-6 shadow-2xl">
             <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Phòng private</p>
             <h2 className="mt-2 text-2xl font-black text-[var(--lumiverse-ink)]">{passwordRoom.name}</h2>
             <p className="mt-2 text-sm font-bold text-[var(--lumiverse-muted)]">Nhập mật khẩu để tham gia phòng này.</p>
@@ -440,7 +440,7 @@ export default function ArenaPage() {
                   setPasswordRoom(null);
                   setRoomPassword("");
                 }}
-                className="rounded-2xl bg-blue-50 px-5 py-3 font-black text-[var(--lumiverse-primary)]"
+                className="rounded-2xl bg-[var(--lumiverse-primary-soft)] px-5 py-3 font-black text-[var(--lumiverse-primary)]"
               >
                 Hủy
               </button>
@@ -470,7 +470,7 @@ function ProfileCard({
   loading: boolean;
 }) {
   return (
-    <div className="rounded-[34px] border border-[var(--lumiverse-border)] bg-white p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
+    <div className="rounded-[34px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
       <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Hồ sơ Arena</p>
       {loading ? (
         <div className="mt-5 font-bold text-[var(--lumiverse-muted)]">Đang tải...</div>
@@ -533,7 +533,7 @@ function RoomCard({ room, onJoin }: { room: ArenaRoom; onJoin: () => void }) {
           <h3 className="text-lg font-black text-[var(--lumiverse-ink)]">{room.name}</h3>
           <p className="mt-1 text-sm font-bold text-[var(--lumiverse-muted)]">Host: {room.host?.fullname || "Người chơi"}</p>
         </div>
-        <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[var(--lumiverse-primary)]">{room.visibility}</span>
+        <span className="rounded-full bg-[var(--lumiverse-primary-soft)] px-3 py-1 text-xs font-black text-[var(--lumiverse-primary)]">{room.visibility}</span>
       </div>
       <div className="mt-4 flex flex-wrap gap-2 text-xs font-black text-[var(--lumiverse-muted)]">
         <Tag>{room.gameMode}</Tag><Tag>{room.skill}</Tag><Tag>{room.difficulty}</Tag><Tag>{room.topic}</Tag>
@@ -552,7 +552,7 @@ function RoomCard({ room, onJoin }: { room: ArenaRoom; onJoin: () => void }) {
 function RewardLoop() {
   const items = ["Học bài", "Nhận năng lượng Arena", "Đấu PvP", "Nhận Point + Food + Gold", "Nuôi linh thú", "Mở skin / hiệu ứng"];
   return (
-    <div className="rounded-[30px] border border-[var(--lumiverse-border)] bg-white p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
+    <div className="rounded-[30px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
       <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Vòng lặp giữ chân</p>
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         {items.map((item, index) => (
@@ -578,7 +578,7 @@ function NumberField({ label, value, onChange }: { label: string; value: number;
 }
 
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
-  return <button type="button" onClick={() => onChange(!checked)} className={`rounded-2xl border px-4 py-3 text-sm font-black ${checked ? "border-[var(--lumiverse-primary)] bg-blue-50 text-[var(--lumiverse-primary)]" : "border-[var(--lumiverse-border)] bg-white text-[var(--lumiverse-muted)]"}`}>{label}: {checked ? "On" : "Off"}</button>;
+  return <button type="button" onClick={() => onChange(!checked)} className={`rounded-2xl border px-4 py-3 text-sm font-black ${checked ? "border-[var(--lumiverse-primary)] bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]" : "border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] text-[var(--lumiverse-muted)]"}`}>{label}: {checked ? "On" : "Off"}</button>;
 }
 
 function Stat({ label, value }: { label: string; value: number }) {
@@ -586,5 +586,5 @@ function Stat({ label, value }: { label: string; value: number }) {
 }
 
 function Tag({ children }: { children: React.ReactNode }) {
-  return <span className="rounded-full bg-white px-3 py-1">{children}</span>;
+  return <span className="rounded-full bg-[var(--lumiverse-primary-soft)] px-3 py-1">{children}</span>;
 }

@@ -10,6 +10,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit --pretty false",
     "test": "node scripts/test-auth-redirect.mjs",
+    "test:responsive": "node scripts/responsive-regression-check.mjs",
     "i18n:check": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
@@ -40,6 +41,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "playwright": "^1.61.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

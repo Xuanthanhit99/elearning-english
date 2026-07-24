@@ -179,7 +179,9 @@ export default function AppHeader({
       disconnectNotificationSocket();
       clearNotifications();
       setProfileOpen(false);
-      router.push("/");
+      // Hard reload (not router.push) so the Next.js router cache can't
+      // serve a previously-rendered protected page on back-navigation.
+      window.location.href = "/";
     }
   }
 
@@ -193,8 +195,9 @@ export default function AppHeader({
 
   return (
     <header
+      data-testid="app-header"
       className={[
-        "fixed right-0 top-0 z-30 h-[76px] border-b border-[var(--lumiverse-border)] bg-white/78 shadow-[0_10px_34px_rgba(24,50,118,0.08)] backdrop-blur-2xl transition-[left] duration-300 dark:bg-slate-950/78",
+        "fixed right-0 top-0 z-30 h-[76px] border-b border-[var(--lumiverse-border)] bg-[var(--lumiverse-shell-surface)] shadow-[0_10px_34px_rgba(24,50,118,0.08)] backdrop-blur-2xl transition-[left] duration-300",
         sidebarCollapsed ? "lg:left-[96px]" : "lg:left-[280px]",
         "left-0",
       ].join(" ")}
@@ -274,7 +277,7 @@ export default function AppHeader({
                   href={item.href}
                   role="option"
                   onClick={() => setSuggestionsOpen(false)}
-                  className="flex items-center justify-between gap-3 px-4 py-3 text-sm font-bold text-[var(--lumiverse-muted)] hover:bg-blue-50 hover:text-[var(--lumiverse-primary)] dark:hover:bg-white/8"
+                  className="flex items-center justify-between gap-3 px-4 py-3 text-sm font-bold text-[var(--lumiverse-muted)] hover:bg-[var(--lumiverse-hover-tint)] hover:text-[var(--lumiverse-primary)]"
                 >
                   <span className="min-w-0">
                     <span className="block truncate font-black">{item.title}</span>
@@ -297,8 +300,8 @@ export default function AppHeader({
         </form>
 
         <div className="hidden items-center gap-2 md:flex">
-          <HeaderStat icon={<Flame size={18} />} label={t("header.streak")} locale={locale} value={streak} />
-          <HeaderStat icon={<Star size={18} />} label={t("header.xp")} locale={locale} value={xp} />
+          <HeaderStat icon={<Flame size={18} className="lumiverse-beacon-glow" />} label={t("header.streak")} locale={locale} value={streak} />
+          <HeaderStat icon={<Star size={18} className="lumiverse-beacon-glow" />} label={t("header.xp")} locale={locale} value={xp} />
         </div>
 
         {features.languageSwitcher ? (
@@ -314,7 +317,7 @@ export default function AppHeader({
         >
           <Bell size={19} />
           {unreadNotifications > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-black text-white">
+            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--lumiverse-notification)] px-1 text-[10px] font-black text-white">
               {unreadNotifications > 99 ? "99+" : unreadNotifications}
             </span>
           )}
@@ -335,7 +338,7 @@ export default function AppHeader({
                 className="h-9 w-9 rounded-full object-cover"
               />
             ) : (
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-xs font-black text-[var(--lumiverse-primary)]">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--lumiverse-primary-soft)] text-xs font-black text-[var(--lumiverse-primary)]">
                 {getInitials(fullname)}
               </span>
             )}
@@ -369,7 +372,7 @@ export default function AppHeader({
               <button
                 type="button"
                 onClick={handleLogout}
-                className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-black text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
+                className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-black text-[var(--lumiverse-danger)] hover:bg-[var(--lumiverse-danger-soft)]"
               >
                 <LogOut size={16} />
                 {t("header.logout")}
@@ -398,7 +401,7 @@ function HeaderStat({
   value: number;
 }) {
   return (
-    <div className="flex h-12 items-center gap-2 rounded-2xl border border-[var(--lumiverse-border)] bg-white/62 px-3 shadow-sm dark:bg-white/8">
+    <div className="flex h-12 items-center gap-2 rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] px-3 shadow-sm">
       <span className="text-[var(--lumiverse-gold)]">{icon}</span>
       <span>
         <span className="block text-sm font-black text-[var(--lumiverse-ink)]">
@@ -424,7 +427,7 @@ function DropdownLink({
   return (
     <Link
       href={href}
-      className="flex min-w-0 items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-black text-[var(--lumiverse-muted)] hover:bg-blue-50 hover:text-[var(--lumiverse-primary)] dark:hover:bg-white/8"
+      className="flex min-w-0 items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-black text-[var(--lumiverse-muted)] hover:bg-[var(--lumiverse-hover-tint)] hover:text-[var(--lumiverse-primary)]"
     >
       <span className="shrink-0">{icon}</span>
       <span className="truncate">{children}</span>

@@ -40,6 +40,7 @@ import { MissionsModule } from './modules/missions/missions.module';
 import { VocabularyModule } from './modules/vocabulary/vocabulary.module';
 import { VocabularyJobModule } from './modules/vocabulary-job/vocabulary-job.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { ListeningModule } from './modules/listening/listening.module';
 import { GrammarModule } from './modules/grammar/grammar.module';
 import { ReadingModule } from './modules/reading/reading.module';
@@ -81,6 +82,13 @@ import { HealthController } from './health.controller';
       isGlobal: true,
     }),
     ScheduleModule.forRoot(),
+    // Registered globally so `ThrottlerGuard`/`@Throttle` are available for
+    // injection, but NOT bound as a global APP_GUARD — only the specific
+    // brute-forceable auth endpoints (login/register/refresh/2FA) opt in via
+    // `@UseGuards(ThrottlerGuard)`, so unrelated polling-heavy routes
+    // (Writing/Speaking/Placement processing status, Dashboard, etc.) are
+    // unaffected.
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 20 }]),
     BullModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({

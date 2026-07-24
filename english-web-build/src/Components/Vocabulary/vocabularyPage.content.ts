@@ -6,6 +6,7 @@ export type VocabContent = {
   messages: {
     loadWordsError: string;
     loadTodayError: string;
+    loadingToday: string;
     alreadyCompleted: string;
     noValidWord: string;
     savedKnown: string;
@@ -129,6 +130,7 @@ const vi: VocabContent = {
   messages: {
     loadWordsError: "Không tải được danh sách từ hôm nay. Hãy đăng nhập lại hoặc tải lại trang.",
     loadTodayError: "Chưa tải được bài học từ vựng. Hãy kiểm tra đăng nhập rồi thử lại.",
+    loadingToday: "Đang chuẩn bị bài từ vựng hôm nay của bạn...",
     alreadyCompleted: "Bạn đã hoàn thành bài học hôm nay. Ngày mai sẽ có chủ đề mới.",
     noValidWord: "Chưa có từ vựng hợp lệ để lưu tiến độ. Hãy đăng nhập và tải lại bài học.",
     savedKnown: "Đã lưu: bạn đã biết từ này. Chuyển sang từ tiếp theo.",
@@ -318,6 +320,7 @@ const en: VocabContent = {
   messages: {
     loadWordsError: "Couldn't load today's words. Please sign in again or reload the page.",
     loadTodayError: "Couldn't load the vocabulary lesson. Please check you're signed in and try again.",
+    loadingToday: "Preparing today's vocabulary lesson for you...",
     alreadyCompleted: "You've completed today's lesson. A new topic will be ready tomorrow.",
     noValidWord: "No valid word to save progress for. Please sign in and reload the lesson.",
     savedKnown: "Saved: you know this word. Moving to the next one.",
@@ -507,6 +510,7 @@ const zh: VocabContent = {
   messages: {
     loadWordsError: "无法加载今日单词列表，请重新登录或刷新页面。",
     loadTodayError: "词汇课程加载失败，请检查登录状态后重试。",
+    loadingToday: "正在为你准备今天的词汇课程...",
     alreadyCompleted: "你今天的课程已完成，明天会有新主题。",
     noValidWord: "没有有效的单词可保存进度，请登录并重新加载课程。",
     savedKnown: "已保存：你已掌握此单词，切换到下一个。",
@@ -696,6 +700,7 @@ const de: VocabContent = {
   messages: {
     loadWordsError: "Die heutigen Wörter konnten nicht geladen werden. Bitte melde dich erneut an oder lade die Seite neu.",
     loadTodayError: "Die Vokabellektion konnte nicht geladen werden. Bitte prüfe deine Anmeldung und versuche es erneut.",
+    loadingToday: "Deine heutige Vokabellektion wird vorbereitet...",
     alreadyCompleted: "Du hast die heutige Lektion abgeschlossen. Morgen gibt es ein neues Thema.",
     noValidWord: "Kein gültiges Wort, um den Fortschritt zu speichern. Bitte melde dich an und lade die Lektion neu.",
     savedKnown: "Gespeichert: Du kennst dieses Wort. Weiter zum nächsten.",

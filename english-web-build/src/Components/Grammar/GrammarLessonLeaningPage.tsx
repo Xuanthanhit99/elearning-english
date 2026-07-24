@@ -4,26 +4,15 @@
 import { api } from "@/src/lib/axios";
 import { useSpeak } from "@/src/hooks/useSpeak";
 import {
-  Bell,
   BookOpen,
   Bookmark,
   CheckCircle2,
   Clock,
   Download,
   FileText,
-  Flame,
-  Gem,
-  Gift,
-  Headphones,
-  Home,
   Lock,
-  Mic,
-  PenLine,
   Play,
-  Search,
-  Settings,
   Star,
-  Trophy,
   Volume2,
   Lightbulb,
   BarChart3,
@@ -605,85 +594,8 @@ function LessonPageShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-[#fbfbff] text-[#10164f]">
       <div className="flex">
-        <aside className="fixed left-0 top-0 h-screen w-[280px] border-r bg-white px-4 py-5">
-          <div className="mb-8 flex items-center gap-3 px-2">
-            <div className="text-3xl">🦊</div>
-            <h1 className="text-2xl font-black">
-              Study<span className="text-violet-600">Arena</span>
-            </h1>
-          </div>
 
-          <SidebarItem icon={<Home size={18} />} label="Trang chủ" />
-          <SidebarTitle title="Học tập" />
-          <SidebarItem icon={<BookOpen size={18} />} label="Tổng quan" />
-          <SidebarItem icon={<BookOpen size={18} />} label="Từ vựng" />
-          <SidebarItem active icon={<BookOpen size={18} />} label="Ngữ pháp" />
-          <SidebarItem icon={<Headphones size={18} />} label="Nghe" />
-          <SidebarItem icon={<Mic size={18} />} label="Nói" />
-          <SidebarItem icon={<BookOpen size={18} />} label="Đọc hiểu" />
-          <SidebarItem icon={<PenLine size={18} />} label="Viết" />
-
-          <SidebarTitle title="Cộng đồng" />
-          <SidebarItem icon={<Trophy size={18} />} label="Cộng đồng" />
-          <SidebarItem icon={<Star size={18} />} label="Thành tích" />
-
-          <SidebarTitle title="Khác" />
-          <SidebarItem icon={<Settings size={18} />} label="Cài đặt" />
-
-          <div className="absolute bottom-5 left-4 right-4 rounded-2xl border bg-gradient-to-br from-white to-violet-50 p-4">
-            <div className="mb-2 flex items-center gap-2 font-bold text-violet-700">
-              <Star size={18} className="fill-orange-400 text-orange-400" />
-              Nâng cấp Premium
-            </div>
-            <p className="text-sm text-slate-500">
-              Học không giới hạn, nhận nhiều đặc quyền hấp dẫn!
-            </p>
-            <button className="mt-4 rounded-xl bg-violet-600 px-4 py-2 text-sm font-bold text-white">
-              Nâng cấp ngay
-            </button>
-            <div className="absolute bottom-0 right-2 text-6xl">🦊</div>
-          </div>
-        </aside>
-
-        <main className="ml-[280px] flex-1">
-          <header className="sticky top-0 z-10 flex h-[82px] items-center justify-between border-b bg-white/80 px-6 backdrop-blur">
-            <div className="flex h-12 w-[700px] items-center gap-3 rounded-xl border bg-[#f7f5ff] px-4">
-              <Search size={20} />
-              <input
-                className="w-full bg-transparent text-sm outline-none"
-                placeholder="Tìm bài học, từ vựng, ngữ pháp..."
-              />
-            </div>
-
-            <div className="flex items-center gap-5 text-sm font-bold">
-              <TopStat
-                icon={<Flame className="text-red-500" />}
-                value="18"
-                label="Streak"
-              />
-              <TopStat
-                icon={<Star className="text-orange-400" />}
-                value="2,450"
-                label="XP hôm nay"
-              />
-              <TopStat
-                icon={<Gem className="text-sky-400" />}
-                value="5,230"
-                label="Xu"
-              />
-              <Gift className="text-violet-600" />
-              <Bell className="text-indigo-500" />
-              <div className="flex items-center gap-2">
-                <div className="grid h-10 w-10 place-items-center rounded-full bg-orange-100 text-xl">
-                  🦊
-                </div>
-                <div>
-                  <p>Minh Anh</p>
-                  <p className="text-xs text-slate-400">Level 18</p>
-                </div>
-              </div>
-            </div>
-          </header>
+        <main className="flex-1">
 
           {children}
         </main>
@@ -996,53 +908,6 @@ function ProgressLine({
         {icon} {main}
       </p>
       <p className="text-xs text-slate-500">{sub}</p>
-    </div>
-  );
-}
-
-function SidebarTitle({ title }: { title: string }) {
-  return (
-    <p className="mb-3 mt-6 px-3 text-xs font-black uppercase text-slate-400">
-      {title}
-    </p>
-  );
-}
-
-function SidebarItem({
-  icon,
-  label,
-  active,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-}) {
-  return (
-    <div
-      className={`mb-1 flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold ${active ? "bg-violet-100 text-violet-700" : "text-slate-600 hover:bg-slate-50"}`}
-    >
-      {icon}
-      {label}
-    </div>
-  );
-}
-
-function TopStat({
-  icon,
-  value,
-  label,
-}: {
-  icon: React.ReactNode;
-  value: string;
-  label: string;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      {icon}
-      <div>
-        <p>{value}</p>
-        <p className="text-xs text-slate-400">{label}</p>
-      </div>
     </div>
   );
 }

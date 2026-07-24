@@ -68,11 +68,24 @@ function isProtectedRoute(pathname: string) {
   );
 }
 
+// The app runs with `trailingSlash: true` (next.config.ts), so
+// `request.nextUrl.pathname` seen by middleware is `/login/`, not `/login`.
+// Strip a single trailing slash (but keep "/" itself) before any exact-match
+// comparison so this policy works the same whether or not a trailing slash
+// is present.
+function stripTrailingSlash(pathname: string) {
+  return pathname.length > 1 && pathname.endsWith("/")
+    ? pathname.slice(0, -1)
+    : pathname;
+}
+
 export function getAuthRouteDecision({
-  pathname,
+  pathname: rawPathname,
   search,
   isLoggedIn,
 }: AuthRouteInput): AuthRouteDecision {
+  const pathname = stripTrailingSlash(rawPathname);
+
   if (isLoggedIn && ["/auth", "/login", "/register"].includes(pathname)) {
     const params = new URLSearchParams(search);
     return {

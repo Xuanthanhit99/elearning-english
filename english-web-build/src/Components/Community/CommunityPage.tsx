@@ -70,12 +70,12 @@ function EmptyPanel({
   description: string;
 }) {
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white px-6 py-14 text-center shadow-sm">
-      <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-indigo-50 text-indigo-600">
+    <div className="rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] px-6 py-14 text-center shadow-sm">
+      <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]">
         <Sparkles size={26} />
       </div>
       <h3 className="mt-4 text-lg font-bold text-slate-900">{title}</h3>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--lumiverse-muted)]">
         {description}
       </p>
     </div>
@@ -232,9 +232,9 @@ export function CommunityPage() {
         <button
           type="button"
           onClick={() => setModal(true)}
-          className="flex w-full items-center gap-3 rounded-3xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-indigo-300 hover:shadow-md"
+          className="flex w-full items-center gap-3 rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-4 text-left shadow-sm transition hover:border-[var(--lumiverse-primary)]/40 hover:shadow-md"
         >
-          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-indigo-600 text-white">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--lumiverse-primary)] text-white">
             <Plus size={23} />
           </span>
 
@@ -242,14 +242,14 @@ export function CommunityPage() {
             <strong className="block text-slate-900">
               Bạn muốn chia sẻ điều gì?
             </strong>
-            <small className="block text-slate-500">
+            <small className="block text-[var(--lumiverse-muted)]">
               Chia sẻ kiến thức, đặt câu hỏi, bài nói hoặc bài viết.
             </small>
           </span>
         </button>
 
         {view === 'EXPLORE' && (
-          <div className="flex gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+          <div className="flex gap-2 rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-3 shadow-sm">
             <div className="relative min-w-0 flex-1">
               <Search
                 size={18}
@@ -262,20 +262,20 @@ export function CommunityPage() {
                   if (event.key === 'Enter') submitSearch();
                 }}
                 placeholder="Tìm bài viết, hashtag hoặc nội dung..."
-                className="w-full rounded-xl border border-slate-200 py-2.5 pl-10 pr-3 text-sm outline-none focus:border-indigo-500"
+                className="w-full rounded-xl border border-[var(--lumiverse-border)] py-2.5 pl-10 pr-3 text-sm outline-none focus:border-[var(--lumiverse-primary)]"
               />
             </div>
             <button
               type="button"
               onClick={submitSearch}
-              className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white"
+              className="rounded-xl bg-[var(--lumiverse-primary)] px-4 py-2.5 text-sm font-semibold text-white"
             >
               Tìm
             </button>
           </div>
         )}
 
-        <div className="flex gap-2 overflow-x-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+        <div className="flex gap-2 overflow-x-auto rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-2 shadow-sm">
           {feedTabs.map((item) => (
             <button
               key={item.key}
@@ -290,7 +290,7 @@ export function CommunityPage() {
               }}
               className={`whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition ${
                 activeFeedTab === item.key
-                  ? 'bg-indigo-600 text-white'
+                  ? 'bg-[var(--lumiverse-primary)] text-white'
                   : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
@@ -300,12 +300,12 @@ export function CommunityPage() {
         </div>
 
         {error && (
-          <div className="rounded-2xl border border-red-100 bg-red-50 p-4">
-            <p className="text-sm text-red-600">{error}</p>
+          <div className="rounded-2xl border border-[var(--lumiverse-danger)]/25 bg-[var(--lumiverse-danger-soft)] p-4">
+            <p className="text-sm text-[var(--lumiverse-danger)]">{error}</p>
             <button
               type="button"
               onClick={() => void loadFeed(true)}
-              className="mt-3 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-red-600 shadow-sm"
+              className="mt-3 rounded-xl bg-[var(--lumiverse-card)] px-4 py-2 text-sm font-semibold text-[var(--lumiverse-danger)] shadow-sm"
             >
               Thử lại
             </button>
@@ -313,15 +313,15 @@ export function CommunityPage() {
         )}
 
         {loading ? (
-          <div className="rounded-3xl border border-slate-200 bg-white py-12 text-center text-slate-500">
+          <div className="rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] py-12 text-center text-[var(--lumiverse-muted)]">
             Đang tải bảng tin...
           </div>
         ) : posts.length === 0 ? (
-          <div className="rounded-3xl border border-slate-200 bg-white px-5 py-12 text-center">
+          <div className="rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] px-5 py-12 text-center">
             <h3 className="font-bold text-slate-900">
               Chưa có bài viết nào
             </h3>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-[var(--lumiverse-muted)]">
               Hãy trở thành người đầu tiên chia sẻ với cộng đồng.
             </p>
           </div>
@@ -336,7 +336,7 @@ export function CommunityPage() {
             type="button"
             onClick={() => void loadFeed(false)}
             disabled={loadingMore}
-            className="w-full rounded-2xl border border-slate-200 bg-white py-3 font-semibold text-indigo-600 transition hover:bg-indigo-50 disabled:opacity-50"
+            className="w-full rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] py-3 font-semibold text-[var(--lumiverse-primary)] transition hover:bg-[var(--lumiverse-hover-tint)] disabled:opacity-50"
           >
             {loadingMore ? 'Đang tải...' : 'Xem thêm'}
           </button>
@@ -348,7 +348,7 @@ export function CommunityPage() {
   return (
     <main className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[220px_minmax(0,1fr)_300px]">
       <aside className="hidden lg:block">
-        <div className="sticky top-6 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="sticky top-6 rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-4 shadow-sm">
           <h2 className="mb-4 px-3 text-lg font-bold text-slate-900">
             Cộng đồng
           </h2>
@@ -377,8 +377,8 @@ export function CommunityPage() {
                   }}
                   className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition ${
                     active
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600'
+                      ? 'bg-[var(--lumiverse-primary)] text-white shadow-sm'
+                      : 'text-[var(--lumiverse-muted)] hover:bg-[var(--lumiverse-hover-tint)] hover:text-[var(--lumiverse-primary)]'
                   }`}
                 >
                   <Icon size={18} />
@@ -394,13 +394,13 @@ export function CommunityPage() {
 
       <aside className="hidden lg:block">
         <div className="sticky top-6 space-y-4">
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-5 shadow-sm">
             <div className="flex items-center gap-2">
               <Flame size={18} className="text-orange-500" />
               <h3 className="font-bold text-slate-900">Chủ đề nổi bật</h3>
             </div>
 
-            <div className="mt-4 space-y-3 text-sm text-indigo-600">
+            <div className="mt-4 space-y-3 text-sm text-[var(--lumiverse-primary)]">
               {[
                 '#DailyConversation',
                 '#IELTSPreparation',
@@ -425,7 +425,7 @@ export function CommunityPage() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-5 shadow-sm">
             <h3 className="font-bold text-slate-900">
               Nguyên tắc cộng đồng
             </h3>

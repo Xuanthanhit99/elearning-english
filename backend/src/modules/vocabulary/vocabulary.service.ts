@@ -29,6 +29,7 @@ import {
 import { SubmitReviewSessionDto } from './dto/review-session-answer.dto';
 import { MissionV2ProgressService } from '../missions-v2/services/mission-v2-progress.service';
 import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
+import { QuestionGenerationLockService } from '../question-bank/question-generation-lock/question-generation-lock.service';
 
 type GeminiWordItem = {
   word: string;
@@ -50,6 +51,7 @@ export class VocabularyService {
     private vocabularyJobService: VocabularyJobService,
     private readonly missionV2ProgressService: MissionV2ProgressService,
     private readonly learningXp: LearningXpPublisher,
+    private readonly questionGenerationLock: QuestionGenerationLockService,
   ) {}
 
   private isLockedPlan(plan: any): plan is {
@@ -756,12 +758,28 @@ export class VocabularyService {
 
     if (words.length >= params.limit) return words;
 
-    const missing = params.limit - words.length;
+    // Guard the Gemini call behind a distributed lock keyed by topic+level so
+    // concurrent requests for the same missing content (e.g. many students
+    // hitting an empty topic/level at once) trigger one generation, not N.
+    // Re-checks the DB after acquiring the lock in case another request
+    // already filled the gap while this one was waiting.
+    const lockKey = `vocabulary-words:${params.topicId}:${params.level}`;
+    await this.questionGenerationLock.withLock(lockKey, async () => {
+      const stillShort = await this.prisma.word.count({
+        where: {
+          topicId: params.topicId,
+          level: params.level,
+          id: { notIn: excludedIds },
+        },
+      });
 
-    await this.generateWordsByGemini({
-      topicId: params.topicId,
-      level: params.level,
-      count: missing + 10,
+      if (stillShort >= params.limit) return;
+
+      await this.generateWordsByGemini({
+        topicId: params.topicId,
+        level: params.level,
+        count: params.limit - stillShort + 10,
+      });
     });
 
     words = await findStrict();

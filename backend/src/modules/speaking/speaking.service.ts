@@ -1,4 +1,5 @@
 import {
+  BadGatewayException,
   BadRequestException,
   Injectable,
   InternalServerErrorException,
@@ -68,10 +69,16 @@ Format:
 }
 `;
 
-    const result = await this.model.generateContent(prompt);
-    const text = result.response.text();
+    try {
+      const result = await this.model.generateContent(prompt);
+      const text = result.response.text();
 
-    return this.parseJson(text);
+      return this.parseJson(text);
+    } catch (error) {
+      throw new BadGatewayException(
+        'Không thể tạo câu hỏi luyện nói lúc này, vui lòng thử lại.',
+      );
+    }
   }
 
   async evaluateSpeakingAnswer(params: {
@@ -148,11 +155,17 @@ Format:
 }
 `;
 
-    const result = await this.model.generateContent(prompt);
-    const text = result.response.text();
-    const parsed = this.parseJson(text);
+    try {
+      const result = await this.model.generateContent(prompt);
+      const text = result.response.text();
+      const parsed = this.parseJson(text);
 
-    return this.normalizeEvaluation(parsed);
+      return this.normalizeEvaluation(parsed);
+    } catch (error) {
+      throw new BadGatewayException(
+        'Không thể chấm bài luyện nói lúc này, vui lòng thử lại.',
+      );
+    }
   }
 
   private parseJson(text: string) {

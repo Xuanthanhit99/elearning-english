@@ -3,7 +3,7 @@
 import { CheckCircle2, LoaderCircle, Mic, Sparkles, WandSparkles, XCircle } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getSpeakingProcessingStatus } from '@/src/lib/speaking-processing-api';
+import { getSpeakingProcessingStatus, retrySpeakingProcessing } from '@/src/lib/speaking-processing-api';
 import type { SpeakingProcessingStatus } from '@/src/lib/speaking-processing.types';
 
 const meta = {
@@ -21,6 +21,8 @@ export default function SpeakingProcessingPage() {
   const sessionId = String(params.sessionId);
   const [status, setStatus] = useState<SpeakingProcessingStatus | null>(null);
   const [error, setError] = useState('');
+  const [retrying, setRetrying] = useState(false);
+  const [pollVersion, setPollVersion] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -50,11 +52,35 @@ export default function SpeakingProcessingPage() {
       cancelled = true;
       if (timer !== null) window.clearTimeout(timer);
     };
-  }, [router, sessionId]);
+  }, [router, sessionId, pollVersion]);
 
   const current = useMemo(() => meta[status?.step ?? 'UPLOAD_COMPLETED'], [status]);
   const Icon = current.icon;
   const progress = Math.min(Math.max(status?.progress ?? 5, 0), 100);
+
+  async function handleRetryProcessing() {
+    try {
+      setRetrying(true);
+      setError('');
+      const result = await retrySpeakingProcessing(sessionId);
+
+      setStatus((prev) => ({
+        id: result.processingJobId ?? prev?.id ?? '',
+        sessionId: result.sessionId,
+        status: result.status as SpeakingProcessingStatus['status'],
+        step: result.status === 'QUEUED' ? 'UPLOAD_COMPLETED' : (prev?.step ?? 'UPLOAD_COMPLETED'),
+        progress: result.status === 'QUEUED' ? 10 : (prev?.progress ?? 10),
+        message: 'Đã gửi lại bài luyện nói để AI chấm điểm.',
+        retryable: false,
+        isStale: false,
+      }));
+      setPollVersion((value) => value + 1);
+    } catch (err) {
+      setError(errorText(err, 'Không gửi lại được bài luyện nói.'));
+    } finally {
+      setRetrying(false);
+    }
+  }
 
   return (
     <main className="grid min-h-screen place-items-center bg-gradient-to-br from-violet-50 via-white to-indigo-50 px-5">
@@ -78,7 +104,25 @@ export default function SpeakingProcessingPage() {
           })}
         </div>
 
-        {(error || status?.status === 'FAILED') && <div className="mt-7 rounded-2xl border border-red-200 bg-red-50 p-5 text-left text-red-700"><p className="font-black">Không thể xử lý bài nói</p><p className="mt-2 text-sm">{status?.errorMessage || error || 'Vui lòng thử ghi âm lại.'}</p><button onClick={() => router.replace(`/speaking/practice/${sessionId}`)} className="mt-4 rounded-xl bg-red-600 px-5 py-3 font-black text-white">Quay lại ghi âm</button></div>}
+        {(error || status?.status === 'FAILED') && (
+          <div className="mt-7 rounded-2xl border border-red-200 bg-red-50 p-5 text-left text-red-700">
+            <p className="font-black">Không thể xử lý bài nói</p>
+            <p className="mt-2 text-sm">{status?.errorMessage || error || 'Vui lòng thử ghi âm lại.'}</p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {status?.retryable && (
+                <button
+                  onClick={handleRetryProcessing}
+                  disabled={retrying}
+                  className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-3 font-black text-white disabled:opacity-60"
+                >
+                  <LoaderCircle size={18} className={retrying ? 'animate-spin' : ''} />
+                  {retrying ? 'Đang gửi lại...' : 'Thử chấm lại'}
+                </button>
+              )}
+              <button onClick={() => router.replace(`/speaking/practice/${sessionId}`)} className="rounded-xl bg-red-600 px-5 py-3 font-black text-white">Quay lại ghi âm</button>
+            </div>
+          </div>
+        )}
       </section>
     </main>
   );

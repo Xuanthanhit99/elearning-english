@@ -24,8 +24,9 @@ export default function MobileNavigation({
 
   return (
     <nav
+      data-testid="app-bottom-nav"
       aria-label="Mobile primary navigation"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--lumiverse-border)] bg-white/88 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-14px_38px_rgba(24,50,118,0.12)] backdrop-blur-2xl dark:bg-slate-950/88 lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--lumiverse-border)] bg-[var(--lumiverse-shell-surface)] px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-14px_38px_rgba(24,50,118,0.12)] backdrop-blur-2xl lg:hidden"
     >
       <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
         {primaryItems.map((item) => {
@@ -40,8 +41,8 @@ export default function MobileNavigation({
               className={[
                 "flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[11px] font-black transition",
                 active
-                  ? "bg-blue-50 text-[var(--lumiverse-primary)] dark:bg-white/10"
-                  : "text-[var(--lumiverse-muted)] hover:bg-white/70 hover:text-[var(--lumiverse-primary)] dark:hover:bg-white/8",
+                  ? "bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]"
+                  : "text-[var(--lumiverse-muted)] hover:bg-[var(--lumiverse-hover-tint)] hover:text-[var(--lumiverse-primary)]",
               ].join(" ")}
             >
               <Icon aria-hidden className="h-5 w-5" strokeWidth={2.5} />
@@ -54,7 +55,7 @@ export default function MobileNavigation({
           type="button"
           aria-label="Open full menu"
           onClick={onOpenMenu}
-          className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[11px] font-black text-[var(--lumiverse-muted)] transition hover:bg-white/70 hover:text-[var(--lumiverse-primary)] dark:hover:bg-white/8"
+          className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[11px] font-black text-[var(--lumiverse-muted)] transition hover:bg-[var(--lumiverse-hover-tint)] hover:text-[var(--lumiverse-primary)]"
         >
           <Menu aria-hidden className="h-5 w-5" strokeWidth={2.5} />
           <span>More</span>

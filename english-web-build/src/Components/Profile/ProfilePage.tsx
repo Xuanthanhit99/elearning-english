@@ -509,7 +509,7 @@ export default function ProfilePage() {
                 disabled={avatarUploading}
                 aria-label={t("profile.changeAvatar")}
                 title={t("profile.changeAvatar")}
-                className="absolute -bottom-1.5 -right-1.5 flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--lumiverse-primary-strong)] shadow-lg ring-4 ring-[var(--lumiverse-primary,#1746ff)]/20 transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-70"
+                className="absolute -bottom-1.5 -right-1.5 flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--lumiverse-primary-strong)] shadow-lg ring-4 ring-[var(--lumiverse-primary)]/20 transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {avatarUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
               </button>
@@ -557,7 +557,7 @@ export default function ProfilePage() {
                   return (
                     <div key={item.label} className="rounded-2xl border border-[var(--lumiverse-border)] bg-white/54 p-4 dark:bg-white/6">
                       <div className="flex items-center gap-3">
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[var(--lumiverse-primary)] dark:bg-white/8">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]">
                           <Icon className="h-5 w-5" />
                         </span>
                         <span className="min-w-0">
@@ -578,7 +578,7 @@ export default function ProfilePage() {
             <LumiverseSectionHeader title={t("profile.learningProgress")} description={t("profile.learningProgressDescription")} />
             {dashboard ? (
               <div className="space-y-5">
-                <div className="rounded-3xl bg-blue-50/70 p-5 dark:bg-white/8">
+                <div className="rounded-3xl bg-[var(--lumiverse-primary-soft)] p-5">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--lumiverse-primary)]">
@@ -630,7 +630,7 @@ export default function ProfilePage() {
           <button type="button" className="block w-full text-left" onClick={() => setCompanionOpen(true)}>
             <LumiverseCard className="p-5 transition hover:-translate-y-0.5 hover:border-blue-200">
               <div className="flex items-start justify-between gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[var(--lumiverse-primary)] dark:bg-white/8">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]">
                   <PawPrint className="h-7 w-7" />
                 </div>
                 <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-amber-700 dark:bg-amber-400/12 dark:text-amber-200">
@@ -695,7 +695,7 @@ export default function ProfilePage() {
       >
         <div className="-mx-7 -mt-7 flex items-start justify-between gap-4 border-b border-[var(--lumiverse-border)] px-7 pb-5 pt-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[var(--lumiverse-primary)] dark:bg-white/8">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]">
               <Edit3 className="h-4.5 w-4.5" />
             </div>
             <div>
@@ -739,7 +739,7 @@ export default function ProfilePage() {
 
       {avatarPreviewOpen && profile.avatar ? (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-[var(--lumiverse-overlay)] p-4 backdrop-blur-sm"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) setAvatarPreviewOpen(false);
           }}
@@ -764,7 +764,7 @@ export default function ProfilePage() {
 
       <LumiverseDialog open={companionOpen} onClose={() => setCompanionOpen(false)} titleId="profile-companion-title">
         <div className="flex items-start justify-between gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[var(--lumiverse-primary)] dark:bg-white/8">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]">
             <PawPrint className="h-6 w-6" />
           </div>
           <LumiverseDialogCloseButton onClose={() => setCompanionOpen(false)} label={t("common.close")} />

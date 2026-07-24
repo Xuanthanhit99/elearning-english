@@ -179,7 +179,7 @@ function PublicHeader({
   setMobileOpen: (open: boolean) => void;
 }) {
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--lumiverse-border)] bg-white/80 backdrop-blur-2xl dark:bg-slate-950/80">
+    <header className="sticky top-0 z-50 border-b border-[var(--lumiverse-border)] bg-[var(--lumiverse-shell-surface)] backdrop-blur-2xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <AppLogo />
 
@@ -251,7 +251,7 @@ function PublicHeader({
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className="rounded-2xl px-4 py-3 font-extrabold text-[var(--lumiverse-muted)] transition hover:bg-white/70 hover:text-[var(--lumiverse-primary)] dark:hover:bg-white/8"
+                className="rounded-2xl px-4 py-3 font-extrabold text-[var(--lumiverse-muted)] transition hover:bg-[var(--lumiverse-hover-tint)] hover:text-[var(--lumiverse-primary)]"
               >
                 {item.label}
               </Link>
@@ -372,7 +372,7 @@ function Hero({ user }: { user: UserSummary | null }) {
 
               <div className="relative z-10 mt-5 flex justify-center">
                 <Image
-                  src="/cat-home.jpg"
+                  src="/cat-home.png"
                   alt="Lumiverse learning mascot"
                   width={420}
                   height={420}
@@ -537,7 +537,7 @@ function CommunitySection() {
 function FinalCta({ user }: { user: UserSummary | null }) {
   return (
     <section className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-      <div className="mx-auto max-w-7xl overflow-hidden rounded-[2.25rem] bg-[linear-gradient(135deg,#08249b_0%,#3646f5_46%,#8b38ed_72%,#f25192_100%)] p-8 text-white shadow-[0_32px_100px_rgba(78,64,214,0.28)] sm:p-12">
+      <div className="mx-auto max-w-7xl overflow-hidden rounded-[2.25rem] bg-[linear-gradient(135deg,var(--lumiverse-primary-strong)_0%,var(--lumiverse-primary)_46%,var(--lumiverse-violet)_72%,var(--lumiverse-rose)_100%)] p-8 text-white shadow-[0_32px_100px_rgba(20,103,232,0.28)] sm:p-12">
         <div className="grid items-center gap-8 lg:grid-cols-[1fr_auto]">
           <div>
             <LumiverseBadge className="border-white/20 bg-white/10 text-white">
@@ -569,7 +569,7 @@ function FinalCta({ user }: { user: UserSummary | null }) {
 
 function Footer() {
   return (
-    <footer className="border-t border-[var(--lumiverse-border)] bg-white/70 px-4 py-10 backdrop-blur dark:bg-slate-950/70 sm:px-6 lg:px-8">
+    <footer className="border-t border-[var(--lumiverse-border)] bg-[var(--lumiverse-shell-surface)] px-4 py-10 backdrop-blur sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div>
           <AppLogo />

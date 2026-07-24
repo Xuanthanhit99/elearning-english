@@ -51,4 +51,9 @@ export class SpeakingProcessingController {
   result(@Req() req: any, @Param('sessionId') sessionId: string) {
     return this.service.getResult(req.user.id, sessionId);
   }
+
+  @Post('sessions/:sessionId/retry-processing')
+  retryProcessing(@Req() req: any, @Param('sessionId') sessionId: string) {
+    return this.service.retryProcessing(req.user.id, sessionId);
+  }
 }

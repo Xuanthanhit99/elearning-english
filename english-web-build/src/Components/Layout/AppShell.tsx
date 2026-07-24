@@ -1,7 +1,8 @@
 "use client";
 
 import WelcomeLoginModal from "@/src/Components/WelcomeLoginModal";
-import { api } from "@/src/lib/axios";
+import { redirectToLogin } from "@/src/lib/axios";
+import { initializeAuth } from "@/src/lib/auth-init";
 import { useTranslation } from "@/src/hooks/useTranslation";
 import { useAuthStore } from "@/src/store/authStore";
 import { usePathname } from "next/navigation";
@@ -34,22 +35,6 @@ function AppShellLoading() {
   );
 }
 
-function getHttpStatus(error: unknown) {
-  if (
-    error &&
-    typeof error === "object" &&
-    "response" in error &&
-    error.response &&
-    typeof error.response === "object" &&
-    "status" in error.response &&
-    typeof error.response.status === "number"
-  ) {
-    return error.response.status;
-  }
-
-  return null;
-}
-
 function AppShellAuthError({ onRetry }: { onRetry: () => void }) {
   const { t } = useTranslation();
 
@@ -78,71 +63,45 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const user = useAuthStore((state) => state.user);
   const authStatus = useAuthStore((state) => state.status);
-  const setUser = useAuthStore((state) => state.setUser);
-  const setAuthStatus = useAuthStore((state) => state.setStatus);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("sidebar-collapsed") === "true";
   });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
-  const [authCheckAttempt, setAuthCheckAttempt] = useState(0);
+  const [prevAuthStatus, setPrevAuthStatus] = useState(authStatus);
   const focusMode = pathname.startsWith("/placement/test/");
 
+  // Adjust state during render (React's endorsed pattern for reacting to a
+  // value change) instead of in an effect, so showing the welcome modal
+  // once per session doesn't need a setState-in-effect side effect.
+  if (authStatus !== prevAuthStatus) {
+    setPrevAuthStatus(authStatus);
+    if (authStatus === "authenticated" && user && !sessionStorage.getItem("welcome_shown")) {
+      sessionStorage.setItem("welcome_shown", "true");
+      setShowWelcome(true);
+    }
+  }
+
   useEffect(() => {
-    let active = true;
+    if (authStatus === "idle") {
+      void initializeAuth();
+    }
+  }, [authStatus]);
 
-    const getMe = async () => {
-      try {
-        setCheckingAuth(true);
-        setAuthStatus("loading");
-        const res = await api.get("/auth/me");
-        if (!active) return;
-        const currentUser = res.data.data.getUser;
-        setUser(currentUser);
-
-        const hasShownWelcome = sessionStorage.getItem("welcome_shown");
-        if (!hasShownWelcome) {
-          setShowWelcome(true);
-          sessionStorage.setItem("welcome_shown", "true");
-        }
-      } catch (error) {
-        console.error(error);
-        if (!active) return;
-        const status = getHttpStatus(error);
-        if (status && status >= 500) {
-          setAuthStatus("error");
-        } else {
-          setUser(null);
-        }
-      } finally {
-        if (active) setCheckingAuth(false);
-      }
-    };
-
-    getMe();
-    return () => {
-      active = false;
-    };
-  }, [authCheckAttempt, setAuthStatus, setUser]);
+  useEffect(() => {
+    if (authStatus === "unauthenticated") {
+      redirectToLogin();
+    }
+  }, [authStatus]);
 
   function handleSidebarCollapsed(value: boolean) {
     setSidebarCollapsed(value);
     localStorage.setItem("sidebar-collapsed", String(value));
   }
 
-  if (checkingAuth) return <AppShellLoading />;
-  if (!user && authStatus === "error") {
-    return (
-      <AppShellAuthError
-        onRetry={() => {
-          setCheckingAuth(true);
-          setAuthStatus("loading");
-          setAuthCheckAttempt((value) => value + 1);
-        }}
-      />
-    );
+  if (authStatus === "error") {
+    return <AppShellAuthError onRetry={() => void initializeAuth()} />;
   }
   if (!user) return <AppShellLoading />;
 

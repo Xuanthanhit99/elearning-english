@@ -210,7 +210,7 @@ function NextLessonCard({
 }) {
   if (!lesson) {
     return (
-      <LumiverseCard className="border-slate-100 bg-white/75 p-5">
+      <LumiverseCard className="p-5">
         <Compass aria-hidden className="h-9 w-9 text-[var(--lumiverse-primary)]" />
         <h2 className="mt-4 text-2xl font-black text-[var(--lumiverse-ink)]">
           Path is ready
@@ -223,7 +223,7 @@ function NextLessonCard({
   }
 
   return (
-    <LumiverseCard className="border-blue-100 bg-blue-50/50 p-5">
+    <LumiverseCard className="border-[var(--lumiverse-primary)]/20 bg-[var(--lumiverse-primary-soft)] p-5">
       <LumiverseBadge>Next lesson</LumiverseBadge>
       <h2 className="mt-4 text-2xl font-black text-[var(--lumiverse-ink)]">
         {lesson.title}
@@ -263,9 +263,9 @@ function PathTimeline({
     <div className="space-y-8">
       {courses.map((course, courseIndex) => (
         <section key={course.id} className="relative">
-          <div className="mb-4 flex flex-col gap-3 rounded-3xl border border-[var(--lumiverse-border)] bg-white/70 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-4 flex flex-col gap-3 rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] p-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-2xl bg-blue-50">
+              <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-2xl bg-[var(--lumiverse-primary-soft)]">
                 {course.thumbnail ? (
                   <Image src={course.thumbnail} alt={course.title} fill className="object-cover" />
                 ) : (
@@ -299,7 +299,7 @@ function PathTimeline({
               are kept disabled because the API marks the course unavailable.
             </div>
           ) : (
-            <ol className="relative ml-3 space-y-4 border-l-2 border-dashed border-blue-100 pl-6">
+            <ol className="relative ml-3 space-y-4 border-l-2 border-dashed border-[var(--lumiverse-border)] pl-6">
               {course.lessons.map((lesson) => (
                 <PathNode
                   key={lesson.id}
@@ -339,8 +339,8 @@ function PathNode({
             : current
               ? "bg-violet-600 text-white"
               : locked
-                ? "bg-slate-200 text-slate-500"
-                : "bg-blue-500 text-white",
+                ? "bg-[var(--lumiverse-disabled)]/20 text-[var(--lumiverse-muted)]"
+                : "bg-[var(--lumiverse-primary)] text-white",
         ].join(" ")}
       >
         {completed ? (
@@ -360,8 +360,8 @@ function PathNode({
             : completed
               ? "border-emerald-100 bg-emerald-50/35"
               : locked
-                ? "border-slate-200 bg-slate-50"
-                : "border-blue-100 bg-white",
+                ? "border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)]"
+                : "border-[var(--lumiverse-primary)]/20 bg-[var(--lumiverse-card)]",
         ].join(" ")}
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -384,7 +384,7 @@ function PathNode({
           </div>
 
           {locked ? (
-            <span aria-disabled="true" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-slate-200 px-4 py-3 text-sm font-black text-slate-500">
+            <span aria-disabled="true" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-[var(--lumiverse-disabled)]/20 px-4 py-3 text-sm font-black text-[var(--lumiverse-muted)]">
               <Lock aria-hidden className="h-4 w-4" />
               Locked
             </span>
@@ -406,7 +406,7 @@ function PathNode({
         </div>
 
         {locked ? (
-          <p className="mt-3 rounded-2xl bg-white/70 p-3 text-xs font-bold leading-5 text-slate-500">
+          <p className="mt-3 rounded-2xl bg-[var(--lumiverse-card-soft)] p-3 text-xs font-bold leading-5 text-[var(--lumiverse-muted)]">
             Complete the previous available lessons to unlock this node.
           </p>
         ) : null}
@@ -423,7 +423,7 @@ function PhasePanel({ phases }: { phases: LearningPathData["phases"] }) {
       </h2>
       <div className="mt-4 space-y-3">
         {phases.map((phase) => (
-          <div key={phase.id} className="rounded-2xl border border-[var(--lumiverse-border)] bg-white/70 p-4">
+          <div key={phase.id} className="rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] p-4">
             <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--lumiverse-primary)]">
               Phase {phase.phase}
               {phase.targetLevel ? ` • ${phase.targetLevel}` : ""}
@@ -450,7 +450,7 @@ function PriorityPanel({ priorities }: { priorities: LearningPathData["prioritie
       </h2>
       <div className="mt-4 space-y-3">
         {priorities.map((item) => (
-          <div key={item.id} className="flex gap-3 rounded-2xl bg-blue-50/55 p-4">
+          <div key={item.id} className="flex gap-3 rounded-2xl bg-[var(--lumiverse-primary-soft)] p-4">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--lumiverse-primary)] font-black text-white">
               {item.priority}
             </span>
@@ -477,7 +477,7 @@ function SkillPanel({ skills }: { skills: LearningPathData["skills"] }) {
       </h2>
       <div className="mt-4 space-y-3">
         {skills.map((item) => (
-          <div key={item.skill} className="rounded-2xl border border-[var(--lumiverse-border)] bg-white/70 p-4">
+          <div key={item.skill} className="rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] p-4">
             <div className="flex items-center justify-between gap-3">
               <p className="font-black text-[var(--lumiverse-ink)]">
                 {item.skill}
@@ -496,9 +496,9 @@ function SkillPanel({ skills }: { skills: LearningPathData["skills"] }) {
 
 function CourseSummary({ course }: { course: LearningPathCourse }) {
   return (
-    <article className="rounded-3xl border border-[var(--lumiverse-border)] bg-white/70 p-4">
+    <article className="rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] p-4">
       <div className="flex gap-4">
-        <div className="relative h-24 w-28 shrink-0 overflow-hidden rounded-2xl bg-blue-50">
+        <div className="relative h-24 w-28 shrink-0 overflow-hidden rounded-2xl bg-[var(--lumiverse-primary-soft)]">
           {course.thumbnail ? (
             <Image src={course.thumbnail} alt={course.title} fill className="object-cover" />
           ) : (
@@ -551,7 +551,7 @@ function HeroMetric({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl border border-[var(--lumiverse-border)] bg-white/70 p-4">
+    <div className="rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] p-4">
       <Icon aria-hidden className="h-5 w-5 text-[var(--lumiverse-primary)]" />
       <p className="mt-3 text-xs font-black uppercase tracking-[0.12em] text-[var(--lumiverse-muted)]">
         {label}
@@ -567,10 +567,10 @@ function LearningPathSkeleton() {
   return (
     <main className="min-h-screen px-3 py-5">
       <div className="mx-auto max-w-7xl animate-pulse space-y-5">
-        <div className="h-[360px] rounded-[28px] bg-white" />
+        <div className="h-[360px] rounded-[28px] bg-[var(--lumiverse-card)]" />
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="h-[720px] rounded-[28px] bg-white" />
-          <div className="h-[720px] rounded-[28px] bg-white" />
+          <div className="h-[720px] rounded-[28px] bg-[var(--lumiverse-card)]" />
+          <div className="h-[720px] rounded-[28px] bg-[var(--lumiverse-card)]" />
         </div>
       </div>
     </main>

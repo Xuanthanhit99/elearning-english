@@ -25,6 +25,12 @@ export type SpeakingProcessingStatus = {
   step: 'UPLOAD_COMPLETED' | 'TRANSCRIBING' | 'AI_SCORING' | 'UPDATING_MISSIONS' | 'COMPLETED' | 'FAILED';
   progress: number; message?: string | null; errorMessage?: string | null;
   startedAt?: string | null; completedAt?: string | null; resultUrl?: string | null;
+  retryable?: boolean; isStale?: boolean;
+};
+
+export type SpeakingRetryProcessingResponse = {
+  sessionId: string; processingJobId: string | null;
+  status: string; processingUrl: string;
 };
 
 export type SpeakingResultResponse = {

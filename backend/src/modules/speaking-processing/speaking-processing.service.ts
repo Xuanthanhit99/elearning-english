@@ -16,6 +16,8 @@ import { CreateSpeakingUploadDto } from './dto/create-speaking-upload.dto';
 
 @Injectable()
 export class SpeakingProcessingService {
+  private readonly staleProcessingMs = 15 * 60 * 1000;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly audioStorage: SpeakingAudioStorageService,
@@ -131,6 +133,8 @@ export class SpeakingProcessingService {
       throw new NotFoundException('Không tìm thấy tiến trình Speaking.');
     }
 
+    const isStale = this.isStale(job.status, job.updatedAt);
+
     return {
       id: job.id,
       sessionId: job.sessionId,
@@ -141,11 +145,91 @@ export class SpeakingProcessingService {
       errorMessage: job.errorMessage,
       startedAt: job.startedAt,
       completedAt: job.completedAt,
+      retryable: job.status === 'FAILED' || isStale,
+      isStale,
       resultUrl:
         job.status === 'COMPLETED'
           ? `/speaking/sessions/${sessionId}/result`
           : null,
     };
+  }
+
+  async retryProcessing(userId: string, sessionId: string) {
+    const latest = await this.prisma.speakingProcessingJob.findFirst({
+      where: { userId, sessionId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!latest) {
+      throw new NotFoundException('Không tìm thấy tiến trình Speaking.');
+    }
+
+    if (latest.status === 'COMPLETED') {
+      return {
+        sessionId,
+        processingJobId: latest.id,
+        status: 'COMPLETED',
+        processingUrl: `/speaking/sessions/${sessionId}/processing`,
+      };
+    }
+
+    if (
+      latest.status !== 'FAILED' &&
+      !this.isStale(latest.status, latest.updatedAt)
+    ) {
+      return {
+        sessionId,
+        processingJobId: latest.id,
+        status: latest.status,
+        processingUrl: `/speaking/sessions/${sessionId}/processing`,
+      };
+    }
+
+    // Audio was already stored on disk at upload time, so retrying only
+    // needs to reset this job's state and re-enqueue the same processing
+    // job — no re-upload required.
+    const retried = await this.prisma.speakingProcessingJob.update({
+      where: { id: latest.id },
+      data: {
+        status: 'QUEUED',
+        step: 'UPLOAD_COMPLETED',
+        progress: 10,
+        message: 'Đang thử chấm lại bài luyện nói.',
+        errorMessage: null,
+        completedAt: null,
+      },
+    });
+
+    await this.queue.add(
+      SPEAKING_PROCESSING_JOB.PROCESS_ANSWER,
+      {
+        processingJobId: retried.id,
+        sessionId,
+        answerId: retried.answerId,
+        userId,
+      },
+      {
+        jobId: `speaking-${retried.id}-retry-${Date.now()}`,
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 5000 },
+        removeOnComplete: { age: 24 * 60 * 60, count: 500 },
+        removeOnFail: false,
+      },
+    );
+
+    return {
+      sessionId,
+      processingJobId: retried.id,
+      status: 'QUEUED',
+      processingUrl: `/speaking/sessions/${sessionId}/processing`,
+    };
+  }
+
+  private isStale(status: string, updatedAt: Date) {
+    return (
+      status === 'PROCESSING' &&
+      Date.now() - updatedAt.getTime() > this.staleProcessingMs
+    );
   }
 
   async getResult(userId: string, sessionId: string) {

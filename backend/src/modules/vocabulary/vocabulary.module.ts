@@ -6,6 +6,7 @@ import { GeminiModule } from '../gemini/gemini.module';
 import { MissionsV2Module } from '../missions-v2/missions-v2.module';
 import { LearningXpModule } from '../learning-xp/learning-xp.module';
 import { AchievementsModule } from '../achievements/achievements.module';
+import { QuestionGenerationLockModule } from '../question-bank/question-generation-lock/question-generation-lock.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AchievementsModule } from '../achievements/achievements.module';
     MissionsV2Module,
     LearningXpModule,
     AchievementsModule,
+    QuestionGenerationLockModule,
   ],
   controllers: [VocabularyController],
   providers: [VocabularyService],

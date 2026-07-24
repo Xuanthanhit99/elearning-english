@@ -38,8 +38,8 @@ export function CommunityFollowButton({
       disabled={loading}
       className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold transition disabled:opacity-50 ${
         following
-          ? 'border border-indigo-200 bg-indigo-50 text-indigo-700'
-          : 'bg-indigo-600 text-white hover:bg-indigo-700'
+          ? 'border border-[var(--lumiverse-primary)]/25 bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]'
+          : 'bg-[var(--lumiverse-primary)] text-white hover:brightness-110'
       }`}
     >
       {following ? <UserCheck size={17} /> : <UserPlus size={17} />}

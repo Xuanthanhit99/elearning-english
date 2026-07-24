@@ -92,7 +92,9 @@ export type Dictionary = {
     rememberMe: string;
     forgotPassword: string;
     loginButton: string;
+    loggingIn: string;
     registerButton: string;
+    registering: string;
     noAccount: string;
     haveAccount: string;
     termsAgree: string;

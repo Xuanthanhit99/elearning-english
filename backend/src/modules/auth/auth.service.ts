@@ -23,7 +23,7 @@ import {
   ACCESS_COOKIE_MAX_AGE_MS,
   REFRESH_COOKIE_MAX_AGE_MS,
   authCookieOptions,
-  clearAuthCookieOptions,
+  clearAllAuthCookies,
   visibleCookieOptions,
 } from './auth-cookie.util';
 import { getJwtAccessSecret, getJwtRefreshSecret } from './auth-secrets.util';
@@ -116,6 +116,7 @@ export class AuthService {
     const payload = {
       sub: user.id,
       role: user.role,
+      email: user.email,
     };
 
     const maxAge = dto.rememberMe
@@ -233,6 +234,7 @@ export class AuthService {
       {
         sub: dbUser.id,
         role: dbUser.role,
+        email: dbUser.email,
       },
       {
         secret: getJwtAccessSecret(),
@@ -319,12 +321,7 @@ export class AuthService {
       }
     }
 
-    res.clearCookie('refresh_token', clearAuthCookieOptions);
-    res.clearCookie('access_token', clearAuthCookieOptions);
-    res.clearCookie('logged_in', {
-      ...clearAuthCookieOptions,
-      httpOnly: false,
-    });
+    clearAllAuthCookies(res);
     return {
       message: 'Đăng xuất thành công',
     };
@@ -387,6 +384,7 @@ export class AuthService {
       {
         sub: dbUser.id,
         role: dbUser.role,
+        email: dbUser.email,
       },
       {
         secret: getJwtAccessSecret(),

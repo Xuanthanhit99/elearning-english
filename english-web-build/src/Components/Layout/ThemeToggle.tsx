@@ -74,8 +74,8 @@ export default function ThemeToggle({
               onClick={() => choose(value)}
               className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-bold transition ${
                 value === theme
-                  ? "bg-blue-50 text-[var(--lumiverse-primary)] dark:bg-white/10"
-                  : "text-[var(--lumiverse-muted)] hover:bg-white/70 dark:hover:bg-white/8"
+                  ? "bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]"
+                  : "text-[var(--lumiverse-muted)] hover:bg-[var(--lumiverse-hover-tint)]"
               }`}
             >
               <Icon aria-hidden size={16} />

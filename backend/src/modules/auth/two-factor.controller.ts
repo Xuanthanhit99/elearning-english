@@ -1,6 +1,7 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { AuthTwoFactorService } from './auth-two-factor.service';
 import { ConfirmTwoFactorDto, DisableTwoFactorDto } from './dto/two-factor.dto';
 
@@ -15,11 +16,15 @@ export class TwoFactorController {
   }
 
   @Post('confirm')
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   confirm(@CurrentUser('id') userId: string, @Body() dto: ConfirmTwoFactorDto) {
     return this.twoFactorService.confirm(userId, dto.otp);
   }
 
   @Post('disable')
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   disable(@CurrentUser('id') userId: string, @Body() dto: DisableTwoFactorDto) {
     return this.twoFactorService.disable(userId, dto);
   }

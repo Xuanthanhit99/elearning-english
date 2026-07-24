@@ -620,6 +620,15 @@ export default function VocabularyPage() {
     await loadVocabulary();
   };
 
+  if (loading && !today) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 py-10 text-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#e2e8f0] border-t-[#4f5790]" />
+        <p className="font-bold text-[#4f5790]">{c.messages.loadingToday}</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="grid gap-7 px-4 py-6 lg:px-8 xl:grid-cols-[minmax(0,1fr)_420px]">

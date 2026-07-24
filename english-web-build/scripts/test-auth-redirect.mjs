@@ -129,6 +129,29 @@ try {
     { type: "redirect", href: "/dashboard" },
     "malicious redirect should fall back to dashboard",
   );
+
+  // The app runs with `trailingSlash: true`, so middleware actually sees
+  // "/login/"/"/dashboard/", not "/login"/"/dashboard" — these must behave
+  // identically to the no-trailing-slash cases above.
+  assert.deepEqual(
+    getAuthRouteDecision({
+      pathname: "/login/",
+      search: "",
+      isLoggedIn: true,
+    }),
+    { type: "redirect", href: "/dashboard" },
+    "trailing-slash /login/ should redirect an authenticated user just like /login",
+  );
+
+  assert.deepEqual(
+    getAuthRouteDecision({
+      pathname: "/dashboard/",
+      search: "",
+      isLoggedIn: false,
+    }),
+    { type: "redirect", href: "/login?redirect=%2Fdashboard" },
+    "trailing-slash /dashboard/ should redirect a guest just like /dashboard",
+  );
 } finally {
   rmSync(tempDir, { force: true, recursive: true });
 }

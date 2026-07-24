@@ -208,7 +208,7 @@ const canManageClub =
 
   if (loading) {
     return (
-      <div className="rounded-3xl border-2 border-slate-200 bg-white p-12 text-center font-semibold text-slate-600 shadow-sm">
+      <div className="rounded-3xl border-2 border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-12 text-center font-semibold text-slate-600 shadow-sm">
         Đang tải câu lạc bộ...
       </div>
     );
@@ -216,9 +216,9 @@ const canManageClub =
 
   if (!club) {
     return (
-      <div className="rounded-3xl border-2 border-red-200 bg-red-50 p-12 text-center">
-        <h2 className="font-extrabold text-red-700">Không thể mở câu lạc bộ</h2>
-        <p className="mt-2 text-sm text-red-600">{error}</p>
+      <div className="rounded-3xl border-2 border-[var(--lumiverse-danger)]/30 bg-[var(--lumiverse-danger-soft)] p-12 text-center">
+        <h2 className="font-extrabold text-[var(--lumiverse-danger)]">Không thể mở câu lạc bộ</h2>
+        <p className="mt-2 text-sm text-[var(--lumiverse-danger)]">{error}</p>
       </div>
     );
   }
@@ -294,8 +294,8 @@ const canManageClub =
             onDeleted={() => router.push("/community")}
           />
         ) : (
-          <div className="rounded-3xl border-2 border-red-200 bg-red-50 px-6 py-12 text-center">
-            <h3 className="font-extrabold text-red-700">
+          <div className="rounded-3xl border-2 border-[var(--lumiverse-danger)]/30 bg-[var(--lumiverse-danger-soft)] px-6 py-12 text-center">
+            <h3 className="font-extrabold text-[var(--lumiverse-danger)]">
               Bạn không có quyền quản lý câu lạc bộ
             </h3>
           </div>
@@ -305,7 +305,7 @@ const canManageClub =
 
   return (
     <div className="space-y-5">
-      <section className="overflow-hidden rounded-3xl border-2 border-slate-200 bg-white shadow-md">
+      <section className="overflow-hidden rounded-3xl border-2 border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] shadow-md">
         <div className="relative h-52 bg-gradient-to-br from-indigo-600 to-violet-700">
           {club.coverUrl && (
             <img
@@ -353,7 +353,7 @@ const canManageClub =
                 </span>
 
                 {club.myRole && (
-                  <span className="flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-1 text-xs text-indigo-700">
+                  <span className="flex items-center gap-1 rounded-full bg-[var(--lumiverse-primary-soft)] px-2.5 py-1 text-xs text-[var(--lumiverse-primary)]">
                     <ShieldCheck size={13} />
                     {club.myRole}
                   </span>
@@ -374,8 +374,8 @@ const canManageClub =
               disabled={joinLoading}
               className={`rounded-xl px-5 py-3 font-extrabold transition disabled:opacity-50 ${
                 club.joined
-                  ? "border-2 border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                  : "bg-indigo-600 text-white hover:bg-indigo-700"
+                  ? "border-2 border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] text-[var(--lumiverse-ink)] hover:bg-[var(--lumiverse-hover-tint)]"
+                  : "bg-[var(--lumiverse-primary)] text-white hover:brightness-110"
               }`}
             >
               {joinLoading
@@ -399,7 +399,7 @@ const canManageClub =
               {club.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-700"
+                  className="rounded-full bg-[var(--lumiverse-primary-soft)] px-3 py-1 text-xs font-bold text-[var(--lumiverse-primary)]"
                 >
                   #{tag}
                 </span>
@@ -415,7 +415,7 @@ const canManageClub =
         </div>
       )}
 
-      <nav className="flex gap-2 overflow-x-auto rounded-2xl border-2 border-slate-200 bg-white p-2 shadow-sm">
+      <nav className="flex gap-2 overflow-x-auto rounded-2xl border-2 border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-2 shadow-sm">
         {tabs.map((item) => {
           const Icon = item.icon;
 
@@ -426,7 +426,7 @@ const canManageClub =
               onClick={() => setTab(item.key)}
               className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition ${
                 tab === item.key
-                  ? "bg-indigo-600 text-white shadow-sm"
+                  ? "bg-[var(--lumiverse-primary)] text-white shadow-sm"
                   : "text-slate-700 hover:bg-slate-100"
               }`}
             >
@@ -452,8 +452,8 @@ function JoinRequiredPanel({
   onJoin: () => Promise<void>;
 }) {
   return (
-    <div className="rounded-3xl border-2 border-slate-200 bg-white px-6 py-14 text-center shadow-sm">
-      <Users size={34} className="mx-auto text-indigo-600" />
+    <div className="rounded-3xl border-2 border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] px-6 py-14 text-center shadow-sm">
+      <Users size={34} className="mx-auto text-[var(--lumiverse-primary)]" />
       <h3 className="mt-4 text-lg font-extrabold text-slate-950">{title}</h3>
       <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-600">
         {description}
@@ -461,7 +461,7 @@ function JoinRequiredPanel({
       <button
         type="button"
         onClick={() => void onJoin()}
-        className="mt-5 rounded-xl bg-indigo-600 px-5 py-3 font-bold text-white"
+        className="mt-5 rounded-xl bg-[var(--lumiverse-primary)] px-5 py-3 font-bold text-white"
       >
         Tham gia câu lạc bộ
       </button>

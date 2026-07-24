@@ -4,15 +4,16 @@ import {
   createHash,
   randomBytes,
 } from 'crypto';
+import { getJwtAccessSecret } from './auth-secrets.util';
 
 // AES-256-GCM at-rest encryption for TOTP secrets. The key is derived by
 // hashing TWO_FACTOR_ENCRYPTION_KEY so any string length works and we never
-// crash on a misconfigured env var length.
+// crash on a misconfigured env var length. Falls back to the JWT access
+// secret (itself mandatory in production, randomly generated per-boot in
+// dev via getJwtAccessSecret()) rather than a hardcoded string, so there is
+// no static fallback key reachable in any environment.
 function getKey(): Buffer {
-  const raw =
-    process.env.TWO_FACTOR_ENCRYPTION_KEY ||
-    process.env.JWT_ACCESS_SECRET ||
-    'poppylingo_2fa_fallback_key';
+  const raw = process.env.TWO_FACTOR_ENCRYPTION_KEY?.trim() || getJwtAccessSecret();
   return createHash('sha256').update(raw).digest();
 }
 

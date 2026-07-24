@@ -186,10 +186,13 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
   const [twoFactorRequired, setTwoFactorRequired] = useState(false);
   const [otp, setOtp] = useState("");
   const [recoveryCode, setRecoveryCode] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const handleLogin = async (e: React.FormEvent) => {
-    try {
-      e.preventDefault();
+    e.preventDefault();
+    if (isSubmitting) return;
 
+    try {
+      setIsSubmitting(true);
       const res = await api.post("/auth/login", {
         email,
         password,
@@ -228,6 +231,8 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
           getErrorMessage(error, "") ||
           t("auth.loginConnectionError"),
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
   return (
@@ -298,9 +303,10 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
 
         <button
           type="submit"
-          className="w-full rounded-2xl bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] py-4 font-extrabold text-white shadow-xl shadow-blue-200/70 transition hover:opacity-95 dark:shadow-black/20"
+          disabled={isSubmitting}
+          className="w-full rounded-2xl bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] py-4 font-extrabold text-white shadow-xl shadow-blue-200/70 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60 dark:shadow-black/20"
         >
-          {t("auth.loginButton")}
+          {isSubmitting ? t("auth.loggingIn") : t("auth.loginButton")}
         </button>
       </form>
 
@@ -336,11 +342,14 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
   });
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
 
     try {
+      setIsSubmitting(true);
       const res = await api.post("/auth/register", {
         fullName,
         email,
@@ -363,6 +372,8 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
           getErrorMessage(error, "") ||
           t("auth.registerConnectionError"),
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

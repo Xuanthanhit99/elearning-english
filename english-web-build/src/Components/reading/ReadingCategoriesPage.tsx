@@ -1,28 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
   BookOpen,
-  Search,
-  Home,
-  BarChart3,
-  BookText,
-  Headphones,
-  Mic,
-  PenTool,
-  Layers,
-  Users,
-  HelpCircle,
-  Trophy,
-  ShoppingBag,
-  Settings,
-  Crown,
-  Gift,
-  Bell,
   Flame,
-  Star,
-  Gem,
   ChevronRight,
   CheckCircle2,
   ShieldCheck,
@@ -92,42 +74,6 @@ type ReadingCategoriesResponse = {
   }[];
 };
 
-const menuGroups = [
-  {
-    title: "",
-    items: [{ label: "Trang chủ", icon: Home, href: "/" }],
-  },
-  {
-    title: "Học tập",
-    items: [
-      { label: "Tổng quan", icon: BarChart3, href: "/dashboard" },
-      { label: "Từ vựng", icon: BookText, href: "/vocabulary" },
-      { label: "Ngữ pháp", icon: Layers, href: "/grammar" },
-      { label: "Nghe", icon: Headphones, href: "/listening" },
-      { label: "Nói", icon: Mic, href: "/speaking" },
-      { label: "Đọc hiểu", icon: BookOpen, href: "/reading", active: true },
-      { label: "Viết", icon: PenTool, href: "/writing" },
-      { label: "Flashcards", icon: Layers, href: "/flashcards" },
-    ],
-  },
-  {
-    title: "Cộng đồng",
-    items: [
-      { label: "Cộng đồng", icon: Users, href: "/community" },
-      { label: "Hỏi đáp", icon: HelpCircle, href: "/questions" },
-      { label: "Thành tích", icon: Trophy, href: "/achievements" },
-    ],
-  },
-  {
-    title: "Khác",
-    items: [
-      { label: "Khoá học", icon: BookText, href: "/courses" },
-      { label: "Shop", icon: ShoppingBag, href: "/shop" },
-      { label: "Cài đặt", icon: Settings, href: "/settings" },
-    ],
-  },
-];
-
 const iconMap = {
   "daily-life": BookOpen,
   education: GraduationCap,
@@ -161,7 +107,6 @@ export default function ReadingCategoriesPage() {
   const [sort, setSort] = useState<SortType>("recommended");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [searchKeyword, setSearchKeyword] = useState("");
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -197,19 +142,6 @@ export default function ReadingCategoriesPage() {
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
-
-  function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const keyword = searchKeyword.trim();
-
-    if (!keyword) {
-      router.push("/reading/articles");
-      return;
-    }
-
-    router.push(`/reading/articles?keyword=${encodeURIComponent(keyword)}`);
-  }
 
   function resetFilters() {
     setDifficulty("ALL");
@@ -264,135 +196,8 @@ export default function ReadingCategoriesPage() {
   return (
     <div className="min-h-screen bg-[#fbfbff] text-slate-900">
       <div className="flex">
-        <aside className="fixed left-0 top-0 h-screen w-[260px] border-r border-slate-100 bg-white px-5 py-6">
-          <button
-            type="button"
-            onClick={() => router.push("/")}
-            className="mb-10 flex items-center gap-3 text-left"
-          >
-            <div className="text-3xl">🦊</div>
-            <div className="text-2xl font-extrabold">
-              Study<span className="text-violet-600">Arena</span>
-            </div>
-          </button>
 
-          <nav className="space-y-7">
-            {menuGroups.map((group, index) => (
-              <div key={index}>
-                {group.title && (
-                  <p className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
-                    {group.title}
-                  </p>
-                )}
-
-                <div className="space-y-1">
-                  {group.items.map((item) => (
-                    <button
-                      key={item.label}
-                      type="button"
-                      onClick={() => router.push(item.href)}
-                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition ${
-                        item.active
-                          ? "bg-violet-100 text-violet-700"
-                          : "text-slate-600 hover:bg-slate-50"
-                      }`}
-                    >
-                      <item.icon size={18} />
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </nav>
-
-          <div className="absolute bottom-6 left-5 right-5 rounded-2xl bg-violet-50 p-4">
-            <div className="mb-2 flex items-center gap-2 font-bold text-violet-700">
-              <Crown size={18} className="text-yellow-500" />
-              Nâng cấp Premium
-            </div>
-            <p className="mb-4 text-sm leading-5 text-slate-500">
-              Học không giới hạn, nhận nhiều đặc quyền hấp dẫn!
-            </p>
-            <button
-              type="button"
-              onClick={() => router.push("/premium")}
-              className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-bold text-white"
-            >
-              Nâng cấp ngay
-            </button>
-            <div className="absolute bottom-2 right-3 text-5xl">🦊</div>
-          </div>
-        </aside>
-
-        <main className="ml-[260px] flex-1">
-          <header className="sticky top-0 z-20 flex h-[82px] items-center justify-between border-b border-slate-100 bg-white/80 px-8 backdrop-blur">
-            <form onSubmit={handleSearchSubmit} className="relative w-[660px]">
-              <Search
-                className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"
-                size={20}
-              />
-              <input
-                value={searchKeyword}
-                onChange={(event) => setSearchKeyword(event.target.value)}
-                placeholder="Tìm bài học, từ vựng, ngữ pháp..."
-                className="h-12 w-full rounded-xl border border-slate-100 bg-slate-50 pl-14 pr-12 text-sm outline-none focus:border-violet-300"
-              />
-              {searchKeyword && (
-                <button
-                  type="button"
-                  onClick={() => setSearchKeyword("")}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 hover:text-violet-600"
-                >
-                  ×
-                </button>
-              )}
-            </form>
-
-            <div className="flex items-center gap-6">
-              <TopStat
-                icon={<Flame className="text-red-500" />}
-                value={String(data.streak.currentStreak)}
-                label="Streak"
-                onClick={() => router.push("/dashboard")}
-              />
-              <TopStat
-                icon={<Star className="text-yellow-500" />}
-                value={String(data.currentLevel.currentXp)}
-                label="XP đọc hiểu"
-                onClick={() => router.push("/reading/articles")}
-              />
-              <TopStat
-                icon={<Gem className="text-cyan-500" />}
-                value="0"
-                label="Xu"
-                onClick={() => router.push("/shop")}
-              />
-
-              <div className="flex gap-3">
-                <IconCircle onClick={() => router.push("/rewards")}>
-                  <Gift size={18} />
-                </IconCircle>
-                <IconCircle badge onClick={() => router.push("/notifications")}>
-                  <Bell size={18} />
-                </IconCircle>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => router.push("/profile")}
-                className="flex items-center gap-3 rounded-xl px-2 py-1 text-left transition hover:bg-slate-50"
-              >
-                <div className="grid h-10 w-10 place-items-center rounded-full bg-sky-100 text-xl">
-                  👨🏻‍💻
-                </div>
-                <div>
-                  <p className="text-sm font-bold">Minh Anh</p>
-                  <p className="text-xs text-slate-400">{data.currentLevel.title}</p>
-                </div>
-              </button>
-            </div>
-          </header>
+        <main className="flex-1">
 
           <div className="grid grid-cols-[1fr_430px] gap-7 p-8">
             <section className="space-y-6">
@@ -716,57 +521,6 @@ function SuggestCard({
       <span className="rounded-xl bg-violet-50 px-4 py-2 text-sm font-bold text-violet-600">
         Khám phá
       </span>
-    </button>
-  );
-}
-
-function IconCircle({
-  children,
-  badge,
-  onClick,
-}: {
-  children: ReactNode;
-  badge?: boolean;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="relative grid h-10 w-10 place-items-center rounded-full bg-slate-50 text-violet-600 transition hover:bg-violet-50"
-    >
-      {children}
-      {badge && (
-        <span className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-red-500 text-xs font-bold text-white">
-          2
-        </span>
-      )}
-    </button>
-  );
-}
-
-function TopStat({
-  icon,
-  value,
-  label,
-  onClick,
-}: {
-  icon: ReactNode;
-  value: string;
-  label: string;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex items-center gap-2 rounded-xl px-2 py-1 text-left transition hover:bg-slate-50"
-    >
-      {icon}
-      <div>
-        <p className="text-sm font-extrabold">{value}</p>
-        <p className="text-xs text-slate-500">{label}</p>
-      </div>
     </button>
   );
 }

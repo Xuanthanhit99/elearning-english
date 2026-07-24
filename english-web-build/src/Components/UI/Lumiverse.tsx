@@ -73,7 +73,7 @@ export function LumiverseStatCard({
 }) {
   return (
     <LumiverseCard className={cx("p-4", className)}>
-      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-[var(--lumiverse-primary)] dark:bg-white/8">
+      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]">
         {icon}
       </div>
       <p className="text-2xl font-black text-[var(--lumiverse-ink)]">{value}</p>
@@ -98,9 +98,9 @@ export function LumiverseButton({
     tone === "primary"
       ? "lumiverse-button-primary"
       : tone === "danger"
-        ? "inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-rose-600 px-4 py-3 font-black text-white shadow-[0_16px_34px_rgba(225,29,72,0.22)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+        ? "inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-[var(--lumiverse-danger)] px-4 py-3 font-black text-white shadow-[0_16px_34px_rgba(225,29,72,0.22)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
         : tone === "ghost"
-          ? "inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl px-4 py-3 font-black text-[var(--lumiverse-muted)] transition hover:bg-white/70 hover:text-[var(--lumiverse-primary)] disabled:cursor-not-allowed disabled:opacity-60 dark:hover:bg-white/8"
+          ? "inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl px-4 py-3 font-black text-[var(--lumiverse-muted)] transition hover:bg-[var(--lumiverse-hover-tint)] hover:text-[var(--lumiverse-primary)] disabled:cursor-not-allowed disabled:opacity-60"
           : "lumiverse-button-soft";
 
   return (
@@ -175,7 +175,7 @@ export function LumiverseState({
       <div
         className={cx(
           "mx-auto flex h-14 w-14 items-center justify-center rounded-2xl",
-          tone === "error" ? "bg-rose-50 text-rose-600" : "bg-blue-50 text-[var(--lumiverse-primary)]",
+          tone === "error" ? "bg-[var(--lumiverse-danger-soft)] text-[var(--lumiverse-danger)]" : "bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]",
         )}
       >
         <RefreshCcw aria-hidden className="h-6 w-6" />
@@ -262,7 +262,7 @@ export function LumiverseDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--lumiverse-overlay)] p-4 backdrop-blur-sm"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -296,7 +296,7 @@ export function LumiverseDialogCloseButton({
       type="button"
       onClick={onClose}
       aria-label={label}
-      className="rounded-full p-2 text-[var(--lumiverse-muted)] transition hover:bg-white/70 hover:text-[var(--lumiverse-primary)] dark:hover:bg-white/8"
+      className="rounded-full p-2 text-[var(--lumiverse-muted)] transition hover:bg-[var(--lumiverse-hover-tint)] hover:text-[var(--lumiverse-primary)]"
     >
       <X aria-hidden className="h-5 w-5" />
     </button>

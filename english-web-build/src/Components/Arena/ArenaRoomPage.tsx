@@ -340,7 +340,7 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
           </div>
         </div>
 
-        {message && <div className="rounded-2xl bg-white px-5 py-4 font-extrabold text-[var(--lumiverse-primary)] shadow-sm">{message}</div>}
+        {message && <div className="rounded-2xl bg-[var(--lumiverse-card)] px-5 py-4 font-extrabold text-[var(--lumiverse-primary)] shadow-sm">{message}</div>}
 
         {room.status === "WAITING" && room.isParticipant && (
           <ArenaModal>
@@ -359,7 +359,7 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
               >
                 {myParticipant?.ready ? "Hủy sẵn sàng" : "Tôi sẵn sàng"}
               </button>
-              <button type="button" onClick={leaveToLobby} className="rounded-2xl bg-blue-50 px-5 py-4 font-black text-[var(--lumiverse-primary)]">
+              <button type="button" onClick={leaveToLobby} className="rounded-2xl bg-[var(--lumiverse-primary-soft)] px-5 py-4 font-black text-[var(--lumiverse-primary)]">
                 Thoát về lobby
               </button>
             </div>
@@ -378,7 +378,7 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
 
         {room.status === "FAILED" && room.isParticipant && (
           <ArenaModal>
-            <p className="text-sm font-extrabold uppercase tracking-wide text-red-600">Chuẩn bị trận đấu thất bại</p>
+            <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-danger)]">Chuẩn bị trận đấu thất bại</p>
             <h2 className="mt-2 text-3xl font-black text-[var(--lumiverse-ink)]">Có lỗi xảy ra</h2>
             <p className="mt-3 font-bold leading-7 text-[var(--lumiverse-muted)]">
               {room.preparationError || "Không chuẩn bị được câu hỏi cho trận đấu."}
@@ -391,7 +391,7 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
               >
                 Thử lại
               </button>
-              <button type="button" onClick={leaveToLobby} className="rounded-2xl bg-blue-50 px-5 py-4 font-black text-[var(--lumiverse-primary)]">
+              <button type="button" onClick={leaveToLobby} className="rounded-2xl bg-[var(--lumiverse-primary-soft)] px-5 py-4 font-black text-[var(--lumiverse-primary)]">
                 Thoát về lobby
               </button>
             </div>
@@ -443,7 +443,7 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
                   </p>
                 )}
                 {room.progression.placementCompleted && (
-                  <div className="mt-4 rounded-2xl border-2 border-[var(--lumiverse-primary)] bg-white p-4">
+                  <div className="mt-4 rounded-2xl border-2 border-[var(--lumiverse-primary)] bg-[var(--lumiverse-card)] p-4">
                     <p className="text-xs font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">
                       Hoàn thành xếp hạng!
                     </p>
@@ -499,7 +499,7 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
         )}
 
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-          <section className="rounded-[30px] border border-[var(--lumiverse-border)] bg-white p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
+          <section className="rounded-[30px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-[22px] bg-[var(--lumiverse-card)] px-5 py-4">
               <div>
                 <p className="text-xs font-black uppercase tracking-wide text-[var(--lumiverse-primary)]">Sẵn sàng</p>
@@ -529,7 +529,7 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Power-up</p>
                   {isFrozenByOpponent && (
-                    <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-black text-sky-700">
+                    <span className="rounded-full bg-[var(--lumiverse-primary-soft)] px-3 py-1 text-xs font-black text-[var(--lumiverse-primary)]">
                       ❄️ Bạn đang bị đóng băng!
                     </span>
                   )}
@@ -548,8 +548,8 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
                         aria-label={`${label.name}: ${label.description}. Còn ${powerUp.remainingUses} lượt.`}
                         className={`rounded-2xl border px-4 py-3 text-left transition ${
                           disabled
-                            ? "cursor-not-allowed border-[var(--lumiverse-border)] bg-white/60 opacity-60"
-                            : "border-[var(--lumiverse-primary)] bg-white hover:shadow-md"
+                            ? "cursor-not-allowed border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] opacity-60"
+                            : "border-[var(--lumiverse-primary)] bg-[var(--lumiverse-card)] hover:shadow-md"
                         }`}
                       >
                         <div className="text-2xl">{label.icon}</div>
@@ -567,7 +567,7 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
               </div>
             )}
 
-            <div className="mt-8 rounded-[26px] border border-[var(--lumiverse-border)] bg-white p-5 shadow-sm">
+            <div className="mt-8 rounded-[26px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-5 shadow-sm">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Câu hỏi trận đấu</p>
@@ -575,7 +575,7 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
                     {currentQuestion ? `Câu ${currentQuestion.order}: ${currentQuestion.skill}` : "Chưa có câu hỏi"}
                   </h2>
                 </div>
-                <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-[var(--lumiverse-primary)]">
+                <span className="rounded-full bg-[var(--lumiverse-primary-soft)] px-3 py-1 text-xs font-black text-[var(--lumiverse-primary)]">
                   {activeMatch?.questions?.length || 0} câu
                 </span>
               </div>
@@ -598,9 +598,9 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
                           className={`rounded-2xl border px-4 py-3 text-left font-extrabold transition ${
                             chosen
                               ? correct
-                                ? "border-emerald-400 bg-emerald-50 text-emerald-700"
-                                : "border-red-300 bg-red-50 text-red-600"
-                              : "border-[var(--lumiverse-border)] bg-white text-[var(--lumiverse-ink)] hover:border-[var(--lumiverse-primary)] disabled:opacity-60"
+                                ? "border-[var(--lumiverse-success)] bg-[var(--lumiverse-success-soft)] text-[var(--lumiverse-success)]"
+                                : "border-[var(--lumiverse-danger)]/50 bg-[var(--lumiverse-danger-soft)] text-[var(--lumiverse-danger)]"
+                              : "border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] text-[var(--lumiverse-ink)] hover:border-[var(--lumiverse-primary)] disabled:opacity-60"
                           }`}
                         >
                           {option}
@@ -609,7 +609,7 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
                     })}
                   </div>
                   {currentAnswers.length > 0 && currentQuestion.answer && (
-                    <div className="mt-4 rounded-2xl bg-blue-50 p-4 text-sm font-bold leading-6 text-[var(--lumiverse-ink)]">
+                    <div className="mt-4 rounded-2xl bg-[var(--lumiverse-primary-soft)] p-4 text-sm font-bold leading-6 text-[var(--lumiverse-ink)]">
                       Có {currentAnswers.length} lượt trả lời câu này. Đáp án đúng: {currentQuestion.answer}.
                       {currentQuestion.explanation ? ` ${currentQuestion.explanation}` : ""}
                     </div>
@@ -635,11 +635,11 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
           </section>
 
           <aside className="space-y-6">
-            <section className="rounded-[30px] border border-[var(--lumiverse-border)] bg-white p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
+            <section className="rounded-[30px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
               <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Emoji & Ping</p>
               <div className="mt-4 grid grid-cols-3 gap-2">
                 {EMOJIS.map((emoji) => (
-                  <button key={emoji} onClick={() => sendEvent("EMOJI", { emoji })} className="rounded-2xl bg-blue-50 px-3 py-3 text-2xl">
+                  <button key={emoji} onClick={() => sendEvent("EMOJI", { emoji })} className="rounded-2xl bg-[var(--lumiverse-primary-soft)] px-3 py-3 text-2xl">
                     {emoji}
                   </button>
                 ))}
@@ -653,11 +653,11 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
               </div>
             </section>
 
-            <section className="rounded-[30px] border border-[var(--lumiverse-border)] bg-white p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
+            <section className="rounded-[30px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
               <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Room Feed</p>
               <div className="mt-4 max-h-80 space-y-3 overflow-y-auto rounded-2xl bg-[var(--lumiverse-card)] p-3">
                 {room.events.length ? room.events.map((event) => (
-                  <div key={event.id} className="rounded-2xl bg-white px-4 py-3 text-sm font-bold text-[var(--lumiverse-ink)] shadow-sm">
+                  <div key={event.id} className="rounded-2xl bg-[var(--lumiverse-card)] px-4 py-3 text-sm font-bold text-[var(--lumiverse-ink)] shadow-sm">
                     <span className="text-[var(--lumiverse-primary)]">{event.user?.fullname || "Player"}</span>{" "}
                     {event.type === "EMOJI" && <>thả {event.payload?.emoji}</>}
                     {event.type === "PING" && <>ping: {event.payload?.ping}</>}
@@ -690,8 +690,8 @@ function TeamColumn({
   tone: "orange" | "blue";
   battleStates?: ArenaBattleState[];
 }) {
-  const bg = tone === "orange" ? "bg-blue-50" : "bg-sky-50";
-  const text = tone === "orange" ? "text-[var(--lumiverse-primary)]" : "text-sky-700";
+  const bg = tone === "orange" ? "bg-[var(--lumiverse-warning-soft)]" : "bg-[var(--lumiverse-primary-soft)]";
+  const text = tone === "orange" ? "text-[var(--lumiverse-warning)]" : "text-[var(--lumiverse-primary)]";
   return (
     <div className={`rounded-[26px] ${bg} p-5`}>
       <h2 className={`text-xl font-black ${text}`}>{title}</h2>
@@ -699,17 +699,17 @@ function TeamColumn({
         {participants.length ? participants.map((participant) => {
           const battle = battleStates?.find((state) => state.participantId === participant.id);
           return (
-            <div key={participant.id} className="rounded-2xl bg-white px-4 py-3 shadow-sm">
+            <div key={participant.id} className="rounded-2xl bg-[var(--lumiverse-card)] px-4 py-3 shadow-sm">
               <div className="flex items-center justify-between gap-2">
                 <div className="font-black text-[var(--lumiverse-ink)]">{participant.user?.fullname || "Player"}</div>
-                <span className={`rounded-full px-2 py-1 text-[10px] font-black ${participant.ready ? "bg-emerald-100 text-emerald-700" : "bg-blue-50 text-[var(--lumiverse-primary)]"}`}>
+                <span className={`rounded-full px-2 py-1 text-[10px] font-black ${participant.ready ? "bg-[var(--lumiverse-success-soft)] text-[var(--lumiverse-success)]" : "bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]"}`}>
                   {participant.ready ? "READY" : "CHỜ"}
                 </span>
               </div>
               <div className="text-xs font-bold text-[var(--lumiverse-muted)]">Score {participant.score} · Đúng {participant.correct} · Sai {participant.wrong}</div>
               {battle && battle.combo > 0 && (
                 <div className="mt-1 flex items-center gap-2">
-                  <span className="rounded-full bg-orange-100 px-2 py-1 text-[10px] font-black text-orange-700">
+                  <span className="rounded-full bg-[var(--lumiverse-warning-soft)] px-2 py-1 text-[10px] font-black text-[var(--lumiverse-warning)]">
                     🔥 Combo x{battle.combo}
                   </span>
                   <span className="text-[10px] font-black text-[var(--lumiverse-muted)]">
@@ -719,7 +719,7 @@ function TeamColumn({
               )}
             </div>
           );
-        }) : <div className="rounded-2xl border border-dashed border-white bg-white/60 px-4 py-6 text-center font-bold text-[var(--lumiverse-muted)]">Đang chờ người chơi</div>}
+        }) : <div className="rounded-2xl border border-dashed border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] px-4 py-6 text-center font-bold text-[var(--lumiverse-muted)]">Đang chờ người chơi</div>}
       </div>
     </div>
   );
@@ -727,8 +727,8 @@ function TeamColumn({
 
 function ArenaModal({ children }: { children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/65 px-4 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-[30px] bg-white p-7 text-center shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--lumiverse-overlay)] px-4 backdrop-blur-sm">
+      <div className="w-full max-w-lg rounded-[30px] bg-[var(--lumiverse-card)] p-7 text-center shadow-2xl">
         {children}
       </div>
     </div>
