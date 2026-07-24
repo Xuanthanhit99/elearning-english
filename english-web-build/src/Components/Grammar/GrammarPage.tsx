@@ -108,6 +108,8 @@ export default function GrammarPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
+  const [reloadToken, setReloadToken] = useState(0);
+
   useEffect(() => {
     let active = true;
 
@@ -130,7 +132,7 @@ export default function GrammarPage() {
     return () => {
       active = false;
     };
-  }, [activeLevel]);
+  }, [activeLevel, reloadToken]);
 
   const stats = useMemo(() => {
     const value = dashboard?.stats;
@@ -224,8 +226,15 @@ export default function GrammarPage() {
           </div>
 
           {message && (
-            <div className="mb-6 rounded-2xl border border-red-100 bg-red-50 p-5 font-bold text-red-600">
-              {message}
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-100 bg-red-50 p-5 font-bold text-red-600">
+              <span>{message}</span>
+              <button
+                type="button"
+                onClick={() => setReloadToken((token) => token + 1)}
+                className="rounded-xl bg-red-600 px-4 py-2 text-sm font-black text-white"
+              >
+                Thử lại
+              </button>
             </div>
           )}
 

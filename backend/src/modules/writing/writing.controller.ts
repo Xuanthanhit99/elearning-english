@@ -9,6 +9,7 @@ import {
   Search,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { WritingService } from './writing.service';
 import { CheckWritingDto } from './dro/check-writing.dto';
 import { OptionalJwtGuard } from '../../common/guards/optional-jwt.guard';
@@ -24,7 +25,13 @@ export class WritingController {
     private readonly writingHistoryService: WritingHistoryService,
   ) {}
 
-  @UseGuards(OptionalJwtGuard)
+  // Direct, synchronous Gemini call with no queue in between — previously the
+  // only guard was OptionalJwtGuard (auth not even required), so an
+  // unauthenticated caller could hit this at unlimited rate, each call
+  // costing a real Gemini API request. Matches the same per-minute budget
+  // already used for auth's write endpoints (auth.controller.ts).
+  @UseGuards(OptionalJwtGuard, ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('check')
   checkWriting(@Body() dto: CheckWritingDto, @Req() req: any) {
     return this.writingService.checkWriting(dto, req.user.id);

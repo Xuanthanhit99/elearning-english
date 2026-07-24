@@ -28,6 +28,7 @@ const protectedPrefixes = [
   "/listening",
   "/speaking",
   "/writing",
+  "/conversation",
   "/community",
   "/arena",
   "/leaderboard",

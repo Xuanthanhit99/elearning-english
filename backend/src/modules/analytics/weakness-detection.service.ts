@@ -391,6 +391,10 @@ export class WeaknessDetectionService {
           where: {
             topicId,
             isActive: true,
+            // Unlike Grammar's (computed, always-sequential) lock, SpeakingLesson.isLocked
+            // is a static DB flag independent of order — omitting it let this recommend a
+            // lesson `startLesson()` immediately rejects with "Lesson đang bị khóa".
+            isLocked: false,
             sessions: {
               none: { userId, status: SpeakingSessionStatus.COMPLETED },
             },

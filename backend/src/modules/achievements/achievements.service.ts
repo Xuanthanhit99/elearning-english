@@ -16,6 +16,7 @@ import {
 } from '@prisma/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service';
+import { RedisCacheService } from '../../common/cache/redis-cache.service';
 import { XpService } from '../leaderboard/xp.service';
 import { NotificationEventPublisher } from '../notifications/notification-event-publisher';
 import {
@@ -23,7 +24,11 @@ import {
   NotificationEventType,
 } from '../notifications/contracts/notification-event-type';
 import { ACHIEVEMENT_CATALOG } from './achievement-catalog';
-import { ACHIEVEMENT_DOMAIN_EVENT } from './achievements.constants';
+import {
+  ACHIEVEMENT_DOMAIN_EVENT,
+  ACHIEVEMENT_SUMMARY_CACHE_TTL_SECONDS,
+  achievementSummaryCacheKey,
+} from './achievements.constants';
 import {
   AchievementActivityEvent,
   AchievementUnlockedEvent,
@@ -40,6 +45,7 @@ export class AchievementsService implements OnModuleInit {
 
   constructor(
     private readonly prisma: PrismaService,
+    private readonly redisCache: RedisCacheService,
     private readonly xpService: XpService,
     private readonly notifications: NotificationEventPublisher,
     private readonly eventEmitter: EventEmitter2,
@@ -68,6 +74,8 @@ export class AchievementsService implements OnModuleInit {
           rewardXp: item.rewardXp,
           rewardCoins: item.rewardCoins,
           displayOrder: item.displayOrder,
+          startsAt: item.startsAt ?? null,
+          endsAt: item.endsAt ?? null,
           isActive: true,
         },
       });
@@ -97,12 +105,23 @@ export class AchievementsService implements OnModuleInit {
       await this.publishUnlocked(item);
     }
 
+    if (unlocked.length > 0) {
+      // A fresh unlock changes the cached summary's unlocked/claimable counts —
+      // bust it now rather than waiting out the TTL, since this is exactly the
+      // moment a user would expect their "my achievements" page to update.
+      await this.invalidateSummaryCache(event.userId);
+    }
+
     return { processed: definitions.length, unlocked };
   }
 
   async list(userId: string, query: AchievementQueryDto = {}) {
-    await this.seedCatalog();
-
+    // seedCatalog() runs once at boot (onModuleInit) — it used to also run on
+    // every single list() call (i.e. every GET /achievements and every
+    // GET /achievements/overview, since overview() calls list() internally),
+    // issuing a 9-row upsert loop per request for zero benefit once the
+    // catalog is already seeded. Pure write amplification against Postgres
+    // on the hottest read path in this module — removed.
     const limit = Math.min(Math.max(Number(query.limit || 20), 1), 50);
     const definitions = await this.prisma.achievement.findMany({
       where: {
@@ -486,6 +505,8 @@ export class AchievementsService implements OnModuleInit {
       include: { achievement: true, rewards: true },
     });
 
+    await this.invalidateSummaryCache(userId);
+
     return {
       alreadyClaimed: awarded.duplicated,
       achievement: this.toCard({
@@ -494,6 +515,10 @@ export class AchievementsService implements OnModuleInit {
       }),
       reward: this.rewardPayload(refreshed),
     };
+  }
+
+  private async invalidateSummaryCache(userId: string) {
+    await this.redisCache.del(achievementSummaryCacheKey(userId));
   }
 
   private async processDefinition(
@@ -681,6 +706,26 @@ export class AchievementsService implements OnModuleInit {
   }
 
   private async summary(userId: string) {
+    const cacheKey = achievementSummaryCacheKey(userId);
+    const cached = await this.redisCache.get(cacheKey);
+    if (cached) {
+      try {
+        return JSON.parse(cached);
+      } catch {
+        // corrupted entry — fall through and recompute
+      }
+    }
+
+    const result = await this.computeSummary(userId);
+    await this.redisCache.set(
+      cacheKey,
+      JSON.stringify(result),
+      ACHIEVEMENT_SUMMARY_CACHE_TTL_SECONDS,
+    );
+    return result;
+  }
+
+  private async computeSummary(userId: string) {
     const [definitions, rows, rewards, pet] = await Promise.all([
       this.prisma.achievement.count({ where: { isActive: true } }),
       this.prisma.userAchievement.findMany({

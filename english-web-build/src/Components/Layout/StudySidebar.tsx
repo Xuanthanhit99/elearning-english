@@ -92,6 +92,12 @@ function buildLearningTree(c: StudySidebarContent): TreeItem[] {
       ],
     },
     {
+      icon: "message",
+      label: c.tree.conversation,
+      href: "/conversation",
+      match: (path) => path.startsWith("/conversation"),
+    },
+    {
       icon: "book",
       label: c.tree.reading,
       href: "/reading",
@@ -109,17 +115,6 @@ function buildLearningTree(c: StudySidebarContent): TreeItem[] {
       children: [
         { label: c.tree.writingPractice, href: "/writing", match: (path) => path === "/writing" },
         { label: c.tree.writingCheck, href: "/check-writing", match: (path) => path.startsWith("/check-writing") },
-      ],
-    },
-    {
-      icon: "star",
-      label: c.tree.flashcards,
-      href: "/flashcards",
-      match: (path) => path.startsWith("/flashcards"),
-      children: [
-        { label: c.tree.flashcardsToday, href: "/flashcards", match: (path) => path === "/flashcards" },
-        { label: c.tree.flashcardsAll, href: "/flashcards/all", match: (path) => path === "/flashcards/all" },
-        { label: c.tree.flashcardsCreate, href: "/flashcards/create", match: (path) => path === "/flashcards/create" },
       ],
     },
   ];

@@ -1,4 +1,4 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Injectable, Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { PrismaService } from '../../../prisma/prisma.service';
@@ -128,5 +128,17 @@ export class CommunityProcessor extends WorkerHost {
       data: { score },
     });
     this.logger.debug(`Updated score for ${postId}: ${score}`);
+  }
+
+  // Previously had no failure listener at all — a thrown error inside process()
+  // (e.g. a bad job.name, a Prisma error) was swallowed by BullMQ's internal
+  // handling with zero application-level log line, matching the pattern already
+  // used by WritingProcessor/AchievementsProcessor/etc.
+  @OnWorkerEvent('failed')
+  onFailed(job: Job<Record<string, string>> | undefined, error: Error) {
+    this.logger.error(
+      `Community job failed: name=${job?.name}, id=${job?.id}`,
+      error.stack,
+    );
   }
 }

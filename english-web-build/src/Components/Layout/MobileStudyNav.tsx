@@ -21,7 +21,7 @@ const navItems: NavItem[] = [
   { icon: "mic", label: "Nói", href: "/speaking" },
   { icon: "book", label: "Đọc", href: "/reading" },
   { icon: "pen", label: "Viết", href: "/writing" },
-  { icon: "star", label: "Flashcards", href: "/flashcards" },
+  { icon: "star", label: "Flashcards", href: "/vocabulary/flashcards" },
   { icon: "users", label: "Cộng đồng", href: "/community" },
   { icon: "shop", label: "Pet", href: "/pet" },
   { icon: "settings", label: "Hồ sơ", href: "/profile" },

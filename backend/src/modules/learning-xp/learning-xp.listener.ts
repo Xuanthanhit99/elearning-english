@@ -85,6 +85,7 @@ export class LearningXpListener {
       QUIZ_COMPLETED: 'Hoàn thành bài kiểm tra',
       MISSION_CLAIMED: 'Nhận thưởng nhiệm vụ',
       PLACEMENT_COMPLETED: 'Hoàn thành Placement Test',
+      CONVERSATION_COMPLETED: 'Hoàn thành buổi hội thoại AI',
     };
 
     return labels[activity];

@@ -1,4 +1,4 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import {
   CefrLevel,
   LearningSkill,
@@ -84,6 +84,19 @@ export class PlacementProcessingProcessor extends WorkerHost {
 
       throw error;
     }
+  }
+
+  // The DB row above records the failure for the user-facing status poll, but
+  // nothing previously logged it at the worker level — matches the pattern
+  // already used by WritingProcessor/SpeakingProcessingProcessor/etc so a
+  // failed placement job (core infra) shows up in application logs, not just
+  // a silently-updated DB row.
+  @OnWorkerEvent('failed')
+  onFailed(job: Job<QueuePayload> | undefined, error: Error) {
+    this.logger.error(
+      `Placement processing job failed: jobId=${job?.id}, processingJobId=${job?.data?.processingJobId}`,
+      error.stack,
+    );
   }
 
   private async runSkillEvaluation(testId: string, processingJobId: string) {
@@ -221,7 +234,6 @@ export class PlacementProcessingProcessor extends WorkerHost {
   }
 
   private async runAnswerAnalysis(processingJobId: string) {
-    console.log('ssssssssssssssssssssssss');
     await this.runStep(
       processingJobId,
       PlacementProcessingStep.ANSWER_ANALYSIS,

@@ -65,6 +65,11 @@ describe('AchievementsService', () => {
         callback(tx),
       ),
     };
+    const redisCache = {
+      get: jest.fn().mockResolvedValue(null),
+      set: jest.fn().mockResolvedValue(true),
+      del: jest.fn().mockResolvedValue(undefined),
+    };
     const xpService = { awardXpWithSideEffects: jest.fn() };
     const notifications = { publish: jest.fn().mockResolvedValue(undefined) };
     const eventEmitter = { emitAsync: jest.fn().mockResolvedValue(undefined) };
@@ -72,12 +77,14 @@ describe('AchievementsService', () => {
     return {
       service: new AchievementsService(
         prisma as never,
+        redisCache as never,
         xpService as never,
         notifications as never,
         eventEmitter as never,
       ),
       prisma,
       tx,
+      redisCache,
       notifications,
       eventEmitter,
     };

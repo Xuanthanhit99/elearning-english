@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { LearningSkill } from '@prisma/client';
 import type { Request } from 'express';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { AnalyticsService } from './analytics.service';
 import { SkillRadarService } from './skill-radar.service';
@@ -127,6 +128,11 @@ export class AnalyticsController {
     };
   }
 
+  // Gemini-backed and previously unthrottled; `?refresh=true` also bypasses
+  // its own 6h cache entirely, so an authenticated user could otherwise force
+  // unlimited real Gemini calls at will.
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Get('analytics/coach')
   async coach(
     @Req() req: AuthenticatedRequest,

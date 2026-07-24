@@ -34,6 +34,18 @@ export class AuthSessionService {
   }) {
     const { deviceName, browser, os } = this.parseUserAgent(params.userAgent);
 
+    // A prior login's session must stop being "current" once a new one is
+    // created — otherwise a user logged in from 2+ devices ends up with
+    // multiple rows simultaneously flagged `current: true`. That silently
+    // breaks both per-device revoke (refuses to touch a `current: true` row)
+    // and "revoke all other devices" (filters on `current: false`), so a
+    // genuinely stale/older session could never be reached by either
+    // self-service action.
+    await this.prisma.userDeviceSession.updateMany({
+      where: { userId: params.userId, revokedAt: null, current: true },
+      data: { current: false },
+    });
+
     const session = await this.prisma.userDeviceSession.create({
       data: {
         userId: params.userId,

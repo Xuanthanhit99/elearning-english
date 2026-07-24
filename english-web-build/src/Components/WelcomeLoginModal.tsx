@@ -56,9 +56,10 @@ export default function WelcomeLoginModal({
         <button
           type="button"
           onClick={onClose}
+          aria-label="Đóng"
           className="absolute right-6 top-5 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white/20 text-2xl font-bold text-white backdrop-blur hover:bg-white/30"
         >
-          ×
+          <span aria-hidden>×</span>
         </button>
 
         <div className="relative h-[300px] overflow-hidden bg-gradient-to-br from-[#8b73bd] via-[#7b63ad] to-[#5b438c] px-8 py-8">

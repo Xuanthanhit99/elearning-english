@@ -41,6 +41,7 @@ import {
   StudyHeatmapPanel,
   useCoachHeadline,
 } from "@/src/Components/Dashboard/AnalyticsCoachPanels";
+import { AchievementCelebration } from "@/src/Components/Dashboard/AchievementCelebration";
 
 const skillRoutes: Record<string, string> = {
   VOCABULARY: "/vocabulary",
@@ -290,6 +291,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 pb-10">
+      <AchievementCelebration data={data} />
       <WelcomeHero data={data} dailyPercent={dailyPercent} cta={cta} />
 
       <section aria-label="Quick stats" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

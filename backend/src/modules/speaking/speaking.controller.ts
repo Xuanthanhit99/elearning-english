@@ -8,6 +8,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { SpeakingService } from './speaking.service';
 import { GetSpeakingTopicsDto } from './dto/get-speaking-topics.dto';
@@ -91,7 +92,11 @@ export class SpeakingController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
+  // Direct, synchronous Gemini call (question generation) with no queue in
+  // between and no prior rate limit — an authenticated user could otherwise
+  // hammer this at unlimited rate, each call costing a real Gemini request.
+  @UseGuards(JwtAuthGuard, ThrottlerGuard)
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @Post('sessions/:sessionId/generate-question')
   async generateQuestion(
     @Req() req: any,

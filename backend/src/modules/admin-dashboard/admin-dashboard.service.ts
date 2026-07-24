@@ -14,6 +14,8 @@ import {
 import { AuditLogService } from 'src/modules/audit-log/audit-log.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthSessionService } from 'src/modules/auth/auth-session.service';
+import { RedisCacheService } from 'src/common/cache/redis-cache.service';
+import { CacheMetricsService } from 'src/common/cache/cache-metrics.service';
 import {
   AdminContentStatusDto,
   AdminListQueryDto,
@@ -43,6 +45,8 @@ export class AdminDashboardService {
     private readonly prismaService: PrismaService,
     private readonly auditLogService: AuditLogService,
     private readonly authSessionService: AuthSessionService,
+    private readonly redisCache: RedisCacheService,
+    private readonly cacheMetrics: CacheMetricsService,
   ) {}
 
   private get db() {
@@ -753,16 +757,35 @@ export class AdminDashboardService {
     }
 
     const memory = process.memoryUsage();
+    // Previously hardcoded 'CONFIGURED_BY_BULLMQ'/'MONITORED_VIA_PROCESSING_JOBS'
+    // strings regardless of actual state — an on-call engineer trusting this
+    // endpoint during a real Redis outage would have seen a permanently green
+    // status. `isAvailable()` reflects RedisCacheService's live connection
+    // state (it flips on the client's own 'error'/'ready' events), so this is
+    // now a real signal. BullMQ shares that same Redis instance, so a Redis
+    // outage is surfaced here too; per-queue depth/failed-job counts still
+    // require injecting each Queue and aren't wired in yet (see queue summary
+    // below for the DB-tracked processing jobs instead).
+    const redisUp = this.redisCache.isAvailable();
 
     return {
       api: { status: 'UP', uptimeSeconds: Math.round(process.uptime()) },
       db: { status: dbStatus, latencyMs: dbLatencyMs },
       redis: {
-        status: 'CONFIGURED_BY_BULLMQ',
-        note: 'Shared BullMQ connection is configured at app bootstrap.',
+        status: redisUp ? 'UP' : 'DOWN',
+        note: 'Live check via the shared RedisCacheService connection state.',
       },
-      bullmq: { status: 'MONITORED_VIA_PROCESSING_JOBS' },
+      bullmq: {
+        status: redisUp ? 'LIKELY_UP' : 'DOWN',
+        note: redisUp
+          ? 'BullMQ shares the Redis connection above; no live per-queue depth/failed-job check is wired in yet.'
+          : 'Underlying Redis connection is down — queued jobs cannot be processed.',
+      },
       scheduler: { status: 'UP', note: 'Nest ScheduleModule is enabled.' },
+      cache: {
+        note: 'In-process hit/miss counters per cache-using module since last process start (resets on restart).',
+        countersByModule: this.cacheMetrics.snapshot(),
+      },
       memory: {
         rssMb: Math.round(memory.rss / 1024 / 1024),
         heapUsedMb: Math.round(memory.heapUsed / 1024 / 1024),

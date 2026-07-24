@@ -145,18 +145,20 @@ export default function MissionsPage() {
     useState<(typeof tabMap)[number]["key"]>("all");
   const [dashboard, setDashboard] = useState<MissionsDashboard | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [claimingId, setClaimingId] = useState("");
 
   async function loadMissions() {
     try {
       setLoading(true);
+      setLoadFailed(false);
       setMessage("");
 
       const res =
         await api.get<ApiResponse<MissionsDashboard>>("/missions-v2/me");
-      console.log(res);
       setDashboard(res.data.data);
     } catch (error: unknown) {
+      setLoadFailed(true);
       setMessage(
         getApiErrorMessage(error, "Chưa tải được nhiệm vụ. Vui lòng thử lại."),
       );
@@ -271,6 +273,8 @@ export default function MissionsPage() {
               <MissionScoreBanner points={missionPoints} />
               {loading ? (
                 <MissionLoading />
+              ) : loadFailed && !dashboard ? (
+                <MissionLoadError onRetry={loadMissions} />
               ) : // ) : activeTab === "EVENT" ? (
               // <EventDetail
               //   event={dashboard?.specialEvent}
@@ -891,6 +895,23 @@ function EmptyMissions() {
   return (
     <div className="rounded-2xl border border-dashed border-[#dfe2f3] bg-white p-8 text-center font-bold text-[#69708b]">
       Chưa có nhiệm vụ trong mục này.
+    </div>
+  );
+}
+
+function MissionLoadError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="flex flex-col items-center gap-3 rounded-2xl border border-red-100 bg-red-50 p-8 text-center">
+      <p className="font-bold text-red-600">
+        Không tải được nhiệm vụ. Vui lòng thử lại.
+      </p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-black text-white"
+      >
+        Thử lại
+      </button>
     </div>
   );
 }

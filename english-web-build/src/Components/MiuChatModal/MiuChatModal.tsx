@@ -113,9 +113,10 @@ export function MiuChatModal({
             </div>
             <button
               onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700"
+              aria-label="Đóng"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700"
             >
-              <X size={16} />
+              <X aria-hidden size={16} />
             </button>
           </div>
 

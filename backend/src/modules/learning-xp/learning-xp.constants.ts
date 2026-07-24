@@ -10,7 +10,8 @@ export type LearningActivityCode =
   | 'LESSON_COMPLETED'
   | 'QUIZ_COMPLETED'
   | 'MISSION_CLAIMED'
-  | 'PLACEMENT_COMPLETED';
+  | 'PLACEMENT_COMPLETED'
+  | 'CONVERSATION_COMPLETED';
 
 export interface LearningXpRule {
   sourceType: XpSourceType;
@@ -75,5 +76,15 @@ export const LEARNING_XP_RULES: Record<LearningActivityCode, LearningXpRule> = {
     sourceType: XpSourceType.PLACEMENT,
     baseXp: 50,
     maxBonusXp: 0,
+  },
+  // Reuses the existing SPEAKING XpSourceType/LearningSkill — conversation
+  // practice is a speaking activity, and this avoids a Prisma enum migration
+  // (XpSourceType/LearningSkill have no CONVERSATION value) for what would
+  // otherwise be the exact same XP-ledger/skill-radar behavior.
+  CONVERSATION_COMPLETED: {
+    sourceType: XpSourceType.SPEAKING,
+    skill: LearningSkill.SPEAKING,
+    baseXp: 25,
+    maxBonusXp: 20,
   },
 };

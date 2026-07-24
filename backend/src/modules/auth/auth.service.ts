@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -15,10 +16,12 @@ import * as nodemailer from 'nodemailer';
 import { randomUUID } from 'crypto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UploadService } from '../upload/upload.service';
-import { Prisma, UserRole, UserStatus } from '@prisma/client';
+import { Prisma, User, UserRole, UserStatus } from '@prisma/client';
 import { AuthSessionService } from './auth-session.service';
 import { decryptSecret } from './two-factor-crypto.util';
 import { AuditLogService } from '../audit-log/audit-log.service';
+import { MailService } from '../mail/mail.service';
+import { generateRawToken, hashToken } from './auth-token.util';
 import {
   ACCESS_COOKIE_MAX_AGE_MS,
   REFRESH_COOKIE_MAX_AGE_MS,
@@ -28,14 +31,24 @@ import {
 } from './auth-cookie.util';
 import { getJwtAccessSecret, getJwtRefreshSecret } from './auth-secrets.util';
 
+/** Temporary (not permanent) brute-force lockout — see AuthService.login(). */
+const MAX_FAILED_LOGIN_ATTEMPTS = 5;
+const LOGIN_LOCKOUT_DURATION_MS = 15 * 60 * 1000;
+
+const PASSWORD_RESET_TOKEN_TTL_MS = 30 * 60 * 1000;
+const EMAIL_VERIFICATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
+
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
     private uploadService: UploadService,
     private authSessionService: AuthSessionService,
     private auditLogService: AuditLogService,
+    private mailService: MailService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -56,6 +69,7 @@ export class AuthService {
         password: hashedPassword,
         role: UserRole.STUDENT,
         status: UserStatus.ACTIVE,
+        isEmailVerified: false,
       },
       select: {
         id: true,
@@ -65,6 +79,17 @@ export class AuthService {
         status: true,
         createAt: true,
       },
+    });
+
+    // Verification is informational only — it does not gate login/access (see
+    // `resendVerificationEmail`/`verifyEmail`), so a failure here must never
+    // fail registration itself.
+    this.sendVerificationEmailInternal(user).catch((error) => {
+      this.logger.warn(
+        `Failed to send verification email to userId=${user.id}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
     });
 
     return {
@@ -82,9 +107,29 @@ export class AuthService {
       throw new BadRequestException('Email hoặc mật khẩu không đúng');
     }
 
+    // Temporary (not permanent) account-level lockout, independent of the
+    // generic per-IP Throttler on this route — that alone lets a distributed
+    // attacker rotating IPs guess a single account's password with no
+    // effective limit. Checked before the password comparison so a locked
+    // account never leaks a "valid password" timing signal either.
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      await this.auditLogService.record({
+        userId: user.id,
+        action: 'AUTH_LOGIN_BLOCKED_LOCKOUT',
+        changedFields: [],
+        metadata: { lockedUntil: user.lockedUntil.toISOString() },
+        ipAddress: req.ip ?? req.socket?.remoteAddress ?? null,
+        userAgent: req.headers?.['user-agent'],
+      });
+      throw new UnauthorizedException(
+        'Tài khoản tạm thời bị khóa do đăng nhập sai nhiều lần. Vui lòng thử lại sau.',
+      );
+    }
+
     const isValidPassword = await bcrypt.compare(dto.password, user.password);
 
     if (!isValidPassword) {
+      await this.recordFailedLogin(user, req);
       throw new BadRequestException('Email hoặc mật khẩu không đúng');
     }
 
@@ -109,8 +154,25 @@ export class AuthService {
       });
 
       if (!twoFactorVerified) {
+        await this.auditLogService.record({
+          userId: user.id,
+          action: 'AUTH_LOGIN_2FA_FAILED',
+          changedFields: [],
+          ipAddress: req.ip ?? req.socket?.remoteAddress ?? null,
+          userAgent: req.headers?.['user-agent'],
+        });
         throw new UnauthorizedException('Mã xác thực hai bước không đúng');
       }
+    }
+
+    // A correct password (and, if applicable, correct 2FA) clears any
+    // accumulated failure count so a legitimate user's next mistyped attempt
+    // starts counting from zero again, not from a stale near-lockout state.
+    if (user.failedLoginAttempts > 0 || user.lockedUntil) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { failedLoginAttempts: 0, lockedUntil: null },
+      });
     }
 
     const payload = {
@@ -179,6 +241,208 @@ export class AuthService {
     };
   }
 
+  /**
+   * Always returns the same generic message regardless of whether `email`
+   * matches an account — never reveal account existence via response
+   * content, status code, or a materially different code path (the one
+   * real-world timing difference — whether an email actually gets sent — is
+   * inherent to any such flow and not practically closable without a fake
+   * SMTP round-trip; kept the response shape and status code identical,
+   * which is the part actually observable by a scripted enumeration probe).
+   */
+  async forgotPassword(email: string, req: Request) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (user && user.status === UserStatus.ACTIVE) {
+      const rawToken = generateRawToken();
+      const tokenHash = hashToken(rawToken);
+
+      // Invalidate any still-outstanding token from an earlier request so an
+      // old, possibly-leaked link stops working the moment a new one is
+      // issued.
+      await this.prisma.passwordResetToken.updateMany({
+        where: { userId: user.id, usedAt: null },
+        data: { usedAt: new Date() },
+      });
+
+      await this.prisma.passwordResetToken.create({
+        data: {
+          userId: user.id,
+          tokenHash,
+          expiresAt: new Date(Date.now() + PASSWORD_RESET_TOKEN_TTL_MS),
+          ipAddress: req.ip ?? req.socket?.remoteAddress ?? null,
+          userAgent: req.headers?.['user-agent'] as string | undefined,
+        },
+      });
+
+      const resetUrl = `${this.frontendUrl()}/reset-password?token=${rawToken}`;
+
+      try {
+        await this.mailService.sendPasswordResetEmail(
+          user.email,
+          user.fullname,
+          resetUrl,
+        );
+      } catch (error) {
+        // Never let a mail-provider failure leak to the client — that would
+        // itself be an enumeration signal (silent success vs. visible error).
+        this.logger.warn(
+          `Failed to send password reset email to userId=${user.id}: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
+    }
+
+    return {
+      message:
+        'Nếu email tồn tại trong hệ thống, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu.',
+    };
+  }
+
+  async resetPassword(rawToken: string, newPassword: string) {
+    const tokenHash = hashToken(rawToken);
+    const record = await this.prisma.passwordResetToken.findUnique({
+      where: { tokenHash },
+    });
+
+    if (!record || record.usedAt || record.expiresAt < new Date()) {
+      throw new BadRequestException(
+        'Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.',
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: record.userId },
+        data: {
+          password: hashedPassword,
+          failedLoginAttempts: 0,
+          lockedUntil: null,
+        },
+      }),
+      this.prisma.passwordResetToken.update({
+        where: { id: record.id },
+        data: { usedAt: new Date() },
+      }),
+    ]);
+
+    // No "current" session to preserve in this unauthenticated flow — every
+    // session, on every device, must die so a stolen password can't keep a
+    // live session going after the legitimate owner resets it.
+    await this.revokeAllSessions(record.userId);
+
+    await this.auditLogService.record({
+      userId: record.userId,
+      action: 'AUTH_PASSWORD_RESET',
+      changedFields: ['password', 'session'],
+    });
+
+    return {
+      message: 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.',
+    };
+  }
+
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      throw new UnauthorizedException('Không tìm thấy tài khoản.');
+    }
+
+    const isValidPassword = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    );
+
+    if (!isValidPassword) {
+      throw new BadRequestException('Mật khẩu hiện tại không đúng.');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedPassword,
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+      },
+    });
+
+    // The access-token payload carries no session/jti identifier (only
+    // sub/role/email), so there is no reliable way to tell "this request's
+    // own session" apart from any other live session for this user — revoke
+    // everything, including the caller's own session, and require a fresh
+    // login. Safer than guessing, and matches the same "never leave old
+    // sessions active after a password event" rule applied to reset.
+    await this.revokeAllSessions(userId);
+
+    await this.auditLogService.record({
+      userId,
+      action: 'AUTH_PASSWORD_CHANGED',
+      changedFields: ['password', 'session'],
+    });
+
+    return {
+      message: 'Đổi mật khẩu thành công. Vui lòng đăng nhập lại.',
+    };
+  }
+
+  async verifyEmail(rawToken: string) {
+    const tokenHash = hashToken(rawToken);
+    const record = await this.prisma.emailVerificationToken.findUnique({
+      where: { tokenHash },
+    });
+
+    if (!record || record.usedAt || record.expiresAt < new Date()) {
+      throw new BadRequestException(
+        'Liên kết xác minh email không hợp lệ hoặc đã hết hạn.',
+      );
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: record.userId },
+        data: { isEmailVerified: true },
+      }),
+      this.prisma.emailVerificationToken.update({
+        where: { id: record.id },
+        data: { usedAt: new Date() },
+      }),
+    ]);
+
+    await this.auditLogService.record({
+      userId: record.userId,
+      action: 'AUTH_EMAIL_VERIFIED',
+      changedFields: ['isEmailVerified'],
+    });
+
+    return { message: 'Xác minh email thành công.' };
+  }
+
+  async resendVerificationEmail(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      throw new UnauthorizedException('Không tìm thấy tài khoản.');
+    }
+
+    if (user.isEmailVerified) {
+      return { message: 'Email của bạn đã được xác minh.' };
+    }
+
+    await this.sendVerificationEmailInternal(user);
+
+    return { message: 'Đã gửi lại email xác minh.' };
+  }
+
   async refreshToken(refreshToken: string, res: Response) {
     if (!refreshToken) {
       throw new UnauthorizedException('Không có refresh token');
@@ -225,6 +489,18 @@ export class AuthService {
     const rotated = await this.authSessionService.rotate(payload.jti, newJti);
 
     if (!rotated) {
+      // A valid, correctly-signed refresh token whose jti is no longer live
+      // means either it already rotated once (a legitimate client retrying
+      // a stale token) or — more concerning — someone is replaying a token
+      // that was already used elsewhere. Rotation itself already prevents
+      // the replay from succeeding; this audit event is what gives that
+      // scenario a forensic trail instead of vanishing as a silent 401.
+      await this.auditLogService.record({
+        userId: payload.sub,
+        action: 'AUTH_REFRESH_REUSE_REJECTED',
+        changedFields: [],
+        metadata: { jti: payload.jti },
+      });
       throw new UnauthorizedException(
         'Phiên đăng nhập đã bị thu hồi, vui lòng đăng nhập lại',
       );
@@ -690,6 +966,81 @@ export class AuthService {
     }
 
     return null;
+  }
+
+  private frontendUrl() {
+    return process.env.FRONTEND_URL || 'http://localhost:3000';
+  }
+
+  /** Revokes every live session/refresh-token for a user — used by both
+   * password reset (unauthenticated, no session to preserve) and password
+   * change (see changePassword's comment on why "keep current session" isn't
+   * safely possible today). Mirrors SettingsService.revokeOtherDevices'
+   * Redis-then-DB ordering: the refresh-token pointer dies first so a
+   * session can't mint a new access token even if the DB update below fails.
+   */
+  private async revokeAllSessions(userId: string) {
+    await this.authSessionService.invalidateAllOtherSessions(userId);
+    await this.prisma.userDeviceSession.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+  }
+
+  private async recordFailedLogin(
+    user: Pick<User, 'id' | 'failedLoginAttempts'>,
+    req: Request,
+  ) {
+    const attempts = user.failedLoginAttempts + 1;
+    const locked = attempts >= MAX_FAILED_LOGIN_ATTEMPTS;
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        // Reset the counter once locked so the next window (after the lock
+        // expires) starts fresh instead of instantly re-locking on attempt 1.
+        failedLoginAttempts: locked ? 0 : attempts,
+        lockedUntil: locked
+          ? new Date(Date.now() + LOGIN_LOCKOUT_DURATION_MS)
+          : null,
+      },
+    });
+
+    await this.auditLogService.record({
+      userId: user.id,
+      action: locked ? 'AUTH_LOGIN_LOCKED' : 'AUTH_LOGIN_FAILURE',
+      changedFields: ['failedLoginAttempts'],
+      metadata: { attempts },
+      ipAddress: req.ip ?? req.socket?.remoteAddress ?? null,
+      userAgent: req.headers?.['user-agent'],
+    });
+  }
+
+  private async sendVerificationEmailInternal(
+    user: Pick<User, 'id' | 'email' | 'fullname'>,
+  ) {
+    await this.prisma.emailVerificationToken.updateMany({
+      where: { userId: user.id, usedAt: null },
+      data: { usedAt: new Date() },
+    });
+
+    const rawToken = generateRawToken();
+    const tokenHash = hashToken(rawToken);
+
+    await this.prisma.emailVerificationToken.create({
+      data: {
+        userId: user.id,
+        tokenHash,
+        expiresAt: new Date(Date.now() + EMAIL_VERIFICATION_TOKEN_TTL_MS),
+      },
+    });
+
+    const verifyUrl = `${this.frontendUrl()}/verify-email?token=${rawToken}`;
+    await this.mailService.sendVerificationEmail(
+      user.email,
+      user.fullname,
+      verifyUrl,
+    );
   }
 
   // users.service.ts

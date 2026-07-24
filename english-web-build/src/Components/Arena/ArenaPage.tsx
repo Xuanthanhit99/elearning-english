@@ -98,6 +98,7 @@ export default function ArenaPage() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [message, setMessage] = useState("");
+  const [loadFailed, setLoadFailed] = useState(false);
   const [queueing, setQueueing] = useState(false);
   const [passwordRoom, setPasswordRoom] = useState<ArenaRoom | null>(null);
   const [roomPassword, setRoomPassword] = useState("");
@@ -119,9 +120,19 @@ export default function ArenaPage() {
       setRooms(lobbyRes.data.rooms || []);
       setMyActiveRoom(lobbyRes.data.myActiveRoom || null);
       setSeasonSummary(seasonRes.data);
-    } catch (error) {
+      setLoadFailed(false);
+    } catch (error: any) {
       console.error(error);
-      setMessage("Bạn cần đăng nhập để vào Arena.");
+      // Silent background polls (every 3s) shouldn't blow away an already-loaded
+      // lobby on a transient blip — only surface the error state on the initial load.
+      if (!silent) {
+        setLoadFailed(true);
+        setMessage(
+          error?.response?.status === 401
+            ? "Bạn cần đăng nhập để vào Arena."
+            : "Không tải được Arena. Vui lòng thử lại.",
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -238,7 +249,20 @@ export default function ArenaPage() {
           <ProfileCard profile={profile} seasonSummary={seasonSummary} loading={loading} />
         </div>
 
-        {message && <div className="rounded-2xl bg-[var(--lumiverse-card)] px-5 py-4 font-extrabold text-[var(--lumiverse-primary)] shadow-sm">{message}</div>}
+        {message && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[var(--lumiverse-card)] px-5 py-4 font-extrabold text-[var(--lumiverse-primary)] shadow-sm">
+            <span>{message}</span>
+            {loadFailed && (
+              <button
+                type="button"
+                onClick={() => fetchLobby()}
+                className="rounded-xl bg-[var(--lumiverse-primary)] px-4 py-2 text-sm font-black text-white"
+              >
+                Thử lại
+              </button>
+            )}
+          </div>
+        )}
 
         {profile?.isInPlacement &&
           (profile.placementMatchesCompleted ?? 0) === 0 &&

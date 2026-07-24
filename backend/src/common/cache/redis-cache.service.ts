@@ -57,6 +57,22 @@ export class RedisCacheService implements OnModuleDestroy {
     }
   }
 
+  /**
+   * Atomic "acquire if absent" lock primitive (`SET key value EX ttl NX`) —
+   * unlike get()-then-set(), this is a single Redis command, so two
+   * concurrent callers racing for the same key can never both succeed.
+   * Returns true iff this call acquired the lock.
+   */
+  async setNx(key: string, value: string, ttlSeconds: number): Promise<boolean> {
+    try {
+      const result = await this.redis.set(key, value, 'EX', ttlSeconds, 'NX');
+      return result === 'OK';
+    } catch (error) {
+      this.markDegraded(error);
+      return false;
+    }
+  }
+
   async del(...keys: string[]): Promise<void> {
     if (keys.length === 0) return;
     try {

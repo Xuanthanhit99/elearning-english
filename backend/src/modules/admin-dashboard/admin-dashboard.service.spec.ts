@@ -3,6 +3,8 @@ import { UserStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuditLogService } from 'src/modules/audit-log/audit-log.service';
 import { AuthSessionService } from 'src/modules/auth/auth-session.service';
+import { RedisCacheService } from 'src/common/cache/redis-cache.service';
+import { CacheMetricsService } from 'src/common/cache/cache-metrics.service';
 import { AdminDashboardService } from './admin-dashboard.service';
 
 describe('AdminDashboardService', () => {
@@ -14,9 +16,13 @@ describe('AdminDashboardService', () => {
   };
   const auditLogMock = { record: jest.fn() };
   const authSessionMock = { banUser: jest.fn(), unbanUser: jest.fn() };
+  const redisCacheMock = { isAvailable: jest.fn() };
+  const cacheMetricsMock = { snapshot: jest.fn() };
 
   beforeEach(async () => {
     jest.resetAllMocks();
+    redisCacheMock.isAvailable.mockReturnValue(true);
+    cacheMetricsMock.snapshot.mockReturnValue({});
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -24,6 +30,8 @@ describe('AdminDashboardService', () => {
         { provide: PrismaService, useValue: prismaMock },
         { provide: AuditLogService, useValue: auditLogMock },
         { provide: AuthSessionService, useValue: authSessionMock },
+        { provide: RedisCacheService, useValue: redisCacheMock },
+        { provide: CacheMetricsService, useValue: cacheMetricsMock },
       ],
     }).compile();
 

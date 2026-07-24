@@ -91,8 +91,15 @@ export default function NotificationsPage() {
             ))}
           </div>
         ) : error ? (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5 font-bold text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
-            {error}
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-5 font-bold text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
+            <span>{error}</span>
+            <button
+              type="button"
+              onClick={() => void load(1)}
+              className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-black text-white"
+            >
+              Thu lai
+            </button>
           </div>
         ) : items.length ? (
           <div className="divide-y divide-[var(--lumiverse-border)]">

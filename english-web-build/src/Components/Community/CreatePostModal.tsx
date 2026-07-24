@@ -57,7 +57,7 @@ export function CreatePostModal({ open, onClose, onCreated }: { open: boolean; o
       <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b px-6 py-5">
           <div><h2 className="text-xl font-bold">Tạo bài đăng</h2><p className="text-sm text-slate-500">Chọn đúng mục đích để cộng đồng dễ tương tác.</p></div>
-          <button type="button" onClick={onClose} className="rounded-full p-2 hover:bg-slate-100"><X /></button>
+          <button type="button" onClick={onClose} aria-label="Đóng" className="rounded-full p-2 hover:bg-slate-100"><X aria-hidden /></button>
         </div>
 
         {!type ? (

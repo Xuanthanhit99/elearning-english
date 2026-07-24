@@ -235,8 +235,8 @@ export default function LeaderboardPage({
         {error && (
           <div className="mb-5 flex items-center justify-between rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700">
             <span>{error}</span>
-            <button onClick={load}>
-              <RefreshCcw className="h-5 w-5" />
+            <button onClick={load} aria-label="Thử lại">
+              <RefreshCcw aria-hidden className="h-5 w-5" />
             </button>
           </div>
         )}

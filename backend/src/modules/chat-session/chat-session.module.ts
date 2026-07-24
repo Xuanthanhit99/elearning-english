@@ -9,5 +9,9 @@ import { PrismaModule } from 'src/prisma/prisma.module';
   imports: [PrismaModule],
   controllers: [ChatSessionController],
   providers: [GeminiChatService, ChatSessionService, ContentFilterService],
+  // ContentFilterService is generic (not Miu-persona-specific) — exported so
+  // the new conversation module can reuse it instead of duplicating a second
+  // copy of the same 2-method safety check.
+  exports: [ContentFilterService],
 })
 export class ChatSessionModule {}

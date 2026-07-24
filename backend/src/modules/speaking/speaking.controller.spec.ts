@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { SpeakingController } from './speaking.controller';
 import { SpeakingService } from './speaking.service';
 
@@ -11,6 +12,11 @@ describe('SpeakingController', () => {
     jest.resetAllMocks();
 
     const module: TestingModule = await Test.createTestingModule({
+      // `generate-question` now carries @UseGuards(..., ThrottlerGuard)
+      // (rate-limits the direct Gemini call) — ThrottlerGuard needs
+      // THROTTLER:MODULE_OPTIONS/ThrottlerStorage from ThrottlerModule to be
+      // instantiable, same as the real app.module.ts registration.
+      imports: [ThrottlerModule.forRoot([{ ttl: 60_000, limit: 20 }])],
       controllers: [SpeakingController],
       providers: [{ provide: SpeakingService, useValue: speakingServiceMock }],
     }).compile();

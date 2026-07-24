@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
   Bell,
@@ -15,6 +16,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { Field, SectionCard, Select, Toggle } from './ui';
+import { LumiverseState } from '@/src/Components/UI/Lumiverse';
 import { DeviceSession, Settings } from '@/src/lib/settings-types';
 import { settingsApi, twoFactorApi } from '@/src/lib/settings-api';
 import { useTranslation } from '@/src/hooks/useTranslation';
@@ -70,25 +72,48 @@ export default function SettingsPage() {
     recoveryCode: '',
   });
   const [twoFactorBusy, setTwoFactorBusy] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
-  useEffect(() => {
+  const loadSettings = () => {
+    setLoadError(false);
     Promise.all([
       settingsApi.get(),
       settingsApi.getDevices().catch(() => []),
-    ]).then(([settingsData, deviceData]) => {
-      setSettings(settingsData);
-      setDevices(deviceData);
-      // Keep the global theme/language stores (used across the whole app)
-      // in sync with whatever was last saved for this account.
-      if (settingsData.theme) {
-        setTheme(settingsData.theme as ThemeChoice);
-      }
-      if (settingsData.language) {
-        setLocale(settingsData.language.toLowerCase() as Locale);
-      }
-    });
+    ])
+      .then(([settingsData, deviceData]) => {
+        setSettings(settingsData);
+        setDevices(deviceData);
+        // Keep the global theme/language stores (used across the whole app)
+        // in sync with whatever was last saved for this account.
+        if (settingsData.theme) {
+          setTheme(settingsData.theme as ThemeChoice);
+        }
+        if (settingsData.language) {
+          setLocale(settingsData.language.toLowerCase() as Locale);
+        }
+      })
+      .catch(() => setLoadError(true));
+  };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadSettings();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  if (loadError) {
+    return (
+      <div className="grid min-h-[60vh] place-items-center px-4">
+        <LumiverseState
+          title="Không tải được cài đặt"
+          description="Đã xảy ra lỗi khi tải cài đặt tài khoản. Vui lòng thử lại."
+          actionLabel="Thử lại"
+          onAction={loadSettings}
+          tone="error"
+        />
+      </div>
+    );
+  }
 
   if (!settings) {
     return (
@@ -631,6 +656,8 @@ export default function SettingsPage() {
 
           {activeTab === 'security' && (
             <>
+              <ChangePasswordCard />
+
               <SectionCard title="Bảo mật tài khoản">
                 <Field label="Xác thực hai bước">
                   <Toggle
@@ -685,10 +712,18 @@ export default function SettingsPage() {
                       <button
                         className="rounded-xl border border-[var(--lumiverse-danger)]/30 px-3 py-2 text-sm font-semibold text-[var(--lumiverse-danger)]"
                         onClick={async () => {
-                          await settingsApi.revokeDevice(device.id);
-                          setDevices((current) =>
-                            current.filter((item) => item.id !== device.id),
+                          const confirmed = window.confirm(
+                            `Đăng xuất thiết bị "${device.deviceName}"? Thiết bị này sẽ cần đăng nhập lại.`,
                           );
+                          if (!confirmed) return;
+                          try {
+                            await settingsApi.revokeDevice(device.id);
+                            setDevices((current) =>
+                              current.filter((item) => item.id !== device.id),
+                            );
+                          } catch {
+                            setMessage('Không đăng xuất được thiết bị này. Vui lòng thử lại.');
+                          }
                         }}
                       >
                         Đăng xuất
@@ -906,5 +941,139 @@ export default function SettingsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function getRequestErrorMessage(error: unknown, fallback: string) {
+  if (
+    error &&
+    typeof error === 'object' &&
+    'response' in error &&
+    error.response &&
+    typeof error.response === 'object' &&
+    'data' in error.response
+  ) {
+    const data = (error.response as { data?: unknown }).data as
+      | { message?: unknown }
+      | undefined;
+    if (typeof data?.message === 'string') return data.message;
+  }
+  return fallback;
+}
+
+/**
+ * Changing a password revokes every session for the account (see
+ * AuthService.changePassword's comment — the access-token payload carries no
+ * session id, so there's no safe way to tell "this device" apart from any
+ * other live session), including the one making this request. A successful
+ * change therefore always ends in a redirect to /login, not a toast.
+ */
+function ChangePasswordCard() {
+  const router = useRouter();
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [done, setDone] = useState(false);
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    if (submitting) return;
+    setError('');
+
+    if (newPassword.length < 6) {
+      setError('Mật khẩu mới phải có ít nhất 6 ký tự.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError('Mật khẩu xác nhận không khớp.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await settingsApi.changePassword(currentPassword, newPassword);
+      setDone(true);
+      setTimeout(() => router.replace('/login'), 2000);
+    } catch (err) {
+      setError(getRequestErrorMessage(err, 'Không đổi được mật khẩu. Vui lòng thử lại.'));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (done) {
+    return (
+      <SectionCard title="Đổi mật khẩu">
+        <p className="text-sm font-semibold text-[var(--lumiverse-muted)]">
+          Đổi mật khẩu thành công. Mọi phiên đăng nhập đã bị đăng xuất — đang
+          chuyển đến trang đăng nhập...
+        </p>
+      </SectionCard>
+    );
+  }
+
+  return (
+    <SectionCard title="Đổi mật khẩu">
+      <form className="space-y-3" onSubmit={handleSubmit}>
+        <label className="block">
+          <span className="text-sm font-semibold text-[var(--lumiverse-muted)]">
+            Mật khẩu hiện tại
+          </span>
+          <input
+            type="password"
+            required
+            value={currentPassword}
+            onChange={(event) => setCurrentPassword(event.target.value)}
+            className="lumiverse-input mt-1 w-full px-3 py-2"
+          />
+        </label>
+
+        <label className="block">
+          <span className="text-sm font-semibold text-[var(--lumiverse-muted)]">
+            Mật khẩu mới
+          </span>
+          <input
+            type="password"
+            required
+            minLength={6}
+            value={newPassword}
+            onChange={(event) => setNewPassword(event.target.value)}
+            className="lumiverse-input mt-1 w-full px-3 py-2"
+          />
+        </label>
+
+        <label className="block">
+          <span className="text-sm font-semibold text-[var(--lumiverse-muted)]">
+            Xác nhận mật khẩu mới
+          </span>
+          <input
+            type="password"
+            required
+            minLength={6}
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            className="lumiverse-input mt-1 w-full px-3 py-2"
+          />
+        </label>
+
+        {error && (
+          <p className="text-sm font-semibold text-[var(--lumiverse-danger)]" role="alert">
+            {error}
+          </p>
+        )}
+
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={submitting}
+            className="rounded-xl bg-[var(--lumiverse-primary)] px-5 py-2 text-sm font-bold text-white disabled:opacity-60"
+          >
+            {submitting ? 'Đang đổi...' : 'Đổi mật khẩu'}
+          </button>
+        </div>
+      </form>
+    </SectionCard>
   );
 }

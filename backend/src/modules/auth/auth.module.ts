@@ -16,6 +16,7 @@ import { AuthTwoFactorService } from './auth-two-factor.service';
 import { TwoFactorController } from './two-factor.controller';
 import { AUTH_REDIS } from './auth.constants';
 import { AuditLogModule } from '../audit-log/audit-log.module';
+import { MailModule } from '../mail/mail.module';
 import { getJwtModuleSecret } from './auth-secrets.util';
 
 @Global()
@@ -33,6 +34,7 @@ import { getJwtModuleSecret } from './auth-secrets.util';
     VocabularyModule,
     VocabularyJobModule,
     AuditLogModule,
+    MailModule,
   ],
   controllers: [AuthController, TwoFactorController],
   providers: [

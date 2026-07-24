@@ -190,6 +190,15 @@ model User {
   twoFactorTempSecret    String?
   twoFactorRecoveryCodes String[] @default([])
 
+  // `@default(true)` so existing rows backfill as verified without a data
+  // migration — `register()` explicitly passes `false` for new signups.
+  isEmailVerified Boolean @default(true)
+
+  // Account-level brute-force lockout (temporary, not permanent — see
+  // AuthService.login). Reset to 0 / null on every successful login.
+  failedLoginAttempts Int       @default(0)
+  lockedUntil          DateTime?
+
   enrollments Enrollment[]
 
   lessonProgress LessonProgress[]
@@ -280,6 +289,8 @@ model User {
   deviceSessions       UserDeviceSession[]
   learningDnaSnapshots LearningDnaSnapshot[]
   auditLogs            AuditLog[]
+  passwordResetTokens     PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
 
   xpProfile               UserXpProfile?
   xpTransactions          XpTransaction[]
@@ -308,6 +319,7 @@ model User {
   aiLessonBuilderProjects   AILessonBuilderProject[]
   chatSessions              ChatSession[]
   userPet                   UserPet?
+  conversationSessions      ConversationSession[]
 }
 
 model Course {
@@ -4163,6 +4175,39 @@ model UserDeviceSession {
   @@index([userId, revokedAt])
 }
 
+/// Forgot-password tokens. Only a SHA-256 hash of the raw token is ever
+/// stored — the raw token exists only in the emailed link, never at rest —
+/// so a DB read (backup leak, read-replica compromise, etc.) can't be used
+/// to reset a password. `usedAt` enforces single-use.
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  ipAddress String?
+  userAgent String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Same hashed-token, single-use design as PasswordResetToken.
+model EmailVerificationToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
 model AuditLog {
   id            String   @id @default(uuid())
   userId        String
@@ -4235,4 +4280,112 @@ model UserPet {
   streak    Int      @default(0)
   hp        Int      @default(100)
   updatedAt DateTime @updatedAt
+}
+
+// --- AI Conversation Partner / Speaking Coach 2.0 ---
+// Deliberately separate from ChatSession/ChatMessage above (that pair is the
+// persona-locked "Miu the pet" helper chat) — this is a general-purpose,
+// scenario-driven, multi-turn conversation engine. `ConversationSession`
+// optionally links to a `SpeakingSession` row (created on finish) so a
+// completed conversation is automatically picked up by the existing
+// SkillRadarService/WeaknessDetectionService/Dashboard SPEAKING-skill
+// queries with zero changes to those already-complete files.
+
+enum ConversationMode {
+  FREE
+  TOPIC
+  SCENARIO
+  ROLEPLAY
+  INTERVIEW
+  TRAVEL
+  BUSINESS
+  DAILY_ENGLISH
+  DEBATE
+  STORY
+}
+
+enum ConversationStatus {
+  ACTIVE
+  COMPLETED
+  ABANDONED
+}
+
+enum ConversationRole {
+  USER
+  ASSISTANT
+}
+
+model ConversationScenario {
+  id                  String             @id @default(uuid())
+  code                String             @unique
+  title               String
+  description         String
+  mode                ConversationMode
+  difficulty          CefrLevel
+  icon                String?
+  systemPromptTemplate String            @db.Text
+  openingLine         String             @db.Text
+  requiredVocabulary  String[]           @default([])
+  grammarFocus        String[]           @default([])
+  goals               String[]           @default([])
+  displayOrder        Int                @default(0)
+  isActive            Boolean            @default(true)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  sessions ConversationSession[]
+
+  @@index([isActive, mode, displayOrder])
+}
+
+model ConversationSession {
+  id               String              @id @default(uuid())
+  userId           String
+  scenarioId       String?
+  mode             ConversationMode
+  difficulty       CefrLevel
+  status           ConversationStatus  @default(ACTIVE)
+  turnCount        Int                 @default(0)
+  summary          String?             @db.Text
+  startedAt        DateTime            @default(now())
+  lastMessageAt    DateTime            @default(now())
+  completedAt      DateTime?
+
+  overallScore      Int?
+  fluencyScore      Int?
+  grammarScore      Int?
+  vocabularyScore   Int?
+  pronunciationScore Int?
+  confidenceScore   Int?
+  naturalnessScore  Int?
+  feedback          String?            @db.Text
+  recommendedVocabulary String[]       @default([])
+  recommendedGrammar    String[]       @default([])
+
+  // Linked once the session finishes — created fresh (lessonId/topicId left
+  // null, both nullable on SpeakingSession) purely as an Analytics sink, so
+  // this conversation's aggregate scores surface in the user's existing
+  // SPEAKING skill radar/weakness detection/dashboard without touching any
+  // of those already-complete read paths.
+  speakingSessionId String?            @unique
+
+  user     User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scenario ConversationScenario? @relation(fields: [scenarioId], references: [id])
+  messages ConversationMessage[]
+
+  @@index([userId, status, lastMessageAt])
+  @@index([userId, startedAt])
+}
+
+model ConversationMessage {
+  id        String              @id @default(uuid())
+  sessionId String
+  role      ConversationRole
+  content   String              @db.Text
+  feedback  Json?
+  createdAt DateTime            @default(now())
+
+  session ConversationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
 }

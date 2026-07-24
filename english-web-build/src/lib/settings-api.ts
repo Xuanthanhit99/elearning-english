@@ -120,6 +120,11 @@ export const settingsApi = {
   resetSection: async (section: string) =>
     unwrap<Settings>(await api.post('/settings/reset-section', { section })),
 
+  changePassword: async (currentPassword: string, newPassword: string) =>
+    unwrap<{ message: string }>(
+      await api.post('/auth/change-password', { currentPassword, newPassword }),
+    ),
+
   getDevices: async () => unwrap<DeviceSession[]>(await api.get('/settings/devices')),
 
   revokeDevice: async (id: string) =>

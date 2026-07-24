@@ -73,6 +73,13 @@ export default function NotificationDrawer({
         />
       )}
       <aside
+        // `translate-x-full` only hides the panel visually; without `inert`
+        // its links/buttons stayed in the Tab order even while off-screen,
+        // so a keyboard user tabbing through the page could land on
+        // invisible controls. `inert` (React 19) removes it from both the
+        // Tab order and the accessibility tree while closed.
+        inert={!open}
+        aria-hidden={!open}
         className={[
           "fixed right-0 top-0 z-50 h-dvh w-full max-w-md border-l border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] shadow-2xl backdrop-blur-xl transition-transform duration-300",
           open ? "translate-x-0" : "translate-x-full",
@@ -95,10 +102,11 @@ export default function NotificationDrawer({
             </button>
             <button
               type="button"
+              aria-label="Dong thong bao"
               onClick={onClose}
               className="grid h-9 w-9 place-items-center rounded-xl border border-[var(--lumiverse-border)] text-[var(--lumiverse-muted)] transition hover:bg-[var(--lumiverse-card-soft)] hover:text-[var(--lumiverse-ink)]"
             >
-              <X size={18} />
+              <X size={18} aria-hidden />
             </button>
           </div>
         </div>
@@ -114,8 +122,15 @@ export default function NotificationDrawer({
               ))}
             </div>
           ) : error ? (
-            <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-bold text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
-              {error}
+            <div className="flex flex-col items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-bold text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
+              <span>{error}</span>
+              <button
+                type="button"
+                onClick={() => void load(1)}
+                className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-black text-white"
+              >
+                Thu lai
+              </button>
             </div>
           ) : items.length ? (
             <div className="space-y-3">

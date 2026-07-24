@@ -98,6 +98,7 @@ export class VocabularyJobService {
   // @Cron('0 0 * * 1', { timeZone: 'Asia/Bangkok' })
   // @Cron('*/1 * * * *')
   // @Cron('*/5 * * * *')
+  @Cron('0 2 * * *')
   async generateWeeklyTopicPools() {
     console.log('Generating weekly topic pools...');
     const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];

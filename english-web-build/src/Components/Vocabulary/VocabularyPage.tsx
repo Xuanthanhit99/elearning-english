@@ -12,6 +12,7 @@ import StudySidebar from "@/src/Components/Layout/StudySidebar";
 import { X, Gift, BookOpen, Star, Target, RotateCcw } from "lucide-react";
 import { useTranslation } from "@/src/hooks/useTranslation";
 import { Locale } from "@/src/i18n/types";
+import { LumiverseState } from "@/src/Components/UI/Lumiverse";
 import vocab from "./vocabularyPage.content";
 
 type VocabularyWord = {
@@ -285,6 +286,7 @@ export default function VocabularyPage() {
   const [level, setLevel] = useState("A1");
   const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [message, setMessage] = useState("");
   const [detail, setDetail] = useState<VocabularyWord | null>(null);
   const [relations, setRelations] = useState<any>(null);
@@ -333,6 +335,7 @@ export default function VocabularyPage() {
 
   const loadVocabulary = async () => {
     setLoading(true);
+    setLoadFailed(false);
     setMessage("");
 
     const [
@@ -391,7 +394,7 @@ export default function VocabularyPage() {
     } else {
       setToday(null);
       setDailyWords([]);
-      setMessage(c.messages.loadTodayError);
+      setLoadFailed(true);
     }
 
     setLoading(false);
@@ -625,6 +628,20 @@ export default function VocabularyPage() {
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 py-10 text-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#e2e8f0] border-t-[#4f5790]" />
         <p className="font-bold text-[#4f5790]">{c.messages.loadingToday}</p>
+      </div>
+    );
+  }
+
+  if (loadFailed && !today) {
+    return (
+      <div className="grid min-h-[60vh] place-items-center px-4">
+        <LumiverseState
+          title="Không tải được dữ liệu từ vựng"
+          description={c.messages.loadTodayError}
+          actionLabel="Thử lại"
+          onAction={loadVocabulary}
+          tone="error"
+        />
       </div>
     );
   }

@@ -251,9 +251,28 @@ export type CoachAdvice = {
   generatedAt: string;
 };
 
+// DashboardPage mounts `useCoachHeadline()` (hero) and `<AiCoachPanel />` (aside)
+// at the same time, each calling this on mount — without dedup that fires two
+// concurrent GET /analytics/coach requests, doubling Gemini cost on a cold cache.
+// Non-refresh calls share one in-flight request; `refresh: true` (explicit user
+// action, e.g. the retry button) always issues its own request.
+let inFlightCoachRequest: Promise<CoachAdvice> | null = null;
+
 export async function getAiCoachAdvice(options: { refresh?: boolean } = {}) {
-  const response = await api.get<ApiResponse<CoachAdvice>>("/analytics/coach", {
-    params: options.refresh ? { refresh: "true" } : undefined,
-  });
-  return response.data.data;
+  if (options.refresh) {
+    const response = await api.get<ApiResponse<CoachAdvice>>("/analytics/coach", {
+      params: { refresh: "true" },
+    });
+    return response.data.data;
+  }
+
+  if (!inFlightCoachRequest) {
+    inFlightCoachRequest = api
+      .get<ApiResponse<CoachAdvice>>("/analytics/coach")
+      .then((response) => response.data.data)
+      .finally(() => {
+        inFlightCoachRequest = null;
+      });
+  }
+  return inFlightCoachRequest;
 }

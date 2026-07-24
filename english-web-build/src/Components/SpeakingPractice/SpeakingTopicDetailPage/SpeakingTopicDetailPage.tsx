@@ -427,7 +427,7 @@ function Sidebar({ onGoPremium }: { onGoPremium: () => void }) {
     ["Speaking", "🎙️", "/speaking"],
     ["Reading", "📖", "/reading"],
     ["Writing", "✏️", "/writing"],
-    ["Flashcards", "🧩", "/flashcards"],
+    ["Flashcards", "🧩", "/vocabulary/flashcards"],
   ];
   return (
     <aside className="min-h-screen w-[270px] border-r border-indigo-50 bg-white px-5 py-7">

@@ -426,7 +426,10 @@ export function CommunityClubsView() {
               tabIndex={0}
               onClick={() => openClub(club)}
               onKeyDown={(event) => {
-                if (event.key === 'Enter') openClub(club);
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  openClub(club);
+                }
               }}
               className="group cursor-pointer overflow-hidden rounded-3xl border-2 border-slate-200 bg-white shadow-md transition hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-lg"
             >

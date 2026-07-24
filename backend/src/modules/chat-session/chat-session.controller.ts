@@ -2,13 +2,17 @@ import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { ChatSessionService } from './chat-session.service';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { Throttle } from '@nestjs/throttler';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { CreateMessageDto } from './dto/create-message.dto';
 
 @Controller('chat-session')
 @UseGuards(JwtAuthGuard)
 export class ChatSessionController {
   constructor(private chatService: ChatSessionService) {}
+  // `@Throttle` alone is inert without `ThrottlerGuard` applied — this route calls
+  // Gemini (via GeminiChatService) on every message and had no actual rate limit
+  // despite looking protected.
+  @UseGuards(ThrottlerGuard)
   @Throttle({ default: { limit: 15, ttl: 60_000 } }) // 15 tin/phút/user
   @Post('message')
   send(@CurrentUser() user, @Body() dto: CreateMessageDto) {

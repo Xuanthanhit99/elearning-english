@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthSessionService } from '../auth/auth-session.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
 import { SettingsQueryService } from './settings-query.service';
 
 @Injectable()
@@ -13,6 +14,7 @@ export class SettingsService {
     private readonly prisma: PrismaService,
     private readonly authSessionService: AuthSessionService,
     private readonly settingsQuery: SettingsQueryService,
+    private readonly auditLogService: AuditLogService,
   ) {}
 
   async getDevices(userId: string) {
@@ -58,10 +60,19 @@ export class SettingsService {
     // a new access token even if this request fails mid-way.
     await this.authSessionService.invalidateSession(sessionId);
 
-    return this.prisma.userDeviceSession.update({
+    const revoked = await this.prisma.userDeviceSession.update({
       where: { id: sessionId },
       data: { revokedAt: new Date() },
     });
+
+    await this.auditLogService.record({
+      userId,
+      action: 'AUTH_DEVICE_REVOKED',
+      changedFields: ['session'],
+      metadata: { sessionId },
+    });
+
+    return revoked;
   }
 
   async revokeOtherDevices(userId: string, currentSessionId?: string) {
@@ -79,6 +90,13 @@ export class SettingsService {
           : { current: false }),
       },
       data: { revokedAt: new Date() },
+    });
+
+    await this.auditLogService.record({
+      userId,
+      action: 'AUTH_DEVICES_REVOKED_ALL_OTHER',
+      changedFields: ['session'],
+      metadata: { revokedCount: result.count },
     });
 
     return { revokedCount: result.count };

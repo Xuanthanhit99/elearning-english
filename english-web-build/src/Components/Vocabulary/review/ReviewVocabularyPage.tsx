@@ -73,6 +73,7 @@ export default function ReviewVocabularyPage() {
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [activeTab, setActiveTab] = useState<"priority" | "topic">("priority");
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [message, setMessage] = useState("");
   const [sessionOpen, setSessionOpen] = useState(false);
   const [sessionIndex, setSessionIndex] = useState(0);
@@ -89,6 +90,7 @@ export default function ReviewVocabularyPage() {
 
   const loadReview = async () => {
     setLoading(true);
+    setLoadFailed(false);
     setMessage("");
 
     const [reviewRes, dashboardRes, sessionRes] = await Promise.allSettled([
@@ -112,6 +114,9 @@ export default function ReviewVocabularyPage() {
       if (page > nextTotalPages) {
         setPage(nextTotalPages);
       }
+    } else {
+      setReviewWords([]);
+      setLoadFailed(true);
     }
     if (dashboardRes.status === "fulfilled") {
       setDashboard(dashboardRes.value.data);
@@ -268,6 +273,8 @@ export default function ReviewVocabularyPage() {
 
                 <ReviewTable
                   loading={loading}
+                  loadFailed={loadFailed}
+                  onRetry={loadReview}
                   selected={selected}
                   setSelected={setSelected}
                   words={sortedWords}
@@ -353,11 +360,15 @@ function MetricCard({
 
 function ReviewTable({
   loading,
+  loadFailed,
+  onRetry,
   selected,
   setSelected,
   words,
 }: {
   loading: boolean;
+  loadFailed: boolean;
+  onRetry: () => void;
   selected: Record<string, boolean>;
   setSelected: (value: Record<string, boolean>) => void;
   words: ReviewWord[];
@@ -366,6 +377,22 @@ function ReviewTable({
     return (
       <div className="py-14 text-center font-bold text-[#69708b]">
         Đang tải danh sách ôn tập...
+      </div>
+    );
+  }
+
+  if (loadFailed) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-14 text-center">
+        <p className="font-bold text-[#d92d20]">
+          Không tải được danh sách ôn tập. Vui lòng thử lại.
+        </p>
+        <button
+          onClick={onRetry}
+          className="rounded-xl bg-[#6d35ff] px-5 py-2.5 text-sm font-black text-white"
+        >
+          Thử lại
+        </button>
       </div>
     );
   }
