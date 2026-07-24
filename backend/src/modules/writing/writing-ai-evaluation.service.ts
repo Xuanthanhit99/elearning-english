@@ -1,24 +1,13 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { Injectable } from '@nestjs/common';
 import {
   WritingEvaluationResult,
   WritingMistake,
 } from './writing-processing.types';
+import { GeminiService } from '../gemini/gemini.service';
 
 @Injectable()
 export class WritingAiEvaluationService {
-  private readonly model;
-
-  constructor() {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error('Missing GEMINI_API_KEY');
-    }
-
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    this.model = genAI.getGenerativeModel({
-      model: process.env.WRITING_GEMINI_MODEL ?? 'gemini-2.5-flash',
-    });
-  }
+  constructor(private readonly geminiService: GeminiService) {}
 
   async evaluate(input: {
     prompt: string;
@@ -98,11 +87,11 @@ Rules:
 - Do not invent content not related to the essay.
 `;
 
-    const result = (await this.withTimeout(
-      this.model.generateContent(prompt),
-      Number(process.env.WRITING_GEMINI_TIMEOUT_MS ?? 45000),
-    )) as { response: { text(): string } };
-    const parsed = this.parseJson(result.response.text());
+    const parsed = await this.geminiService.generateJson(prompt, {
+      models: [process.env.WRITING_GEMINI_MODEL ?? 'gemini-2.5-flash'],
+      timeoutMs: Number(process.env.WRITING_GEMINI_TIMEOUT_MS ?? 45000),
+      retries: 1,
+    });
     return this.normalize(parsed);
   }
 
@@ -149,30 +138,6 @@ Rules:
         reason: 'Bài hiện tại chưa đủ dữ liệu để AI đánh giá đầy đủ.',
       },
     };
-  }
-
-  private parseJson(text: string) {
-    const cleaned = text
-      .replace(/```json/g, '')
-      .replace(/```/g, '')
-      .trim();
-
-    const start = cleaned.indexOf('{');
-    const end = cleaned.lastIndexOf('}');
-
-    if (start < 0 || end < 0) {
-      throw new InternalServerErrorException(
-        'Gemini response is not valid JSON',
-      );
-    }
-
-    try {
-      return JSON.parse(cleaned.slice(start, end + 1));
-    } catch {
-      throw new InternalServerErrorException(
-        'Gemini response JSON could not be parsed',
-      );
-    }
   }
 
   private normalize(value: any): WritingEvaluationResult {
@@ -222,21 +187,4 @@ Rules:
     };
   }
 
-  private async withTimeout<T>(promise: Promise<T>, timeoutMs: number) {
-    let timeout: NodeJS.Timeout | undefined;
-
-    try {
-      return await Promise.race([
-        promise,
-        new Promise<never>((_, reject) => {
-          timeout = setTimeout(
-            () => reject(new Error('Gemini evaluation timed out')),
-            timeoutMs,
-          );
-        }),
-      ]);
-    } finally {
-      if (timeout) clearTimeout(timeout);
-    }
-  }
 }

@@ -79,8 +79,28 @@ export class GeminiService {
     return -1;
   }
 
-  async generateJson(prompt: string) {
-    const models = ['gemini-2.5-flash-lite', 'gemini-2.5-flash'];
+  /**
+   * `options` lets call sites that need a specific model list / timeout /
+   * temperature (e.g. an env-var-pinned evaluation model) keep that
+   * behavior while still sharing this one client + retry + JSON-extraction
+   * implementation, instead of each duplicating `new GoogleGenerativeAI(...)`.
+   * Defaults match the original hardcoded behavior exactly, so every
+   * existing caller (vocabulary, reading, listening, grammar, ...) is
+   * unaffected.
+   */
+  async generateJson(
+    prompt: string,
+    options?: {
+      models?: string[];
+      temperature?: number;
+      timeoutMs?: number;
+      retries?: number;
+    },
+  ) {
+    const models = options?.models ?? ['gemini-2.5-flash-lite', 'gemini-2.5-flash'];
+    const temperature = options?.temperature ?? 0.4;
+    const timeoutMs = options?.timeoutMs ?? 30000;
+    const retries = options?.retries ?? 3;
 
     let lastError: any;
 
@@ -88,17 +108,17 @@ export class GeminiService {
       const model = this.genAI.getGenerativeModel({
         model: modelName,
         generationConfig: {
-          temperature: 0.4,
+          temperature,
           responseMimeType: 'application/json',
         },
       });
 
-      for (let retry = 0; retry < 3; retry++) {
+      for (let retry = 0; retry < retries; retry++) {
         try {
           const result = await Promise.race([
             model.generateContent(prompt),
             new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Gemini timeout')), 30000),
+              setTimeout(() => reject(new Error('Gemini timeout')), timeoutMs),
             ),
           ]);
 
@@ -113,7 +133,7 @@ export class GeminiService {
             error.message,
           );
 
-          if (retry < 2) {
+          if (retry < retries - 1) {
             await this.sleep((retry + 1) * 5000);
           }
         }

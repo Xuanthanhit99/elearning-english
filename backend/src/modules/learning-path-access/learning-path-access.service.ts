@@ -113,14 +113,26 @@ export class LearningPathAccessService {
     const test = user.currentPlacementTest ?? user.placementTests[0] ?? null;
 
     if (!test) {
-      return this.response(
-        'NOT_STARTED',
-        null,
-        false,
-        false,
-        '/placement',
-        'Bạn cần hoàn thành Placement Test trước khi mở lộ trình học.',
-      );
+      // Previously hard-gated (`allowed: false`, redirect to `/placement`).
+      // GET /learning-path now always resolves to a real per-skill
+      // foundation path for a user with no Placement test at all (see
+      // LearningPathService.buildDefaultFoundationPath) — a beginner
+      // learning path is genuinely available, so this state should let the
+      // user in rather than block them. Placement is still recommended
+      // (state stays 'NOT_STARTED' so the frontend can show that prompt),
+      // just not required. In-progress/pending states below are left
+      // gated: those represent an unfinished placement attempt, not "never
+      // started", and redirecting to resume/check it is still correct UX.
+      return {
+        state: 'NOT_STARTED',
+        allowed: true,
+        currentTestId: null,
+        hasResult: false,
+        hasLearningPath: true,
+        nextUrl: '/learning-path',
+        message:
+          'Bạn chưa hoàn thành Placement Test. Đây là lộ trình khởi đầu theo trình độ cơ bản — có thể làm Placement Test bất cứ lúc nào để nhận gợi ý cá nhân hóa.',
+      };
     }
 
     if (test.status === PlacementTestStatus.IN_PROGRESS) {

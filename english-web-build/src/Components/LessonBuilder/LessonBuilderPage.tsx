@@ -19,7 +19,8 @@ import {
   Wand2,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import axios from "axios";
 
 type BuilderProject = {
   id: string;
@@ -64,6 +65,11 @@ export default function LessonBuilderPage() {
   const [outline, setOutline] = useState<BuilderOutline | null>(null);
   const [loading, setLoading] = useState("");
   const [error, setError] = useState("");
+  const generateAbortRef = useRef<AbortController | null>(null);
+
+  // Cancels an in-flight Gemini content-generation call if the page unmounts
+  // mid-request, so its response can't call setState after unmount.
+  useEffect(() => () => generateAbortRef.current?.abort(), []);
 
   const lessonCount = useMemo(
     () =>
@@ -147,15 +153,25 @@ export default function LessonBuilderPage() {
     if (!project) return;
     setLoading(lessonId ? `lesson-${lessonId}` : "content");
     setError("");
+
+    generateAbortRef.current?.abort();
+    const controller = new AbortController();
+    generateAbortRef.current = controller;
+
     try {
-      const res = await lessonBuilderApi.generateContent(project.id, lessonId);
+      const res = await lessonBuilderApi.generateContent(
+        project.id,
+        lessonId,
+        controller.signal,
+      );
       setProject(res.data);
       setOutline(res.data.outline);
       await loadProjects();
     } catch (err: any) {
+      if (axios.isCancel(err)) return;
       setError(err.response?.data?.message || "Không sinh được nội dung.");
     } finally {
-      setLoading("");
+      if (!controller.signal.aborted) setLoading("");
     }
   }
 

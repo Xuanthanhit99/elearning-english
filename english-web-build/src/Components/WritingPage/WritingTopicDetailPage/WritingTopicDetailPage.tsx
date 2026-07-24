@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { LumiverseLoadingState } from "@/src/Components/UI/Lumiverse";
 
 type LessonStatus = "COMPLETED" | "IN_PROGRESS" | "NOT_STARTED";
 
@@ -138,7 +139,10 @@ export default function WritingTopicDetailPage() {
     if (slug) loadDetail();
   }, [slug, sort]);
 
-  if (loading) return <div className="p-10">Loading...</div>;
+  if (loading)
+    return (
+      <LumiverseLoadingState className="m-10" label="Đang tải bài luyện viết..." />
+    );
 
   if (error) {
     return (

@@ -8,6 +8,9 @@ import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
 import { ListeningJobService } from '../listening-job/listening-job.service';
 import { ListeningAudioBackfillService } from '../listening-job/listening-audio-backfill.service';
 import { LISTENING_REDIS } from './listening-redis.provider';
+import { ContentCacheService } from '../../common/cache/content-cache.service';
+import { CacheMetricsService } from '../../common/cache/cache-metrics.service';
+import { SkillLevelResolverService } from '../../common/skill-level/skill-level-resolver.service';
 
 /*
  * LƯU Ý (Stage 6D.1 - 6D.3): file test này được viết/sửa qua nhiều
@@ -58,6 +61,16 @@ describe('ListeningService', () => {
     enqueueMissingAudio: jest.fn(),
   };
   const redisMock = { set: jest.fn() };
+  const contentCacheMock = {
+    getJson: jest.fn(),
+    setJson: jest.fn(),
+    invalidate: jest.fn(),
+  };
+  const cacheMetricsMock = { record: jest.fn(), recordDuration: jest.fn() };
+  const skillLevelResolverMock = {
+    resolveSkillLevel: jest.fn(),
+    resolveAllSkillLevels: jest.fn(),
+  };
 
   beforeEach(async () => {
     jest.resetAllMocks();
@@ -76,6 +89,9 @@ describe('ListeningService', () => {
           useValue: listeningAudioBackfillServiceMock,
         },
         { provide: LISTENING_REDIS, useValue: redisMock },
+        { provide: ContentCacheService, useValue: contentCacheMock },
+        { provide: CacheMetricsService, useValue: cacheMetricsMock },
+        { provide: SkillLevelResolverService, useValue: skillLevelResolverMock },
       ],
     }).compile();
 

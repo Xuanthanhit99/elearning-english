@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { LumiverseLoadingState } from '@/src/Components/UI/Lumiverse';
 
 type WritingHome = {
   user: {
@@ -130,7 +131,7 @@ async function handleStartWriting(type: string) {
   }, []);
 
   if (loading) {
-    return <div className="p-10">Loading...</div>;
+    return <LumiverseLoadingState className="m-10" label="Đang tải Writing..." />;
   }
 
   if (!data) {
@@ -329,7 +330,7 @@ function Sidebar() {
   return (
     <aside className="h-screen w-[245px] border-r border-slate-100 bg-white px-5 py-6">
       <div className="mb-10 flex items-center gap-3">
-        <div className="text-3xl">🦊</div>
+        {/* <div className="text-3xl">🦊</div> */}
         <h1 className="text-2xl font-extrabold">
           Study<span className="text-violet-600">Arena</span>
         </h1>

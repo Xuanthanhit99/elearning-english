@@ -17,6 +17,51 @@ import { GetReadingArticlesQueryDto } from './dto/get-reading-articles.dto';
 import { GetReadingHistoryQueryDto } from './dto/get-reading-history.dto';
 import { MissionV2ProgressService } from '../missions-v2/services/mission-v2-progress.service';
 import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
+import { ContentCacheService } from '../../common/cache/content-cache.service';
+import { CacheKeys, CacheTtl } from '../../common/cache/cache-keys';
+import { SkillLevelResolverService } from '../../common/skill-level/skill-level-resolver.service';
+import { CefrLevel } from '@prisma/client';
+
+/** Clamps a resolved CEFR level onto ReadingLevel's own A1-B2 supported range. */
+export function toReadingLevel(level: CefrLevel): ReadingLevel {
+  switch (level) {
+    case CefrLevel.A1:
+      return ReadingLevel.A1;
+    case CefrLevel.A2:
+      return ReadingLevel.A2;
+    case CefrLevel.B1:
+      return ReadingLevel.B1;
+    default:
+      return ReadingLevel.B2;
+  }
+}
+
+type ReadingArticleContent = {
+  article: {
+    id: string;
+    title: string;
+    slug: string;
+    description: string | null;
+    thumbnail: string | null;
+    content: string;
+    categoryName: string;
+    categorySlug: string;
+    difficulty: ReadingDifficulty;
+    difficultyText: string;
+    readTimeText: string;
+    wordCountText: string;
+    xpReward: number;
+  };
+  totalQuestions: number;
+  questions: {
+    id: string;
+    index: number;
+    question: string;
+    options: unknown;
+  }[];
+  vocabulary: unknown;
+  tip: { title: string; content: string };
+};
 
 @Injectable()
 export class ReadingService {
@@ -26,6 +71,8 @@ export class ReadingService {
     private readonly prisma: PrismaService,
     private readonly missionV2ProgressService: MissionV2ProgressService,
     private readonly learningXp: LearningXpPublisher,
+    private readonly contentCache: ContentCacheService,
+    private readonly skillLevelResolver: SkillLevelResolverService,
   ) {}
 
   async getReadingHome(userId: string): Promise<ReadingHomeResponse> {
@@ -216,10 +263,15 @@ export class ReadingService {
 
     if (existed) return existed;
 
+    const resolved = await this.skillLevelResolver.resolveSkillLevel(
+      userId,
+      LearningSkill.READING,
+    );
+
     return this.prisma.userReadingProgress.create({
       data: {
         userId,
-        currentLevel: ReadingLevel.A1,
+        currentLevel: toReadingLevel(resolved.level),
         totalXp: 0,
         currentStreak: 0,
       },
@@ -539,10 +591,15 @@ export class ReadingService {
 
     if (existed) return existed;
 
+    const resolved = await this.skillLevelResolver.resolveSkillLevel(
+      userId,
+      LearningSkill.READING,
+    );
+
     return this.prisma.userReadingProgress.create({
       data: {
         userId,
-        currentLevel: ReadingLevel.A1,
+        currentLevel: toReadingLevel(resolved.level),
       },
     });
   }
@@ -720,45 +777,81 @@ export class ReadingService {
   }
 
   async getReadingArticleDetail(userId: string, slug: string) {
-    const article = await this.prisma.readingArticle.findUnique({
-      where: { slug },
-      include: {
-        category: true,
-        questions: {
-          orderBy: { order: 'asc' },
-        },
-        sessions: {
-          where: { userId },
-          take: 1,
-          include: {
-            answers: true,
+    // Article body/questions/vocabulary are identical for every learner and
+    // are cached; the per-user session/answers are always read live and
+    // merged in afterwards — never cache personal progress.
+    const cacheKey = CacheKeys.readingArticleDetail(slug);
+    let content = await this.contentCache.getJson<ReadingArticleContent>(
+      'reading',
+      cacheKey,
+    );
+
+    if (!content) {
+      const article = await this.prisma.readingArticle.findUnique({
+        where: { slug },
+        include: {
+          category: true,
+          questions: {
+            orderBy: { order: 'asc' },
           },
         },
-      },
-    });
+      });
 
-    if (!article) {
-      throw new NotFoundException('Không tìm thấy bài đọc');
+      if (!article) {
+        throw new NotFoundException('Không tìm thấy bài đọc');
+      }
+
+      content = {
+        article: {
+          id: article.id,
+          title: article.title,
+          slug: article.slug,
+          description: article.description,
+          thumbnail: article.thumbnail,
+          content: article.content,
+          categoryName: article.category.name,
+          categorySlug: article.category.slug,
+          difficulty: article.difficulty,
+          difficultyText: this.formatDifficulty(article.difficulty),
+          readTimeText: `${article.readTime} phút đọc`,
+          wordCountText: `${article.wordCount ?? 0} từ`,
+          xpReward: article.xpReward,
+        },
+        totalQuestions: article.questions.length,
+        questions: article.questions.map((q, index) => ({
+          id: q.id,
+          index: index + 1,
+          question: q.question,
+          options: q.options,
+        })),
+        vocabulary: await this.getVocabularyByArticle(article.id),
+        tip: {
+          title: 'Mẹo nhỏ',
+          content:
+            'Đọc lướt toàn bài trước để nắm ý chính, sau đó trả lời câu hỏi sẽ giúp bạn hiểu sâu và nhớ lâu hơn.',
+        },
+      };
+
+      await this.contentCache.setJson(
+        'reading',
+        cacheKey,
+        content,
+        CacheTtl.LESSON_DETAIL_SECONDS,
+      );
     }
 
-    const session = article.sessions[0];
+    const session = await this.prisma.readingSession.findUnique({
+      where: {
+        userId_articleId: {
+          userId,
+          articleId: content.article.id,
+        },
+      },
+      include: { answers: true },
+    });
 
     return {
-      article: {
-        id: article.id,
-        title: article.title,
-        slug: article.slug,
-        description: article.description,
-        thumbnail: article.thumbnail,
-        content: article.content,
-        categoryName: article.category.name,
-        categorySlug: article.category.slug,
-        difficulty: article.difficulty,
-        difficultyText: this.formatDifficulty(article.difficulty),
-        readTimeText: `${article.readTime} phút đọc`,
-        wordCountText: `${article.wordCount ?? 0} từ`,
-        xpReward: article.xpReward,
-      },
+      article: content.article,
 
       session: session
         ? {
@@ -767,35 +860,27 @@ export class ReadingService {
             score: session.score,
             accuracy: session.accuracy,
             answeredCount: session.answers.length,
-            totalQuestions: article.questions.length,
+            totalQuestions: content.totalQuestions,
             progressPercent:
-              article.questions.length > 0
+              content.totalQuestions > 0
                 ? Math.round(
-                    (session.answers.length / article.questions.length) * 100,
+                    (session.answers.length / content.totalQuestions) * 100,
                   )
                 : 0,
           }
         : null,
 
-      questions: article.questions.map((q, index) => {
+      questions: content.questions.map((q) => {
         const answer = session?.answers.find((a) => a.questionId === q.id);
 
         return {
-          id: q.id,
-          index: index + 1,
-          question: q.question,
-          options: q.options,
+          ...q,
           selected: answer?.selected ?? null,
         };
       }),
 
-      vocabulary: await this.getVocabularyByArticle(article.id),
-
-      tip: {
-        title: 'Mẹo nhỏ',
-        content:
-          'Đọc lướt toàn bài trước để nắm ý chính, sau đó trả lời câu hỏi sẽ giúp bạn hiểu sâu và nhớ lâu hơn.',
-      },
+      vocabulary: content.vocabulary,
+      tip: content.tip,
     };
   }
 

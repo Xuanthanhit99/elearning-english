@@ -6,6 +6,23 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { GeminiService } from 'src/modules/gemini/gemini.service';
 import { GrammarCategory, GrammarLevel } from '@prisma/client';
 import * as crypto from 'crypto';
+import { QuestionGenerationLockService } from '../../question-bank/question-generation-lock/question-generation-lock.service';
+import { SUPPORTED_CONTENT_LEVELS } from '../../../common/skill-level/skill-level.types';
+
+/**
+ * Topics per category+level the curriculum needs before this job stops
+ * generating more — named so it isn't a bare magic number, matching the
+ * "readiness threshold" pattern used elsewhere (e.g. Reading/Speaking jobs).
+ */
+const GRAMMAR_TOPICS_PER_CATEGORY_LEVEL_THRESHOLD = 10;
+
+/**
+ * Configurable so ops can tune cadence without a code change; defaults to
+ * the same "daily during low traffic" schedule every other content job in
+ * this codebase uses. Read once at module-decoration time, matching how
+ * every other `@Cron` in this codebase is a static string.
+ */
+const GRAMMAR_JOB_CRON = process.env.GRAMMAR_JOB_CRON || '0 2 * * *';
 
 @Injectable()
 export class GrammarJobService {
@@ -14,6 +31,7 @@ export class GrammarJobService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly geminiService: GeminiService,
+    private readonly generationLock: QuestionGenerationLockService,
   ) {}
 
   private sleep(ms: number) {
@@ -22,11 +40,18 @@ export class GrammarJobService {
 
   private isRunning = false;
 
-  // @Cron('0 2 * * *')
-  // @Cron('*/1 * * * *')
-  // @Cron('*/5 * * * *')
-  // @Cron('*/5 * * * *')
-  // @Cron('0 2 * * *')
+  /**
+   * Was fully disabled (every @Cron candidate commented out) plus
+   * artificially restricted to 1 of 5 categories and A1 only — both were
+   * temporary dev-testing scaffolding that was never restored. Now runs
+   * daily, covers every seeded category, and every level this product
+   * actually supports content for (A1-B2 — see SUPPORTED_CONTENT_LEVELS).
+   * `isRunning` remains a same-process fast-path guard; the real
+   * cross-instance concurrency guard is the Postgres advisory lock in
+   * `generateCategoryLevel` (same infrastructure Vocabulary/Placement use —
+   * no new locking mechanism introduced).
+   */
+  @Cron(GRAMMAR_JOB_CRON)
   async generateDailyGrammarData() {
     if (this.isRunning) {
       this.logger.warn('Grammar job is already running, skip this round');
@@ -39,8 +64,8 @@ export class GrammarJobService {
     try {
       const categories = await this.seedCategories();
 
-      for (const category of categories.slice(0, 1)) {
-        for (const level of ['A1'] as GrammarLevel[]) {
+      for (const category of categories) {
+        for (const level of SUPPORTED_CONTENT_LEVELS as GrammarLevel[]) {
           await this.generateCategoryLevel(category, level);
           await this.sleep(5000);
         }
@@ -59,6 +84,19 @@ export class GrammarJobService {
     category: GrammarCategory,
     level: GrammarLevel,
   ) {
+    const lockKey = `grammar-topic:${category.slug}:${level}`;
+
+    await this.generationLock.withLock(lockKey, () =>
+      this.generateCategoryLevelLocked(category, level),
+    );
+  }
+
+  private async generateCategoryLevelLocked(
+    category: GrammarCategory,
+    level: GrammarLevel,
+  ) {
+    // Re-check after acquiring the lock — another instance may have just
+    // finished generating this exact category+level while this one waited.
     const existingTopicCount = await this.prisma.grammarTopic.count({
       where: {
         categoryId: category.id,
@@ -66,7 +104,7 @@ export class GrammarJobService {
       },
     });
 
-    if (existingTopicCount >= 10) {
+    if (existingTopicCount >= GRAMMAR_TOPICS_PER_CATEGORY_LEVEL_THRESHOLD) {
       return;
     }
 

@@ -12,11 +12,16 @@ import { ListeningGenerationConfig } from './listening-job.types';
 export class ListeningJobService {
   private readonly logger = new Logger(ListeningJobService.name);
 
+  // Was missing B2 entirely — every other job in this codebase supports up
+  // to B2 (this product's actual supported content ceiling; see
+  // SUPPORTED_CONTENT_LEVELS), so Listening was the odd one out.
   private readonly configs: ListeningGenerationConfig[] = [
     { level: 'A1', topic: 'Daily Life' },
     { level: 'A2', topic: 'School' },
     { level: 'B1', topic: 'Environment' },
     { level: 'B1', topic: 'Technology' },
+    { level: 'B2', topic: 'Business' },
+    { level: 'B2', topic: 'Culture' },
   ];
 
   constructor(

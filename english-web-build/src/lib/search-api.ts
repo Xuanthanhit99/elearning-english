@@ -92,15 +92,18 @@ function unwrap<T>(payload: ApiEnvelope<T>): T {
   return (payload.data ?? payload) as T;
 }
 
-export async function searchContent(params: {
-  q?: string;
-  type?: SearchResultType | "ALL";
-  skill?: LearningSkill | "ALL";
-  level?: CefrLevel | "ALL";
-  sort?: "RELEVANCE" | "NEWEST" | "POPULAR" | "LEVEL_ASC";
-  limit?: number;
-  offset?: number;
-}) {
+export async function searchContent(
+  params: {
+    q?: string;
+    type?: SearchResultType | "ALL";
+    skill?: LearningSkill | "ALL";
+    level?: CefrLevel | "ALL";
+    sort?: "RELEVANCE" | "NEWEST" | "POPULAR" | "LEVEL_ASC";
+    limit?: number;
+    offset?: number;
+  },
+  signal?: AbortSignal,
+) {
   const { data } = await api.get("/search", {
     params: {
       ...params,
@@ -108,6 +111,7 @@ export async function searchContent(params: {
       skill: params.skill === "ALL" ? undefined : params.skill,
       level: params.level === "ALL" ? undefined : params.level,
     },
+    signal,
   });
   return unwrap<SearchResponse>(data);
 }

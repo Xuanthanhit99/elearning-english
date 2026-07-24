@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { LumiverseLoadingState } from "@/src/Components/UI/Lumiverse";
 
 type ResultData = {
   session: {
@@ -116,7 +117,10 @@ export default function WritingResultPage() {
     loadData();
   }, [sessionId]);
 
-  if (loading) return <div className="p-10">Loading...</div>;
+  if (loading)
+    return (
+      <LumiverseLoadingState className="m-10" label="Đang tải kết quả bài viết..." />
+    );
 
   if (error) {
     return (

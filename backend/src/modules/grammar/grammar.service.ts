@@ -7,6 +7,43 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { GrammarLevel, LearningSkill, MissionV2Action } from '@prisma/client';
 import { MissionV2ProgressService } from '../missions-v2/services/mission-v2-progress.service';
 import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
+import { ContentCacheService } from '../../common/cache/content-cache.service';
+import { CacheKeys, CacheTtl } from '../../common/cache/cache-keys';
+import { SkillLevelResolverService } from '../../common/skill-level/skill-level-resolver.service';
+import { CefrLevel } from '@prisma/client';
+
+/** Clamps a resolved CEFR level onto GrammarLevel's own A1-B2 supported range. */
+export function toGrammarLevel(level: CefrLevel): GrammarLevel {
+  switch (level) {
+    case CefrLevel.A1:
+      return GrammarLevel.A1;
+    case CefrLevel.A2:
+      return GrammarLevel.A2;
+    case CefrLevel.B1:
+      return GrammarLevel.B1;
+    default:
+      return GrammarLevel.B2;
+  }
+}
+
+type GrammarLessonContent = {
+  id: string;
+  title: string;
+  content: unknown;
+  duration: number;
+  topic: {
+    id: string;
+    title: string;
+    level: GrammarLevel | null;
+    category: string;
+  };
+  questions: {
+    id: string;
+    question: string;
+    options: unknown;
+    difficulty: GrammarLevel;
+  }[];
+};
 
 @Injectable()
 export class GrammarService {
@@ -14,6 +51,8 @@ export class GrammarService {
     private readonly prisma: PrismaService,
     private readonly missionV2ProgressService: MissionV2ProgressService,
     private readonly learningXp: LearningXpPublisher,
+    private readonly contentCache: ContentCacheService,
+    private readonly skillLevelResolver: SkillLevelResolverService,
   ) {}
 
   private keyWhere(key: string) {
@@ -23,12 +62,31 @@ export class GrammarService {
   }
 
   async getDashboard(userId: string, level?: string) {
+    // No explicit level/'ALL' choice from the caller — this is the "first
+    // visit, no preference stated" case, which used to leave `whereTopic`
+    // unfiltered (mixing every CEFR level together) and hardcode the
+    // roadmap's displayed level to 'B1' regardless of the user's actual
+    // assessed Grammar level. Resolve their real starting level instead.
+    const effectiveLevel =
+      level && level !== 'ALL'
+        ? level
+        : level === 'ALL'
+          ? null
+          : toGrammarLevel(
+              (
+                await this.skillLevelResolver.resolveSkillLevel(
+                  userId,
+                  LearningSkill.GRAMMAR,
+                )
+              ).level,
+            );
+
     const whereTopic: any = {
       isActive: true,
     };
 
-    if (level && level !== 'ALL') {
-      whereTopic.level = level as GrammarLevel;
+    if (effectiveLevel) {
+      whereTopic.level = effectiveLevel as GrammarLevel;
     }
 
     const [
@@ -74,11 +132,11 @@ export class GrammarService {
         },
       }),
 
-      this.getCategoryCards(userId, level),
+      this.getCategoryCards(userId, level === 'ALL' ? 'ALL' : effectiveLevel ?? undefined),
 
       this.getRecentLessons(userId),
 
-      this.getRoadmap(userId, level || 'B1'),
+      this.getRoadmap(userId, level || effectiveLevel || 'B1'),
     ]);
 
     const averageScore =
@@ -97,9 +155,12 @@ export class GrammarService {
         averageScore,
       },
       categories,
-      topics: await this.getTopics(userId, level),
+      topics: await this.getTopics(
+        userId,
+        level === 'ALL' ? 'ALL' : (effectiveLevel ?? undefined),
+      ),
       roadmap: {
-        currentLevel: level || 'B1',
+        currentLevel: level || effectiveLevel || 'B1',
         progress:
           totalLessons > 0
             ? Math.round((completedLessons / totalLessons) * 100)
@@ -488,52 +549,78 @@ export class GrammarService {
   }
 
   async getLessonDetail(userId: string, lessonId: string) {
-    const lesson = await this.prisma.grammarLesson.findFirst({
-      where: {
-        ...this.keyWhere(lessonId),
-      },
-      include: {
+    // Lesson content (title/body/questions) is identical for every learner,
+    // so only that part is cached; per-user progress is always read live
+    // and merged in afterwards — never cache personal progress.
+    const cacheKey = CacheKeys.grammarLessonDetail(lessonId);
+    let content = await this.contentCache.getJson<GrammarLessonContent>(
+      'grammar',
+      cacheKey,
+    );
+
+    if (!content) {
+      const lesson = await this.prisma.grammarLesson.findFirst({
+        where: {
+          ...this.keyWhere(lessonId),
+        },
+        include: {
+          topic: {
+            include: {
+              category: true,
+            },
+          },
+          questions: {
+            orderBy: {
+              order: 'asc',
+            },
+          },
+        },
+      });
+
+      if (!lesson) {
+        throw new NotFoundException('Không tìm thấy bài học');
+      }
+
+      content = {
+        id: lesson.id,
+        title: lesson.title,
+        content: lesson.content,
+        duration: lesson.duration,
         topic: {
-          include: {
-            category: true,
-          },
+          id: lesson.topic.id,
+          title: lesson.topic.title,
+          level: lesson.topic.level,
+          category: lesson.topic.category.title,
         },
-        questions: {
-          orderBy: {
-            order: 'asc',
-          },
-        },
-        progress: {
-          where: {
-            userId,
-          },
+        questions: lesson.questions.map((q) => ({
+          id: q.id,
+          question: q.question,
+          options: q.options,
+          difficulty: q.difficulty,
+        })),
+      };
+
+      await this.contentCache.setJson(
+        'grammar',
+        cacheKey,
+        content,
+        CacheTtl.LESSON_DETAIL_SECONDS,
+      );
+    }
+
+    const progress = await this.prisma.grammarLessonProgress.findUnique({
+      where: {
+        userId_lessonId: {
+          userId,
+          lessonId: content.id,
         },
       },
     });
 
-    if (!lesson) {
-      throw new NotFoundException('Không tìm thấy bài học');
-    }
-
     return {
-      id: lesson.id,
-      title: lesson.title,
-      content: lesson.content,
-      duration: lesson.duration,
-      topic: {
-        id: lesson.topic.id,
-        title: lesson.topic.title,
-        level: lesson.topic.level,
-        category: lesson.topic.category.title,
-      },
-      completed: lesson.progress[0]?.completed || false,
-      score: lesson.progress[0]?.score || 0,
-      questions: lesson.questions.map((q) => ({
-        id: q.id,
-        question: q.question,
-        options: q.options,
-        difficulty: q.difficulty,
-      })),
+      ...content,
+      completed: progress?.completed || false,
+      score: progress?.score || 0,
     };
   }
 

@@ -40,9 +40,9 @@ export default function ListeningReadingPage() {
     <div className="min-h-screen bg-[#fbfbff] text-[#111342]">
       <aside className="fixed left-0 top-0 h-screen w-[288px] border-r border-[#eeeefe] bg-white px-5 py-6">
         <div className="mb-10 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-100 text-2xl">
+          {/* <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-100 text-2xl">
             🦊
-          </div>
+          </div> */}
           <div className="text-3xl font-black">
             Study<span className="text-violet-600">Arena</span>
           </div>
@@ -90,7 +90,7 @@ export default function ListeningReadingPage() {
           <button className="mt-3 rounded-xl bg-violet-600 px-4 py-2 text-xs font-bold text-white">
             Nâng cấp ngay
           </button>
-          <div className="absolute bottom-2 right-3 text-5xl">🦊</div>
+          {/* <div className="absolute bottom-2 right-3 text-5xl">🦊</div> */}
         </div>
       </aside>
 
@@ -300,7 +300,7 @@ export default function ListeningReadingPage() {
                 <li>• Ghi chú từ khóa quan trọng khi nghe.</li>
                 <li>• Tập trung vào ý chính của đoạn.</li>
               </ul>
-              <div className="absolute bottom-5 right-6 text-8xl">🦊</div>
+              {/* <div className="absolute bottom-5 right-6 text-8xl">🦊</div> */}
             </div>
           </aside>
         </div>

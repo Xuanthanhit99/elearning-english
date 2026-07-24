@@ -1,22 +1,10 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { Injectable } from '@nestjs/common';
 import { SpeakingEvaluationResult } from './speaking-processing.types';
+import { GeminiService } from '../gemini/gemini.service';
 
 @Injectable()
 export class SpeakingAiEvaluationService {
-  private readonly model;
-
-  constructor() {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error('Missing GEMINI_API_KEY');
-    }
-
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-    this.model = genAI.getGenerativeModel({
-      model: process.env.SPEAKING_GEMINI_MODEL ?? 'gemini-2.5-flash',
-    });
-  }
+  constructor(private readonly geminiService: GeminiService) {}
 
   async evaluate(input: {
     question: string;
@@ -83,9 +71,10 @@ Format:
   }
 }`;
 
-    const result = await this.model.generateContent(prompt);
-
-    const parsed = this.parseJson(result.response.text());
+    const parsed = await this.geminiService.generateJson(prompt, {
+      models: [process.env.SPEAKING_GEMINI_MODEL ?? 'gemini-2.5-flash'],
+      retries: 1,
+    });
 
     return this.normalize(parsed);
   }
@@ -109,24 +98,6 @@ Format:
         reason: 'Bài nói hiện tại chưa đủ dữ liệu để đánh giá.',
       },
     };
-  }
-
-  private parseJson(text: string) {
-    const cleaned = text
-      .replace(/```json/g, '')
-      .replace(/```/g, '')
-      .trim();
-
-    const start = cleaned.indexOf('{');
-    const end = cleaned.lastIndexOf('}');
-
-    if (start < 0 || end < 0) {
-      throw new InternalServerErrorException(
-        'Gemini response is not valid JSON',
-      );
-    }
-
-    return JSON.parse(cleaned.slice(start, end + 1));
   }
 
   private normalize(value: any): SpeakingEvaluationResult {

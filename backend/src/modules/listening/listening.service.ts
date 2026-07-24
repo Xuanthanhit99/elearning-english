@@ -7,6 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { LearningSkill, MissionV2Action, Prisma } from '@prisma/client';
+import { SkillLevelResolverService } from '../../common/skill-level/skill-level-resolver.service';
 import { createHash } from 'crypto';
 import type Redis from 'ioredis';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -20,6 +21,10 @@ import { SubmitListeningAnswerDto } from './dto/submit-listening-answer.dto';
 import { ListeningTtsService } from './listening-tts.service';
 import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
 import { LISTENING_REDIS } from './listening-redis.provider';
+import { ContentCacheService } from '../../common/cache/content-cache.service';
+import { CacheMetricsService } from '../../common/cache/cache-metrics.service';
+import { CacheKeys, CacheTtl } from '../../common/cache/cache-keys';
+import type { ListeningQuestion } from '@prisma/client';
 
 type ListeningOption = {
   label: string;
@@ -48,7 +53,50 @@ export class ListeningService {
     private readonly listeningJobService: ListeningJobService,
     private readonly listeningAudioBackfillService: ListeningAudioBackfillService,
     @Inject(LISTENING_REDIS) private readonly redis: Redis,
+    private readonly contentCache: ContentCacheService,
+    private readonly cacheMetrics: CacheMetricsService,
+    private readonly skillLevelResolver: SkillLevelResolverService,
   ) {}
+
+  /**
+   * Active question pool for a level+topic — identical for every learner
+   * (per-user "already answered today" exclusion is applied on top, in
+   * memory, by callers). Capped at 100 rows; practice sessions only ever
+   * need up to 20 at a time.
+   */
+  private async getLevelTopicQuestionPool(
+    level: string,
+    topic: string,
+  ): Promise<ListeningQuestion[]> {
+    const cacheKey = CacheKeys.listeningQuestions(level, topic);
+    const cached = await this.contentCache.getJson<ListeningQuestion[]>(
+      'listening',
+      cacheKey,
+    );
+
+    if (cached) {
+      return cached;
+    }
+
+    const pool = await this.prismaService.listeningQuestion.findMany({
+      where: { isActive: true, level, topic },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+
+    this.cacheMetrics.record('listening', 'DB_HIT', cacheKey);
+
+    if (pool.length > 0) {
+      await this.contentCache.setJson(
+        'listening',
+        cacheKey,
+        pool,
+        CacheTtl.LISTENING_QUESTIONS_SECONDS,
+      );
+    }
+
+    return pool;
+  }
 
   async getHome(userId: string) {
     const [progress, inProgress, recentSessions] = await Promise.all([
@@ -78,7 +126,17 @@ export class ListeningService {
       }),
     ]);
 
-    const recommendedLevel = progress?.currentLevel ?? 'B1';
+    // A user with no progress row yet gets their resolved per-skill starting
+    // level (placement-assessed, or Settings fallback, or A1 foundation)
+    // instead of a hardcoded value unrelated to their actual assessment.
+    const recommendedLevel =
+      progress?.currentLevel ??
+      (
+        await this.skillLevelResolver.resolveSkillLevel(
+          userId,
+          LearningSkill.LISTENING,
+        )
+      ).level;
 
     return {
       stats: {
@@ -224,20 +282,11 @@ export class ListeningService {
       limit: usedQuestionIds.length + limit,
     });
 
-    let questions = await this.prismaService.listeningQuestion.findMany({
-      where: {
-        isActive: true,
-        level,
-        topic,
-        id: {
-          notIn: usedQuestionIds,
-        },
-      },
-      take: limit,
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    const usedSet = new Set(usedQuestionIds);
+
+    let questions = (await this.getLevelTopicQuestionPool(level, topic))
+      .filter((q) => !usedSet.has(q.id))
+      .slice(0, limit);
 
     if (questions.length < limit) {
       await this.ensureQuestions({
@@ -246,20 +295,12 @@ export class ListeningService {
         limit: usedQuestionIds.length + limit + (limit - questions.length),
       });
 
-      questions = await this.prismaService.listeningQuestion.findMany({
-        where: {
-          isActive: true,
-          level,
-          topic,
-          id: {
-            notIn: usedQuestionIds,
-          },
-        },
-        take: limit,
-        orderBy: {
-          createdAt: 'desc',
-        },
-      });
+      // ensureQuestions may have just persisted new rows synchronously (cold
+      // start path) — that path already invalidates the cache itself, so a
+      // miss here means a real Postgres read; a hit means nothing changed.
+      questions = (await this.getLevelTopicQuestionPool(level, topic))
+        .filter((q) => !usedSet.has(q.id))
+        .slice(0, limit);
     }
 
     if (!questions.length) {
@@ -1524,6 +1565,11 @@ export class ListeningService {
     const acquired = await this.tryAcquireColdStartLock(level, topic);
 
     if (!acquired) {
+      this.cacheMetrics.record(
+        'listening',
+        'GENERATION_PREVENTED_BY_LOCK',
+        `${level}:${topic}`,
+      );
       this.logger.warn(
         `Listening cold start fallback skipped (lock not acquired: cooldown active, another instance running, or Redis unavailable): level=${level}, topic=${topic}`,
       );
@@ -1536,11 +1582,25 @@ export class ListeningService {
       `Listening cold start fallback triggered: level=${level}, topic=${topic}, cap=${cap}`,
     );
 
+    this.cacheMetrics.record(
+      'listening',
+      'GEMINI_FALLBACK',
+      `${level}:${topic}`,
+    );
+
+    const generationStartedAt = Date.now();
+
     const generated = await this.generateQuestionsByGemini({
       level,
       topic,
       count: cap,
     });
+
+    this.cacheMetrics.recordDuration(
+      'listening',
+      `coldStartFallback(${level}:${topic})`,
+      Date.now() - generationStartedAt,
+    );
 
     const fallback =
       generated.length > 0
@@ -1595,6 +1655,12 @@ export class ListeningService {
           isActive: true,
         },
       });
+    }
+
+    if (valid.length > 0) {
+      await this.contentCache.invalidate(
+        CacheKeys.listeningQuestions(level, topic),
+      );
     }
 
     this.logger.log(

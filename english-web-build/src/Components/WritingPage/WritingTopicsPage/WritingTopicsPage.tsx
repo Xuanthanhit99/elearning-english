@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { LumiverseLoadingState } from "@/src/Components/UI/Lumiverse";
 
 type Topic = {
   id: string;
@@ -197,7 +198,12 @@ export default function WritingTopicsPage() {
               </button>
             </div>
 
-            {loading && <div className="mt-8">Loading...</div>}
+            {loading && (
+              <LumiverseLoadingState
+                className="mt-8"
+                label="Đang tải chủ đề luyện viết..."
+              />
+            )}
 
             {error && (
               <div className="mt-8 rounded-xl bg-red-50 p-4 text-sm font-semibold text-red-600">

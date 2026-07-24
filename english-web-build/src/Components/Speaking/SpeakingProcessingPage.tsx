@@ -27,10 +27,14 @@ export default function SpeakingProcessingPage() {
   useEffect(() => {
     let cancelled = false;
     let timer: number | null = null;
+    const controller = new AbortController();
 
     async function poll() {
       try {
-        const result = await getSpeakingProcessingStatus(sessionId);
+        const result = await getSpeakingProcessingStatus(
+          sessionId,
+          controller.signal,
+        );
         if (cancelled) return;
         setStatus(result);
         setError('');
@@ -50,6 +54,7 @@ export default function SpeakingProcessingPage() {
     poll();
     return () => {
       cancelled = true;
+      controller.abort();
       if (timer !== null) window.clearTimeout(timer);
     };
   }, [router, sessionId, pollVersion]);

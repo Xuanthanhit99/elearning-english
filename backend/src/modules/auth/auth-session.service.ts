@@ -3,6 +3,8 @@ import type Redis from 'ioredis';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   AUTH_REDIS,
+  bannedUserRedisKey,
+  BANNED_USER_TTL_SECONDS,
   REFRESH_TOKEN_TTL_SECONDS,
   refreshSessionRedisKey,
 } from './auth.constants';
@@ -108,6 +110,56 @@ export class AuthSessionService {
 
     if (session?.refreshTokenId) {
       await this.invalidateByJti(session.refreshTokenId);
+    }
+  }
+
+  /**
+   * Marks a user as immediately revoked: JwtStrategy checks this key on
+   * every request (cheap Redis GET) so a banned user is rejected well
+   * before their still-valid access token would naturally expire, and
+   * every refresh token is invalidated so they can't silently mint a new
+   * one either. Postgres `User.status` remains the source of truth (login/
+   * refresh already check it) — this is purely a fast-path revocation
+   * cache on top of it, degrading safely (fail-open) if Redis is down.
+   */
+  async banUser(userId: string) {
+    await this.redis
+      .set(bannedUserRedisKey(userId), '1', 'EX', BANNED_USER_TTL_SECONDS)
+      .catch((error) =>
+        this.logger.warn(
+          `Failed to set ban marker for userId=${userId}: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        ),
+      );
+
+    await this.invalidateAllOtherSessions(userId);
+  }
+
+  async unbanUser(userId: string) {
+    await this.redis
+      .del(bannedUserRedisKey(userId))
+      .catch((error) =>
+        this.logger.warn(
+          `Failed to clear ban marker for userId=${userId}: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        ),
+      );
+  }
+
+  /** Fails open (returns false) on Redis error — see JwtStrategy.validate(). */
+  async isBanned(userId: string): Promise<boolean> {
+    try {
+      const value = await this.redis.get(bannedUserRedisKey(userId));
+      return value !== null;
+    } catch (error) {
+      this.logger.warn(
+        `Ban check failed for userId=${userId}, failing open: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return false;
     }
   }
 

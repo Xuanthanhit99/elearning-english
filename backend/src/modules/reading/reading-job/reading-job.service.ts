@@ -7,6 +7,11 @@ import {
 } from '@prisma/client';
 import { GeminiService } from 'src/modules/gemini/gemini.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { QuestionGenerationLockService } from '../../question-bank/question-generation-lock/question-generation-lock.service';
+import { SUPPORTED_CONTENT_LEVELS } from '../../../common/skill-level/skill-level.types';
+
+/** Articles per category+level the curriculum needs before this job stops generating more. */
+const READING_ARTICLES_PER_CATEGORY_LEVEL_THRESHOLD = 10;
 
 type GeminiReadingData = {
   title?: string;
@@ -37,17 +42,17 @@ export class ReadingJobService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly geminiService: GeminiService,
+    private readonly generationLock: QuestionGenerationLockService,
   ) {}
 
   @Cron('0 2 * * *')
-  // @Cron('*/5 * * * *')
   async generateDailyReadingData() {
     this.logger.log('Start generate reading data');
 
     const categories = await this.seedCategories();
 
     for (const category of categories) {
-      for (const level of ['A1', 'A2', 'B1', 'B2'] as ReadingLevel[]) {
+      for (const level of SUPPORTED_CONTENT_LEVELS as ReadingLevel[]) {
         try {
           const existedCount = await this.prisma.readingArticle.count({
             where: {
@@ -56,17 +61,32 @@ export class ReadingJobService {
             },
           });
 
-          if (existedCount >= 10) {
+          if (existedCount >= READING_ARTICLES_PER_CATEGORY_LEVEL_THRESHOLD) {
             this.logger.log(
               `Skip ${category.name} ${level}, existed ${existedCount}`,
             );
             continue;
           }
 
-          await this.generateArticle({
-            categoryId: category.id,
-            categoryName: category.name,
-            level,
+          // Postgres advisory lock (same infrastructure Vocabulary/
+          // Placement/Grammar use) guards concurrent instances from both
+          // generating an article for this exact category+level at once.
+          const lockKey = `reading-article:${category.slug}:${level}`;
+
+          await this.generationLock.withLock(lockKey, async () => {
+            const recheckedCount = await this.prisma.readingArticle.count({
+              where: { categoryId: category.id, level },
+            });
+
+            if (recheckedCount >= READING_ARTICLES_PER_CATEGORY_LEVEL_THRESHOLD) {
+              return;
+            }
+
+            await this.generateArticle({
+              categoryId: category.id,
+              categoryName: category.name,
+              level,
+            });
           });
 
           await this.sleep(6000);

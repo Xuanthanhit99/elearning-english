@@ -41,10 +41,12 @@ export const lessonBuilderApi = {
     api.patch(`/lesson-builder/projects/${projectId}/outline`, { outline }),
   confirmOutline: (projectId: string) =>
     api.post(`/lesson-builder/projects/${projectId}/confirm-outline`),
-  generateContent: (projectId: string, lessonId?: string) =>
-    api.post(`/lesson-builder/projects/${projectId}/generate-content`, {
-      lessonId,
-    }),
+  generateContent: (projectId: string, lessonId?: string, signal?: AbortSignal) =>
+    api.post(
+      `/lesson-builder/projects/${projectId}/generate-content`,
+      { lessonId },
+      { signal },
+    ),
   getCourse: (courseId: string) =>
     api.get(`/lesson-builder/courses/${courseId}`),
   getLessonQuizzes: (lessonId: string) =>

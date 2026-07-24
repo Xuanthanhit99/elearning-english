@@ -7,6 +7,7 @@ import {
 import {
   CefrLevel,
   EnglishLevel,
+  PlacementMethod,
   PlacementProcessingItemStatus,
   PlacementProcessingStatus,
   PlacementResultStatus,
@@ -209,6 +210,39 @@ export class PlacementResultService {
           feedback: item.feedback,
         })),
       });
+
+      // This is the actual "starting point per skill" a completed placement
+      // test should leave behind: PlacementResultSkill above is scoped to
+      // this one test/result row, but UserSkillLevel is the standing
+      // per-(user, skill) level every other module (dashboard, and future
+      // per-skill content selection) reads as "the user's current level for
+      // this skill". Only sync skills that were actually evaluated — a
+      // SKIPPED/FAILED skill has no reliable `level` and must not overwrite
+      // whatever level (manual selection or a prior test) is already there.
+      for (const item of aiResult.skills) {
+        if (
+          item.status !== PlacementProcessingItemStatus.COMPLETED ||
+          item.level === null
+        ) {
+          continue;
+        }
+
+        await tx.userSkillLevel.upsert({
+          where: { userId_skill: { userId, skill: item.skill } },
+          create: {
+            userId,
+            skill: item.skill,
+            level: item.level,
+            score: item.score,
+            source: PlacementMethod.TEST,
+          },
+          update: {
+            level: item.level,
+            score: item.score,
+            source: PlacementMethod.TEST,
+          },
+        });
+      }
 
       await tx.placementLearningPathPhase.createMany({
         data: aiResult.phases.map((item) => ({

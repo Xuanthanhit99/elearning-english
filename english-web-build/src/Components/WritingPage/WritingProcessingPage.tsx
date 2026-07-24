@@ -39,10 +39,14 @@ export default function WritingProcessingPage() {
   useEffect(() => {
     let cancelled = false;
     let timer: number | null = null;
+    const controller = new AbortController();
 
     async function poll() {
       try {
-        const result = await getWritingProcessingStatus(sessionId);
+        const result = await getWritingProcessingStatus(
+          sessionId,
+          controller.signal,
+        );
         if (cancelled) return;
 
         setStatus(result);
@@ -73,6 +77,7 @@ export default function WritingProcessingPage() {
 
     return () => {
       cancelled = true;
+      controller.abort();
       if (timer !== null) window.clearTimeout(timer);
     };
   }, [router, sessionId, pollVersion]);

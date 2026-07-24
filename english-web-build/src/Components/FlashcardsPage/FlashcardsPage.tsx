@@ -47,7 +47,7 @@ export default function FlashcardsPage() {
       <div className="flex">
         <aside className="hidden fixed left-0 top-0 h-screen w-[280px] border-r border-purple-100 bg-white px-5 py-6">
           <div className="mb-10 flex items-center gap-3">
-            <div className="text-3xl">🦊</div>
+            {/* <div className="text-3xl">🦊</div> */}
             <h1 className="text-3xl font-black">
               Study<span className="text-purple-600">Arena</span>
             </h1>
@@ -177,7 +177,7 @@ export default function FlashcardsPage() {
                   <div className="rounded-2xl border border-purple-200 bg-purple-50 px-6 py-5 text-sm font-bold leading-6">
                     Cùng ôn tập mỗi ngày <br /> để ghi nhớ từ vựng lâu hơn nhé!
                   </div>
-                  <div className="text-7xl">🦊</div>
+                  {/* <div className="text-7xl">🦊</div> */}
                 </div>
               </div>
 
@@ -271,7 +271,7 @@ export default function FlashcardsPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="text-6xl">🦊</div>
+                  {/* <div className="text-6xl">🦊</div> */}
                 </div>
               </div>
             </section>

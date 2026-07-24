@@ -138,6 +138,21 @@ function toAuthUser(user: ProfileUser) {
   };
 }
 
+// Fields the backend allows to be explicitly cleared (no MinLength on the
+// DTO) — an empty string here must still reach the server so "delete my
+// bio" actually persists, instead of being silently dropped and leaving the
+// old value in place. `fullname`/`username` intentionally keep the
+// omit-when-empty behavior (they're required-ish fields with a MinLength on
+// the backend that would reject an empty string anyway). `phone` also keeps
+// it: the backend's `@IsPhoneNumber` validator rejects "", so clearing it
+// needs a dedicated affordance, not just "send empty string".
+const CLEARABLE_FIELDS: (keyof UpdateProfilePayload)[] = [
+  "bio",
+  "goal",
+  "englishLevel",
+  "learningGoal",
+];
+
 function cleanProfilePayload(form: UpdateProfilePayload) {
   const payload: Partial<UpdateProfilePayload> = {};
 
@@ -145,7 +160,9 @@ function cleanProfilePayload(form: UpdateProfilePayload) {
     const value = form[key];
     if (typeof value !== "string") return;
     const normalized = value.trim();
-    if (normalized) payload[key] = normalized;
+    if (normalized || CLEARABLE_FIELDS.includes(key)) {
+      payload[key] = normalized;
+    }
   });
 
   return payload;

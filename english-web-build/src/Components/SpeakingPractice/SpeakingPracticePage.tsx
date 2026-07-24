@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import axios from "axios";
 import { useRouter } from "next/navigation";
+import { LumiverseLoadingState } from "@/src/Components/UI/Lumiverse";
 import {
   Bell,
   BookOpen,
@@ -27,14 +29,26 @@ export default function SpeakingCategoriesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Aborts the in-flight request when `level` changes again before the
+    // response arrives, so switching levels quickly can't let a stale
+    // response overwrite the categories for the level the user is now on.
+    const controller = new AbortController();
     setLoading(true);
-    getSpeakingCategories({ level })
+    getSpeakingCategories({ level }, controller.signal)
       .then(setData)
-      .finally(() => setLoading(false));
+      .catch((err) => {
+        if (axios.isCancel(err)) return;
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
   }, [level]);
 
   if (loading && !data)
-    return <div className="p-10 text-purple-600">Loading categories...</div>;
+    return (
+      <LumiverseLoadingState className="m-10" label="Đang tải danh mục luyện nói..." />
+    );
   if (!data)
     return <div className="p-10 text-red-500">Không tải được categories.</div>;
 

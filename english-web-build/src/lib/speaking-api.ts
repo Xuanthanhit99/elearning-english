@@ -181,8 +181,11 @@ export async function getSpeakingHome() {
   return res.data.data as SpeakingHomeData;
 }
 
-export async function getSpeakingCategories(params?: { level?: string }) {
-  const res = await api.get("/speaking/categories", { params });
+export async function getSpeakingCategories(
+  params?: { level?: string },
+  signal?: AbortSignal,
+) {
+  const res = await api.get("/speaking/categories", { params, signal });
   return res.data.data as SpeakingCategoriesResponse;
 }
 

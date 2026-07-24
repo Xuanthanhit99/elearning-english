@@ -11,10 +11,14 @@ import { LearningSkill } from '@prisma/client';
 import type { Request } from 'express';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { AnalyticsService } from './analytics.service';
+import { SkillRadarService } from './skill-radar.service';
+import { WeaknessDetectionService } from './weakness-detection.service';
+import { AiCoachService } from './ai-coach.service';
 import {
   AnalyticsQueryDto,
   AnalyticsRange,
   ReportQueryDto,
+  TimelineQueryDto,
 } from './dto/analytics-query.dto';
 
 type AuthenticatedRequest = Request & {
@@ -28,7 +32,12 @@ type AuthenticatedRequest = Request & {
 @Controller()
 @UseGuards(JwtAuthGuard)
 export class AnalyticsController {
-  constructor(private readonly analyticsService: AnalyticsService) {}
+  constructor(
+    private readonly analyticsService: AnalyticsService,
+    private readonly skillRadarService: SkillRadarService,
+    private readonly weaknessDetectionService: WeaknessDetectionService,
+    private readonly aiCoachService: AiCoachService,
+  ) {}
 
   @Get('analytics/overview')
   async overview(
@@ -75,6 +84,59 @@ export class AnalyticsController {
     return {
       success: true,
       data: await this.analyticsService.getActivity(this.getUserId(req), query),
+    };
+  }
+
+  @Get('analytics/metrics')
+  async metrics(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: AnalyticsQueryDto,
+  ) {
+    return {
+      success: true,
+      data: await this.analyticsService.getMetrics(this.getUserId(req), query),
+    };
+  }
+
+  @Get('analytics/timeline')
+  async timeline(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: TimelineQueryDto,
+  ) {
+    return {
+      success: true,
+      data: await this.analyticsService.getTimeline(this.getUserId(req), query),
+    };
+  }
+
+  @Get('analytics/radar')
+  async radar(@Req() req: AuthenticatedRequest) {
+    return {
+      success: true,
+      data: await this.skillRadarService.getRadar(this.getUserId(req)),
+    };
+  }
+
+  @Get('analytics/weaknesses')
+  async weaknesses(@Req() req: AuthenticatedRequest) {
+    return {
+      success: true,
+      data: await this.weaknessDetectionService.getWeaknesses(
+        this.getUserId(req),
+      ),
+    };
+  }
+
+  @Get('analytics/coach')
+  async coach(
+    @Req() req: AuthenticatedRequest,
+    @Query('refresh') refresh?: string,
+  ) {
+    return {
+      success: true,
+      data: await this.aiCoachService.getCoachAdvice(this.getUserId(req), {
+        forceRefresh: refresh === 'true' || refresh === '1',
+      }),
     };
   }
 

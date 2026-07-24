@@ -11,7 +11,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import axios from "axios";
 import {
   completeLearningPathLesson,
   LearningPathLessonActionResult,
@@ -27,23 +28,33 @@ export default function LearningPathLessonPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const loadAbortRef = useRef<AbortController | null>(null);
 
   async function loadLesson() {
     if (!lessonId) return;
 
+    // Cancels any in-flight resume request (previous lessonId, or a manual
+    // retry click) so a slower stale response can never overwrite newer
+    // state.
+    loadAbortRef.current?.abort();
+    const controller = new AbortController();
+    loadAbortRef.current = controller;
+
     try {
       setLoading(true);
       setError("");
-      setData(await resumeLearningPathLesson(lessonId));
+      setData(await resumeLearningPathLesson(lessonId, controller.signal));
     } catch (err) {
+      if (axios.isCancel(err)) return;
       setError(err instanceof Error ? err.message : "Khong the tai bai hoc.");
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
   }
 
   useEffect(() => {
-    void Promise.resolve().then(loadLesson);
+    void loadLesson();
+    return () => loadAbortRef.current?.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lessonId]);
 

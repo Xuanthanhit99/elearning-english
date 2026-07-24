@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../../prisma/prisma.service';
 import { GeminiService } from '../gemini/gemini.service';
+import { ContentCacheService } from '../../common/cache/content-cache.service';
+import { CacheMetricsService } from '../../common/cache/cache-metrics.service';
+import { CacheKeys } from '../../common/cache/cache-keys';
 
 type GeminiTopicItem = {
   name?: string;
@@ -27,6 +30,8 @@ export class VocabularyJobService {
   constructor(
     private prisma: PrismaService,
     private geminiService: GeminiService,
+    private readonly contentCache: ContentCacheService,
+    private readonly cacheMetrics: CacheMetricsService,
   ) {}
 
   private getDefaultTopicNames() {
@@ -189,7 +194,7 @@ export class VocabularyJobService {
       const selectedIds = new Set(selectedTopics.map((topic) => topic.id));
       const fallbackTopics = await this.prisma.wordTopic.findMany({
         where: { id: { notIn: [...selectedIds] } },
-        orderBy: { name: 'asc' },
+        orderBy: [{ order: 'asc' }, { name: 'asc' }],
         take: 7 - selectedTopics.length,
       });
 
@@ -439,10 +444,26 @@ Format:
 
     if (!words.length) return;
 
+    this.cacheMetrics.record(
+      'vocabulary',
+      'GEMINI_FALLBACK',
+      `${topicId}:${level}`,
+    );
+
     await this.prisma.word.createMany({
       data: words,
       skipDuplicates: true,
     });
+
+    // This writes to the same topicId+level word pool VocabularyService
+    // caches (see getTopicLevelWordPool) — invalidate so the next read
+    // picks up the newly generated words instead of a stale cached pool.
+    await this.contentCache.invalidate(CacheKeys.vocabWordPool(topicId, level));
+    this.cacheMetrics.record(
+      'vocabulary',
+      'CACHE_REFRESH',
+      `${topicId}:${level}`,
+    );
   }
 
   private async ensurePoolHasSevenTopics(poolId: string, level: string) {
@@ -467,7 +488,7 @@ Format:
       await this.ensureFallbackTopics();
       topics = await this.prisma.wordTopic.findMany({
         where: { id: { notIn: [...existingIds] } },
-        orderBy: { name: 'asc' },
+        orderBy: [{ order: 'asc' }, { name: 'asc' }],
         take: 7 - existingIds.size,
       });
     }

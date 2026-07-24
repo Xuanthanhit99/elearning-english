@@ -9,6 +9,7 @@ import { SpeakingProcessingController } from './speaking-processing.controller';
 import { SpeakingProcessingProcessor } from './speaking-processing.processor';
 import { SpeakingProcessingService } from './speaking-processing.service';
 import { SpeakingSpeechToTextService } from './speaking-speech-to-text.service';
+import { GeminiModule } from '../gemini/gemini.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { SpeakingSpeechToTextService } from './speaking-speech-to-text.service';
     BullModule.registerQueue({
       name: SPEAKING_PROCESSING_QUEUE,
     }),
+    GeminiModule,
   ],
   controllers: [SpeakingProcessingController],
   providers: [

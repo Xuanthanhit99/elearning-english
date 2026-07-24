@@ -149,6 +149,34 @@ export function LumiverseProgress({
   );
 }
 
+/**
+ * Spinner + status text for a full-section loading state (page still
+ * waiting on its first response). Distinct from LumiverseSkeleton (a
+ * placeholder shape with no text) and LumiverseState (empty/error, with a
+ * retry action) — this is the "Loading lesson...", "Generating...",
+ * "Saving...", "Retrying..." case.
+ */
+export function LumiverseLoadingState({
+  label,
+  className,
+}: {
+  label: string;
+  className?: string;
+}) {
+  return (
+    <div
+      role="status"
+      className={cx(
+        "lumiverse-card flex items-center justify-center gap-3 p-10 text-[var(--lumiverse-primary)]",
+        className,
+      )}
+    >
+      <Loader2 aria-hidden className="h-5 w-5 animate-spin" />
+      <span className="font-black text-[var(--lumiverse-ink)]">{label}</span>
+    </div>
+  );
+}
+
 export function LumiverseSkeleton({
   className,
 }: {

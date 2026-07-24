@@ -16,6 +16,9 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { PlacementAiService } from '../placement/placement-ai/placement-ai.service';
 import { QuestionGenerationLockService } from './question-generation-lock/question-generation-lock.service';
 import { PlacementTtsService } from '../placement/placement-tts.service';
+import { ContentCacheService } from '../../common/cache/content-cache.service';
+import { CacheMetricsService } from '../../common/cache/cache-metrics.service';
+import { CacheKeys, CacheTtl } from '../../common/cache/cache-keys';
 
 export type EnsureQuestionBankInput = {
   skill: LearningSkill;
@@ -23,6 +26,11 @@ export type EnsureQuestionBankInput = {
   type: PlacementQuestionType;
   requiredCount: number;
 };
+
+// Cached pool is sized independently of any single caller's requiredCount so
+// the same cache entry (per skill+level+type) can serve every placement
+// test/session that asks for a different question count.
+const CACHED_POOL_SIZE = 50;
 
 @Injectable()
 export class QuestionBankService {
@@ -33,11 +41,30 @@ export class QuestionBankService {
     private readonly placementAiService: PlacementAiService,
     private readonly lockService: QuestionGenerationLockService,
     private readonly placementTtsService: PlacementTtsService,
+    private readonly contentCache: ContentCacheService,
+    private readonly cacheMetrics: CacheMetricsService,
   ) {}
 
   async ensurePlacementQuestions(
     input: EnsureQuestionBankInput,
   ): Promise<PlacementQuestion[]> {
+    const cacheKey = CacheKeys.placementQuestions(
+      input.skill,
+      input.level,
+      input.type,
+    );
+
+    const cachedPool = await this.contentCache.getJson<PlacementQuestion[]>(
+      'placement',
+      cacheKey,
+    );
+
+    if (cachedPool && cachedPool.length >= input.requiredCount) {
+      // Cache hit covers the request — skip the Postgres advisory lock
+      // entirely, this is the whole point of caching a shared question bank.
+      return cachedPool.slice(0, input.requiredCount);
+    }
+
     const lockKey = this.createLockKey(input);
 
     return this.lockService.withLock(lockKey, async () => {
@@ -45,9 +72,19 @@ export class QuestionBankService {
        * Phải kiểm tra DB lại sau khi đã lấy lock.
        * Có thể request khác vừa sinh câu hỏi xong.
        */
-      const existingQuestions = await this.findAvailableQuestions(input);
+      const existingQuestions = await this.findAvailableQuestions(
+        input,
+        CACHED_POOL_SIZE,
+      );
 
       if (existingQuestions.length >= input.requiredCount) {
+        this.cacheMetrics.record('placement', 'DB_HIT', cacheKey);
+        await this.contentCache.setJson(
+          'placement',
+          cacheKey,
+          existingQuestions,
+          CacheTtl.PLACEMENT_QUESTIONS_SECONDS,
+        );
         return existingQuestions.slice(0, input.requiredCount);
       }
 
@@ -56,6 +93,8 @@ export class QuestionBankService {
       this.logger.warn(
         `Thiếu ${missingCount} câu ${input.skill} ${input.level} ${input.type}`,
       );
+
+      const generationStartedAt = Date.now();
 
       const generatedQuestions =
         await this.placementAiService.generateQuestions({
@@ -68,9 +107,20 @@ export class QuestionBankService {
           ),
         });
 
+      this.cacheMetrics.record('placement', 'GEMINI_FALLBACK', cacheKey);
+
       await this.saveGeneratedQuestions(generatedQuestions);
 
-      const refreshedQuestions = await this.findAvailableQuestions(input);
+      this.cacheMetrics.recordDuration(
+        'placement',
+        `generateQuestions(${input.skill}:${input.level}:${input.type})`,
+        Date.now() - generationStartedAt,
+      );
+
+      const refreshedQuestions = await this.findAvailableQuestions(
+        input,
+        CACHED_POOL_SIZE,
+      );
 
       if (refreshedQuestions.length < input.requiredCount) {
         throw new BadGatewayException(
@@ -78,11 +128,23 @@ export class QuestionBankService {
         );
       }
 
+      // Refresh Redis immediately so the next request for this
+      // skill+level+type never has to invoke Gemini again within the TTL.
+      await this.contentCache.setJson(
+        'placement',
+        cacheKey,
+        refreshedQuestions,
+        CacheTtl.PLACEMENT_QUESTIONS_SECONDS,
+      );
+
       return refreshedQuestions.slice(0, input.requiredCount);
     });
   }
 
-  private async findAvailableQuestions(input: EnsureQuestionBankInput) {
+  private async findAvailableQuestions(
+    input: EnsureQuestionBankInput,
+    poolSize: number = input.requiredCount,
+  ) {
     return this.prisma.placementQuestion.findMany({
       where: {
         skill: input.skill,
@@ -98,7 +160,7 @@ export class QuestionBankService {
           createdAt: 'asc',
         },
       ],
-      take: input.requiredCount,
+      take: poolSize,
     });
   }
 

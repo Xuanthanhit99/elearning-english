@@ -2,11 +2,11 @@ import {
   BadGatewayException,
   BadRequestException,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GeminiService } from '../gemini/gemini.service';
 import {
+  LearningSkill,
   Prisma,
   SpeakingDifficulty,
   SpeakingLevel,
@@ -25,26 +25,95 @@ import {
 } from '../speaking-practice/dto/speaking-practice.dto';
 import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
 import { SettingsQueryService } from '../settings/settings-query.service';
+import { ContentCacheService } from '../../common/cache/content-cache.service';
+import { CacheKeys, CacheTtl } from '../../common/cache/cache-keys';
+import { SkillLevelResolverService } from '../../common/skill-level/skill-level-resolver.service';
+import { CefrLevel } from '@prisma/client';
+
+/** Clamps a resolved CEFR level onto SpeakingLevel's own A1-B2 supported range. */
+export function toSpeakingLevel(level: CefrLevel): SpeakingLevel {
+  switch (level) {
+    case CefrLevel.A1:
+      return SpeakingLevel.A1;
+    case CefrLevel.A2:
+      return SpeakingLevel.A2;
+    case CefrLevel.B1:
+      return SpeakingLevel.B1;
+    default:
+      return SpeakingLevel.B2;
+  }
+}
+
+const SPEAKING_LEVEL_ORDER: SpeakingLevel[] = [
+  SpeakingLevel.A1,
+  SpeakingLevel.A2,
+  SpeakingLevel.B1,
+  SpeakingLevel.B2,
+  SpeakingLevel.C1,
+  SpeakingLevel.C2,
+];
+
+/**
+ * Prisma's generated enum filter for Postgres native enums doesn't expose
+ * `lte`/`gte` (only `equals`/`in`/`notIn`), so a "is this level within
+ * [min, max]" range check has to happen in application code instead of the
+ * query itself — done here once so every caller shares the same ordinal
+ * logic instead of re-deriving it.
+ */
+export function isSpeakingLevelInRange(
+  level: SpeakingLevel,
+  min: SpeakingLevel,
+  max: SpeakingLevel,
+): boolean {
+  const index = SPEAKING_LEVEL_ORDER.indexOf(level);
+  return (
+    index >= SPEAKING_LEVEL_ORDER.indexOf(min) &&
+    index <= SPEAKING_LEVEL_ORDER.indexOf(max)
+  );
+}
+
+type SpeakingTopicContent = {
+  topicId: string;
+  lessonIds: string[];
+  topic: {
+    id: string;
+    title: string;
+    slug: string;
+    description: string | null;
+    imageUrl: string | null;
+    minLevel: SpeakingLevel;
+    maxLevel: SpeakingLevel;
+    levelRange: string;
+    levelText: string;
+    lessonCount: number;
+    category: {
+      id: string;
+      title: string;
+      slug: string;
+      icon: string | null;
+    };
+  };
+  improveSkills: { title: string; description: string; icon: string }[];
+  relatedTopics: {
+    id: string;
+    title: string;
+    slug: string;
+    icon: string;
+    lessonCount: number;
+  }[];
+  practiceTip: { title: string; description: string };
+};
 
 @Injectable()
 export class SpeakingService {
-  private readonly model;
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly learningXp: LearningXpPublisher,
     private readonly settingsQuery: SettingsQueryService,
-  ) {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error('Missing GEMINI_API_KEY');
-    }
-
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-    this.model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-    });
-  }
+    private readonly contentCache: ContentCacheService,
+    private readonly geminiService: GeminiService,
+    private readonly skillLevelResolver: SkillLevelResolverService,
+  ) {}
 
   async generateSpeakingQuestion(params: {
     topicTitle: string;
@@ -70,10 +139,9 @@ Format:
 `;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const text = result.response.text();
-
-      return this.parseJson(text);
+      return await this.geminiService.generateJson(prompt, {
+        models: ['gemini-2.5-flash'],
+      });
     } catch (error) {
       throw new BadGatewayException(
         'Không thể tạo câu hỏi luyện nói lúc này, vui lòng thử lại.',
@@ -156,38 +224,14 @@ Format:
 `;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const text = result.response.text();
-      const parsed = this.parseJson(text);
+      const parsed = await this.geminiService.generateJson(prompt, {
+        models: ['gemini-2.5-flash'],
+      });
 
       return this.normalizeEvaluation(parsed);
     } catch (error) {
       throw new BadGatewayException(
         'Không thể chấm bài luyện nói lúc này, vui lòng thử lại.',
-      );
-    }
-  }
-
-  private parseJson(text: string) {
-    const cleaned = text
-      .replace(/```json/g, '')
-      .replace(/```/g, '')
-      .trim();
-
-    const start = cleaned.indexOf('{');
-    const end = cleaned.lastIndexOf('}');
-
-    if (start === -1 || end === -1) {
-      throw new InternalServerErrorException(
-        'Gemini response is not valid JSON',
-      );
-    }
-
-    try {
-      return JSON.parse(cleaned.slice(start, end + 1));
-    } catch {
-      throw new InternalServerErrorException(
-        'Cannot parse Gemini JSON response',
       );
     }
   }
@@ -291,14 +335,34 @@ Format:
       },
     });
 
-    const recommendedTopics = await this.prisma.speakingTopic.findMany({
+    // Recommend topics near the user's resolved Speaking level first, so a
+    // brand-new/A1 user isn't handed a B2 topic just because it sorts first
+    // by difficulty; fall back to the unfiltered top-4 if nothing matches
+    // (never show an empty recommendation list).
+    const resolvedSpeakingLevel = toSpeakingLevel(
+      (await this.skillLevelResolver.resolveSkillLevel(userId, LearningSkill.SPEAKING))
+        .level,
+    );
+
+    // Prisma can't filter enum ranges (lte/gte) server-side, so fetch the
+    // (small, ~8-row) active topic set and filter/take in application code.
+    const speakingTopicCandidates = await this.prisma.speakingTopic.findMany({
       where: { isActive: true },
       orderBy: [{ difficulty: 'asc' }, { order: 'asc' }],
-      take: 4,
       include: {
         category: true,
       },
     });
+
+    let recommendedTopics = speakingTopicCandidates
+      .filter((topic) =>
+        isSpeakingLevelInRange(resolvedSpeakingLevel, topic.minLevel, topic.maxLevel),
+      )
+      .slice(0, 4);
+
+    if (recommendedTopics.length === 0) {
+      recommendedTopics = speakingTopicCandidates.slice(0, 4);
+    }
 
     const [completedCount, inProgressCount, totalLessonCount, recentSessions] =
       await Promise.all([
@@ -661,22 +725,103 @@ Format:
   }
 
   async getTopicDetail(slug: string, userId: string) {
-    const topic = await this.prisma.speakingTopic.findUnique({
-      where: { slug },
-      include: {
-        category: true,
-        lessons: {
-          where: { isActive: true },
-          orderBy: { order: 'asc' },
-        },
-      },
-    });
+    // Topic/lesson metadata is shared by every learner and cached; per-user
+    // completion/session progress is always read live and merged in after.
+    const cacheKey = CacheKeys.speakingTopicDetail(slug);
+    let content = await this.contentCache.getJson<SpeakingTopicContent>(
+      'speaking',
+      cacheKey,
+    );
 
-    if (!topic) {
-      throw new NotFoundException('Không tìm thấy speaking topic');
+    if (!content) {
+      const topic = await this.prisma.speakingTopic.findUnique({
+        where: { slug },
+        include: {
+          category: true,
+          lessons: {
+            where: { isActive: true },
+            orderBy: { order: 'asc' },
+          },
+        },
+      });
+
+      if (!topic) {
+        throw new NotFoundException('Không tìm thấy speaking topic');
+      }
+
+      const relatedTopics = await this.prisma.speakingTopic.findMany({
+        where: {
+          isActive: true,
+          id: {
+            not: topic.id,
+          },
+        },
+        orderBy: {
+          order: 'asc',
+        },
+        take: 4,
+        include: {
+          category: true,
+        },
+      });
+
+      content = {
+        topicId: topic.id,
+        lessonIds: topic.lessons.map((x) => x.id),
+        topic: {
+          id: topic.id,
+          title: topic.title,
+          slug: topic.slug,
+          description: topic.description,
+          imageUrl: topic.imageUrl,
+          minLevel: topic.minLevel,
+          maxLevel: topic.maxLevel,
+          levelRange: `${topic.minLevel}-${topic.maxLevel}`,
+          levelText: this.getLevelText(topic.minLevel, topic.maxLevel),
+          lessonCount: topic.lessons.length,
+          category: {
+            id: topic.category.id,
+            title: topic.category.title,
+            slug: topic.category.slug,
+            icon: topic.category.icon,
+          },
+        },
+        improveSkills: [
+          { title: 'Fluency', description: 'Speak more smoothly', icon: '🧩' },
+          {
+            title: 'Vocabulary',
+            description: 'Learn useful words',
+            icon: '🎁',
+          },
+          {
+            title: 'Confidence',
+            description: 'Speak with confidence',
+            icon: '💜',
+          },
+        ],
+        relatedTopics: relatedTopics.map((item) => ({
+          id: item.id,
+          title: item.title,
+          slug: item.slug,
+          icon: item.category.icon || '🎙️',
+          lessonCount: item.lessonCount,
+        })),
+        practiceTip: {
+          title: 'Practice Tip 💡',
+          description:
+            'Speak at least once a day to build confidence and fluency!',
+        },
+      };
+
+      await this.contentCache.setJson(
+        'speaking',
+        cacheKey,
+        content,
+        CacheTtl.LESSON_DETAIL_SECONDS,
+      );
     }
 
-    const lessonIds = topic.lessons.map((x) => x.id);
+    const lessonIds = content.lessonIds;
 
     const progresses = await this.prisma.speakingLessonProgress.findMany({
       where: {
@@ -714,50 +859,19 @@ Format:
       (lessonId) => !completedLessonIds.has(lessonId as string),
     ).length;
     const notStarted = Math.max(
-      topic.lessons.length - completed - inProgress,
+      lessonIds.length - completed - inProgress,
       0,
     );
 
     const progressPercent =
-      topic.lessons.length > 0
-        ? Math.round((completed / topic.lessons.length) * 100)
+      lessonIds.length > 0
+        ? Math.round((completed / lessonIds.length) * 100)
         : 0;
-
-    const relatedTopics = await this.prisma.speakingTopic.findMany({
-      where: {
-        isActive: true,
-        id: {
-          not: topic.id,
-        },
-      },
-      orderBy: {
-        order: 'asc',
-      },
-      take: 4,
-      include: {
-        category: true,
-      },
-    });
 
     return {
       topic: {
-        id: topic.id,
-        title: topic.title,
-        slug: topic.slug,
-        description: topic.description,
-        imageUrl: topic.imageUrl,
-        minLevel: topic.minLevel,
-        maxLevel: topic.maxLevel,
-        levelRange: `${topic.minLevel}-${topic.maxLevel}`,
-        levelText: this.getLevelText(topic.minLevel, topic.maxLevel),
-        lessonCount: topic.lessons.length,
+        ...content.topic,
         progressPercent,
-        category: {
-          id: topic.category.id,
-          title: topic.category.title,
-          slug: topic.category.slug,
-          icon: topic.category.icon,
-        },
       },
 
       progress: {
@@ -767,29 +881,9 @@ Format:
         notStarted,
       },
 
-      improveSkills: [
-        { title: 'Fluency', description: 'Speak more smoothly', icon: '🧩' },
-        { title: 'Vocabulary', description: 'Learn useful words', icon: '🎁' },
-        {
-          title: 'Confidence',
-          description: 'Speak with confidence',
-          icon: '💜',
-        },
-      ],
-
-      relatedTopics: relatedTopics.map((item) => ({
-        id: item.id,
-        title: item.title,
-        slug: item.slug,
-        icon: item.category.icon || '🎙️',
-        lessonCount: item.lessonCount,
-      })),
-
-      practiceTip: {
-        title: 'Practice Tip 💡',
-        description:
-          'Speak at least once a day to build confidence and fluency!',
-      },
+      improveSkills: content.improveSkills,
+      relatedTopics: content.relatedTopics,
+      practiceTip: content.practiceTip,
     };
   }
 

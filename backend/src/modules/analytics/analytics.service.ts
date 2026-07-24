@@ -1,5 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { LearningSkill, XpSourceType } from '@prisma/client';
+import {
+  LearningSkill,
+  SpeakingSessionStatus,
+  XpSourceType,
+} from '@prisma/client';
 import {
   addUserDays,
   dateKeyInTimezone,
@@ -8,21 +12,32 @@ import {
   startOfUserDay,
 } from 'src/common/time/user-timezone.util';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { RedisCacheService } from 'src/common/cache/redis-cache.service';
 import { DashboardService } from '../dashboard/dashboard.service';
 import { SettingsQueryService } from '../settings/settings-query.service';
 import {
   AnalyticsQueryDto,
   AnalyticsRange,
   ReportQueryDto,
+  TimelineQueryDto,
 } from './dto/analytics-query.dto';
+import { AnalyticsCacheKeys, AnalyticsCacheTtl } from './analytics-cache.constants';
 
 type DashboardSnapshot = Awaited<ReturnType<DashboardService['getDashboard']>>;
+type SessionRows = Awaited<
+  ReturnType<AnalyticsService['collectSessionRows']>
+>;
 
 const RANGE_DAYS: Record<AnalyticsRange, number> = {
+  [AnalyticsRange.TODAY]: 1,
   [AnalyticsRange.SEVEN_DAYS]: 7,
   [AnalyticsRange.THIRTY_DAYS]: 30,
   [AnalyticsRange.NINETY_DAYS]: 90,
+  [AnalyticsRange.CUSTOM]: 30,
 };
+
+/** Custom timeline ranges are capped the same way Progress's unified history is. */
+const MAX_CUSTOM_RANGE_DAYS = 91;
 
 @Injectable()
 export class AnalyticsService {
@@ -30,6 +45,7 @@ export class AnalyticsService {
     private readonly prisma: PrismaService,
     private readonly dashboardService: DashboardService,
     private readonly settingsQuery: SettingsQueryService,
+    private readonly redisCache: RedisCacheService,
   ) {}
 
   async getOverview(userId: string, query: AnalyticsQueryDto) {
@@ -208,6 +224,419 @@ export class AnalyticsService {
       recommendations: overview.recommendations,
       generatedAt: new Date(),
     };
+  }
+
+  /**
+   * The extra metrics Learning Analytics needs beyond `getOverview`
+   * (accuracy, completion rate, session duration, practice frequency,
+   * missed days, goal completion, XP growth, per-skill growth). Kept as a
+   * separate call (not folded into `getOverview`) so pages that don't need
+   * these heavier per-skill breakdowns don't pay for them.
+   */
+  async getMetrics(userId: string, query: AnalyticsQueryDto) {
+    const rangeKey = query.range ?? AnalyticsRange.SEVEN_DAYS;
+    const cacheKey = AnalyticsCacheKeys.metrics(userId, rangeKey);
+    const cached = await this.redisCache.get(cacheKey);
+    if (cached) {
+      try {
+        return JSON.parse(cached);
+      } catch {
+        // corrupted entry — fall through and recompute
+      }
+    }
+
+    const result = await this.computeMetrics(userId, query);
+    await this.redisCache.set(
+      cacheKey,
+      JSON.stringify(result),
+      AnalyticsCacheTtl.METRICS_SECONDS,
+    );
+    return result;
+  }
+
+  private async computeMetrics(userId: string, query: AnalyticsQueryDto) {
+    const range = await this.resolveRange(userId, query.range);
+    const [settings, sessionRows] = await Promise.all([
+      this.settingsQuery.getSettings(userId),
+      this.collectSessionRows(userId, range.start, range.end),
+    ]);
+
+    const accuracy = this.computeAccuracy(sessionRows);
+    const completionRate = this.computeCompletionRate(sessionRows);
+    const durations = this.computeDurations(sessionRows);
+    const perSkillGrowth = this.computePerSkillGrowth(sessionRows, range);
+
+    const activeDaySet = new Set(
+      sessionRows.all.map((row) => dateKeyInTimezone(row.occurredAt, range.timezone)),
+    );
+    const missedDays = Math.max(0, range.days - activeDaySet.size);
+
+    const dailySeries = await this.buildDailySeries(
+      userId,
+      range.start,
+      range.days,
+      range.timezone,
+    );
+    const goalMinutes = settings.dailyStudyMinutes;
+    const daysMeetingGoal =
+      goalMinutes > 0
+        ? dailySeries.filter((day) => day.studyMinutes >= goalMinutes).length
+        : 0;
+    const goalCompletionPercent =
+      goalMinutes > 0 ? Math.round((daysMeetingGoal / range.days) * 100) : null;
+
+    const totals = this.sumSeries(dailySeries);
+    const trend = this.buildTrend(dailySeries);
+
+    return {
+      range: {
+        key: query.range ?? AnalyticsRange.SEVEN_DAYS,
+        from: dateKeyInTimezone(range.start, range.timezone),
+        to: dateKeyInTimezone(
+          addUserDays(range.end, -1, range.timezone),
+          range.timezone,
+        ),
+        timezone: range.timezone,
+      },
+      accuracy,
+      completionRate,
+      durations,
+      practiceFrequency: {
+        sessionsPerDay:
+          range.days > 0
+            ? Math.round((sessionRows.all.length / range.days) * 100) / 100
+            : 0,
+        totalSessions: sessionRows.all.length,
+      },
+      missedDays,
+      activeDays: activeDaySet.size,
+      goalCompletion: {
+        targetMinutesPerDay: goalMinutes,
+        daysMeetingGoal,
+        percent: goalCompletionPercent,
+      },
+      xpGrowth: {
+        currentPeriodXp: trend.currentValue,
+        previousPeriodXp: trend.previousValue,
+        percentageChange: trend.percentageChange,
+        direction: trend.direction,
+      },
+      perSkillGrowth,
+      totals,
+      generatedAt: new Date(),
+    };
+  }
+
+  /**
+   * Progress Timeline: a per-day breakdown enriched beyond `buildDailySeries`
+   * (adds accuracy, which skills had activity, and achievements unlocked
+   * that day), supporting a `custom` from/to range in addition to the fixed
+   * today/7d/30d/90d windows.
+   */
+  async getTimeline(userId: string, query: TimelineQueryDto) {
+    const range = await this.resolveTimelineRange(userId, query);
+    const [series, achievements] = await Promise.all([
+      this.buildTimelineSeries(userId, range.start, range.days, range.timezone),
+      this.prisma.userAchievement.findMany({
+        where: {
+          userId,
+          unlockedAt: { gte: range.start, lt: range.end },
+        },
+        select: { unlockedAt: true },
+      }),
+    ]);
+
+    const achievementsByDay = new Map<string, number>();
+    for (const row of achievements) {
+      if (!row.unlockedAt) continue;
+      const key = dateKeyInTimezone(row.unlockedAt, range.timezone);
+      achievementsByDay.set(key, (achievementsByDay.get(key) ?? 0) + 1);
+    }
+
+    const days = series.map((day) => ({
+      ...day,
+      achievementsUnlocked: achievementsByDay.get(day.date) ?? 0,
+    }));
+
+    return {
+      range: {
+        key: query.range ?? AnalyticsRange.SEVEN_DAYS,
+        from: dateKeyInTimezone(range.start, range.timezone),
+        to: dateKeyInTimezone(
+          addUserDays(range.end, -1, range.timezone),
+          range.timezone,
+        ),
+        timezone: range.timezone,
+      },
+      days,
+      generatedAt: new Date(),
+    };
+  }
+
+  private async resolveTimelineRange(userId: string, query: TimelineQueryDto) {
+    if (query.range === AnalyticsRange.CUSTOM) {
+      const settings = await this.settingsQuery.getSettings(userId);
+      const timezone = normalizeUserTimezone(settings.timezone);
+      if (!query.from || !query.to) {
+        throw new BadRequestException(
+          'Custom range requires both from and to dates.',
+        );
+      }
+      const from = startOfUserDay(new Date(query.from), timezone);
+      const toRaw = startOfUserDay(new Date(query.to), timezone);
+      if (Number.isNaN(from.getTime()) || Number.isNaN(toRaw.getTime())) {
+        throw new BadRequestException('Invalid custom range dates.');
+      }
+      if (toRaw < from) {
+        throw new BadRequestException('`to` must not be before `from`.');
+      }
+      const to = addUserDays(toRaw, 1, timezone);
+      const days = Math.round(
+        (to.getTime() - from.getTime()) / (24 * 60 * 60 * 1000),
+      );
+      if (days > MAX_CUSTOM_RANGE_DAYS) {
+        throw new BadRequestException(
+          `Custom range cannot exceed ${MAX_CUSTOM_RANGE_DAYS} days.`,
+        );
+      }
+      return { start: from, end: to, days, timezone };
+    }
+    return this.resolveRange(userId, query.range);
+  }
+
+  private async collectSessionRows(userId: string, start: Date, end: Date) {
+    const [reading, listening, speaking, writing, grammar] = await Promise.all([
+      this.prisma.readingSession.findMany({
+        where: { userId, startedAt: { gte: start, lt: end } },
+        select: {
+          isCompleted: true,
+          completedAt: true,
+          startedAt: true,
+          spentTime: true,
+          accuracy: true,
+        },
+      }),
+      this.prisma.listeningSession.findMany({
+        where: { userId, startedAt: { gte: start, lt: end } },
+        select: {
+          status: true,
+          completedAt: true,
+          startedAt: true,
+          total: true,
+          correct: true,
+          score: true,
+        },
+      }),
+      this.prisma.speakingSession.findMany({
+        where: { userId, startedAt: { gte: start, lt: end } },
+        select: {
+          status: true,
+          finishedAt: true,
+          startedAt: true,
+          duration: true,
+          overallScore: true,
+        },
+      }),
+      this.prisma.writingSession.findMany({
+        where: { userId, startedAt: { gte: start, lt: end } },
+        select: {
+          isSubmitted: true,
+          submittedAt: true,
+          startedAt: true,
+          timeSpentSeconds: true,
+          overallScore: true,
+        },
+      }),
+      this.prisma.grammarLessonProgress.findMany({
+        where: { userId, createdAt: { gte: start, lt: end } },
+        select: {
+          completed: true,
+          completedAt: true,
+          createdAt: true,
+          score: true,
+        },
+      }),
+    ]);
+
+    const all: Array<{
+      skill: LearningSkill;
+      occurredAt: Date;
+      completed: boolean;
+      accuracy: number | null;
+      durationSeconds: number;
+    }> = [
+      ...reading.map((item) => ({
+        skill: LearningSkill.READING,
+        occurredAt: item.completedAt ?? item.startedAt,
+        completed: item.isCompleted,
+        accuracy: item.isCompleted ? item.accuracy : null,
+        durationSeconds: item.spentTime,
+      })),
+      ...listening.map((item) => ({
+        skill: LearningSkill.LISTENING,
+        occurredAt: item.completedAt ?? item.startedAt,
+        completed: item.status === 'COMPLETED' || !!item.completedAt,
+        accuracy:
+          item.completedAt && item.total > 0
+            ? Math.round((item.correct / item.total) * 100)
+            : null,
+        durationSeconds: 0,
+      })),
+      ...speaking.map((item) => ({
+        skill: LearningSkill.SPEAKING,
+        occurredAt: item.finishedAt ?? item.startedAt,
+        completed:
+          item.status === SpeakingSessionStatus.COMPLETED || !!item.finishedAt,
+        accuracy: item.finishedAt ? item.overallScore : null,
+        durationSeconds: item.duration,
+      })),
+      ...writing.map((item) => ({
+        skill: LearningSkill.WRITING,
+        occurredAt: item.submittedAt ?? item.startedAt,
+        completed: item.isSubmitted,
+        accuracy: item.isSubmitted ? (item.overallScore ?? null) : null,
+        durationSeconds: item.timeSpentSeconds,
+      })),
+      ...grammar.map((item) => ({
+        skill: LearningSkill.GRAMMAR,
+        occurredAt: item.completedAt ?? item.createdAt,
+        completed: item.completed,
+        accuracy: item.completed ? item.score : null,
+        durationSeconds: 0,
+      })),
+    ];
+
+    return { all, reading, listening, speaking, writing, grammar };
+  }
+
+  private computeAccuracy(rows: SessionRows) {
+    const withAccuracy = rows.all.filter((row) => row.accuracy !== null) as Array<
+      SessionRows['all'][number] & { accuracy: number }
+    >;
+    const overall = this.average(withAccuracy.map((row) => row.accuracy));
+
+    const bySkill: Partial<Record<LearningSkill, number | null>> = {};
+    for (const skill of Object.values(LearningSkill)) {
+      const values = withAccuracy
+        .filter((row) => row.skill === skill)
+        .map((row) => row.accuracy);
+      bySkill[skill] = values.length ? this.average(values) : null;
+    }
+
+    return { overall: withAccuracy.length ? overall : null, bySkill };
+  }
+
+  private computeCompletionRate(rows: SessionRows) {
+    const started = rows.all.length;
+    const completed = rows.all.filter((row) => row.completed).length;
+    return {
+      started,
+      completed,
+      percent: started > 0 ? Math.round((completed / started) * 100) : null,
+    };
+  }
+
+  private computeDurations(rows: SessionRows) {
+    const completedWithDuration = rows.all.filter(
+      (row) => row.completed && row.durationSeconds > 0,
+    );
+    const avgSessionSeconds = completedWithDuration.length
+      ? completedWithDuration.reduce((sum, row) => sum + row.durationSeconds, 0) /
+        completedWithDuration.length
+      : 0;
+
+    return {
+      avgSessionMinutes:
+        Math.round((avgSessionSeconds / 60) * 10) / 10,
+      completedSessionsCounted: completedWithDuration.length,
+    };
+  }
+
+  private computePerSkillGrowth(
+    rows: SessionRows,
+    range: { start: Date; end: Date },
+  ) {
+    const midpoint = new Date(
+      (range.start.getTime() + range.end.getTime()) / 2,
+    );
+
+    const result: Partial<
+      Record<LearningSkill, { previous: number | null; current: number | null; direction: 'UP' | 'DOWN' | 'FLAT' }>
+    > = {};
+
+    for (const skill of Object.values(LearningSkill)) {
+      const skillRows = rows.all.filter(
+        (row) => row.skill === skill && row.accuracy !== null,
+      );
+      const previous = this.average(
+        skillRows
+          .filter((row) => row.occurredAt < midpoint)
+          .map((row) => row.accuracy as number),
+      );
+      const current = this.average(
+        skillRows
+          .filter((row) => row.occurredAt >= midpoint)
+          .map((row) => row.accuracy as number),
+      );
+      const hasPrevious = skillRows.some((row) => row.occurredAt < midpoint);
+      const hasCurrent = skillRows.some((row) => row.occurredAt >= midpoint);
+
+      result[skill] = {
+        previous: hasPrevious ? previous : null,
+        current: hasCurrent ? current : null,
+        direction:
+          hasPrevious && hasCurrent
+            ? current > previous
+              ? 'UP'
+              : current < previous
+                ? 'DOWN'
+                : 'FLAT'
+            : 'FLAT',
+      };
+    }
+
+    return result;
+  }
+
+  private average(values: number[]) {
+    if (!values.length) return 0;
+    return Math.round(
+      (values.reduce((sum, value) => sum + value, 0) / values.length) * 10,
+    ) / 10;
+  }
+
+  private async buildTimelineSeries(
+    userId: string,
+    start: Date,
+    days: number,
+    timezone: string,
+  ) {
+    const end = addUserDays(start, days, timezone);
+    const rows = await this.collectSessionRows(userId, start, end);
+    const baseSeries = await this.buildDailySeries(userId, start, days, timezone);
+
+    return baseSeries.map((day) => {
+      const dayRows = rows.all.filter(
+        (row) => dateKeyInTimezone(row.occurredAt, timezone) === day.date,
+      );
+      const accuracyValues = dayRows
+        .filter((row): row is typeof row & { accuracy: number } => row.accuracy !== null)
+        .map((row) => row.accuracy);
+      const completedSkills = [
+        ...new Set(dayRows.filter((row) => row.completed).map((row) => row.skill)),
+      ];
+
+      return {
+        date: day.date,
+        xp: day.xp,
+        studyMinutes: day.studyMinutes,
+        completedActivities: day.completedActivities,
+        accuracyPercent: accuracyValues.length
+          ? this.average(accuracyValues)
+          : null,
+        completedSkills,
+      };
+    });
   }
 
   private async resolveRange(userId: string, range?: AnalyticsRange) {

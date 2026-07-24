@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import axios from "axios";
 import { ArrowRight, Filter, RefreshCcw, Search } from "lucide-react";
 import {
   CefrLevel,
@@ -97,6 +98,11 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(Boolean(initialQuery));
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Guards the debounced auto-search effect against races: a later
+  // query/filter change aborts the in-flight request for the previous one,
+  // so a slow older response can never overwrite newer results.
+  const searchAbortRef = useRef<AbortController | null>(null);
+  const loadMoreAbortRef = useRef<AbortController | null>(null);
 
   const canSearch = useMemo(() => q.trim().length >= 2, [q]);
 
@@ -116,11 +122,20 @@ export default function SearchPage() {
       setItems([]);
     }
     setError(null);
+
+    loadMoreAbortRef.current?.abort();
+    const controller = new AbortController();
+    loadMoreAbortRef.current = controller;
+
     try {
-      const result = await searchContent({ q, type, skill, level, sort, limit: 20, offset });
+      const result = await searchContent(
+        { q, type, skill, level, sort, limit: 20, offset },
+        controller.signal,
+      );
       setItems((current) => (offset > 0 ? [...current, ...result.results] : result.results));
       setNextOffset(result.pagination.nextOffset);
-    } catch {
+    } catch (err) {
+      if (axios.isCancel(err)) return;
       setError("Search failed. Please try again.");
     } finally {
       setLoading(false);
@@ -133,19 +148,30 @@ export default function SearchPage() {
       return;
     }
     const handle = window.setTimeout(() => {
-      searchContent({ q, type, skill, level, sort, limit: 20, offset: 0 })
+      searchAbortRef.current?.abort();
+      const controller = new AbortController();
+      searchAbortRef.current = controller;
+
+      searchContent(
+        { q, type, skill, level, sort, limit: 20, offset: 0 },
+        controller.signal,
+      )
         .then((result) => {
           setItems(result.results);
           setNextOffset(result.pagination.nextOffset);
         })
-        .catch(() => {
+        .catch((err) => {
+          if (axios.isCancel(err)) return;
           setError("Search failed. Please try again.");
         })
         .finally(() => {
           setLoading(false);
         });
     }, 250);
-    return () => window.clearTimeout(handle);
+    return () => {
+      window.clearTimeout(handle);
+      searchAbortRef.current?.abort();
+    };
   }, [canSearch, q, type, skill, level, sort]);
 
   return (

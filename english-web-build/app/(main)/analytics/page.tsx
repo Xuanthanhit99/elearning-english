@@ -6,7 +6,11 @@ import { BarChart3, CalendarDays, RefreshCcw, Sparkles, TrendingUp } from "lucid
 import {
   AnalyticsOverview,
   AnalyticsRange,
+  CoachAdvice,
+  WeaknessReport,
+  getAiCoachAdvice,
   getAnalyticsOverview,
+  getWeaknesses,
 } from "@/src/lib/analytics-api";
 
 const ranges: Array<{ label: string; value: AnalyticsRange }> = [
@@ -232,6 +236,120 @@ export default function AnalyticsPage() {
           )}
         </div>
       </section>
+
+      <WeaknessAndCoachSection />
     </div>
+  );
+}
+
+function WeaknessAndCoachSection() {
+  const [weaknesses, setWeaknesses] = useState<WeaknessReport | null>(null);
+  const [weaknessError, setWeaknessError] = useState(false);
+  const [coach, setCoach] = useState<CoachAdvice | null>(null);
+  const [coachError, setCoachError] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    getWeaknesses()
+      .then((result) => {
+        if (active) setWeaknesses(result);
+      })
+      .catch(() => {
+        if (active) setWeaknessError(true);
+      });
+    getAiCoachAdvice()
+      .then((result) => {
+        if (active) setCoach(result);
+      })
+      .catch(() => {
+        if (active) setCoachError(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return (
+    <section className="grid gap-6 lg:grid-cols-2">
+      <div className="rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-5 shadow-sm">
+        <h2 className="mb-4 text-xl font-black text-[var(--lumiverse-ink)]">
+          Điểm cần cải thiện nhất
+        </h2>
+        {weaknessError ? (
+          <p className="text-sm font-bold text-[var(--lumiverse-muted)]">
+            Không tải được dữ liệu điểm yếu.
+          </p>
+        ) : !weaknesses ? (
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="h-14 animate-pulse rounded-2xl bg-[var(--lumiverse-card-soft)]" />
+            ))}
+          </div>
+        ) : weaknesses.overallWeakest.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] p-5 text-sm font-bold text-[var(--lumiverse-muted)]">
+            Chưa đủ dữ liệu để xác định điểm yếu — hãy học thêm vài bài nữa.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {weaknesses.overallWeakest.map((item) => (
+              <Link
+                key={`${item.skill}-${item.topic}`}
+                href={item.recommendedLesson?.href ?? "/dashboard"}
+                className="block rounded-2xl border border-[var(--lumiverse-border)] p-4 hover:bg-[var(--lumiverse-card-soft)]"
+              >
+                <div className="flex items-center justify-between font-black text-[var(--lumiverse-ink)]">
+                  <span>
+                    {item.skillLabel} · {item.topic}
+                  </span>
+                  <span className="text-rose-600">{item.accuracy}%</span>
+                </div>
+                <p className="mt-1 text-sm font-semibold text-[var(--lumiverse-muted)]">
+                  {item.reason}
+                </p>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-3xl border border-violet-100 bg-violet-50 p-5">
+        <div className="flex items-center gap-2 text-sm font-black text-violet-700">
+          <Sparkles size={17} />
+          AI Learning Coach
+        </div>
+        {coachError ? (
+          <p className="mt-3 text-sm font-bold text-[var(--lumiverse-muted)]">
+            AI Coach hiện không khả dụng.
+          </p>
+        ) : !coach ? (
+          <div className="mt-3 space-y-2">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="h-10 animate-pulse rounded-2xl bg-white/60" />
+            ))}
+          </div>
+        ) : (
+          <>
+            <h2 className="mt-3 text-xl font-black text-[var(--lumiverse-ink)]">{coach.headline}</h2>
+            {coach.whyThisLesson ? (
+              <p className="mt-2 text-sm font-semibold text-[var(--lumiverse-muted)]">
+                {coach.whyThisLesson}
+              </p>
+            ) : null}
+            {coach.weeklyPlan.length > 0 ? (
+              <div className="mt-4 space-y-2">
+                {coach.weeklyPlan.map((item) => (
+                  <p
+                    key={item}
+                    className="rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-3 text-sm font-bold text-[var(--lumiverse-muted)]"
+                  >
+                    {item}
+                  </p>
+                ))}
+              </div>
+            ) : null}
+          </>
+        )}
+      </div>
+    </section>
   );
 }

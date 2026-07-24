@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { LumiverseLoadingState } from '@/src/Components/UI/Lumiverse';
 
 type WritingTypeItem = {
   key: string;
@@ -71,7 +72,8 @@ export default function ChooseWritingTypePage({slug}: {slug: string}) {
     loadData();
   }, [slug]);
 
-  if (loading) return <div className="p-10">Loading...</div>;
+  if (loading)
+    return <LumiverseLoadingState className="m-10" label="Đang tải bài học..." />;
   if (!data) return <div className="p-10">Không tải được dữ liệu.</div>;
 
   return (

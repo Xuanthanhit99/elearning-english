@@ -1,24 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { CheckWordDto } from './dto/check-word.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { GeminiService } from '../gemini/gemini.service';
 
 @Injectable()
 export class WordsService {
-  private genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-
-  constructor(private readonly prisma: PrismaService) {}
-
-  private sleep(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
-  private cleanJson(text: string) {
-    return text
-      .replace(/```json/g, '')
-      .replace(/```/g, '')
-      .trim();
-  }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly geminiService: GeminiService,
+  ) {}
 
   private isEmptyJsonArray(value: any) {
     return !value || (Array.isArray(value) && value.length === 0);
@@ -199,42 +189,15 @@ JSON format:
     if (!process.env.GEMINI_API_KEY) return null;
 
     const prompt = this.buildPrompt(params);
-    const models = ['gemini-2.5-flash', 'gemini-2.0-flash'];
 
-    for (const modelName of models) {
-      const model = this.genAI.getGenerativeModel({
-        model: modelName,
+    try {
+      return await this.geminiService.generateJson(prompt, {
+        models: ['gemini-2.5-flash', 'gemini-2.0-flash'],
       });
-
-      for (let retry = 0; retry < 3; retry++) {
-        try {
-          console.log('Calling Gemini model:', modelName);
-
-          const result = await model.generateContent(prompt);
-          const text = result.response.text();
-
-          console.log('Gemini text:', text);
-
-          return JSON.parse(this.cleanJson(text));
-        } catch (error: any) {
-          console.log('Gemini failed:', {
-            modelName,
-            retry,
-            status: error?.status,
-            message: error?.message,
-          });
-
-          if ((error?.status === 429 || error?.status === 503) && retry < 2) {
-            await this.sleep((retry + 1) * 2000);
-            continue;
-          }
-
-          break;
-        }
-      }
+    } catch (error: any) {
+      console.log('Gemini failed:', error?.message);
+      return null;
     }
-
-    return null;
   }
 
   private buildWordData(params: {

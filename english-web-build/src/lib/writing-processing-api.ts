@@ -1,9 +1,13 @@
 import { api } from './axios';
 import type { WritingProcessingStatus } from './writing-processing.types';
 
-export async function getWritingProcessingStatus(sessionId: string) {
+export async function getWritingProcessingStatus(
+  sessionId: string,
+  signal?: AbortSignal,
+) {
   const { data } = await api.get<WritingProcessingStatus>(
     `/writing/sessions/${sessionId}/status`,
+    { signal },
   );
 
   return data;

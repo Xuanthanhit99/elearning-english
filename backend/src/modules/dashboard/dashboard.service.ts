@@ -457,40 +457,69 @@ export class DashboardService {
         dailySeries: weeklyActivity,
       },
       achievements: achievementSummary,
+      // `learningPathDetail` now always resolves to something for every
+      // user (see LearningPathService.buildDefaultFoundationPath) — a user
+      // with no completed Placement gets a DEFAULT_FOUNDATION shape with
+      // per-skill starting lessons instead of an AI-generated
+      // phases/priorities structure, so this must never fall through to a
+      // bare "empty" state when foundation content actually exists.
       learningPath: learningPathDetail
-        ? {
-            id: learningPathDetail.id,
-            title: learningPathDetail.title,
-            overallLevel: learningPathDetail.overallLevel,
-            overallScore: Math.round(learningPathDetail.overallScore),
-            progressPercent: learningPathDetail.progressPercent,
-            completedLessons: learningPathDetail.completedLessons,
-            totalLessons: learningPathDetail.totalLessons,
-            currentLesson: learningPathDetail.currentLesson,
-            nextLesson: learningPathDetail.nextLesson,
-            currentPhase:
-              learningPathDetail.phases.find((phase) => phase.progress < 100) ??
-              learningPathDetail.phases.at(-1) ??
-              null,
-            phases: learningPathDetail.phases.map((phase) => ({
-              id: phase.id,
-              title: phase.title,
-              phase: phase.phase,
-              targetLevel: phase.targetLevel,
-              progress: phase.progress,
-            })),
-            recommendedCourses: learningPathDetail.courses
-              .slice(0, 3)
-              .map((course) => ({
-                id: course.id,
-                title: course.title,
-                slug: course.slug,
-                lessonCount: course.lessonCount,
-                reason: course.reason,
+        ? learningPathDetail.source === 'PLACEMENT'
+          ? {
+              source: 'PLACEMENT' as const,
+              id: learningPathDetail.id,
+              title: learningPathDetail.title,
+              overallLevel: learningPathDetail.overallLevel,
+              overallScore:
+                learningPathDetail.overallScore !== null
+                  ? Math.round(learningPathDetail.overallScore)
+                  : null,
+              progressPercent: learningPathDetail.progressPercent,
+              completedLessons: learningPathDetail.completedLessons,
+              totalLessons: learningPathDetail.totalLessons,
+              currentLesson: learningPathDetail.currentLesson,
+              nextLesson: learningPathDetail.nextLesson,
+              currentPhase:
+                learningPathDetail.phases.find((phase) => phase.progress < 100) ??
+                learningPathDetail.phases.at(-1) ??
+                null,
+              phases: learningPathDetail.phases.map((phase) => ({
+                id: phase.id,
+                title: phase.title,
+                phase: phase.phase,
+                targetLevel: phase.targetLevel,
+                progress: phase.progress,
               })),
-          }
+              recommendedCourses: learningPathDetail.courses
+                .slice(0, 3)
+                .map((course) => ({
+                  id: course.id,
+                  title: course.title,
+                  slug: course.slug,
+                  lessonCount: course.lessonCount,
+                  reason: course.reason,
+                })),
+              skillLevels: learningPathDetail.skills,
+            }
+          : {
+              source: 'DEFAULT_FOUNDATION' as const,
+              id: null,
+              title: learningPathDetail.title,
+              overallLevel: null,
+              overallScore: null,
+              progressPercent: 0,
+              completedLessons: 0,
+              totalLessons: 0,
+              currentLesson: learningPathDetail.currentLesson,
+              nextLesson: learningPathDetail.nextLesson,
+              currentPhase: null,
+              phases: [],
+              recommendedCourses: [],
+              skillLevels: learningPathDetail.skills,
+            }
         : placementResult
           ? {
+              source: 'PLACEMENT' as const,
               overallLevel: placementResult.overallLevel,
               overallScore: Math.round(placementResult.overallScore),
               progressPercent: this.average(

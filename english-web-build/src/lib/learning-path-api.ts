@@ -39,18 +39,38 @@ export type LearningPathCourse = {
   lessons: LearningPathLesson[];
 };
 
-export type LearningPathData = {
-  id: string;
-  testId: string;
+export type LearningPathStartingLesson = {
+  skill: string;
   title: string;
-  overallLevel: string;
-  overallScore: number;
-  generatedAt: string;
+  href: string;
+  topicTitle: string | null;
+} | null;
+
+export type LearningPathSkillLevel = {
+  skill: string;
+  level: string | null;
+  /** Only present when source === 'PLACEMENT'. */
+  score?: number;
+  status?: string;
+  /** Only present when source === 'DEFAULT_FOUNDATION'. */
+  source?: "PLACEMENT" | "DEFAULT_FOUNDATION" | "MANUAL_LEVEL" | "PROGRESS";
+  assessedLevel?: string | null;
+  startingLesson?: LearningPathStartingLesson;
+};
+
+export type LearningPathData = {
+  /** null when source === 'DEFAULT_FOUNDATION' (no PlacementResult exists yet). */
+  id: string | null;
+  testId: string | null;
+  title: string;
+  overallLevel: string | null;
+  overallScore: number | null;
+  generatedAt: string | null;
   progressPercent: number;
   completedLessons: number;
   totalLessons: number;
   currentLesson: LearningPathLesson | null;
-  nextLesson: LearningPathLesson | null;
+  nextLesson: LearningPathLesson | LearningPathStartingLesson;
   phases: Array<{
     id: string;
     phase: number;
@@ -79,12 +99,9 @@ export type LearningPathData = {
     reason: string;
   }>;
   courses: LearningPathCourse[];
-  skills: Array<{
-    skill: string;
-    score: number;
-    level: string | null;
-    status: string;
-  }>;
+  skills: LearningPathSkillLevel[];
+  /** Distinguishes an AI-generated placement path from the per-skill foundation fallback. */
+  source: "PLACEMENT" | "DEFAULT_FOUNDATION";
 };
 
 export type LearningPathLessonActionResult = {
@@ -145,10 +162,13 @@ export async function startLearningPathLesson(lessonId: string) {
   return response.data.data;
 }
 
-export async function resumeLearningPathLesson(lessonId: string) {
+export async function resumeLearningPathLesson(
+  lessonId: string,
+  signal?: AbortSignal,
+) {
   const response = await api.get<
     ApiResponse<LearningPathLessonActionResult>
-  >(`/learning-path/lessons/${lessonId}/resume`);
+  >(`/learning-path/lessons/${lessonId}/resume`, { signal });
 
   return response.data.data;
 }

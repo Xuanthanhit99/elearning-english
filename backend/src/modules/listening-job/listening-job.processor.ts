@@ -10,6 +10,8 @@ import { createHash } from 'crypto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GeminiService } from '../gemini/gemini.service';
 import { ListeningTtsService } from '../listening/listening-tts.service';
+import { ContentCacheService } from '../../common/cache/content-cache.service';
+import { CacheKeys } from '../../common/cache/cache-keys';
 import {
   LISTENING_GENERATION_JOB,
   LISTENING_GENERATION_QUEUE,
@@ -31,6 +33,7 @@ export class ListeningJobProcessor extends WorkerHost {
     private readonly prisma: PrismaService,
     private readonly geminiService: GeminiService,
     private readonly listeningTtsService: ListeningTtsService,
+    private readonly contentCache: ContentCacheService,
 
     @InjectQueue(LISTENING_GENERATION_QUEUE)
     private readonly queue: Queue,
@@ -186,6 +189,14 @@ export class ListeningJobProcessor extends WorkerHost {
 
         throw error;
       }
+    }
+
+    if (created > 0) {
+      // New rows were persisted for this level+topic — refresh so the next
+      // startPractice() read isn't served a stale (shorter) cached pool.
+      await this.contentCache.invalidate(
+        CacheKeys.listeningQuestions(level, topic),
+      );
     }
 
     this.logger.log(

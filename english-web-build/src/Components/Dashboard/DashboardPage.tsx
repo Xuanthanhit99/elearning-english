@@ -35,6 +35,12 @@ import {
   LumiverseStatCard,
   LumiverseState,
 } from "@/src/Components/UI/Lumiverse";
+import {
+  AiCoachPanel,
+  SkillRadarPanel,
+  StudyHeatmapPanel,
+  useCoachHeadline,
+} from "@/src/Components/Dashboard/AnalyticsCoachPanels";
 
 const skillRoutes: Record<string, string> = {
   VOCABULARY: "/vocabulary",
@@ -320,12 +326,15 @@ export default function DashboardPage() {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_390px]">
         <div className="space-y-6">
           <SkillsPanel data={data} />
+          <SkillRadarPanel />
           <LearningPathPanel data={data} />
           <WeeklyActivityPanel data={data} locale={locale} maxWeeklyXp={maxWeeklyXp} />
+          <StudyHeatmapPanel />
           <RecentActivityPanel data={data} locale={locale} />
         </div>
 
         <aside className="space-y-6">
+          <AiCoachPanel />
           <MissionsPanel missions={data.todayMissions.items} summary={dailySummary} />
           <TodayGoalPanel data={data} dailyPercent={dailyPercent} />
           <LeaderboardPanel state={leaderboard} />
@@ -347,6 +356,7 @@ function WelcomeHero({
   dailyPercent: number;
   cta: DashboardData["currentLesson"] | DashboardData["recommendedLesson"] | DashboardData["recommendations"][number] | null;
 }) {
+  const coachHeadline = useCoachHeadline();
   const title = cta?.title ?? "Start your next English activity";
   const href = cta?.href ?? "/learning-path";
   const subtitle = cta?.subtitle ?? data.learningPath?.currentPhase?.title ?? "Open your learning path to continue.";
@@ -401,8 +411,8 @@ function WelcomeHero({
             />
             <div className="min-w-0">
               <p className="text-sm font-black text-cyan-100">Lumi Coach</p>
-              <p className="mt-1 text-sm font-semibold text-white/78">
-                A learning companion is being prepared for a future release.
+              <p className="mt-1 line-clamp-2 text-sm font-semibold text-white/78">
+                {coachHeadline ?? "Analyzing your recent progress…"}
               </p>
             </div>
           </div>

@@ -30,6 +30,11 @@ import { SubmitReviewSessionDto } from './dto/review-session-answer.dto';
 import { MissionV2ProgressService } from '../missions-v2/services/mission-v2-progress.service';
 import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
 import { QuestionGenerationLockService } from '../question-bank/question-generation-lock/question-generation-lock.service';
+import { ContentCacheService } from '../../common/cache/content-cache.service';
+import { CacheMetricsService } from '../../common/cache/cache-metrics.service';
+import { CacheKeys, CacheTtl } from '../../common/cache/cache-keys';
+import { SkillLevelResolverService } from '../../common/skill-level/skill-level-resolver.service';
+import type { Word } from '@prisma/client';
 
 type GeminiWordItem = {
   word: string;
@@ -52,7 +57,56 @@ export class VocabularyService {
     private readonly missionV2ProgressService: MissionV2ProgressService,
     private readonly learningXp: LearningXpPublisher,
     private readonly questionGenerationLock: QuestionGenerationLockService,
+    private readonly contentCache: ContentCacheService,
+    private readonly cacheMetrics: CacheMetricsService,
+    private readonly skillLevelResolver: SkillLevelResolverService,
   ) {}
+
+  /**
+   * Word pool for a topic+level is identical for every learner (per-user
+   * exclusion is applied on top, in-memory, by callers) so it's the
+   * reusable part worth caching. Capped at 200 words — topics rarely exceed
+   * that, and callers only ever need a handful ordered by difficulty/search
+   * count.
+   */
+  private async getTopicLevelWordPool(
+    topicId: string,
+    level: string,
+  ): Promise<Word[]> {
+    const cacheKey = CacheKeys.vocabWordPool(topicId, level);
+    const cached = await this.contentCache.getJson<Word[]>(
+      'vocabulary',
+      cacheKey,
+    );
+
+    if (cached) {
+      return cached;
+    }
+
+    const pool = await this.prisma.word.findMany({
+      where: { topicId, level },
+      orderBy: [{ difficulty: 'asc' }, { searchCount: 'asc' }],
+      take: 200,
+    });
+
+    this.cacheMetrics.record('vocabulary', 'DB_HIT', cacheKey);
+
+    if (pool.length > 0) {
+      await this.contentCache.setJson(
+        'vocabulary',
+        cacheKey,
+        pool,
+        CacheTtl.VOCAB_WORD_POOL_SECONDS,
+      );
+    }
+
+    return pool;
+  }
+
+  /** Called right after any write that adds/changes words for a topic+level. */
+  private async refreshTopicLevelWordPool(topicId: string, level: string) {
+    await this.contentCache.invalidate(CacheKeys.vocabWordPool(topicId, level));
+  }
 
   private isLockedPlan(plan: any): plan is {
     locked: true;
@@ -69,7 +123,7 @@ export class VocabularyService {
 
   async getTopics() {
     return this.prisma.wordTopic.findMany({
-      orderBy: { name: 'asc' },
+      orderBy: [{ order: 'asc' }, { name: 'asc' }],
     });
   }
 
@@ -91,12 +145,27 @@ export class VocabularyService {
   }
 
   async getOrCreateProfile(userId: string) {
+    const existing = await this.prisma.userLearningProfile.findUnique({
+      where: { userId },
+    });
+
+    if (existing) return existing;
+
+    // First-ever profile read for this user — start them at their resolved
+    // per-skill Vocabulary level (placement-assessed, or Settings fallback,
+    // or A1 foundation) instead of a hardcoded 'A1' regardless of what
+    // placement actually found for this specific skill.
+    const resolved = await this.skillLevelResolver.resolveSkillLevel(
+      userId,
+      LearningSkill.VOCABULARY,
+    );
+
     return this.prisma.userLearningProfile.upsert({
       where: { userId },
       update: {},
       create: {
         userId,
-        level: 'A1',
+        level: resolved.level,
         dailyWordTarget: 10,
       },
     });
@@ -174,16 +243,7 @@ export class VocabularyService {
 
   async ensureFallbackTopics() {
     const names = this.getDefaultTopicNames();
-    const topics: Array<{
-      id: string;
-      slug: string;
-      name: string;
-      description: string | null;
-      icon: string | null;
-      color: string | null;
-      createdAt: Date;
-      updatedAt: Date;
-    }> = [];
+    const topics: Prisma.WordTopicGetPayload<Record<string, never>>[] = [];
 
     for (const name of names) {
       const slug = name.toLowerCase().replace(/\s+/g, '-');
@@ -227,6 +287,7 @@ export class VocabularyService {
           },
         },
       },
+      orderBy: [{ order: 'asc' }, { name: 'asc' }],
       take: 7 - existingIds.size,
     });
 
@@ -237,7 +298,7 @@ export class VocabularyService {
         where: {
           id: { notIn: [...existingIds] },
         },
-        orderBy: { name: 'asc' },
+        orderBy: [{ order: 'asc' }, { name: 'asc' }],
         take: 7 - existingIds.size,
       });
     }
@@ -312,7 +373,7 @@ export class VocabularyService {
             notIn: [...usedTopicIds, ...selected.keys()],
           },
         },
-        orderBy: { createdAt: 'asc' },
+        orderBy: [{ order: 'asc' }, { name: 'asc' }],
         take: params.count - selected.size,
       });
 
@@ -508,6 +569,7 @@ export class VocabularyService {
 
     if (!availableTopics.length) {
       let fallbackTopics = await this.prisma.wordTopic.findMany({
+        orderBy: [{ order: 'asc' }, { name: 'asc' }],
         take: 7,
       });
 
@@ -733,16 +795,15 @@ export class VocabularyService {
       ]),
     );
 
-    const findStrict = () =>
-      this.prisma.word.findMany({
-        where: {
-          topicId: params.topicId,
-          level: params.level,
-          id: { notIn: excludedIds },
-        },
-        orderBy: [{ difficulty: 'asc' }, { searchCount: 'asc' }],
-        take: params.limit,
-      });
+    const findStrict = async () => {
+      const pool = await this.getTopicLevelWordPool(
+        params.topicId,
+        params.level,
+      );
+      return pool
+        .filter((word) => !excludedIds.includes(word.id))
+        .slice(0, params.limit);
+    };
 
     let words = await findStrict();
 
@@ -753,6 +814,7 @@ export class VocabularyService {
       level: params.level,
       count: params.limit - words.length,
     });
+    await this.refreshTopicLevelWordPool(params.topicId, params.level);
 
     words = await findStrict();
 
@@ -773,13 +835,38 @@ export class VocabularyService {
         },
       });
 
-      if (stillShort >= params.limit) return;
+      if (stillShort >= params.limit) {
+        this.cacheMetrics.record(
+          'vocabulary',
+          'GENERATION_PREVENTED_BY_LOCK',
+          `${params.topicId}:${params.level}`,
+        );
+        return;
+      }
+
+      this.cacheMetrics.record(
+        'vocabulary',
+        'GEMINI_FALLBACK',
+        `${params.topicId}:${params.level}`,
+      );
+
+      const generationStartedAt = Date.now();
 
       await this.generateWordsByGemini({
         topicId: params.topicId,
         level: params.level,
         count: params.limit - stillShort + 10,
       });
+
+      this.cacheMetrics.recordDuration(
+        'vocabulary',
+        `generateWordsByGemini(${params.topicId}:${params.level})`,
+        Date.now() - generationStartedAt,
+      );
+
+      // Immediately refresh the cache so the next request for this
+      // topic+level doesn't have to fall through to Gemini again.
+      await this.refreshTopicLevelWordPool(params.topicId, params.level);
     });
 
     words = await findStrict();
@@ -1059,54 +1146,67 @@ Trả về định dạng JSON Array chuẩn theo mẫu:
       return [];
     }
 
-    const createdWords: any[] = [];
+    // Wrapped in a single transaction so a mid-batch failure (e.g. one bad
+    // upsert) can't leave half of this Gemini batch persisted while the rest
+    // silently vanishes — the batch commits or rolls back as one unit. Safe
+    // to do here (unlike the outer advisory-lock transaction in
+    // QuestionGenerationLockService, which intentionally does NOT wrap
+    // caller writes) because every statement here is an independent
+    // `word.upsert` keyed by the same already-fetched Gemini response, with
+    // no other concurrent writers expected to touch these exact rows within
+    // this call — no extra lock contention is introduced.
+    const createdWords = await this.prisma.$transaction(async (tx) => {
+      const written: Word[] = [];
 
-    for (const item of result) {
-      if (!item.word) continue;
+      for (const item of result) {
+        if (!item.word) continue;
 
-      const cleanWord = item.word.toLowerCase().trim();
+        const cleanWord = item.word.toLowerCase().trim();
 
-      if (this.isInvalidGeneratedWord(cleanWord, topic.name)) {
-        console.warn('SKIP INVALID WORD:', cleanWord);
-        continue;
+        if (this.isInvalidGeneratedWord(cleanWord, topic.name)) {
+          console.warn('SKIP INVALID WORD:', cleanWord);
+          continue;
+        }
+
+        const word = await tx.word.upsert({
+          where: {
+            word: cleanWord,
+          },
+          update: {
+            topicId: params.topicId,
+            level: params.level,
+            phonetic: item.phonetic || undefined,
+            partOfSpeech: item.partOfSpeech || undefined,
+            meaningVi: item.meaningVi || undefined,
+            meaningEn: item.meaningEn || undefined,
+            example: item.example || undefined,
+            synonyms: item.synonyms || undefined,
+            antonyms: item.antonyms || undefined,
+            difficulty: item.difficulty || undefined,
+          },
+          create: {
+            word: cleanWord,
+            phonetic: item.phonetic || null,
+            partOfSpeech: item.partOfSpeech || null,
+            meaningVi: item.meaningVi || null,
+            meaningEn: item.meaningEn || null,
+            example: item.example || null,
+            synonyms: item.synonyms || [],
+            antonyms: item.antonyms || [],
+            difficulty: item.difficulty || 1,
+            level: params.level,
+            topicId: params.topicId,
+            source: 'GEMINI',
+            isAiGenerated: true,
+            needsReview: true,
+          },
+        });
+
+        written.push(word);
       }
 
-      const word = await this.prisma.word.upsert({
-        where: {
-          word: cleanWord,
-        },
-        update: {
-          topicId: params.topicId,
-          level: params.level,
-          phonetic: item.phonetic || undefined,
-          partOfSpeech: item.partOfSpeech || undefined,
-          meaningVi: item.meaningVi || undefined,
-          meaningEn: item.meaningEn || undefined,
-          example: item.example || undefined,
-          synonyms: item.synonyms || undefined,
-          antonyms: item.antonyms || undefined,
-          difficulty: item.difficulty || undefined,
-        },
-        create: {
-          word: cleanWord,
-          phonetic: item.phonetic || null,
-          partOfSpeech: item.partOfSpeech || null,
-          meaningVi: item.meaningVi || null,
-          meaningEn: item.meaningEn || null,
-          example: item.example || null,
-          synonyms: item.synonyms || [],
-          antonyms: item.antonyms || [],
-          difficulty: item.difficulty || 1,
-          level: params.level,
-          topicId: params.topicId,
-          source: 'GEMINI',
-          isAiGenerated: true,
-          needsReview: true,
-        },
-      });
-
-      createdWords.push(word);
-    }
+      return written;
+    });
 
     return createdWords;
   }
@@ -5133,7 +5233,9 @@ Rules:
   }
 
   async ensureWordsForLevel(level: string) {
-    const topics = await this.prisma.wordTopic.findMany();
+    const topics = await this.prisma.wordTopic.findMany({
+      orderBy: [{ order: 'asc' }, { name: 'asc' }],
+    });
 
     for (const topic of topics) {
       const count = await this.prisma.word.count({
@@ -5213,6 +5315,7 @@ Rules:
     if (!availableTopics.length) {
       const fallbackTopics = await this.prisma.wordTopic.findMany({
         where: { id: { notIn: [...existingTopicIds] } },
+        orderBy: [{ order: 'asc' }, { name: 'asc' }],
         take: 7,
       });
 

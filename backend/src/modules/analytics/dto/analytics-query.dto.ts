@@ -1,11 +1,21 @@
 import { Transform } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 import { LearningSkill } from '@prisma/client';
 
 export enum AnalyticsRange {
+  TODAY = 'today',
   SEVEN_DAYS = '7d',
   THIRTY_DAYS = '30d',
   NINETY_DAYS = '90d',
+  CUSTOM = 'custom',
 }
 
 export class AnalyticsQueryDto {
@@ -33,4 +43,20 @@ export class ReportQueryDto {
   @IsOptional()
   @IsEnum(AnalyticsRange)
   range?: AnalyticsRange = AnalyticsRange.THIRTY_DAYS;
+}
+
+export class TimelineQueryDto {
+  @IsOptional()
+  @IsEnum(AnalyticsRange)
+  range?: AnalyticsRange = AnalyticsRange.SEVEN_DAYS;
+
+  /** Only read when range=custom. */
+  @IsOptional()
+  @IsDateString()
+  from?: string;
+
+  /** Only read when range=custom. */
+  @IsOptional()
+  @IsDateString()
+  to?: string;
 }

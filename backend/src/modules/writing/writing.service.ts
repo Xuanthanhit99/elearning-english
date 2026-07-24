@@ -3,22 +3,33 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CheckWritingDto } from './dro/check-writing.dto';
+import { GeminiService } from '../gemini/gemini.service';
+import { SkillLevelResolverService } from '../../common/skill-level/skill-level-resolver.service';
+import { CefrLevel, LearningSkill, WritingLevel } from '@prisma/client';
+
+/** Clamps a resolved CEFR level onto WritingLevel's own A1-B2 supported range. */
+export function toWritingLevel(level: CefrLevel): WritingLevel {
+  switch (level) {
+    case CefrLevel.A1:
+      return WritingLevel.A1;
+    case CefrLevel.A2:
+      return WritingLevel.A2;
+    case CefrLevel.B1:
+      return WritingLevel.B1;
+    default:
+      return WritingLevel.B2;
+  }
+}
 
 @Injectable()
 export class WritingService {
-  private genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-
-  constructor(private readonly prisma: PrismaService) {}
-
-  private cleanJson(text: string) {
-    return text
-      .replace(/```json/g, '')
-      .replace(/```/g, '')
-      .trim();
-  }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly geminiService: GeminiService,
+    private readonly skillLevelResolver: SkillLevelResolverService,
+  ) {}
 
   async checkWriting(dto: CheckWritingDto, userId?: string) {
     const text = dto.text?.trim();
@@ -156,36 +167,18 @@ Rules:
   }
 
   private async callGemini(prompt: string) {
-    const models = ['gemini-2.5-flash', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+    try {
+      return await this.geminiService.generateJson(prompt, {
+        models: ['gemini-2.5-flash', 'gemini-2.0-flash'],
+        retries: 1,
+      });
+    } catch (error: any) {
+      console.log('Gemini failed:', error?.message);
 
-    for (const modelName of models) {
-      try {
-        const model = this.genAI.getGenerativeModel({
-          model: modelName,
-        });
-
-        const result = await model.generateContent(prompt);
-        const rawText = result.response.text();
-
-        return JSON.parse(this.cleanJson(rawText));
-      } catch (error: any) {
-        console.log('Gemini failed:', {
-          modelName,
-          status: error?.status,
-          message: error?.message,
-        });
-
-        if (error?.status === 503 || error?.status === 429) {
-          continue;
-        }
-
-        throw error;
-      }
+      throw new BadRequestException(
+        'AI đang quá tải, vui lòng thử lại sau vài phút.',
+      );
     }
-
-    throw new BadRequestException(
-      'AI đang quá tải, vui lòng thử lại sau vài phút.',
-    );
   }
 
   async getMyHistory(userId: string) {
@@ -243,7 +236,7 @@ Rules:
         },
       }),
       this.getRecentHistory(userId),
-      this.getRecommendations(),
+      this.getRecommendations(userId),
       this.getProgress(userId),
     ]);
 
@@ -465,19 +458,36 @@ Rules:
     }));
   }
 
-  async getRecommendations() {
-    const lessons = await this.prisma.writingLesson.findMany({
+  async getRecommendations(userId: string) {
+    // Recommend lessons at the user's resolved Writing level, ordered by
+    // explicit curriculum order (not createdAt, which reflects generation
+    // time, not difficulty); fall back to the unfiltered set if nothing at
+    // that level exists yet (never show an empty recommendation list).
+    const resolvedWritingLevel = toWritingLevel(
+      (await this.skillLevelResolver.resolveSkillLevel(userId, LearningSkill.WRITING))
+        .level,
+    );
+
+    let lessons = await this.prisma.writingLesson.findMany({
       where: {
         isActive: true,
+        level: resolvedWritingLevel,
       },
       include: {
         topic: true,
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: [{ topic: { order: 'asc' } }, { order: 'asc' }],
       take: 4,
     });
+
+    if (lessons.length === 0) {
+      lessons = await this.prisma.writingLesson.findMany({
+        where: { isActive: true },
+        include: { topic: true },
+        orderBy: [{ topic: { order: 'asc' } }, { order: 'asc' }],
+        take: 4,
+      });
+    }
 
     return lessons.map((lesson) => ({
       id: lesson.id,

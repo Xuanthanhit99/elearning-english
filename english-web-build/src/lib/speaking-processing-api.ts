@@ -25,8 +25,13 @@ export async function uploadSpeakingAudio(input: {
   return unwrap<SpeakingUploadResponse>(response.data);
 }
 
-export async function getSpeakingProcessingStatus(sessionId: string) {
-  const response = await api.get(`/speaking/sessions/${sessionId}/status`);
+export async function getSpeakingProcessingStatus(
+  sessionId: string,
+  signal?: AbortSignal,
+) {
+  const response = await api.get(`/speaking/sessions/${sessionId}/status`, {
+    signal,
+  });
   return unwrap<SpeakingProcessingStatus>(response.data);
 }
 

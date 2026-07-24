@@ -7,6 +7,8 @@ import { SpeakingPracticeModule } from '../speaking-practice/speaking-practice.m
 import { SpeakingProcessingModule } from '../speaking-processing/speaking-processing.module';
 import { LearningXpModule } from '../learning-xp/learning-xp.module';
 import { SettingsModule } from '../settings/settings.module';
+import { GeminiModule } from '../gemini/gemini.module';
+import { QuestionGenerationLockModule } from '../question-bank/question-generation-lock/question-generation-lock.module';
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import { SettingsModule } from '../settings/settings.module';
     SpeakingProcessingModule,
     LearningXpModule,
     SettingsModule,
+    GeminiModule,
+    QuestionGenerationLockModule,
   ],
   controllers: [SpeakingController],
   providers: [SpeakingService, SpeakingJobService, PrismaService],

@@ -13,6 +13,8 @@ import { WritingSessionService } from './writing-session.service';
 import { WritingHistoryService } from './writing-history.service';
 import { LearningXpModule } from '../learning-xp/learning-xp.module';
 import { SettingsModule } from '../settings/settings.module';
+import { GeminiModule } from '../gemini/gemini.module';
+import { QuestionGenerationLockModule } from '../question-bank/question-generation-lock/question-generation-lock.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { SettingsModule } from '../settings/settings.module';
     }),
     LearningXpModule,
     SettingsModule,
+    GeminiModule,
+    QuestionGenerationLockModule,
   ],
   controllers: [WritingController],
   providers: [

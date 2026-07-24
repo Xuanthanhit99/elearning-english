@@ -24,6 +24,7 @@ import {
   LearningPathCourse,
   LearningPathData,
   LearningPathLesson,
+  LearningPathStartingLesson,
   startLearningPathLesson,
 } from "@/src/lib/learning-path-api";
 import {
@@ -42,6 +43,13 @@ const statusCopy: Record<LearningPathLesson["status"], string> = {
   COMPLETED: "Review",
 };
 
+/** Distinguishes the full PLACEMENT lesson shape from the DEFAULT_FOUNDATION starting-lesson pointer. */
+function isFullPathLesson(
+  lesson: LearningPathLesson | LearningPathStartingLesson | null | undefined,
+): lesson is LearningPathLesson {
+  return !!lesson && "status" in lesson;
+}
+
 export default function LearningPathScreen() {
   const router = useRouter();
   const [data, setData] = useState<LearningPathData | null>(null);
@@ -55,27 +63,17 @@ export default function LearningPathScreen() {
       setError("");
       setData(await getLearningPath());
     } catch (err) {
-      const response = (
-        err as {
-          response?: {
-            data?: {
-              code?: string;
-              nextUrl?: string;
-            };
-          };
-        }
-      ).response?.data;
-
-      if (response?.code === "PLACEMENT_REQUIRED" && response.nextUrl) {
-        router.replace(response.nextUrl);
-        return;
-      }
-
+      // The backend no longer 404s for a user without a completed
+      // Placement test — GET /learning-path always resolves to either a
+      // PLACEMENT-sourced path or a DEFAULT_FOUNDATION per-skill starter
+      // path (see LearningPathService.buildDefaultFoundationPath). A
+      // request can still fail for genuine errors (network, 5xx), which
+      // this catch handles the same way as before.
       setError(err instanceof Error ? err.message : "We could not load your learning path.");
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     void Promise.resolve().then(loadLearningPath);
@@ -126,13 +124,23 @@ export default function LearningPathScreen() {
                 {data.title}
               </h1>
               <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-[var(--lumiverse-muted)]">
-                Your path is generated from placement result {data.overallLevel}
-                {" "}({Math.round(data.overallScore)}/100) and stays synced with
-                real lesson progress.
+                {data.source === "PLACEMENT" ? (
+                  <>
+                    Your path is generated from placement result {data.overallLevel}
+                    {" "}({Math.round(data.overallScore ?? 0)}/100) and stays synced
+                    with real lesson progress.
+                  </>
+                ) : (
+                  <>
+                    You haven&apos;t completed a placement test yet — here&apos;s a
+                    foundation starting point for every skill. Take the placement
+                    test any time for personalized recommendations.
+                  </>
+                )}
               </p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-4">
-                <HeroMetric icon={GraduationCap} label="Level" value={data.overallLevel} />
+                <HeroMetric icon={GraduationCap} label="Level" value={data.overallLevel ?? "—"} />
                 <HeroMetric icon={Target} label="Progress" value={`${data.progressPercent}%`} />
                 <HeroMetric icon={CheckCircle2} label="Completed" value={`${data.completedLessons}`} />
                 <HeroMetric icon={BookOpen} label="Lessons" value={`${data.totalLessons}`} />
@@ -140,7 +148,10 @@ export default function LearningPathScreen() {
             </section>
 
             <NextLessonCard
-              lesson={data.currentLesson ?? data.nextLesson}
+              lesson={
+                data.currentLesson ??
+                (isFullPathLesson(data.nextLesson) ? data.nextLesson : null)
+              }
               startingLessonId={startingLessonId}
               onStart={handleStartLesson}
             />
@@ -166,6 +177,12 @@ export default function LearningPathScreen() {
                 startingLessonId={startingLessonId}
                 onStart={handleStartLesson}
               />
+            ) : data.source === "DEFAULT_FOUNDATION" ? (
+              <LumiverseState
+                title="Foundation path — see your skill breakdown"
+                description="Take the placement test to unlock a personalized milestone map. Each skill's starting lesson is listed in the panel to the right."
+                tone="soft"
+              />
             ) : (
               <LumiverseState
                 title="No lessons in this path yet"
@@ -176,24 +193,28 @@ export default function LearningPathScreen() {
           </LumiverseCard>
 
           <aside className="space-y-5">
-            <PhasePanel phases={data.phases} />
-            <PriorityPanel priorities={data.priorities} />
+            {data.phases.length ? <PhasePanel phases={data.phases} /> : null}
+            {data.priorities.length ? (
+              <PriorityPanel priorities={data.priorities} />
+            ) : null}
             <SkillPanel skills={data.skills} />
           </aside>
         </section>
 
-        <LumiverseCard className="p-6">
-          <LumiverseSectionHeader
-            eyebrow="Courses"
-            title="Recommended course groups"
-            description="Course cards are shown only from the learning path response."
-          />
-          <div className="grid gap-4 lg:grid-cols-2">
-            {data.courses.map((course) => (
-              <CourseSummary key={course.id} course={course} />
-            ))}
-          </div>
-        </LumiverseCard>
+        {data.courses.length ? (
+          <LumiverseCard className="p-6">
+            <LumiverseSectionHeader
+              eyebrow="Courses"
+              title="Recommended course groups"
+              description="Course cards are shown only from the learning path response."
+            />
+            <div className="grid gap-4 lg:grid-cols-2">
+              {data.courses.map((course) => (
+                <CourseSummary key={course.id} course={course} />
+              ))}
+            </div>
+          </LumiverseCard>
+        ) : null}
       </div>
     </main>
   );
@@ -483,10 +504,21 @@ function SkillPanel({ skills }: { skills: LearningPathData["skills"] }) {
                 {item.skill}
               </p>
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
-                {item.level ?? item.status}
+                {item.level ?? item.status ?? "—"}
               </span>
             </div>
-            <LumiverseProgress value={item.score} className="mt-3" />
+            {typeof item.score === "number" ? (
+              <LumiverseProgress value={item.score} className="mt-3" />
+            ) : null}
+            {item.startingLesson ? (
+              <Link
+                href={item.startingLesson.href}
+                className="mt-3 inline-flex items-center gap-1 text-sm font-black text-[var(--lumiverse-primary)]"
+              >
+                Start: {item.startingLesson.title}
+                <ArrowRight aria-hidden className="h-4 w-4" />
+              </Link>
+            ) : null}
           </div>
         ))}
       </div>

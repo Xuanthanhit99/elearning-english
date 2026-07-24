@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import {
@@ -7,6 +6,11 @@ import {
   SpeakingPracticeType,
 } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { GeminiService } from '../../gemini/gemini.service';
+import { QuestionGenerationLockService } from '../../question-bank/question-generation-lock/question-generation-lock.service';
+
+/** Lessons per topic the curriculum needs before this job stops generating more. */
+const SPEAKING_LESSONS_PER_TOPIC_THRESHOLD = 20;
 
 type GeminiSpeakingLesson = {
   title: string;
@@ -23,23 +27,23 @@ type GeminiSpeakingLesson = {
 @Injectable()
 export class SpeakingJobService {
   private readonly logger = new Logger(SpeakingJobService.name);
-  private readonly model;
 
-  constructor(private readonly prisma: PrismaService) {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error('Missing GEMINI_API_KEY');
-    }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly geminiService: GeminiService,
+    private readonly generationLock: QuestionGenerationLockService,
+  ) {}
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-    this.model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-    });
-  }
-
+  /**
+   * Was limited to 3 of the 8 categories `seed-speaking.ts` actually seeds
+   * (Education, Technology, Culture, Health & Fitness, Food & Drinks were
+   * never covered) — now matches every seeded category. `maxLevel` is
+   * clamped to B2 for all of them (some seed rows optimistically claim up
+   * to C1) to match this product's actual supported-content policy — see
+   * SUPPORTED_CONTENT_LEVELS.
+   */
   // Chạy mỗi ngày lúc 2h sáng
   @Cron('0 2 * * *')
-  // @Cron('*/5 * * * *')
   async generateDailySpeakingData() {
     this.logger.log('Start generate speaking data');
 
@@ -69,6 +73,18 @@ export class SpeakingJobService {
         difficulty: 'PRE_INTERMEDIATE' as SpeakingDifficulty,
       },
       {
+        categoryTitle: 'Education',
+        categorySlug: 'education',
+        categoryIcon: '🎓',
+        categoryDescription:
+          'Explore learning, school life, and education in general.',
+        topicTitle: 'Education',
+        topicSlug: 'education',
+        minLevel: 'A1' as SpeakingLevel,
+        maxLevel: 'B2' as SpeakingLevel,
+        difficulty: 'INTERMEDIATE' as SpeakingDifficulty,
+      },
+      {
         categoryTitle: 'Travel & Places',
         categorySlug: 'travel-places',
         categoryIcon: '✈️',
@@ -80,10 +96,67 @@ export class SpeakingJobService {
         maxLevel: 'B2' as SpeakingLevel,
         difficulty: 'PRE_INTERMEDIATE' as SpeakingDifficulty,
       },
+      {
+        categoryTitle: 'Technology',
+        categorySlug: 'technology',
+        categoryIcon: '💻',
+        categoryDescription:
+          'Discuss gadgets, the internet, and technological trends.',
+        topicTitle: 'Technology',
+        topicSlug: 'technology',
+        minLevel: 'A2' as SpeakingLevel,
+        maxLevel: 'B2' as SpeakingLevel,
+        difficulty: 'ADVANCED' as SpeakingDifficulty,
+      },
+      {
+        categoryTitle: 'Culture',
+        categorySlug: 'culture',
+        categoryIcon: '🎨',
+        categoryDescription:
+          'Talk about traditions, festivals, and cultural differences.',
+        topicTitle: 'Culture',
+        topicSlug: 'culture',
+        minLevel: 'A2' as SpeakingLevel,
+        maxLevel: 'B2' as SpeakingLevel,
+        difficulty: 'ADVANCED' as SpeakingDifficulty,
+      },
+      {
+        categoryTitle: 'Health & Fitness',
+        categorySlug: 'health-fitness',
+        categoryIcon: '💚',
+        categoryDescription:
+          'Speak about healthy lifestyle, fitness, and well-being.',
+        topicTitle: 'Health & Fitness',
+        topicSlug: 'health-fitness',
+        minLevel: 'A1' as SpeakingLevel,
+        maxLevel: 'B1' as SpeakingLevel,
+        difficulty: 'BEGINNER' as SpeakingDifficulty,
+      },
+      {
+        categoryTitle: 'Food & Drinks',
+        categorySlug: 'food-drinks',
+        categoryIcon: '🍔',
+        categoryDescription:
+          'Share your favorite food, recipes, and dining experiences.',
+        topicTitle: 'Food & Drinks',
+        topicSlug: 'food-drinks',
+        minLevel: 'A1' as SpeakingLevel,
+        maxLevel: 'B1' as SpeakingLevel,
+        difficulty: 'BEGINNER' as SpeakingDifficulty,
+      },
     ];
 
     for (const config of configs) {
-      await this.generateForConfig(config);
+      try {
+        await this.generateForConfig(config);
+      } catch (error) {
+        // Was previously unguarded — one Gemini failure for a single
+        // config used to abort every remaining config in the run.
+        this.logger.error(
+          `Speaking generation failed for ${config.topicTitle}`,
+          error instanceof Error ? error.message : String(error),
+        );
+      }
     }
 
     this.logger.log('Generate speaking data done');
@@ -152,20 +225,36 @@ export class SpeakingJobService {
       },
     });
 
-    if (existingCount >= 20) {
+    if (existingCount >= SPEAKING_LESSONS_PER_TOPIC_THRESHOLD) {
       this.logger.log(
         `Skip ${config.topicTitle}. Existing lessons: ${existingCount}`,
       );
       return;
     }
 
-    const need = 20 - existingCount;
+    // Postgres advisory lock (same infrastructure Vocabulary/Placement/
+    // Grammar/Reading use) guards concurrent instances from both
+    // generating lessons for this exact topic at once.
+    const lessons = await this.generationLock.withLock(
+      `speaking-lesson:${config.topicSlug}`,
+      async () => {
+        const recheckedCount = await this.prisma.speakingLesson.count({
+          where: { topicId: topic.id, isActive: true },
+        });
 
-    const lessons = await this.generateLessonsWithGemini({
-      topicTitle: config.topicTitle,
-      level: `${config.minLevel}-${config.maxLevel}`,
-      count: Math.min(need, 5),
-    });
+        if (recheckedCount >= SPEAKING_LESSONS_PER_TOPIC_THRESHOLD) {
+          return [];
+        }
+
+        const need = SPEAKING_LESSONS_PER_TOPIC_THRESHOLD - recheckedCount;
+
+        return this.generateLessonsWithGemini({
+          topicTitle: config.topicTitle,
+          level: `${config.minLevel}-${config.maxLevel}`,
+          count: Math.min(need, 5),
+        });
+      },
+    );
 
     for (const lesson of lessons) {
       await this.prisma.speakingLesson.upsert({
@@ -262,10 +351,9 @@ Format:
 ]
 `;
 
-    const result = await this.model.generateContent(prompt);
-    const text = result.response.text();
-
-    const parsed = this.parseJsonArray(text);
+    const parsed = (await this.geminiService.generateJson(prompt, {
+      models: ['gemini-2.5-flash'],
+    })) as any[];
 
     return parsed.map((item: any) => ({
       title: String(item.title || 'Speaking Lesson'),
@@ -278,22 +366,6 @@ Format:
       expectedText: String(item.expectedText || ''),
       icon: String(item.icon || '🎙️'),
     }));
-  }
-
-  private parseJsonArray(text: string) {
-    const cleaned = text
-      .replace(/```json/g, '')
-      .replace(/```/g, '')
-      .trim();
-
-    const start = cleaned.indexOf('[');
-    const end = cleaned.lastIndexOf(']');
-
-    if (start === -1 || end === -1) {
-      throw new Error('Gemini response is not valid JSON array');
-    }
-
-    return JSON.parse(cleaned.slice(start, end + 1));
   }
 
   private safePracticeType(value: string): SpeakingPracticeType {

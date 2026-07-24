@@ -13,6 +13,7 @@ import {
 } from '@prisma/client';
 import { AuditLogService } from 'src/modules/audit-log/audit-log.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { AuthSessionService } from 'src/modules/auth/auth-session.service';
 import {
   AdminContentStatusDto,
   AdminListQueryDto,
@@ -41,6 +42,7 @@ export class AdminDashboardService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly auditLogService: AuditLogService,
+    private readonly authSessionService: AuthSessionService,
   ) {}
 
   private get db() {
@@ -412,6 +414,18 @@ export class AdminDashboardService {
         changedFields.push('placement');
       }
     });
+
+    if (dto.action === 'BAN') {
+      // Immediate revocation: kills every refresh token right away (so a
+      // banned user can't silently mint a new access token) and sets the
+      // fast-path Redis marker JwtStrategy checks on every request, instead
+      // of waiting for the current access token to expire naturally.
+      await this.authSessionService.banUser(id);
+    }
+
+    if (dto.action === 'UNBAN') {
+      await this.authSessionService.unbanUser(id);
+    }
 
     await this.record(
       actor,
