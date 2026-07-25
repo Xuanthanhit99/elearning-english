@@ -23,7 +23,7 @@ export default function ReportsPage() {
     try {
       setData(mode === "weekly" ? await getWeeklyReport() : await getMonthlyReport());
     } catch {
-      setError("KhÃ´ng táº£i Ä‘Æ°á»£c bÃ¡o cÃ¡o. Vui lÃ²ng Thử lại.");
+      setError("Không tải được báo cáo. Vui lòng Thử lại.");
     } finally {
       setLoading(false);
     }
@@ -37,7 +37,7 @@ export default function ReportsPage() {
         if (active) setData(result);
       })
       .catch(() => {
-        if (active) setError("KhÃ´ng táº£i Ä‘Æ°á»£c bÃ¡o cÃ¡o. Vui lÃ²ng Thử lại.");
+        if (active) setError("Không tải được báo cáo. Vui lòng Thử lại.");
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -64,7 +64,7 @@ export default function ReportsPage() {
   if (error || !data) {
     return (
       <section className="rounded-3xl border border-rose-200 bg-rose-50 p-6">
-        <p className="font-black text-rose-700">{error ?? "KhÃ´ng cÃ³ dá»¯ liá»‡u bÃ¡o cÃ¡o."}</p>
+        <p className="font-black text-rose-700">{error ?? "Không có dữ liệu báo cáo."}</p>
         <button
           type="button"
           onClick={load}
@@ -86,15 +86,15 @@ export default function ReportsPage() {
               <FileText size={16} />
               Báo cáo tiến độ
             </div>
-            <h1 className="text-3xl font-black text-slate-950 sm:text-4xl">BÃ¡o cÃ¡o há»c táº­p</h1>
+            <h1 className="text-3xl font-black text-slate-950 sm:text-4xl">Báo cáo học tập</h1>
             <p className="mt-2 max-w-2xl text-sm font-bold text-slate-500">
-              Tá»•ng há»£p káº¿t quáº£, Ä‘iá»ƒm ná»•i báº­t vÃ  gá»£i Ã½ tiáº¿p theo tá»« dá»¯ liá»‡u há»c tháº­t.
+              Tổng hợp kết quả, điểm nổi bật và gợi ý tiếp theo từ dữ liệu học thật.
             </p>
           </div>
           <div className="flex gap-2 rounded-2xl bg-slate-100 p-1">
             {[
-              ["weekly", "Tuáº§n nÃ y"],
-              ["monthly", "ThÃ¡ng nÃ y"],
+              ["weekly", "Tuần này"],
+              ["monthly", "Tháng này"],
             ].map(([value, label]) => (
               <button
                 key={value}
@@ -118,9 +118,9 @@ export default function ReportsPage() {
       <section className="grid gap-4 md:grid-cols-4">
         {[
           ["XP", data.summary.xp],
-          ["PhÃºt há»c", data.summary.studyMinutes],
-          ["Hoáº¡t Ä‘á»™ng", data.summary.completedActivities],
-          ["ThÃ nh tÃ­ch", data.summary.achievementsUnlocked],
+          ["Phút học", data.summary.studyMinutes],
+          ["Hoạt động", data.summary.completedActivities],
+          ["Thành tích", data.summary.achievementsUnlocked],
         ].map(([label, value]) => (
           <div key={label} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-3xl font-black text-slate-950">{value}</p>
@@ -131,7 +131,7 @@ export default function ReportsPage() {
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-xl font-black text-slate-950">Äiá»ƒm ná»•i báº­t</h2>
+          <h2 className="mb-4 text-xl font-black text-slate-950">Điểm nổi bật</h2>
           <div className="space-y-3">
             {data.highlights.map((item) => (
               <div key={item} className="rounded-2xl bg-violet-50 p-4 font-bold text-slate-700">
@@ -144,7 +144,7 @@ export default function ReportsPage() {
         <aside className="rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-600 to-indigo-700 p-5 text-white">
           <div className="flex items-center gap-2 text-sm font-black text-violet-100">
             <Sparkles size={17} />
-            Gá»£i Ã½ tiáº¿p theo
+            Gợi ý tiếp theo
           </div>
           <div className="mt-4 space-y-3">
             {data.recommendations.length ? (
@@ -156,7 +156,7 @@ export default function ReportsPage() {
               ))
             ) : (
               <p className="rounded-2xl bg-white/10 p-4 text-sm font-bold text-white/80">
-                ChÆ°a cÃ³ gá»£i Ã½ phÃ¹ há»£p. HÃ£y hoÃ n thÃ nh thÃªm má»™t hoáº¡t Ä‘á»™ng há»c.
+                Chưa có gợi ý phù hợp. Hãy hoàn thành thêm một hoạt động học.
               </p>
             )}
           </div>
@@ -164,13 +164,13 @@ export default function ReportsPage() {
       </section>
 
       <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="mb-4 text-xl font-black text-slate-950">Ká»¹ nÄƒng trong ká»³</h2>
+        <h2 className="mb-4 text-xl font-black text-slate-950">Kỹ năng trong kỳ</h2>
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {data.skillBreakdown.map((skill) => (
             <Link key={skill.key} href={skill.href} className="rounded-2xl border border-slate-100 p-4 hover:bg-violet-50">
               <div className="flex items-center justify-between font-black">
                 <span>{skill.label}</span>
-                <span>{skill.sampleStatus === "READY" ? `${skill.percent}%` : "ChÆ°a Ä‘á»§ dá»¯ liá»‡u"}</span>
+                <span>{skill.sampleStatus === "READY" ? `${skill.percent}%` : "Chưa đủ dữ liệu"}</span>
               </div>
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
                 <div className="h-full rounded-full bg-violet-600" style={{ width: `${Math.min(skill.percent, 100)}%` }} />

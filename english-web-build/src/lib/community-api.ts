@@ -48,7 +48,7 @@ export async function getCommunityFeed(
     return (data?.data ?? data) as CommunityFeedResponse;
   } catch (error) {
     throw new Error(
-      getApiErrorMessage(error, 'KhÃ´ng thá»ƒ táº£i báº£ng tin cá»™ng Ä‘á»“ng'),
+      getApiErrorMessage(error, 'Không thể tải bảng tin cộng đồng'),
     );
   }
 }
@@ -60,7 +60,7 @@ export async function createCommunityPost(
     const { data } = await api.post('/community/posts', payload);
     return (data?.data ?? data) as CommunityPost;
   } catch (error) {
-    throw new Error(getApiErrorMessage(error, 'KhÃ´ng thá»ƒ táº¡o bÃ i viáº¿t'));
+    throw new Error(getApiErrorMessage(error, 'Không thể tạo bài viết'));
   }
 }
 
@@ -76,7 +76,7 @@ export async function reactCommunityPost(
     return data?.data ?? data;
   } catch (error) {
     throw new Error(
-      getApiErrorMessage(error, 'KhÃ´ng thá»ƒ cáº­p nháº­t cáº£m xÃºc'),
+      getApiErrorMessage(error, 'Không thể cập nhật cảm xúc'),
     );
   }
 }
@@ -88,7 +88,7 @@ export async function removeCommunityReaction(postId: string) {
     );
     return data?.data ?? data;
   } catch (error) {
-    throw new Error(getApiErrorMessage(error, 'KhÃ´ng thá»ƒ xÃ³a cáº£m xÃºc'));
+    throw new Error(getApiErrorMessage(error, 'Không thể xóa cảm xúc'));
   }
 }
 
@@ -104,7 +104,7 @@ export async function toggleCommunityBookmark(
     return data?.data ?? data;
   } catch (error) {
     throw new Error(
-      getApiErrorMessage(error, 'KhÃ´ng thá»ƒ cáº­p nháº­t bÃ i viáº¿t Ä‘Ã£ lÆ°u'),
+      getApiErrorMessage(error, 'Không thể cập nhật bài viết đã lưu'),
     );
   }
 }
@@ -133,8 +133,8 @@ export async function createCommunityComment(
       getApiErrorMessage(
         error,
         parentId
-          ? 'KhÃ´ng thá»ƒ tráº£ lá»i bÃ¬nh luáº­n'
-          : 'KhÃ´ng thá»ƒ gá»­i bÃ¬nh luáº­n',
+          ? 'Không thể trả lời bình luận'
+          : 'Không thể gửi bình luận',
       ),
     );
   }

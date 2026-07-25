@@ -64,7 +64,7 @@ const initialForm: ChallengeForm = {
   description: '',
   challengeType: 'SPEAKING',
   target: 30,
-  unit: 'ngÃ y',
+  unit: 'ngày',
   rewardXp: 500,
   startsAt: '',
   endsAt: '',
@@ -84,32 +84,32 @@ const challengeTypeOptions: Array<{
   { value: 'READING', label: 'Reading' },
   { value: 'WRITING', label: 'Writing' },
   { value: 'GRAMMAR', label: 'Grammar' },
-  { value: 'MIXED', label: 'Tá»•ng há»£p' },
-  { value: 'OTHER', label: 'KhÃ¡c' },
+  { value: 'MIXED', label: 'Tổng hợp' },
+  { value: 'OTHER', label: 'Khác' },
 ];
 
 const unitOptions = [
-  'ngÃ y',
-  'tá»«',
-  'bÃ i',
-  'phÃºt',
-  'giá»',
-  'láº§n',
-  'Ä‘iá»ƒm XP',
+  'ngày',
+  'từ',
+  'bài',
+  'phút',
+  'giờ',
+  'lần',
+  'điểm XP',
 ];
 
 const badgeLabel: Record<BadgeType, string> = {
-  BRONZE: 'Huy hiá»‡u Äá»“ng',
-  SILVER: 'Huy hiá»‡u Báº¡c',
-  GOLD: 'Huy hiá»‡u VÃ ng',
-  DIAMOND: 'Huy hiá»‡u Kim cÆ°Æ¡ng',
+  BRONZE: 'Huy hiệu Đồng',
+  SILVER: 'Huy hiệu Bạc',
+  GOLD: 'Huy hiệu Vàng',
+  DIAMOND: 'Huy hiệu Kim cương',
 };
 
 const audienceLabel: Record<AudienceType, string> = {
-  ALL_MEMBERS: 'Má»i thÃ nh viÃªn',
-  NEW_MEMBERS: 'Chá»‰ thÃ nh viÃªn má»›i',
-  A1_A2: 'Chá»‰ trÃ¬nh Ä‘á»™ A1â€“A2',
-  B1_PLUS: 'Chá»‰ trÃ¬nh Ä‘á»™ B1 trá»Ÿ lÃªn',
+  ALL_MEMBERS: 'Mọi thành viên',
+  NEW_MEMBERS: 'Chỉ thành viên mới',
+  A1_A2: 'Chỉ trình độ A1–A2',
+  B1_PLUS: 'Chỉ trình độ B1 trở lên',
 };
 
 function FieldLabel({
@@ -149,18 +149,18 @@ function ValidationError({ message }: { message?: string }) {
 function ChallengePreview({ form }: { form: ChallengeForm }) {
   const formattedStart = form.startsAt
     ? new Date(form.startsAt).toLocaleString('vi-VN')
-    : 'ChÆ°a chá»n';
+    : 'Chưa chọn';
 
   const formattedEnd = form.endsAt
     ? new Date(form.endsAt).toLocaleString('vi-VN')
-    : 'ChÆ°a chá»n';
+    : 'Chưa chọn';
 
   return (
     <aside className="sticky top-5 rounded-3xl border-2 border-indigo-200 bg-white p-5 shadow-md">
       <div className="flex items-center gap-2">
         <Sparkles size={19} className="text-indigo-600" />
         <h3 className="font-extrabold text-slate-950">
-          Xem trÆ°á»›c thá»­ thÃ¡ch
+          Xem trước thử thách
         </h3>
       </div>
 
@@ -189,12 +189,12 @@ function ChallengePreview({ form }: { form: ChallengeForm }) {
 
         <div className="p-5">
           <h4 className="text-lg font-extrabold text-slate-950">
-            {form.title || 'TÃªn thá»­ thÃ¡ch sáº½ hiá»ƒn thá»‹ táº¡i Ä‘Ã¢y'}
+            {form.title || 'Tên thử thách sẽ hiển thị tại đây'}
           </h4>
 
           <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">
             {form.description ||
-              'MÃ´ táº£ má»¥c tiÃªu vÃ  cÃ¡ch hoÃ n thÃ nh thá»­ thÃ¡ch.'}
+              'Mô tả mục tiêu và cách hoàn thành thử thách.'}
           </p>
 
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -202,7 +202,7 @@ function ChallengePreview({ form }: { form: ChallengeForm }) {
               <div className="flex items-center gap-2 text-indigo-700">
                 <Target size={16} />
                 <span className="text-xs font-bold uppercase">
-                  Má»¥c tiÃªu
+                  Mục tiêu
                 </span>
               </div>
               <strong className="mt-2 block text-slate-950">
@@ -214,7 +214,7 @@ function ChallengePreview({ form }: { form: ChallengeForm }) {
               <div className="flex items-center gap-2 text-amber-700">
                 <Zap size={16} />
                 <span className="text-xs font-bold uppercase">
-                  Pháº§n thÆ°á»Ÿng
+                  Phần thưởng
                 </span>
               </div>
               <strong className="mt-2 block text-slate-950">
@@ -226,11 +226,11 @@ function ChallengePreview({ form }: { form: ChallengeForm }) {
           <div className="mt-4 space-y-2 text-xs font-semibold text-slate-600">
             <div className="flex items-center gap-2">
               <CalendarDays size={14} />
-              Báº¯t Ä‘áº§u: {formattedStart}
+              Bắt đầu: {formattedStart}
             </div>
             <div className="flex items-center gap-2">
               <Clock3 size={14} />
-              Káº¿t thÃºc: {formattedEnd}
+              Kết thúc: {formattedEnd}
             </div>
             <div className="flex items-center gap-2">
               <Users size={14} />
@@ -247,7 +247,7 @@ function ChallengePreview({ form }: { form: ChallengeForm }) {
             disabled
             className="mt-5 w-full rounded-xl bg-indigo-600 py-3 font-bold text-white opacity-70"
           >
-            Tham gia thá»­ thÃ¡ch
+            Tham gia thử thách
           </button>
         </div>
       </div>
@@ -298,7 +298,7 @@ export function CommunityClubChallenges({
       setError(
         e instanceof Error
           ? e.message
-          : 'KhÃ´ng thá»ƒ táº£i danh sÃ¡ch thá»­ thÃ¡ch',
+          : 'Không thể tải danh sách thử thách',
       );
     } finally {
       setLoading(false);
@@ -325,27 +325,27 @@ export function CommunityClubChallenges({
     const errors: Partial<Record<keyof ChallengeForm, string>> = {};
 
     if (form.title.trim().length < 5) {
-      errors.title = 'TÃªn thá»­ thÃ¡ch cáº§n Ã­t nháº¥t 5 kÃ½ tá»±.';
+      errors.title = 'Tên thử thách cần ít nhất 5 ký tự.';
     }
 
     if (form.description.trim().length < 10) {
-      errors.description = 'MÃ´ táº£ cáº§n Ã­t nháº¥t 10 kÃ½ tá»±.';
+      errors.description = 'Mô tả cần ít nhất 10 ký tự.';
     }
 
     if (!Number.isFinite(form.target) || form.target <= 0) {
-      errors.target = 'Má»¥c tiÃªu pháº£i lá»›n hÆ¡n 0.';
+      errors.target = 'Mục tiêu phải lớn hơn 0.';
     }
 
     if (!Number.isFinite(form.rewardXp) || form.rewardXp < 0) {
-      errors.rewardXp = 'XP thÆ°á»Ÿng khÃ´ng Ä‘Æ°á»£c nhá» hÆ¡n 0.';
+      errors.rewardXp = 'XP thưởng không được nhỏ hơn 0.';
     }
 
     if (!form.startsAt) {
-      errors.startsAt = 'Vui lÃ²ng chá»n thá»i gian báº¯t Ä‘áº§u.';
+      errors.startsAt = 'Vui lòng chọn thời gian bắt đầu.';
     }
 
     if (!form.endsAt) {
-      errors.endsAt = 'Vui lÃ²ng chá»n thá»i gian káº¿t thÃºc.';
+      errors.endsAt = 'Vui lòng chọn thời gian kết thúc.';
     }
 
     if (
@@ -353,7 +353,7 @@ export function CommunityClubChallenges({
       form.endsAt &&
       new Date(form.endsAt) <= new Date(form.startsAt)
     ) {
-      errors.endsAt = 'Thá»i gian káº¿t thÃºc pháº£i sau thá»i gian báº¯t Ä‘áº§u.';
+      errors.endsAt = 'Thời gian kết thúc phải sau thời gian bắt đầu.';
     }
 
     setFieldErrors(errors);
@@ -368,7 +368,7 @@ export function CommunityClubChallenges({
       const uploaded = await uploadCommunityFile(file);
 
       if (uploaded.type !== 'IMAGE') {
-        throw new Error('Vui lÃ²ng chá»n Ä‘Ãºng Ä‘á»‹nh dáº¡ng áº£nh.');
+        throw new Error('Vui lòng chọn đúng định dạng ảnh.');
       }
 
       setForm((current) => ({
@@ -377,7 +377,7 @@ export function CommunityClubChallenges({
       }));
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : 'KhÃ´ng thá»ƒ táº£i áº£nh bÃ¬a lÃªn',
+        e instanceof Error ? e.message : 'Không thể tải ảnh bìa lên',
       );
     } finally {
       setUploadingCover(false);
@@ -415,7 +415,7 @@ export function CommunityClubChallenges({
       setFieldErrors({});
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : 'KhÃ´ng thá»ƒ táº¡o thá»­ thÃ¡ch',
+        e instanceof Error ? e.message : 'Không thể tạo thử thách',
       );
     } finally {
       setSubmitting(false);
@@ -428,7 +428,7 @@ export function CommunityClubChallenges({
       await load();
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : 'KhÃ´ng thá»ƒ tham gia thá»­ thÃ¡ch',
+        e instanceof Error ? e.message : 'Không thể tham gia thử thách',
       );
     }
   }
@@ -442,7 +442,7 @@ export function CommunityClubChallenges({
       await load();
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : 'KhÃ´ng thá»ƒ cáº­p nháº­t tiáº¿n Ä‘á»™',
+        e instanceof Error ? e.message : 'Không thể cập nhật tiến độ',
       );
     }
   }
@@ -452,10 +452,10 @@ export function CommunityClubChallenges({
       <section className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
         <div>
           <h3 className="text-lg font-extrabold text-slate-950">
-            Thá»­ thÃ¡ch cá»§a cÃ¢u láº¡c bá»™
+            Thử thách của câu lạc bộ
           </h3>
           <p className="mt-1 text-sm leading-6 text-slate-500">
-            Táº¡o má»¥c tiÃªu rÃµ rÃ ng Ä‘á»ƒ thÃ nh viÃªn cÃ¹ng tham gia vÃ  nháº­n XP.
+            Tạo mục tiêu rõ ràng để thành viên cùng tham gia và nhận XP.
           </p>
         </div>
 
@@ -470,7 +470,7 @@ export function CommunityClubChallenges({
             className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 font-bold text-white shadow-sm hover:bg-indigo-700"
           >
             {creating ? <X size={17} /> : <Plus size={17} />}
-            {creating ? 'ÄÃ³ng biá»ƒu máº«u' : 'Táº¡o thá»­ thÃ¡ch'}
+            {creating ? '?óng biểu mẫu' : 'Tạo thử thách'}
           </button>
         )}
       </section>
@@ -487,21 +487,21 @@ export function CommunityClubChallenges({
             <div className="flex items-center gap-2">
               <Trophy size={21} className="text-indigo-600" />
               <h3 className="text-lg font-extrabold text-slate-950">
-                ThÃ´ng tin thá»­ thÃ¡ch
+                Thông tin thử thách
               </h3>
             </div>
 
             <p className="mt-1 text-sm leading-6 text-slate-500">
-              CÃ¡c trÆ°á»ng cÃ³ dáº¥u * lÃ  báº¯t buá»™c. Má»—i Ã´ Ä‘á»u cÃ³ hÆ°á»›ng dáº«n Ä‘á»ƒ
-              ngÆ°á»i táº¡o hiá»ƒu rÃµ cáº§n nháº­p gÃ¬.
+              Các trường có dấu * là bắt buộc. Mỗi ô đều có hướng dẫn để
+              người tạo hiểu rõ cần nhập gì.
             </p>
 
             <div className="mt-6 space-y-5">
               <div>
                 <FieldLabel
-                  label="TÃªn thá»­ thÃ¡ch"
+                  label="Tên thử thách"
                   required
-                  description="TÃªn ngáº¯n gá»n, dá»… nhá»› vÃ  thá»ƒ hiá»‡n rÃµ má»¥c tiÃªu."
+                  description="Tên ngắn gọn, dễ nhớ và thể hiện rõ mục tiêu."
                 />
                 <input
                   value={form.title}
@@ -511,7 +511,7 @@ export function CommunityClubChallenges({
                       title: event.target.value,
                     }))
                   }
-                  placeholder="VÃ­ dá»¥: 30 ngÃ y luyá»‡n Speaking"
+                  placeholder="Ví dụ: 30 ngày luyện Speaking"
                   maxLength={120}
                   className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 outline-none placeholder:text-slate-400 focus:border-indigo-500"
                 />
@@ -520,9 +520,9 @@ export function CommunityClubChallenges({
 
               <div>
                 <FieldLabel
-                  label="Loáº¡i thá»­ thÃ¡ch"
+                  label="Loại thử thách"
                   required
-                  description="Chá»n ká»¹ nÄƒng chÃ­nh mÃ  thá»­ thÃ¡ch táº­p trung."
+                  description="Chọn kỹ năng chính mà thử thách tập trung."
                 />
                 <select
                   value={form.challengeType}
@@ -548,9 +548,9 @@ export function CommunityClubChallenges({
 
               <div>
                 <FieldLabel
-                  label="MÃ´ táº£ vÃ  cÃ¡ch hoÃ n thÃ nh"
+                  label="Mô tả và cách hoàn thành"
                   required
-                  description="Giáº£i thÃ­ch thÃ nh viÃªn cáº§n lÃ m gÃ¬ má»—i ngÃ y hoáº·c má»—i láº§n."
+                  description="Giải thích thành viên cần làm gì mỗi ngày hoặc mỗi lần."
                 />
                 <textarea
                   value={form.description}
@@ -562,7 +562,7 @@ export function CommunityClubChallenges({
                   }
                   rows={5}
                   maxLength={4000}
-                  placeholder="VÃ­ dá»¥: Má»—i ngÃ y nÃ³i tiáº¿ng Anh Ã­t nháº¥t 10 phÃºt vÃ  Ä‘Äƒng má»™t Ä‘oáº¡n ghi Ã¢m vÃ o Club."
+                  placeholder="Ví dụ: Mỗi ngày nói tiếng Anh ít nhất 10 phút và đăng một đoạn ghi âm vào Club."
                   className="w-full resize-none rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 outline-none placeholder:text-slate-400 focus:border-indigo-500"
                 />
                 <ValidationError message={fieldErrors.description} />
@@ -571,9 +571,9 @@ export function CommunityClubChallenges({
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <FieldLabel
-                    label="Má»¥c tiÃªu hoÃ n thÃ nh"
+                    label="Mục tiêu hoàn thành"
                     required
-                    description="Sá»‘ lÆ°á»£ng thÃ nh viÃªn pháº£i Ä‘áº¡t Ä‘á»ƒ hoÃ n thÃ nh."
+                    description="Số lượng thành viên phải đạt để hoàn thành."
                   />
                   <input
                     type="number"
@@ -585,7 +585,7 @@ export function CommunityClubChallenges({
                         target: Number(event.target.value),
                       }))
                     }
-                    placeholder="VÃ­ dá»¥: 30"
+                    placeholder="Ví dụ: 30"
                     className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 outline-none focus:border-indigo-500"
                   />
                   <ValidationError message={fieldErrors.target} />
@@ -593,9 +593,9 @@ export function CommunityClubChallenges({
 
                 <div>
                   <FieldLabel
-                    label="ÄÆ¡n vá»‹ má»¥c tiÃªu"
+                    label="?ơn vị mục tiêu"
                     required
-                    description="VÃ­ dá»¥: ngÃ y, tá»«, bÃ i, phÃºt hoáº·c láº§n."
+                    description="Ví dụ: ngày, từ, bài, phút hoặc lần."
                   />
                   <select
                     value={form.unit}
@@ -619,9 +619,9 @@ export function CommunityClubChallenges({
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <FieldLabel
-                    label="XP thÆ°á»Ÿng khi hoÃ n thÃ nh"
+                    label="XP thưởng khi hoàn thành"
                     required
-                    description="Sá»‘ XP ngÆ°á»i há»c nháº­n Ä‘Æ°á»£c sau khi Ä‘áº¡t má»¥c tiÃªu."
+                    description="Số XP người học nhận được sau khi đạt mục tiêu."
                   />
                   <input
                     type="number"
@@ -633,7 +633,7 @@ export function CommunityClubChallenges({
                         rewardXp: Number(event.target.value),
                       }))
                     }
-                    placeholder="VÃ­ dá»¥: 500"
+                    placeholder="Ví dụ: 500"
                     className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 outline-none focus:border-indigo-500"
                   />
                   <ValidationError message={fieldErrors.rewardXp} />
@@ -641,8 +641,8 @@ export function CommunityClubChallenges({
 
                 <div>
                   <FieldLabel
-                    label="Huy hiá»‡u hoÃ n thÃ nh"
-                    description="Huy hiá»‡u hiá»ƒn thá»‹ khi thÃ nh viÃªn hoÃ n thÃ nh."
+                    label="Huy hiệu hoàn thành"
+                    description="Huy hiệu hiển thị khi thành viên hoàn thành."
                   />
                   <select
                     value={form.badge}
@@ -668,9 +668,9 @@ export function CommunityClubChallenges({
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <FieldLabel
-                    label="Thá»i gian báº¯t Ä‘áº§u"
+                    label="Thời gian bắt đầu"
                     required
-                    description="Thá»i Ä‘iá»ƒm thá»­ thÃ¡ch chÃ­nh thá»©c má»Ÿ."
+                    description="Thời điểm thử thách chính thức mở."
                   />
                   <input
                     type="datetime-local"
@@ -688,9 +688,9 @@ export function CommunityClubChallenges({
 
                 <div>
                   <FieldLabel
-                    label="Thá»i gian káº¿t thÃºc"
+                    label="Thời gian kết thúc"
                     required
-                    description="Sau thá»i Ä‘iá»ƒm nÃ y khÃ´ng thá»ƒ cáº­p nháº­t tiáº¿n Ä‘á»™."
+                    description="Sau thời điểm này không thể cập nhật tiến độ."
                   />
                   <input
                     type="datetime-local"
@@ -710,8 +710,8 @@ export function CommunityClubChallenges({
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <FieldLabel
-                    label="Äá»‘i tÆ°á»£ng cÃ³ thá»ƒ tham gia"
-                    description="Giá»›i háº¡n thá»­ thÃ¡ch theo nhÃ³m thÃ nh viÃªn phÃ¹ há»£p."
+                    label="Đối tượng có thể tham gia"
+                    description="Giới hạn thử thách theo nhóm thành viên phù hợp."
                   />
                   <select
                     value={form.audience}
@@ -735,8 +735,8 @@ export function CommunityClubChallenges({
 
                 <div>
                   <FieldLabel
-                    label="Sá»‘ ngÆ°á»i tham gia tá»‘i Ä‘a"
-                    description="Äá»ƒ trá»‘ng náº¿u khÃ´ng giá»›i háº¡n sá»‘ ngÆ°á»i."
+                    label="Số người tham gia tối đa"
+                    description="Để trống nếu không giới hạn số người."
                   />
                   <input
                     type="number"
@@ -748,7 +748,7 @@ export function CommunityClubChallenges({
                         maxParticipants: event.target.value,
                       }))
                     }
-                    placeholder="KhÃ´ng giá»›i háº¡n"
+                    placeholder="Không giới hạn"
                     className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 outline-none placeholder:text-slate-400 focus:border-indigo-500"
                   />
                 </div>
@@ -756,8 +756,8 @@ export function CommunityClubChallenges({
 
               <div>
                 <FieldLabel
-                  label="áº¢nh bÃ¬a thá»­ thÃ¡ch"
-                  description="CÃ³ thá»ƒ chá»n áº£nh tá»« mÃ¡y. áº¢nh giÃºp thá»­ thÃ¡ch ná»•i báº­t hÆ¡n."
+                  label="Ảnh bìa thử thách"
+                  description="Có thể chọn ảnh từ máy. Ảnh giúp thử thách nổi bật hơn."
                 />
 
                 {form.coverUrl ? (
@@ -793,10 +793,10 @@ export function CommunityClubChallenges({
                       <>
                         <Upload size={26} />
                         <span className="mt-2 text-sm font-bold">
-                          Chá»n áº£nh bÃ¬a tá»« mÃ¡y
+                          Chọn ảnh bìa từ máy
                         </span>
                         <span className="mt-1 text-xs">
-                          PNG, JPG hoáº·c WEBP
+                          PNG, JPG hoặc WEBP
                         </span>
                       </>
                     )}
@@ -826,7 +826,7 @@ export function CommunityClubChallenges({
                   }}
                   className="rounded-xl px-5 py-3 font-bold text-slate-700 hover:bg-slate-100"
                 >
-                  Há»§y
+                  Hủy
                 </button>
 
                 <button
@@ -843,8 +843,8 @@ export function CommunityClubChallenges({
                     <CheckCircle2 size={18} />
                   )}
                   {submitting
-                    ? 'Äang táº¡o thá»­ thÃ¡ch...'
-                    : 'Táº¡o thá»­ thÃ¡ch'}
+                    ? 'Đang tạo thử thách...'
+                    : 'Tạo thử thách'}
                 </button>
               </div>
             </div>
@@ -856,16 +856,16 @@ export function CommunityClubChallenges({
 
       {loading ? (
         <div className="rounded-3xl border-2 border-slate-200 bg-white py-14 text-center font-semibold text-slate-500">
-          Äang táº£i thá»­ thÃ¡ch...
+          Đang tải thử thách...
         </div>
       ) : items.length === 0 ? (
         <div className="rounded-3xl border-2 border-dashed border-slate-300 bg-white py-14 text-center">
           <Trophy size={34} className="mx-auto text-slate-400" />
           <p className="mt-3 font-extrabold text-slate-800">
-            ChÆ°a cÃ³ thá»­ thÃ¡ch
+            Chưa có thử thách
           </p>
           <p className="mt-1 text-sm text-slate-500">
-            Quáº£n trá»‹ viÃªn cÃ³ thá»ƒ táº¡o thá»­ thÃ¡ch Ä‘áº§u tiÃªn cho Club.
+            Quản trị viên có thể tạo thử thách đầu tiên cho Club.
           </p>
         </div>
       ) : (
@@ -902,10 +902,10 @@ export function CommunityClubChallenges({
                     </p>
 
                     <div className="mt-3 flex flex-wrap gap-3 text-xs font-semibold text-slate-500">
-                      <span>{item.participantCount} ngÆ°á»i tham gia</span>
+                      <span>{item.participantCount} người tham gia</span>
                       <span>{item.rewardXp} XP</span>
                       <span>
-                        Má»¥c tiÃªu: {item.target} {item.unit}
+                        Mục tiêu: {item.target} {item.unit}
                       </span>
                     </div>
 
@@ -927,8 +927,8 @@ export function CommunityClubChallenges({
 
                         <div className="mt-4">
                           <FieldLabel
-                            label="Cáº­p nháº­t tiáº¿n Ä‘á»™"
-                            description={`Chá»n sá»‘ ${item.unit} báº¡n Ä‘Ã£ hoÃ n thÃ nh.`}
+                            label="Cập nhật tiến độ"
+                            description={`Chọn số ${item.unit} bạn đã hoàn thành.`}
                           />
                           <input
                             type="range"
@@ -953,8 +953,8 @@ export function CommunityClubChallenges({
                         className="mt-4 rounded-xl bg-indigo-600 px-4 py-2.5 font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         {joined
-                          ? 'Tham gia thá»­ thÃ¡ch'
-                          : 'Tham gia Club trÆ°á»›c'}
+                          ? 'Tham gia thử thách'
+                          : 'Tham gia Club trước'}
                       </button>
                     )}
                   </div>

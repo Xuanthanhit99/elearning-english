@@ -8,9 +8,9 @@ import { useMiuChat } from '@/src/hooks/useMiuChat';
 import { useAuthStore } from '@/src/store/authStore';
 
 const QUICK_ACTIONS: { key: QuickActionKey; label: string }[] = [
-  { key: 'CHEER_UP', label: 'ðŸ’ª Äá»™ng viÃªn mÃ¬nh' },
-  { key: 'BANTER', label: 'ðŸ˜¹ Nghá»‹ch má»™t chÃºt' },
-  { key: 'QUICK_TIP', label: 'ðŸ’¡ Gá»£i Ã½ há»c nhanh' },
+  { key: 'CHEER_UP', label: '💪 Động viên mình' },
+  { key: 'BANTER', label: '😹 Nghịch một chút' },
+  { key: 'QUICK_TIP', label: '💡 Gợi ý học nhanh' },
 ];
 
 export function MiuChatModal({
@@ -47,7 +47,7 @@ export function MiuChatModal({
     <div className="fixed bottom-4 right-4 z-[9000] sm:bottom-5 sm:right-5 animate-in fade-in slide-in-from-bottom-4 duration-300">
       <div className="flex w-full max-w-3xl overflow-hidden rounded-[28px] border border-black/5 shadow-[0_30px_80px_rgba(15,23,42,0.35)]">
 
-        {/* LEFT PANEL â€” thÃ´ng tin ngÆ°á»i dÃ¹ng */}
+        {/* LEFT PANEL — thông tin người dùng */}
         <div className="relative flex w-[260px] shrink-0 flex-col items-center overflow-hidden bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 px-6 py-10 text-white">
           <div className="pointer-events-none absolute -left-14 -top-14 h-40 w-40 rounded-full bg-orange-500/20 blur-3xl" />
           <div className="pointer-events-none absolute -right-10 bottom-10 h-32 w-32 rounded-full bg-sky-400/10 blur-2xl" />
@@ -72,7 +72,7 @@ export function MiuChatModal({
           </div>
 
           <h3 className="mt-5 text-center text-lg font-bold leading-tight">
-            {user?.fullname || 'Báº¡n há»c viÃªn'}
+            {user?.fullname || 'Bạn học viên'}
           </h3>
           {user?.email && (
             <p className="mt-1 truncate text-center text-xs text-slate-400 max-w-full">{user.email}</p>
@@ -81,7 +81,7 @@ export function MiuChatModal({
           <div className="mt-5 grid w-full grid-cols-2 gap-2 text-center">
             <div className="rounded-2xl bg-white/5 px-2 py-2.5 ring-1 ring-white/10">
               <p className="text-base font-black text-orange-400">Lv {user?.level ?? 1}</p>
-              <p className="mt-0.5 text-[10px] uppercase tracking-wide text-slate-400">Cáº¥p Ä‘á»™</p>
+              <p className="mt-0.5 text-[10px] uppercase tracking-wide text-slate-400">Cấp độ</p>
             </div>
             <div className="rounded-2xl bg-white/5 px-2 py-2.5 ring-1 ring-white/10">
               <p className="text-base font-black text-sky-400">{user?.xp ?? 0}</p>
@@ -90,30 +90,30 @@ export function MiuChatModal({
           </div>
 
           <div className="mt-4 flex w-full items-center gap-2 rounded-2xl bg-white/5 px-3 py-2.5 ring-1 ring-white/10">
-            <span className="text-2xl leading-none">ðŸ±</span>
+            <span className="text-2xl leading-none">🐱</span>
             <div className="min-w-0">
               <p className="truncate text-xs font-bold text-white">{pet.name}</p>
-              <p className="truncate text-[10px] text-slate-400">Lv {pet.level} Â· ðŸ”¥{pet.streak} Â· HP {pet.hp}/100</p>
+              <p className="truncate text-[10px] text-slate-400">Lv {pet.level} · 🔥{pet.streak} · HP {pet.hp}/100</p>
             </div>
           </div>
 
           <button className="mt-6 w-full rounded-full bg-orange-500 py-2.5 text-sm font-semibold shadow-lg shadow-orange-950/30 transition hover:bg-orange-600">
-            ChÄƒm sÃ³c linh thÃº
+            Chăm sóc linh thú
           </button>
         </div>
 
-        {/* RIGHT PANEL â€” chat */}
+        {/* RIGHT PANEL — chat */}
         <div className="flex flex-1 flex-col bg-gradient-to-b from-white to-orange-50/60">
           <div className="flex items-start justify-between border-b border-orange-100/80 px-6 py-5">
             <div>
               <p className="flex items-center gap-1 text-xs font-semibold tracking-wide text-orange-500">
-                <Sparkles size={14} /> GÃ“C TRÃ’ CHUYá»†N
+                <Sparkles size={14} /> GÓC TRÒ CHUYỆN
               </p>
-              <h2 className="mt-1 text-lg font-bold text-slate-800">Gá»i linh thÃº Ä‘á»™ng viÃªn báº¡n</h2>
+              <h2 className="mt-1 text-lg font-bold text-slate-800">Gọi linh thú động viên bạn</h2>
             </div>
             <button
               onClick={onClose}
-              aria-label="ÄÃ³ng"
+              aria-label="?óng"
               className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700"
             >
               <X aria-hidden size={16} />
@@ -167,7 +167,7 @@ export function MiuChatModal({
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSend()}
-              placeholder="NÃ³i gÃ¬ Ä‘Ã³ vá»›i linh thÃº..."
+              placeholder="Nói gì đó với linh thú..."
               className="flex-1 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-orange-300 focus:ring-4 focus:ring-orange-100"
             />
             <button
@@ -175,7 +175,7 @@ export function MiuChatModal({
               disabled={loading || !input.trim()}
               className="flex items-center gap-1.5 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:opacity-50"
             >
-              Gá»­i <Send size={14} />
+              Gửi <Send size={14} />
             </button>
           </div>
         </div>

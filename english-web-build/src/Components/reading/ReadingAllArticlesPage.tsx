@@ -91,7 +91,7 @@ export default function ReadingAllArticlesPage() {
 
       setData(unwrap(response.data));
     } catch {
-      setError("KhÃ´ng táº£i Ä‘Æ°á»£c danh sÃ¡ch bÃ i Ä‘á»c.");
+      setError("Không tải được danh sách bài đọc.");
     } finally {
       setLoading(false);
     }
@@ -123,7 +123,7 @@ export default function ReadingAllArticlesPage() {
   }, [data?.meta.totalPages]);
 
   if (loading && !data) {
-    return <State text="Äang táº£i bÃ i Ä‘á»c..." />;
+    return <State text="Đang tải bài đọc..." />;
   }
 
   if (error && !data) {
@@ -145,11 +145,11 @@ export default function ReadingAllArticlesPage() {
             onChange={(event) =>
               setSearchInput(event.target.value)
             }
-            placeholder="TÃ¬m bÃ i Ä‘á»c..."
+            placeholder="Tìm bài đọc..."
             className="h-12 w-full rounded-xl bg-slate-50 pl-12 pr-24 text-sm outline-none focus:ring-2 focus:ring-violet-200"
           />
           <button className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-bold text-white">
-            TÃ¬m
+            Tìm
           </button>
         </form>
 
@@ -185,7 +185,7 @@ export default function ReadingAllArticlesPage() {
                 <div>
                   <div className="flex items-center gap-2 text-xs font-black text-white/75">
                     <Target size={16} />
-                    NHIá»†M Vá»¤ READING HÃ”M NAY
+                    NHIỆM VỤ READING HÔM NAY
                   </div>
                   <h2 className="mt-2 text-2xl font-black">
                     {dailyMission.title}
@@ -207,7 +207,7 @@ export default function ReadingAllArticlesPage() {
                     />
                   </div>
                   <p className="mt-2 text-sm font-bold">
-                    {missionStatusText(dailyMission)} Â· +
+                    {missionStatusText(dailyMission)} · +
                     {dailyMission.reward.xp} XP
                   </p>
                 </div>
@@ -222,14 +222,14 @@ export default function ReadingAllArticlesPage() {
                   onClick={() => router.push("/reading")}
                   className="text-sm font-bold text-violet-600"
                 >
-                  â† Reading Home
+                  ← Reading Home
                 </button>
                 <h1 className="mt-3 text-3xl font-black">
-                  Táº¥t cáº£ bÃ i Ä‘á»c
+                  Tất cả bài đọc
                 </h1>
                 <p className="mt-2 text-slate-500">
-                  {data.meta.totalItems} káº¿t quáº£ Â·{" "}
-                  {data.summary.progressPercent}% Ä‘Ã£ hoÃ n thÃ nh
+                  {data.meta.totalItems} kết quả ·{" "}
+                  {data.summary.progressPercent}% đã hoàn thành
                 </p>
               </div>
 
@@ -241,10 +241,10 @@ export default function ReadingAllArticlesPage() {
                 }}
                 className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold outline-none"
               >
-                <option value="newest">Má»›i nháº¥t</option>
-                <option value="popular">Phá»• biáº¿n</option>
-                <option value="xp">XP cao nháº¥t</option>
-                <option value="readTime">Thá»i gian ngáº¯n</option>
+                <option value="newest">Mới nhất</option>
+                <option value="popular">Phổ biến</option>
+                <option value="xp">XP cao nhất</option>
+                <option value="readTime">Thời gian ngắn</option>
               </select>
             </div>
           </section>
@@ -257,7 +257,7 @@ export default function ReadingAllArticlesPage() {
 
           {loading && (
             <p className="rounded-2xl bg-white p-5 text-center font-bold text-slate-500">
-              Äang cáº­p nháº­t danh sÃ¡ch...
+              Đang cập nhật danh sách...
             </p>
           )}
 
@@ -295,7 +295,7 @@ export default function ReadingAllArticlesPage() {
                 >
                   {recommended && (
                     <span className="absolute right-3 top-3 z-10 rounded-full bg-violet-600 px-3 py-1 text-xs font-black text-white">
-                      AI Ä‘á» xuáº¥t
+                      AI đề xuất
                     </span>
                   )}
 
@@ -323,7 +323,7 @@ export default function ReadingAllArticlesPage() {
                       {article.title}
                     </h2>
                     <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500">
-                      {article.description || "ChÆ°a cÃ³ mÃ´ táº£."}
+                      {article.description || "Chưa có mô tả."}
                     </p>
 
                     <div className="mt-4 flex flex-wrap gap-4 text-sm font-semibold text-slate-500">
@@ -347,10 +347,10 @@ export default function ReadingAllArticlesPage() {
                       ) : (
                         <span className="inline-flex items-center gap-1 font-bold text-violet-600">
                           {article.status === "LEARNING"
-                            ? "Tiáº¿p tá»¥c"
+                            ? "Tiếp tục"
                             : article.status === "COMPLETED"
-                              ? "Ã”n láº¡i"
-                              : "Báº¯t Ä‘áº§u"}
+                              ? "Ôn lại"
+                              : "Bắt đầu"}
                           <ChevronRight size={17} />
                         </span>
                       )}
@@ -363,7 +363,7 @@ export default function ReadingAllArticlesPage() {
 
           {!data.articles.length && (
             <div className="rounded-3xl bg-white p-10 text-center font-bold text-slate-500">
-              KhÃ´ng cÃ³ bÃ i Ä‘á»c phÃ¹ há»£p.
+              Không có bài đọc phù hợp.
             </div>
           )}
 
@@ -401,7 +401,7 @@ export default function ReadingAllArticlesPage() {
         </section>
 
         <aside className="space-y-5">
-          <FilterCard title="Chá»§ Ä‘á»">
+          <FilterCard title="Chủ đề">
             <select
               value={category}
               onChange={(event) => {
@@ -418,7 +418,7 @@ export default function ReadingAllArticlesPage() {
             </select>
           </FilterCard>
 
-          <FilterCard title="Äá»™ khÃ³">
+          <FilterCard title="Độ khó">
             <div className="grid grid-cols-2 gap-2">
               {data.filters.difficulties.map((item) => (
                 <button
@@ -439,7 +439,7 @@ export default function ReadingAllArticlesPage() {
             </div>
           </FilterCard>
 
-          <FilterCard title="Tráº¡ng thÃ¡i">
+          <FilterCard title="Trạng thái">
             <div className="space-y-2">
               {data.filters.statuses.map((item) => (
                 <button
@@ -464,7 +464,7 @@ export default function ReadingAllArticlesPage() {
             onClick={reset}
             className="w-full rounded-xl border border-violet-200 bg-white py-3 font-bold text-violet-600"
           >
-            XÃ³a bá»™ lá»c
+            Xóa bộ lọc
           </button>
         </aside>
       </div>
@@ -481,7 +481,7 @@ function ArticleStatus({
     return (
       <span className="flex items-center gap-2 text-sm font-bold text-emerald-600">
         <CheckCircle2 size={17} />
-        ÄÃ£ hoÃ n thÃ nh
+        ?ã hoàn thành
       </span>
     );
   }
@@ -496,7 +496,7 @@ function ArticleStatus({
           />
         </div>
         <p className="mt-1 text-xs font-bold text-violet-600">
-          Äang Ä‘á»c {article.progressPercent}%
+          Đang đọc {article.progressPercent}%
         </p>
       </div>
     );
@@ -504,7 +504,7 @@ function ArticleStatus({
 
   return (
     <span className="text-sm font-bold text-slate-400">
-      ChÆ°a báº¯t Ä‘áº§u
+      Chưa bắt đầu
     </span>
   );
 }
@@ -540,7 +540,7 @@ function State({
             onClick={action}
             className="mt-4 rounded-xl bg-violet-600 px-5 py-2 font-bold text-white"
           >
-            Táº£i láº¡i
+            Tải lại
           </button>
         )}
       </div>

@@ -21,7 +21,7 @@ import type {
   CommunityMessageItem,
 } from '@/src/types/community-social';
 
-const emojis = ['ðŸ˜€', 'ðŸ˜‚', 'ðŸ˜', 'ðŸ¥°', 'ðŸ‘', 'ðŸ‘', 'ðŸ”¥', 'â¤ï¸', 'ðŸŽ‰', 'ðŸ¤”'];
+const emojis = ['😀', '😂', '😍', '🥰', '👍', '👏', '🔥', '❤️', '🎉', '🤔'];
 
 export function CommunityMessagesView({
   initialConversationId,
@@ -131,7 +131,7 @@ export function CommunityMessagesView({
       <aside className="border-r-2 border-slate-100">
         <div className="border-b-2 border-slate-100 p-4">
           <h2 className="text-lg font-extrabold text-slate-950">
-            Tin nháº¯n
+            Tin nhắn
           </h2>
         </div>
 
@@ -160,11 +160,11 @@ export function CommunityMessagesView({
                   <strong className="block truncate text-slate-950">
                     {conversation.title ||
                       user?.fullname ||
-                      'Cuá»™c trÃ² chuyá»‡n'}
+                      'Cuộc trò chuyện'}
                   </strong>
                   <p className="mt-1 truncate text-sm font-medium text-slate-500">
                     {conversation.lastMessage?.content ||
-                      'ChÆ°a cÃ³ tin nháº¯n'}
+                      'Chưa có tin nhắn'}
                   </p>
                 </div>
               </button>
@@ -184,10 +184,10 @@ export function CommunityMessagesView({
             <strong className="block text-slate-950">
               {active?.title ||
                 activeUser?.fullname ||
-                'Chá»n cuá»™c trÃ² chuyá»‡n'}
+                'Chọn cuộc trò chuyện'}
             </strong>
             <span className="text-xs font-medium text-emerald-600">
-              Äang hoáº¡t Ä‘á»™ng
+              Đang hoạt động
             </span>
           </div>
         </header>
@@ -233,7 +233,7 @@ export function CommunityMessagesView({
                     className="mt-2 flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-indigo-700"
                   >
                     <File size={16} />
-                    {(message as any).media.name || 'Tá»‡p Ä‘Ã­nh kÃ¨m'}
+                    {(message as any).media.name || 'Tệp đính kèm'}
                   </a>
                 )}
               </div>
@@ -287,7 +287,7 @@ export function CommunityMessagesView({
               type="button"
               onClick={() => setEmojiOpen((value) => !value)}
               className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-slate-700 hover:bg-slate-100"
-              title="Chá»n emoji"
+              title="Chọn emoji"
             >
               <Smile size={21} />
             </button>
@@ -297,7 +297,7 @@ export function CommunityMessagesView({
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
               className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-slate-700 hover:bg-slate-100 disabled:opacity-50"
-              title="ÄÃ­nh kÃ¨m áº£nh hoáº·c tá»‡p"
+              title="?ính kèm ảnh hoặc tệp"
             >
               <Paperclip size={21} />
             </button>
@@ -324,7 +324,7 @@ export function CommunityMessagesView({
                 }
               }}
               rows={2}
-              placeholder="Nháº­p tin nháº¯n..."
+              placeholder="Nhập tin nhắn..."
               className="min-h-[48px] flex-1 resize-none rounded-2xl border-2 border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none focus:border-indigo-500"
             />
 

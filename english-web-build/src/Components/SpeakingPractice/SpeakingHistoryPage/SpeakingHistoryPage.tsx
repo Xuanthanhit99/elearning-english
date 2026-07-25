@@ -65,7 +65,7 @@ export default function SpeakingHistoryPage() {
   }
 
   if (!data) {
-    return <div className="p-10 text-red-500">KhÃ´ng táº£i Ä‘Æ°á»£c history.</div>;
+    return <div className="p-10 text-red-500">Không tải được history.</div>;
   }
 
   return (
@@ -369,16 +369,16 @@ function SummaryCard({
       </h2>
 
       <div className="grid grid-cols-2 gap-4">
-        <SummaryBox icon="ðŸŽ™ï¸" value={summary.sessions} label="Sessions" />
-        <SummaryBox icon="ðŸŽ¯" value={`${summary.avgScore}%`} label="Avg. Score" />
+        <SummaryBox icon="🎙️" value={summary.sessions} label="Sessions" />
+        <SummaryBox icon="🎯" value={`${summary.avgScore}%`} label="Avg. Score" />
         <SummaryBox
-          icon="ðŸ”Š"
+          icon="🔊"
           value={summary.avgDurationText}
           label="Avg. Duration"
         />
         <SummaryBox
-          icon="ðŸ“ˆ"
-          value={`â†‘ ${summary.improvementPercent}%`}
+          icon="📈"
+          value={`↑ ${summary.improvementPercent}%`}
           label="Improvement"
         />
       </div>
@@ -469,7 +469,7 @@ function Pagination({
         onClick={() => onPageChange(page - 1)}
         className="h-11 w-11 rounded-lg border border-indigo-100 bg-white disabled:opacity-40"
       >
-        â€¹
+        ‹
       </button>
 
       {Array.from({ length: Math.min(totalPages, 5) }).map((_, index) => {
@@ -510,7 +510,7 @@ function Pagination({
         onClick={() => onPageChange(page + 1)}
         className="h-11 w-11 rounded-lg border border-indigo-100 bg-white disabled:opacity-40"
       >
-        â€º
+        ›
       </button>
     </div>
   );

@@ -75,7 +75,7 @@ export default function ConversationChatPage() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, streamingText]);
 
-  // Ctrl/Cmd+Enter also sends; Escape cancels an in-flight generation â€”
+  // Ctrl/Cmd+Enter also sends; Escape cancels an in-flight generation —
   // matches Part 9's "keyboard shortcuts" requirement without hijacking
   // plain Enter (which stays newline-in-textarea, Shift+Enter free too).
   useEffect(() => {
@@ -117,7 +117,7 @@ export default function ConversationChatPage() {
       });
     } catch (error) {
       if ((error as Error)?.name === "AbortError") {
-        // Cancelled â€” whatever streamed so far is still shown as a (marked)
+        // Cancelled — whatever streamed so far is still shown as a (marked)
         // partial reply rather than silently discarded.
         setStreamingText((partial) => {
           if (partial) {
@@ -213,7 +213,7 @@ export default function ConversationChatPage() {
             {session.scenario?.title ?? "Free Conversation"}
           </h1>
           <p className="text-xs font-bold text-[var(--BeaconVie-muted)]">
-            {session.difficulty} Â· {session.mode.replace("_", " ")}
+            {session.difficulty} · {session.mode.replace("_", " ")}
           </p>
         </div>
         {session.status === "ACTIVE" && !result && (
@@ -356,7 +356,7 @@ function ConversationResultView({ result }: { result: ConversationFinishResult }
       <BeaconVieCard className="p-6 text-center">
         <BeaconVieBadge>Session complete</BeaconVieBadge>
         <p className="mt-3 text-5xl font-black text-[var(--BeaconVie-primary)]">
-          {result.overallScore ?? "â€”"}
+          {result.overallScore ?? "—"}
         </p>
         <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
           {result.feedback}
@@ -366,7 +366,7 @@ function ConversationResultView({ result }: { result: ConversationFinishResult }
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {scores.map(([label, value]) => (
           <BeaconVieCard key={label} className="p-4 text-center">
-            <p className="text-2xl font-black text-[var(--BeaconVie-ink)]">{value ?? "â€”"}</p>
+            <p className="text-2xl font-black text-[var(--BeaconVie-ink)]">{value ?? "—"}</p>
             <p className="mt-1 text-xs font-bold text-[var(--BeaconVie-muted)]">{label}</p>
           </BeaconVieCard>
         ))}

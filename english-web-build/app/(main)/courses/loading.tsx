@@ -12,7 +12,7 @@ export default function Loading() {
       />
 
       <p className="mt-6 text-center text-lg font-bold text-[var(--BeaconVie-ink)]">
-        Beacon Ä‘ang chuáº©n bá»‹...
+        Beacon đang chuẩn bị...
       </p>
     </div>
   );

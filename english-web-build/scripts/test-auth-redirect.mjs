@@ -131,7 +131,7 @@ try {
   );
 
   // The app runs with `trailingSlash: true`, so middleware actually sees
-  // "/login/"/"/dashboard/", not "/login"/"/dashboard" â€” these must behave
+  // "/login/"/"/dashboard/", not "/login"/"/dashboard" — these must behave
   // identically to the no-trailing-slash cases above.
   assert.deepEqual(
     getAuthRouteDecision({

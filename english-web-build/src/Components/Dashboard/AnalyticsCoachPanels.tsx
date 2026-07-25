@@ -55,7 +55,7 @@ function basisLabel(basis: string) {
   return "No data yet";
 }
 
-/** Skill Radar â€” recency-weighted, not a lifetime flat average. */
+/** Skill Radar — recency-weighted, not a lifetime flat average. */
 export function SkillRadarPanel() {
   const [state, setState] = useState<
     | { status: "loading" }
@@ -181,7 +181,7 @@ export function SkillRadarPanel() {
   );
 }
 
-/** Study Heatmap â€” a GitHub-style contribution grid built from real Progress Timeline days. */
+/** Study Heatmap — a GitHub-style contribution grid built from real Progress Timeline days. */
 export function StudyHeatmapPanel() {
   const [state, setState] = useState<
     | { status: "loading" }
@@ -281,7 +281,7 @@ function sourceBadgeLabel(source: CoachAdvice["source"]) {
   return source === "GEMINI" ? "AI Coach" : "Coach (basic)";
 }
 
-/** AI Learning Coach â€” grounded entirely in the metrics the API already computed, never invented client-side. */
+/** AI Learning Coach — grounded entirely in the metrics the API already computed, never invented client-side. */
 export function AiCoachPanel() {
   const [state, setState] = useState<
     | { status: "loading" }
@@ -366,7 +366,7 @@ export function AiCoachPanel() {
         >
           <span className="min-w-0">
             <span className="block text-xs font-black uppercase tracking-wide text-[var(--BeaconVie-primary)]">
-              {data.recommendedFocus.skill} Â· {data.recommendedFocus.topic}
+              {data.recommendedFocus.skill} · {data.recommendedFocus.topic}
             </span>
             <span className="mt-0.5 block truncate text-sm font-semibold text-[var(--BeaconVie-ink)]">
               {data.recommendedFocus.reason}
@@ -400,7 +400,7 @@ export function AiCoachPanel() {
           <ul className="mt-2 space-y-1.5">
             {data.weeklyPlan.map((item, index) => (
               <li key={index} className="text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
-                â€¢ {item}
+                • {item}
               </li>
             ))}
           </ul>

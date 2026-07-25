@@ -229,7 +229,7 @@ export type PlacementTestScreenData = {
 
   nextUrl?: string;
 
-  // cÃ¡c field cÃ²n láº¡i...
+  // các field còn lại...
 };
 type ApiResponse<T> = {
   success: boolean;

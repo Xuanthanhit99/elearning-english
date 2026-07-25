@@ -146,7 +146,7 @@ async function handleStartWriting(type: string) {
         </button>
       </div>
     ) : (
-      <div className="p-10">KhÃ´ng táº£i Ä‘Æ°á»£c dá»¯ liá»‡u.</div>
+      <div className="p-10">Không tải được dữ liệu.</div>
     );
   }
 
@@ -204,7 +204,7 @@ return (
                   onClick={() => router.push('/writing/topics')}
                   className="font-semibold text-violet-600"
                 >
-                  Xem tất cả topics â†’
+                  Xem tất cả topics →
                 </button>
               </div>
 
@@ -260,14 +260,14 @@ function Header({ data }: { data: WritingHome }) {
           placeholder="Search lessons, topics, or skills..."
         />
         <span className="absolute right-4 top-1/2 -translate-y-1/2 rounded-lg bg-white px-2 py-1 text-xs font-bold text-slate-400">
-          âŒ˜ K
+          ⌘ K
         </span>
       </div>
 
       <div className="flex items-center gap-7">
         <TopStat icon={<Flame className="h-7 w-7 text-red-500" />} value="18" label="Streak" />
         <TopStat icon={<Star className="h-7 w-7 fill-yellow-400 text-yellow-400" />} value="2,450" label="XP Today" />
-        <TopStat icon={<span className="text-2xl">ðŸ’Ž</span>} value="5,230" label="Gems" />
+        <TopStat icon={<span className="text-2xl">💎</span>} value="5,230" label="Gems" />
 
         <div className="grid h-10 w-10 place-items-center rounded-full bg-violet-50">
           <Gift className="h-5 w-5 text-violet-600" />
@@ -282,7 +282,7 @@ function Header({ data }: { data: WritingHome }) {
 
         <div className="flex items-center gap-3">
           <div className="grid h-11 w-11 place-items-center rounded-full bg-blue-100 text-2xl">
-            ðŸ§‘â€ðŸŽ“
+            🧑‍🎓
           </div>
           <div>
             <p className="text-sm font-bold">{data.user.name}</p>
@@ -330,7 +330,7 @@ function Sidebar() {
   return (
     <aside className="h-screen w-[245px] border-r border-slate-100 bg-white px-5 py-6">
       <div className="mb-10 flex items-center gap-3">
-        {/* <div className="text-3xl">ðŸ¦Š</div> */}
+        {/* <div className="text-3xl">🦊</div> */}
         <h1 className="text-2xl font-extrabold">
           Study<span className="text-violet-600">Arena</span>
         </h1>
@@ -404,7 +404,7 @@ function Hero({ data }: { data: WritingHome }) {
 
           <div>
             <h1 className="text-3xl font-extrabold">
-              Chào mừng trở lại, {data.user.name}! ðŸ‘‹
+              Chào mừng trở lại, {data.user.name}! 👋
             </h1>
             <p className="mt-2 font-medium text-slate-600">
               Hãy luyện viết để diễn đạt ý tưởng rõ ràng hơn.
@@ -419,7 +419,7 @@ function Hero({ data }: { data: WritingHome }) {
         </div>
       </div>
 
-      <div className="absolute bottom-0 right-16 text-[160px] leading-none">ðŸ¦Š</div>
+      <div className="absolute bottom-0 right-16 text-[160px] leading-none">🦊</div>
     </section>
   );
 }
@@ -504,11 +504,11 @@ function RecommendationCard({
 
         <h3 className="mt-3 font-extrabold">{item.title}</h3>
         <p className="mt-1 text-xs text-slate-500">
-          {item.level} â€¢ {formatType(item.type)}
+          {item.level} • {formatType(item.type)}
         </p>
 
         <div className="mt-5 flex items-center justify-between">
-          <p className="text-xs text-slate-500">ðŸ‘¥ {item.writers} writers</p>
+          <p className="text-xs text-slate-500">👥 {item.writers} writers</p>
           <button
             onClick={onStart}
             className="grid h-9 w-9 place-items-center rounded-lg border border-violet-200 text-violet-600"
@@ -658,14 +658,14 @@ function HistoryCard({
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-extrabold">Lịch sử gần đây</h2>
         <button onClick={onViewAll} className="font-bold text-violet-600">
-          Xem tất cả â†’
+          Xem tất cả →
         </button>
       </div>
 
       <div className="mt-6 space-y-4">
         {items.length === 0 && (
           <div className="rounded-xl bg-slate-50 p-5 text-sm text-slate-500">
-            ChÆ°a cÃ³ lá»‹ch sá»­ luyá»‡n viáº¿t.
+            Chưa có lịch sử luyện viết.
           </div>
         )}
 
@@ -682,7 +682,7 @@ function HistoryCard({
             <div className="flex-1">
               <p className="font-extrabold">{item.title}</p>
               <p className="mt-1 text-xs text-slate-500">
-                {formatType(item.type)} â€¢ {item.level}
+                {formatType(item.type)} • {item.level}
               </p>
             </div>
 

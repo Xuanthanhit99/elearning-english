@@ -13,9 +13,9 @@ export function LeaderboardHistoryList({
   if (!items.length) {
     return (
       <div className="rounded-3xl bg-white p-10 text-center">
-        <div className="text-5xl">ðŸ“š</div>
+        <div className="text-5xl">📚</div>
         <p className="mt-4 font-black">
-          ChÆ°a cÃ³ lá»‹ch sá»­ mÃ¹a giáº£i
+          Chưa có lịch sử mùa giải
         </p>
       </div>
     );
@@ -42,7 +42,7 @@ export function LeaderboardHistoryList({
 
             <div className="grid grid-cols-3 gap-3 text-center">
               <Metric
-                label="Háº¡ng"
+                label="Hạng"
                 value={`#${item.finalRank}`}
               />
               <Metric
@@ -50,13 +50,13 @@ export function LeaderboardHistoryList({
                 value={formatXp(item.periodXp)}
               />
               <Metric
-                label="Káº¿t quáº£"
+                label="Kết quả"
                 value={
                   item.promoted
-                    ? 'ThÄƒng'
+                    ? 'Thăng'
                     : item.relegated
-                      ? 'Xuá»‘ng'
-                      : 'Giá»¯'
+                      ? 'Xuống'
+                      : 'Giữ'
                 }
               />
             </div>

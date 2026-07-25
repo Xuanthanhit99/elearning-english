@@ -414,7 +414,7 @@ function WelcomeHero({
             <div className="min-w-0">
               <p className="text-sm font-black text-cyan-100">Beacon Coach</p>
               <p className="mt-1 line-clamp-2 text-sm font-semibold text-white/78">
-                {coachHeadline ?? "Analyzing your recent progressâ€¦"}
+                {coachHeadline ?? "Analyzing your recent progress…"}
               </p>
             </div>
           </div>
@@ -805,7 +805,7 @@ function LeaderboardPanel({ state }: { state: LeaderboardState }) {
           ))}
           {currentUser && !entries.some((entry) => entry.isCurrentUser) ? (
             <div className="rounded-2xl border border-blue-200 bg-blue-50/70 p-3 text-sm font-black text-[var(--BeaconVie-primary)] dark:border-blue-400/30 dark:bg-blue-400/10">
-              Your rank: #{currentUser.rank} Â· {currentUser.periodXp.toLocaleString()} XP
+              Your rank: #{currentUser.rank} · {currentUser.periodXp.toLocaleString()} XP
             </div>
           ) : null}
         </div>
@@ -839,7 +839,7 @@ function PetPanel({ data }: { data: DashboardData }) {
                 {pet.petName}
               </p>
               <p className="mt-1 text-sm font-bold text-[var(--BeaconVie-muted)]">
-                Level {pet.level} Â· {pet.xp.toLocaleString()} XP
+                Level {pet.level} · {pet.xp.toLocaleString()} XP
               </p>
             </div>
           </div>

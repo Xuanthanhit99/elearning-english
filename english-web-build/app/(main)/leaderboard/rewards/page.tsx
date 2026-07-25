@@ -11,13 +11,13 @@ export default function LeaderboardRewardsPage() {
             href="/leaderboard"
             className="text-sm font-bold text-violet-600"
           >
-            â† Báº£ng xáº¿p háº¡ng
+            ← Bảng xếp hạng
           </Link>
           <h1 className="mt-2 text-3xl font-black">
-            Pháº§n thÆ°á»Ÿng
+            Phần thưởng
           </h1>
         </div>
-        <div className="text-5xl">ðŸŽ</div>
+        <div className="text-5xl">🎁</div>
       </div>
 
       <LeaderboardRewardsPanel />

@@ -17,7 +17,7 @@ export function CommunityChallengesView() {
     title: '',
     description: '',
     target: 7,
-    unit: 'ngÃ y',
+    unit: 'ngày',
     rewardXp: 50,
     startsAt: '',
     endsAt: '',
@@ -85,9 +85,9 @@ export function CommunityChallengesView() {
     <div className="space-y-5">
       <div className="flex items-center justify-between rounded-3xl border bg-white p-5 shadow-sm">
         <div>
-          <h2 className="text-xl font-bold">Thá»­ thÃ¡ch cá»™ng Ä‘á»“ng</h2>
+          <h2 className="text-xl font-bold">Thử thách cộng đồng</h2>
           <p className="mt-1 text-sm text-slate-500">
-            CÃ¹ng nhau duy trÃ¬ thÃ³i quen há»c táº­p.
+            Cùng nhau duy trì thói quen học tập.
           </p>
         </div>
         <button
@@ -96,7 +96,7 @@ export function CommunityChallengesView() {
           className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 font-semibold text-white"
         >
           <Plus size={18} />
-          Táº¡o thá»­ thÃ¡ch
+          Tạo thử thách
         </button>
       </div>
 
@@ -111,7 +111,7 @@ export function CommunityChallengesView() {
                   title: event.target.value,
                 }))
               }
-              placeholder="TÃªn thá»­ thÃ¡ch"
+              placeholder="Tên thử thách"
               className="rounded-xl border px-4 py-3"
             />
             <input
@@ -122,7 +122,7 @@ export function CommunityChallengesView() {
                   unit: event.target.value,
                 }))
               }
-              placeholder="ÄÆ¡n vá»‹"
+              placeholder="?ơn vị"
               className="rounded-xl border px-4 py-3"
             />
             <textarea
@@ -134,7 +134,7 @@ export function CommunityChallengesView() {
                 }))
               }
               rows={4}
-              placeholder="MÃ´ táº£"
+              placeholder="Mô tả"
               className="rounded-xl border px-4 py-3 sm:col-span-2"
             />
             <input
@@ -158,7 +158,7 @@ export function CommunityChallengesView() {
                 }))
               }
               className="rounded-xl border px-4 py-3"
-              placeholder="XP thÆ°á»Ÿng"
+              placeholder="XP thưởng"
             />
             <input
               type="datetime-local"
@@ -189,14 +189,14 @@ export function CommunityChallengesView() {
               onClick={() => setCreating(false)}
               className="rounded-xl px-4 py-2.5 font-semibold"
             >
-              Há»§y
+              Hủy
             </button>
             <button
               type="button"
               onClick={() => void create()}
               className="rounded-xl bg-indigo-600 px-5 py-2.5 font-semibold text-white"
             >
-              Táº¡o
+              Tạo
             </button>
           </div>
         </div>
@@ -230,7 +230,7 @@ export function CommunityChallengesView() {
                     {item.description}
                   </p>
                   <p className="mt-2 text-xs text-slate-500">
-                    {item.participantCount} ngÆ°á»i tham gia Â· ThÆ°á»Ÿng{' '}
+                    {item.participantCount} người tham gia · Thưởng{' '}
                     {item.rewardXp} XP
                   </p>
 
@@ -268,7 +268,7 @@ export function CommunityChallengesView() {
                       onClick={() => void join(item)}
                       className="mt-4 rounded-xl bg-indigo-600 px-4 py-2.5 font-semibold text-white"
                     >
-                      Tham gia thá»­ thÃ¡ch
+                      Tham gia thử thách
                     </button>
                   )}
                 </div>

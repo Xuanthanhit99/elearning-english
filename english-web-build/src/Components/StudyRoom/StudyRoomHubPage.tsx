@@ -23,9 +23,9 @@ import {
 } from "@/src/lib/study-room-api";
 
 const STATUS_LABEL: Record<string, string> = {
-  WAITING: "Äang chá»",
-  IN_SESSION: "Äang há»c",
-  ENDED: "ÄÃ£ káº¿t thÃºc",
+  WAITING: "Đang chờ",
+  IN_SESSION: "Đang học",
+  ENDED: "?ã kết thúc",
 };
 
 export default function StudyRoomHubPage() {
@@ -62,7 +62,7 @@ export default function StudyRoomHubPage() {
       await joinStudyRoom(roomId);
       router.push(`/study-rooms/${roomId}`);
     } catch {
-      setError("KhÃ´ng thá»ƒ tham gia phÃ²ng nÃ y. Vui lÃ²ng Thử lại.");
+      setError("Không thể tham gia phòng này. Vui lòng Thử lại.");
       setJoiningId(null);
     }
   }
@@ -71,17 +71,17 @@ export default function StudyRoomHubPage() {
     <div className="space-y-6 px-4 py-6 lg:px-8">
       <BeaconVieSectionHeader
         eyebrow="Study Together"
-        title="Há»c nhÃ³m cÃ¹ng nhau, theo thá»i gian thá»±c"
-        description="Táº¡o hoáº·c tham gia má»™t phÃ²ng há»c nhÃ³m, Ä‘áº·t má»¥c tiÃªu thá»i gian chung, vÃ  nháº­n XP nhÃ³m khi hoÃ n thÃ nh buá»•i há»c."
+        title="Học nhóm cùng nhau, theo thời gian thực"
+        description="Tạo hoặc tham gia một phòng học nhóm, đặt mục tiêu thời gian chung, và nhận XP nhóm khi hoàn thành buổi học."
         action={
           <div className="flex gap-2">
             <BeaconVieButton tone="soft" onClick={() => setShowJoinCode(true)}>
               <KeyRound aria-hidden className="h-4 w-4" />
-              Nháº­p mÃ£ má»i
+              Nhập mã mời
             </BeaconVieButton>
             <BeaconVieButton onClick={() => setShowCreate(true)}>
               <Plus aria-hidden className="h-4 w-4" />
-              Táº¡o phÃ²ng há»c
+              Tạo phòng học
             </BeaconVieButton>
           </div>
         }
@@ -105,7 +105,7 @@ export default function StudyRoomHubPage() {
                 : "border border-[var(--BeaconVie-border)] text-[var(--BeaconVie-muted)] hover:bg-[var(--BeaconVie-hover-tint)]"
             }`}
           >
-            {key === "BROWSE" ? "KhÃ¡m phÃ¡" : "PhÃ²ng cá»§a tÃ´i"}
+            {key === "BROWSE" ? "Khám phá" : "Phòng của tôi"}
           </button>
         ))}
       </div>
@@ -120,8 +120,8 @@ export default function StudyRoomHubPage() {
 
       {state.status === "error" && (
         <BeaconVieState
-          title="KhÃ´ng thá»ƒ táº£i danh sÃ¡ch phÃ²ng há»c"
-          description="ÄÃ£ cÃ³ lá»—i xáº£y ra khi táº£i danh sÃ¡ch."
+          title="Không thể tải danh sách phòng học"
+          description="?ã có lỗi xảy ra khi tải danh sách."
           actionLabel="Thử lại"
           onAction={load}
           tone="error"
@@ -130,9 +130,9 @@ export default function StudyRoomHubPage() {
 
       {state.status === "ready" && state.data.length === 0 && (
         <BeaconVieState
-          title={tab === "BROWSE" ? "ChÆ°a cÃ³ phÃ²ng há»c cÃ´ng khai nÃ o" : "Báº¡n chÆ°a tham gia phÃ²ng nÃ o"}
-          description="HÃ£y táº¡o má»™t phÃ²ng há»c má»›i Ä‘á»ƒ báº¯t Ä‘áº§u."
-          actionLabel="Táº¡o phÃ²ng há»c"
+          title={tab === "BROWSE" ? "Chưa có phòng học công khai nào" : "Bạn chưa tham gia phòng nào"}
+          description="Hãy tạo một phòng học mới để bắt đầu."
+          actionLabel="Tạo phòng học"
           onAction={() => setShowCreate(true)}
         />
       )}
@@ -152,8 +152,8 @@ export default function StudyRoomHubPage() {
                 <p className="mt-1 text-sm font-semibold text-[var(--BeaconVie-muted)]">{room.topic}</p>
               )}
               <div className="mt-3 flex flex-wrap gap-3 text-xs font-bold text-[var(--BeaconVie-muted)]">
-                <span>{room.memberCount}/{room.maxMembers} thÃ nh viÃªn</span>
-                <span>{room.goalMinutes} phÃºt/buá»•i</span>
+                <span>{room.memberCount}/{room.maxMembers} thành viên</span>
+                <span>{room.goalMinutes} phút/buổi</span>
               </div>
               <BeaconVieButton
                 className="mt-4 w-full"
@@ -197,7 +197,7 @@ function CreateRoomDialog({
 
   async function submit() {
     if (!name.trim()) {
-      setError("Vui lÃ²ng nháº­p tÃªn phÃ²ng há»c.");
+      setError("Vui lòng nhập tên phòng học.");
       return;
     }
     setSubmitting(true);
@@ -206,7 +206,7 @@ function CreateRoomDialog({
       const room = await createStudyRoom({ name, topic: topic || undefined, goalMinutes, maxMembers, visibility });
       onCreated(room.id);
     } catch {
-      setError("KhÃ´ng thá»ƒ táº¡o phÃ²ng há»c. Vui lÃ²ng Thử lại.");
+      setError("Không thể tạo phòng học. Vui lòng Thử lại.");
     } finally {
       setSubmitting(false);
     }
@@ -215,24 +215,24 @@ function CreateRoomDialog({
   return (
     <BeaconVieDialog open={open} onClose={onClose} titleId="create-study-room-title" labelledBy="create-study-room-title">
       <h2 id="create-study-room-title" className="text-lg font-black text-[var(--BeaconVie-ink)]">
-        Táº¡o phÃ²ng há»c nhÃ³m
+        Tạo phòng học nhóm
       </h2>
       <div className="mt-4 space-y-3">
         <input
           className="w-full rounded-xl border border-[var(--BeaconVie-border)] bg-transparent px-3 py-2 text-sm font-semibold"
-          placeholder="TÃªn phÃ²ng há»c"
+          placeholder="Tên phòng học"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
         <input
           className="w-full rounded-xl border border-[var(--BeaconVie-border)] bg-transparent px-3 py-2 text-sm font-semibold"
-          placeholder="Chá»§ Ä‘á» (khÃ´ng báº¯t buá»™c)"
+          placeholder="Chủ đề (không bắt buộc)"
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
         />
         <div className="flex gap-3">
           <label className="flex-1 text-xs font-bold text-[var(--BeaconVie-muted)]">
-            Má»¥c tiÃªu (phÃºt)
+            Mục tiêu (phút)
             <input
               type="number"
               min={5}
@@ -243,7 +243,7 @@ function CreateRoomDialog({
             />
           </label>
           <label className="flex-1 text-xs font-bold text-[var(--BeaconVie-muted)]">
-            Sá»‘ thÃ nh viÃªn tá»‘i Ä‘a
+            Số thành viên tối đa
             <input
               type="number"
               min={2}
@@ -255,20 +255,20 @@ function CreateRoomDialog({
           </label>
         </div>
         <label className="block text-xs font-bold text-[var(--BeaconVie-muted)]">
-          Quyá»n riÃªng tÆ°
+          Quyền riêng tư
           <select
             className="mt-1 w-full rounded-xl border border-[var(--BeaconVie-border)] bg-transparent px-3 py-2 text-sm font-semibold"
             value={visibility}
             onChange={(e) => setVisibility(e.target.value as StudyRoomVisibility)}
           >
-            <option value="PUBLIC">CÃ´ng khai</option>
-            <option value="PRIVATE">RiÃªng tÆ°</option>
-            <option value="INVITE_ONLY">Chá»‰ má»i</option>
+            <option value="PUBLIC">Công khai</option>
+            <option value="PRIVATE">Riêng tư</option>
+            <option value="INVITE_ONLY">Chỉ mời</option>
           </select>
         </label>
         {error && <p className="text-sm font-bold text-rose-600">{error}</p>}
         <BeaconVieButton className="w-full" loading={submitting} onClick={submit}>
-          Táº¡o phÃ²ng
+          Tạo phòng
         </BeaconVieButton>
       </div>
     </BeaconVieDialog>
@@ -296,7 +296,7 @@ function JoinByCodeDialog({
       const room = await joinStudyRoomByCode(code.trim());
       onJoined(room.id);
     } catch {
-      setError("MÃ£ má»i khÃ´ng há»£p lá»‡ hoáº·c Ä‘Ã£ háº¿t háº¡n.");
+      setError("Mã mời không hợp lệ hoặc đã hết hạn.");
     } finally {
       setSubmitting(false);
     }
@@ -305,12 +305,12 @@ function JoinByCodeDialog({
   return (
     <BeaconVieDialog open={open} onClose={onClose} titleId="join-by-code-title" labelledBy="join-by-code-title">
       <h2 id="join-by-code-title" className="text-lg font-black text-[var(--BeaconVie-ink)]">
-        Tham gia báº±ng mÃ£ má»i
+        Tham gia bằng mã mời
       </h2>
       <div className="mt-4 space-y-3">
         <input
           className="w-full rounded-xl border border-[var(--BeaconVie-border)] bg-transparent px-3 py-2 text-sm font-semibold uppercase"
-          placeholder="Nháº­p mÃ£ má»i"
+          placeholder="Nhập mã mời"
           value={code}
           onChange={(e) => setCode(e.target.value)}
         />

@@ -154,7 +154,7 @@ export default function ReviewVocabularyPage() {
 
   const startReview = () => {
     if (!reviewSession?.cards?.length) {
-      setMessage("Hiá»‡n chÆ°a cÃ³ tá»« nÃ o cáº§n Ã´n.");
+      setMessage("Hiện chưa có từ nào cần ôn.");
       return;
     }
     setSessionIndex(0);
@@ -181,7 +181,7 @@ export default function ReviewVocabularyPage() {
       answers: nextAnswers,
     });
     setSessionOpen(false);
-    setMessage("ÄÃ£ lÆ°u káº¿t quáº£ Ã´n táº­p. Lá»‹ch Ã´n cá»§a báº¡n Ä‘Ã£ Ä‘Æ°á»£c cáº­p nháº­t.");
+    setMessage("?ã lưu kết quả ôn tập. Lịch ôn của bạn đã được cập nhật.");
     await loadReview();
   };
 
@@ -195,10 +195,10 @@ export default function ReviewVocabularyPage() {
                   className="inline-flex items-center gap-2 text-sm font-black text-[#4f5790]"
                 >
                   <AppIcon name="chevronLeft" bare size={18} />
-                  Ã”n táº­p
+                  Ôn tập
                 </Link>
                 <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <h1 className="text-3xl font-black">Cáº§n Ã´n láº¡i</h1>
+                  <h1 className="text-3xl font-black">Cần ôn lại</h1>
                   <button
                     onClick={loadReview}
                     className="grid h-10 w-10 place-items-center rounded-xl bg-[#f2edff] text-[#6d35ff]"
@@ -207,8 +207,8 @@ export default function ReviewVocabularyPage() {
                   </button>
                 </div>
                 <p className="mt-3 max-w-3xl text-sm font-bold text-[#69708b]">
-                  Nhá»¯ng tá»« báº¡n Ä‘Ã£ há»c nhÆ°ng chÆ°a nhá»› vá»¯ng. Ã”n láº¡i thÆ°á»ng xuyÃªn
-                  Ä‘á»ƒ ghi nhá»› lÃ¢u hÆ¡n.
+                  Những từ bạn đã học nhưng chưa nhớ vững. Ôn lại thường xuyên
+                  để ghi nhớ lâu hơn.
                 </p>
               </div>
 
@@ -217,22 +217,22 @@ export default function ReviewVocabularyPage() {
                   icon="book"
                   tone="purple"
                   value={String(totalReview)}
-                  label="Tá»« cáº§n Ã´n láº¡i"
-                  note={urgent ? `TÄƒng ${urgent} tá»« so vá»›i hÃ´m qua` : "Äang á»•n Ä‘á»‹nh"}
+                  label="Từ cần ôn lại"
+                  note={urgent ? `Tăng ${urgent} từ so với hôm qua` : "Đang ổn định"}
                 />
                 <MetricCard
                   icon="calendar"
                   tone="orange"
                   value={String(longestGap || dashboard?.today?.estimatedTime || 0)}
-                  label="NgÃ y lÃ¢u nháº¥t"
-                  note="Báº¡n Ä‘Ã£ chÆ°a Ã´n láº¡i"
+                  label="Ngày lâu nhất"
+                  note="Bạn đã chưa ôn lại"
                 />
                 <MetricCard
                   icon="target"
                   tone="emerald"
                   value={`${memoryRate}%`}
-                  label="Tá»· lá»‡ ghi nhá»›"
-                  note="Hiá»‡u quáº£ Ã´n táº­p tá»‘t"
+                  label="Tỷ lệ ghi nhớ"
+                  note="Hiệu quả ôn tập tốt"
                 />
               </div>
 
@@ -246,7 +246,7 @@ export default function ReviewVocabularyPage() {
                         : "text-[#59627f]"
                     }`}
                   >
-                    Theo Ä‘á»™ Æ°u tiÃªn
+                    Theo độ ưu tiên
                   </button>
                   <button
                     onClick={() => setActiveTab("topic")}
@@ -256,18 +256,18 @@ export default function ReviewVocabularyPage() {
                         : "text-[#59627f]"
                     }`}
                   >
-                    Theo chá»§ Ä‘á»
+                    Theo chủ đề
                   </button>
                   <button className="ml-auto inline-flex items-center gap-2 rounded-xl border border-[#e8e9f5] px-4 py-3 text-sm font-black text-[#4f5790]">
                     <AppIcon name="settings" bare size={16} />
-                    Bá»™ lá»c
+                    Bộ lọc
                   </button>
                   <button
                     onClick={startReview}
                     className="inline-flex items-center gap-2 rounded-xl bg-[#6d35ff] px-5 py-3 text-sm font-black text-white"
                   >
                     <AppIcon name="play" bare size={16} />
-                    Báº¯t Ä‘áº§u Ã´n táº­p ({reviewSession?.total || totalReview})
+                    Bắt đầu ôn tập ({reviewSession?.total || totalReview})
                   </button>
                 </div>
 
@@ -376,7 +376,7 @@ function ReviewTable({
   if (loading) {
     return (
       <div className="py-14 text-center font-bold text-[#69708b]">
-        Äang táº£i danh sÃ¡ch Ã´n táº­p...
+        Đang tải danh sách ôn tập...
       </div>
     );
   }
@@ -385,7 +385,7 @@ function ReviewTable({
     return (
       <div className="flex flex-col items-center gap-3 py-14 text-center">
         <p className="font-bold text-[#d92d20]">
-          KhÃ´ng táº£i Ä‘Æ°á»£c danh sÃ¡ch Ã´n táº­p. Vui lÃ²ng Thử lại.
+          Không tải được danh sách ôn tập. Vui lòng Thử lại.
         </p>
         <button
           onClick={onRetry}
@@ -400,7 +400,7 @@ function ReviewTable({
   if (!words.length) {
     return (
       <div className="py-14 text-center font-bold text-[#69708b]">
-        HÃ´m nay chÆ°a cÃ³ tá»« cáº§n Ã´n.
+        Hôm nay chưa có từ cần ôn.
       </div>
     );
   }
@@ -413,11 +413,11 @@ function ReviewTable({
             <th className="w-10 py-4">
               <input type="checkbox" className="h-4 w-4 rounded border-[#cfd3e8]" />
             </th>
-            <th className="py-4">Tá»« vá»±ng</th>
-            <th className="py-4">NghÄ©a</th>
-            <th className="py-4">Láº§n quÃªn</th>
-            <th className="py-4">Láº§n cuá»‘i Ã´n</th>
-            <th className="py-4">Äá»™ Æ°u tiÃªn</th>
+            <th className="py-4">Từ vựng</th>
+            <th className="py-4">Nghĩa</th>
+            <th className="py-4">Lần quên</th>
+            <th className="py-4">Lần cuối ôn</th>
+            <th className="py-4">Độ ưu tiên</th>
             <th className="py-4 text-right"> </th>
           </tr>
         </thead>
@@ -452,9 +452,9 @@ function ReviewTable({
                 </div>
               </td>
               <td className="py-4 text-[#4f5790]">
-                {item.meaningVi || item.meaningEn || "ChÆ°a cÃ³ nghÄ©a"}
+                {item.meaningVi || item.meaningEn || "Chưa có nghĩa"}
               </td>
-              <td className="py-4 text-[#4f5790]">{item.wrongCount} láº§n</td>
+              <td className="py-4 text-[#4f5790]">{item.wrongCount} lần</td>
               <td className="py-4 text-[#4f5790]">
                 {formatRelative(item.reviewAt)}
               </td>
@@ -483,13 +483,13 @@ function PriorityBadge({ wrongCount }: { wrongCount: number }) {
   if (wrongCount >= 2) {
     return (
       <span className="rounded-lg bg-orange-50 px-3 py-1 text-xs font-black text-orange-500">
-        Trung bÃ¬nh
+        Trung bình
       </span>
     );
   }
   return (
     <span className="rounded-lg bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-600">
-      Tháº¥p
+      Thấp
     </span>
   );
 }
@@ -508,7 +508,7 @@ function ProgressChart({
   });
 
   return (
-    <Panel title="Tiáº¿n Ä‘á»™ Ã´n táº­p" action="7 ngÃ y qua">
+    <Panel title="Tiến độ ôn tập" action="7 ngày qua">
       <svg viewBox="0 0 330 180" className="h-56 w-full">
         {[0, 1, 2, 3, 4].map((line) => (
           <line
@@ -550,7 +550,7 @@ function ProgressChart({
       </svg>
       <p className="text-center text-sm font-bold text-[#69708b]">
         <span className="text-4xl font-black text-[#6d35ff]">{memoryRate}%</span>{" "}
-        Hiá»‡u quáº£ ghi nhá»› trung bÃ¬nh
+        Hiệu quả ghi nhớ trung bình
       </p>
     </Panel>
   );
@@ -558,13 +558,13 @@ function ProgressChart({
 
 function ReviewTips({ urgent }: { urgent: number }) {
   const tips = [
-    ["target", "Táº­p trung Ã´n cÃ¡c tá»« Æ°u tiÃªn cao", `Báº¡n cÃ³ ${urgent} tá»« cáº§n Ã´n gáº¥p`],
-    ["calendar", "Ã”n theo phÆ°Æ¡ng phÃ¡p Spaced Repetition", "GiÃºp ghi nhá»› lÃ¢u hÆ¡n 2-3 láº§n"],
-    ["sparkles", "Káº¿t há»£p Flashcard vÃ  Quiz", "TÄƒng hiá»‡u quáº£ Ã´n táº­p Ä‘Ã¡ng ká»ƒ"],
+    ["target", "Tập trung ôn các từ ưu tiên cao", `Bạn có ${urgent} từ cần ôn gấp`],
+    ["calendar", "Ôn theo phương pháp Spaced Repetition", "Giúp ghi nhớ lâu hơn 2-3 lần"],
+    ["sparkles", "Kết hợp Flashcard và Quiz", "Tăng hiệu quả ôn tập đáng kể"],
   ] as const;
 
   return (
-    <Panel title="Gá»£i Ã½ Ã´n táº­p hÃ´m nay">
+    <Panel title="Gợi ý ôn tập hôm nay">
       <div className="space-y-3">
         {tips.map(([icon, title, desc]) => (
           <div
@@ -594,7 +594,7 @@ function TopicPanel({ topics }: { topics: Array<{ name: string; count: number }>
   const list = topics.length ? topics : fallback;
 
   return (
-    <Panel title="Chá»§ Ä‘á» cáº§n Ã´n láº¡i nhiá»u">
+    <Panel title="Chủ đề cần ôn lại nhiều">
       <div className="space-y-3">
         {list.map((topic) => (
           <div key={topic.name} className="flex items-center justify-between">
@@ -615,7 +615,7 @@ function BeaconTip() {
       <div className="flex items-center gap-4">
         <AppIcon name="sparkles" tone="yellow" />
         <p className="text-sm font-bold leading-6 text-[#4f5790]">
-          Ã”n táº­p má»—i ngÃ y chá»‰ 10-15 phÃºt sáº½ giÃºp báº¡n nhá»› lÃ¢u hÆ¡n ráº¥t nhiá»u.
+          Ôn tập mỗi ngày chỉ 10-15 phút sẽ giúp bạn nhớ lâu hơn rất nhiều.
         </p>
         <AppIcon name="paw" bare size={70} className="ml-auto text-orange-500" />
       </div>
@@ -641,7 +641,7 @@ function Pagination({
         onClick={() => onPageChange(page - 1)}
         className="rounded-xl border border-[#e8e9f5] bg-white px-4 py-2 text-sm font-black text-[#4f5790] disabled:cursor-not-allowed disabled:opacity-45"
       >
-        TrÆ°á»›c
+        Trước
       </button>
       {pages.map((item, index) => (
         <button
@@ -664,7 +664,7 @@ function Pagination({
         onClick={() => onPageChange(page + 1)}
         className="rounded-xl border border-[#e8e9f5] bg-white px-4 py-2 text-sm font-black text-[#4f5790] disabled:cursor-not-allowed disabled:opacity-45"
       >
-        Tiáº¿p
+        Tiếp
       </button>
     </div>
   );
@@ -702,13 +702,13 @@ function ReviewSessionModal({
   return (
     <Modal onClose={onClose}>
       <p className="text-sm font-black uppercase text-[#6d35ff]">
-        Ã”n táº­p {current}/{total}
+        Ôn tập {current}/{total}
       </p>
       <h2 className="mt-3 text-5xl font-black">{card.word}</h2>
       <p className="mt-3 text-lg font-bold text-[#69708b]">{card.phonetic}</p>
       <div className="mt-6 rounded-2xl bg-[#f8f6ff] p-6">
         <p className="text-2xl font-black">
-          {card.meaningVi || card.meaningEn || "ChÆ°a cÃ³ nghÄ©a"}
+          {card.meaningVi || card.meaningEn || "Chưa có nghĩa"}
         </p>
         <p className="mt-3 font-bold text-[#69708b]">{card.example}</p>
       </div>
@@ -785,7 +785,7 @@ function Modal({
           onClick={onClose}
           className="ml-auto grid h-10 w-10 place-items-center rounded-full bg-[#efe9ff] font-black text-[#6d35ff]"
         >
-          Ã—
+          ×
         </button>
         {children}
       </section>
@@ -794,13 +794,13 @@ function Modal({
 }
 
 function formatRelative(value?: string | null) {
-  if (!value) return "HÃ´m nay";
+  if (!value) return "Hôm nay";
   const date = new Date(value);
   const diff = Math.max(
     0,
     Math.floor((Date.now() - date.getTime()) / 86400000),
   );
-  if (diff === 0) return "HÃ´m nay";
-  if (diff === 1) return "HÃ´m qua";
-  return `${diff} ngÃ y trÆ°á»›c`;
+  if (diff === 0) return "Hôm nay";
+  if (diff === 1) return "Hôm qua";
+  return `${diff} ngày trước`;
 }

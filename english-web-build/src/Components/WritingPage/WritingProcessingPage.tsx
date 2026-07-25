@@ -19,12 +19,12 @@ import type { WritingProcessingStatus } from '@/src/lib/writing-processing.types
 import { getApiErrorMessage } from '@/src/lib/api-error';
 
 const meta = {
-  SUBMITTED: { icon: FileText, title: 'ÄÃ£ nháº­n bÃ i viáº¿t' },
-  AI_EVALUATION: { icon: Sparkles, title: 'Gemini Ä‘ang cháº¥m bÃ i' },
-  SAVING_RESULT: { icon: WandSparkles, title: 'Äang lÆ°u káº¿t quáº£' },
-  UPDATING_MISSIONS: { icon: CheckCircle2, title: 'Äang cáº­p nháº­t tiáº¿n Ä‘á»™' },
-  COMPLETED: { icon: CheckCircle2, title: 'HoÃ n thÃ nh' },
-  FAILED: { icon: XCircle, title: 'Cháº¥m bÃ i tháº¥t báº¡i' },
+  SUBMITTED: { icon: FileText, title: '?ã nhận bài viết' },
+  AI_EVALUATION: { icon: Sparkles, title: 'Gemini đang chấm bài' },
+  SAVING_RESULT: { icon: WandSparkles, title: 'Đang lưu kết quả' },
+  UPDATING_MISSIONS: { icon: CheckCircle2, title: 'Đang cập nhật tiến độ' },
+  COMPLETED: { icon: CheckCircle2, title: 'Hoàn thành' },
+  FAILED: { icon: XCircle, title: 'Chấm bài thất bại' },
 } as const;
 
 export default function WritingProcessingPage() {
@@ -68,7 +68,7 @@ export default function WritingProcessingPage() {
         }
       } catch (err) {
         if (cancelled) return;
-        setError(getApiErrorMessage(err, 'KhÃ´ng táº£i Ä‘Æ°á»£c tráº¡ng thÃ¡i cháº¥m bÃ i.'));
+        setError(getApiErrorMessage(err, 'Không tải được trạng thái chấm bài.'));
         timer = window.setTimeout(poll, 3000);
       }
     }
@@ -152,7 +152,7 @@ export default function WritingProcessingPage() {
         </h1>
         <p className="mx-auto mt-4 max-w-lg leading-7 text-slate-500">
           {status?.message ??
-            'Há»‡ thá»‘ng Ä‘ang chuáº©n bá»‹ cháº¥m bÃ i viáº¿t cá»§a báº¡n báº±ng Gemini.'}
+            'Hệ thống đang chuẩn bị chấm bài viết của bạn bằng Gemini.'}
         </p>
 
         <div className="mt-8 h-4 overflow-hidden rounded-full bg-slate-100">
@@ -193,11 +193,11 @@ export default function WritingProcessingPage() {
 
         {(error || status?.status === 'FAILED') && (
           <div className="mt-7 rounded-2xl border border-red-200 bg-red-50 p-5 text-left text-red-700">
-            <p className="font-black">KhÃ´ng thá»ƒ cháº¥m bÃ i viáº¿t</p>
+            <p className="font-black">Không thể chấm bài viết</p>
             <p className="mt-2 text-sm">
               {status?.errorMessage ||
                 error ||
-                'Vui lÃ²ng thá»­ ná»™p láº¡i bÃ i viáº¿t.'}
+                'Vui lòng thử nộp lại bài viết.'}
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
               {status?.retryable && (
@@ -210,7 +210,7 @@ export default function WritingProcessingPage() {
                     size={18}
                     className={retrying ? 'animate-spin' : ''}
                   />
-                  {retrying ? 'Äang gá»­i láº¡i...' : 'Thá»­ cháº¥m láº¡i'}
+                  {retrying ? 'Đang gửi lại...' : 'Thử chấm lại'}
                 </button>
               )}
               <button
@@ -218,7 +218,7 @@ export default function WritingProcessingPage() {
                 className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 font-black text-white"
               >
                 <PenLine size={18} />
-                Quay láº¡i bÃ i viáº¿t
+                Quay lại bài viết
               </button>
             </div>
           </div>

@@ -18,47 +18,47 @@ type CommunityComposerBoxProps = {
 };
 
 const contentTypes: Array<{ mode: ComposerMode; icon: string; label: string }> = [
-  { mode: "image", icon: "â–§", label: "áº¢nh / Video" },
-  { mode: "post", icon: "Aa", label: "Táº¡o má»›i" },
-  { mode: "writing", icon: "â˜‘", label: "Check bÃ i" },
-  { mode: "poll", icon: "â–¥", label: "ThÄƒm dÃ² Ã½ kiáº¿n" },
-  { mode: "question", icon: "?", label: "Há»i Ä‘Ã¡p" },
+  { mode: "image", icon: "▧", label: "Ảnh / Video" },
+  { mode: "post", icon: "Aa", label: "Tạo mới" },
+  { mode: "writing", icon: "☑", label: "Check bài" },
+  { mode: "poll", icon: "▥", label: "Thăm dò ý kiến" },
+  { mode: "question", icon: "?", label: "Hỏi đáp" },
 ];
 
 const modalCopy: Record<ComposerMode, { title: string; desc: string; icon: string }> = {
   image: {
-    title: "ÄÄƒng áº£nh / video",
-    desc: "Chia sáº» hÃ¬nh áº£nh, video há»c táº­p vÃ  thÃªm mÃ´ táº£ Ä‘á»ƒ Ä‘Äƒng lÃªn cá»™ng Ä‘á»“ng.",
-    icon: "â–§",
+    title: "?ăng ảnh / video",
+    desc: "Chia sẻ hình ảnh, video học tập và thêm mô tả để đăng lên cộng đồng.",
+    icon: "▧",
   },
   post: {
-    title: "Táº¡o bÃ i viáº¿t má»›i",
-    desc: "Viáº¿t ná»™i dung Ä‘áº§y Ä‘á»§, thÃªm chá»§ Ä‘á» vÃ  Ä‘Äƒng bÃ i chia sáº» kiáº¿n thá»©c.",
+    title: "Tạo bài viết mới",
+    desc: "Viết nội dung đầy đủ, thêm chủ đề và đăng bài chia sẻ kiến thức.",
     icon: "Aa",
   },
   writing: {
-    title: "Nhá» cá»™ng Ä‘á»“ng check bÃ i",
-    desc: "Gá»­i bÃ i viáº¿t hoáº·c file Ä‘á»ƒ má»i ngÆ°á»i gÃ³p Ã½, sá»­a lá»—i vÃ  cáº£i thiá»‡n nhanh hÆ¡n.",
-    icon: "â˜‘",
+    title: "Nhờ cộng đồng check bài",
+    desc: "Gửi bài viết hoặc file để mọi người góp ý, sửa lỗi và cải thiện nhanh hơn.",
+    icon: "☑",
   },
   poll: {
-    title: "Táº¡o thÄƒm dÃ² Ã½ kiáº¿n",
-    desc: "Äáº·t cÃ¢u há»i, thÃªm lá»±a chá»n vÃ  Ä‘Äƒng poll Ä‘á»ƒ láº¥y Ã½ kiáº¿n cá»™ng Ä‘á»“ng.",
-    icon: "â–¥",
+    title: "Tạo thăm dò ý kiến",
+    desc: "Đặt câu hỏi, thêm lựa chọn và đăng poll để lấy ý kiến cộng đồng.",
+    icon: "▥",
   },
   question: {
-    title: "Äáº·t cÃ¢u há»i",
-    desc: "Há»i cá»™ng Ä‘á»“ng vá» tá»« vá»±ng, ngá»¯ phÃ¡p, speaking hoáº·c bÃ i há»c báº¡n chÆ°a rÃµ.",
+    title: "Đặt câu hỏi",
+    desc: "Hỏi cộng đồng về từ vựng, ngữ pháp, speaking hoặc bài học bạn chưa rõ.",
     icon: "?",
   },
   speaking: {
-    title: "Chia sáº» speaking",
-    desc: "Gá»­i cÃ¢u nÃ³i hoáº·c ghi chÃº speaking Ä‘á»ƒ nháº­n gÃ³p Ã½ tá»« cá»™ng Ä‘á»“ng.",
-    icon: "ðŸŽ™",
+    title: "Chia sẻ speaking",
+    desc: "Gửi câu nói hoặc ghi chú speaking để nhận góp ý từ cộng đồng.",
+    icon: "🎙",
   },
   word: {
-    title: "Chia sáº» tá»« má»›i",
-    desc: "ÄÄƒng tá»« má»›i, nghÄ©a, phÃ¡t Ã¢m vÃ  vÃ­ dá»¥ Ä‘á»ƒ cÃ¹ng nhau ghi nhá»›.",
+    title: "Chia sẻ từ mới",
+    desc: "?ăng từ mới, nghĩa, phát âm và ví dụ để cùng nhau ghi nhớ.",
     icon: "Aa",
   },
 };
@@ -83,7 +83,7 @@ export default function CommunityComposerBox({ mode, setMode, onClose }: Communi
       }),
       Underline,
       Placeholder.configure({
-        placeholder: "Chia sáº» chi tiáº¿t ná»™i dung cá»§a báº¡n...",
+        placeholder: "Chia sẻ chi tiết nội dung của bạn...",
       }),
       TextAlign.configure({
         types: ["paragraph"],
@@ -112,7 +112,7 @@ export default function CommunityComposerBox({ mode, setMode, onClose }: Communi
   const setLink = () => {
     if (!editor) return;
     const previousUrl = editor.getAttributes("link").href as string | undefined;
-    const url = window.prompt("Nháº­p link", previousUrl || "https://");
+    const url = window.prompt("Nhập link", previousUrl || "https://");
 
     if (url === null) return;
     if (url === "") {
@@ -131,17 +131,17 @@ export default function CommunityComposerBox({ mode, setMode, onClose }: Communi
     <section className="rounded-2xl border border-[#e8e9f5] bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#eef0f7] pb-5">
         <div>
-          <h1 className="text-2xl font-black">Táº¡o bÃ i viáº¿t má»›i</h1>
+          <h1 className="text-2xl font-black">Tạo bài viết mới</h1>
           <p className="mt-2 font-bold text-[#69708b]">
-            Chá»n má»™t tÃ­nh nÄƒng bÃªn dÆ°á»›i Ä‘á»ƒ má»Ÿ form Ä‘Äƒng bÃ i Ä‘Ãºng loáº¡i ná»™i dung.
+            Chọn một tính năng bên dưới để mở form đăng bài đúng loại nội dung.
           </p>
         </div>
         <div className="flex gap-3">
           <button type="button" onClick={onClose} className="rounded-xl border border-[#d9ceff] px-6 py-3 text-sm font-black text-[#6d35ff]">
-            LÆ°u nhÃ¡p
+            Lưu nháp
           </button>
           <button type="button" onClick={submitMainPost} className="rounded-xl bg-[#6d35ff] px-6 py-3 text-sm font-black text-white shadow-[0_16px_30px_rgba(109,53,255,0.24)]">
-            ÄÄƒng bÃ i
+            ?ăng bài
           </button>
         </div>
       </div>
@@ -149,9 +149,9 @@ export default function CommunityComposerBox({ mode, setMode, onClose }: Communi
       <div className="mt-6 space-y-5">
         <div className="flex flex-wrap items-center gap-4 rounded-xl border border-[#e8e9f5] p-3">
           <button type="button" className="flex items-center gap-3 rounded-xl border border-[#e8e9f5] px-4 py-3 text-sm font-black">
-            ðŸŒ CÃ´ng khaiâŒ„
+            🌐 Công khai⌄
           </button>
-          <span className="text-sm font-bold text-[#69708b]">Báº¥t ká»³ ai cÅ©ng cÃ³ thá»ƒ xem</span>
+          <span className="text-sm font-bold text-[#69708b]">Bất kỳ ai cũng có thể xem</span>
         </div>
 
         <label className="block">
@@ -159,7 +159,7 @@ export default function CommunityComposerBox({ mode, setMode, onClose }: Communi
             <input
               value={title}
               onChange={(event) => setTitle(event.target.value.slice(0, 100))}
-              placeholder="TiÃªu Ä‘á» cá»§a báº¡n lÃ  gÃ¬?"
+              placeholder="Tiêu đề của bạn là gì?"
               className="w-full rounded-xl border border-[#d9ceff] px-5 py-5 text-xl font-bold outline-none placeholder:text-[#a6a3c4] focus:border-[#6d35ff]"
             />
             <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm font-bold text-[#69708b]">{title.length}/100</span>
@@ -172,15 +172,15 @@ export default function CommunityComposerBox({ mode, setMode, onClose }: Communi
             <EditorButton active={editor?.isActive("italic")} onClick={() => editor?.chain().focus().toggleItalic().run()}><em>I</em></EditorButton>
             <EditorButton active={editor?.isActive("underline")} onClick={() => editor?.chain().focus().toggleUnderline().run()}><u>U</u></EditorButton>
             <EditorButton active={editor?.isActive("strike")} onClick={() => editor?.chain().focus().toggleStrike().run()}><s>S</s></EditorButton>
-            <EditorButton active={editor?.isActive("bulletList")} onClick={() => editor?.chain().focus().toggleBulletList().run()}>â˜·</EditorButton>
-            <EditorButton active={editor?.isActive("orderedList")} onClick={() => editor?.chain().focus().toggleOrderedList().run()}>â˜°</EditorButton>
-            <EditorButton active={editor?.isActive({ textAlign: "left" })} onClick={() => editor?.chain().focus().setTextAlign("left").run()}>â‰¡</EditorButton>
-            <EditorButton active={editor?.isActive({ textAlign: "center" })} onClick={() => editor?.chain().focus().setTextAlign("center").run()}>â˜°</EditorButton>
-            <EditorButton active={editor?.isActive("blockquote")} onClick={() => editor?.chain().focus().toggleBlockquote().run()}>âž</EditorButton>
+            <EditorButton active={editor?.isActive("bulletList")} onClick={() => editor?.chain().focus().toggleBulletList().run()}>☷</EditorButton>
+            <EditorButton active={editor?.isActive("orderedList")} onClick={() => editor?.chain().focus().toggleOrderedList().run()}>☰</EditorButton>
+            <EditorButton active={editor?.isActive({ textAlign: "left" })} onClick={() => editor?.chain().focus().setTextAlign("left").run()}>≡</EditorButton>
+            <EditorButton active={editor?.isActive({ textAlign: "center" })} onClick={() => editor?.chain().focus().setTextAlign("center").run()}>☰</EditorButton>
+            <EditorButton active={editor?.isActive("blockquote")} onClick={() => editor?.chain().focus().toggleBlockquote().run()}>❞</EditorButton>
             <EditorButton active={editor?.isActive("codeBlock")} onClick={() => editor?.chain().focus().toggleCodeBlock().run()}>{"</>"}</EditorButton>
-            <EditorButton active={editor?.isActive("link")} onClick={setLink}>ðŸ”—</EditorButton>
-            <EditorButton onClick={() => editor?.chain().focus().setHorizontalRule().run()}>â”</EditorButton>
-            <EditorButton onClick={() => editor?.chain().focus().insertContent(" ðŸ˜Š ").run()}>â˜º</EditorButton>
+            <EditorButton active={editor?.isActive("link")} onClick={setLink}>🔗</EditorButton>
+            <EditorButton onClick={() => editor?.chain().focus().setHorizontalRule().run()}>━</EditorButton>
+            <EditorButton onClick={() => editor?.chain().focus().insertContent(" 😊 ").run()}>☺</EditorButton>
           </div>
           <div className="relative">
             <EditorContent editor={editor} />
@@ -206,7 +206,7 @@ export default function CommunityComposerBox({ mode, setMode, onClose }: Communi
 
         <section className="rounded-xl border border-[#e8e9f5] p-5">
           <div className="flex items-center justify-between">
-            <h2 className="font-black">ThÃªm chá»§ Ä‘á»</h2>
+            <h2 className="font-black">Thêm chủ đề</h2>
             <button type="button" className="rounded-xl border border-[#e8e9f5] px-4 py-3"><AppIcon name="search" tone="purple" size={16} bare /></button>
           </div>
           <div className="mt-4 flex flex-wrap gap-3">
@@ -219,9 +219,9 @@ export default function CommunityComposerBox({ mode, setMode, onClose }: Communi
         </section>
 
         <label className="block">
-          <span className="font-black">Chá»n nhÃ³m <span className="font-bold text-[#69708b]">(tÃ¹y chá»n)</span></span>
+          <span className="font-black">Chọn nhóm <span className="font-bold text-[#69708b]">(tùy chọn)</span></span>
           <button type="button" className="mt-3 flex w-full items-center justify-between rounded-xl border border-[#e8e9f5] px-5 py-4 text-left font-bold text-[#8b91aa]">
-            <span className="inline-flex items-center gap-2"><AppIcon name="users" tone="purple" size={16} bare /> Chá»n nhÃ³m phÃ¹ há»£p vá»›i ná»™i dung</span>
+            <span className="inline-flex items-center gap-2"><AppIcon name="users" tone="purple" size={16} bare /> Chọn nhóm phù hợp với nội dung</span>
             <AppIcon name="chevronRight" tone="slate" size={16} bare />
           </button>
         </label>
@@ -295,7 +295,7 @@ function FeaturePostModal({
           type="button"
           onClick={onClose}
           className="absolute right-6 top-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#f1ecff] text-3xl font-black text-[#6d35ff] hover:bg-[#e3d8ff]"
-          aria-label="ÄÃ³ng"
+          aria-label="?óng"
         >
           <AppIcon name="x" tone="purple" size={22} bare />
         </button>
@@ -319,13 +319,13 @@ function FeaturePostModal({
         </div>
 
         <div className="mt-7 flex flex-col-reverse gap-3 border-t border-[#eef0f7] pt-5 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-bold text-[#69708b]">Beacon sáº½ Ä‘Äƒng ná»™i dung nÃ y lÃªn báº£ng tin cá»™ng Ä‘á»“ng.</p>
+          <p className="text-sm font-bold text-[#69708b]">Beacon sẽ đăng nội dung này lên bảng tin cộng đồng.</p>
           <div className="flex gap-3">
             <button type="button" onClick={onClose} className="rounded-xl border border-[#d9ceff] px-6 py-3 text-sm font-black text-[#6d35ff]">
-              Há»§y
+              Hủy
             </button>
             <button type="button" onClick={onSubmit} className="rounded-xl bg-[#6d35ff] px-7 py-3 text-sm font-black text-white shadow-[0_16px_30px_rgba(109,53,255,0.24)]">
-              ÄÄƒng bÃ i
+              ?ăng bài
             </button>
           </div>
         </div>
@@ -338,15 +338,15 @@ function ImagePostForm() {
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
       <div className="space-y-4">
-        <FormInput label="TiÃªu Ä‘á»" placeholder="Khoáº£nh kháº¯c há»c tiáº¿ng Anh hÃ´m nay" />
-        <FormTextarea label="MÃ´ táº£" rows={5} placeholder="Viáº¿t mÃ´ táº£ cho áº£nh/video, vÃ­ dá»¥ bÃ i há»c báº¡n rÃºt ra..." />
+        <FormInput label="Tiêu đề" placeholder="Khoảnh khắc học tiếng Anh hôm nay" />
+        <FormTextarea label="Mô tả" rows={5} placeholder="Viết mô tả cho ảnh/video, ví dụ bài học bạn rút ra..." />
         <div className="grid gap-3 sm:grid-cols-3">
-          <UploadTile label="áº¢nh ghi chÃº" />
-          <UploadTile label="Video ngáº¯n" play />
-          <UploadTile label="ThÃªm file" add />
+          <UploadTile label="Ảnh ghi chú" />
+          <UploadTile label="Video ngắn" play />
+          <UploadTile label="Thêm file" add />
         </div>
       </div>
-      <SideHint title="Gá»£i Ã½ Ä‘Äƒng áº£nh" items={["Tá»‘i Ä‘a 10 áº£nh hoáº·c 1 video", "Video nÃªn dÆ°á»›i 5 phÃºt", "ThÃªm caption Ä‘á»ƒ má»i ngÆ°á»i dá»… gÃ³p Ã½"]} />
+      <SideHint title="Gợi ý đăng ảnh" items={["Tối đa 10 ảnh hoặc 1 video", "Video nên dưới 5 phút", "Thêm caption để mọi người dễ góp ý"]} />
     </div>
   );
 }
@@ -354,9 +354,9 @@ function ImagePostForm() {
 function RichPostForm() {
   return (
     <div className="space-y-4">
-      <FormInput label="TiÃªu Ä‘á» bÃ i viáº¿t" placeholder="5 cÃ¡ch ghi nhá»› tá»« vá»±ng hiá»‡u quáº£" />
-      <FormTextarea label="Ná»™i dung" rows={9} placeholder="Viáº¿t ná»™i dung chi tiáº¿t, chia sáº» kinh nghiá»‡m, bÃ i há»c hoáº·c tÃ i liá»‡u..." />
-      <FormInput label="Chá»§ Ä‘á»" placeholder="#Vocabulary #StudyTips" />
+      <FormInput label="Tiêu đề bài viết" placeholder="5 cách ghi nhớ từ vựng hiệu quả" />
+      <FormTextarea label="Nội dung" rows={9} placeholder="Viết nội dung chi tiết, chia sẻ kinh nghiệm, bài học hoặc tài liệu..." />
+      <FormInput label="Chủ đề" placeholder="#Vocabulary #StudyTips" />
     </div>
   );
 }
@@ -365,14 +365,14 @@ function WritingCheckForm() {
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
       <div className="space-y-4">
-        <FormInput label="TiÃªu Ä‘á» cáº§n gÃ³p Ã½" placeholder="Please check my writing about My favorite place" />
-        <FormTextarea label="BÃ i viáº¿t cáº§n check" rows={7} placeholder="DÃ¡n bÃ i writing cá»§a báº¡n vÃ o Ä‘Ã¢y..." />
+        <FormInput label="Tiêu đề cần góp ý" placeholder="Please check my writing about My favorite place" />
+        <FormTextarea label="Bài viết cần check" rows={7} placeholder="Dán bài writing của bạn vào đây..." />
         <label className="block rounded-2xl border border-dashed border-[#b99cff] bg-[#fbf9ff] p-5 text-center font-black text-[#6d35ff]">
-          ðŸ“„ Táº£i file .docx / .pdf
+          📄 Tải file .docx / .pdf
           <input type="file" className="hidden" accept=".doc,.docx,.pdf,.txt" />
         </label>
       </div>
-      <SideHint title="NgÆ°á»i gÃ³p Ã½ sáº½ tháº¥y" items={["Ná»™i dung bÃ i viáº¿t", "YÃªu cáº§u sá»­a lá»—i cá»¥ thá»ƒ", "File Ä‘Ã­nh kÃ¨m náº¿u cÃ³"]} />
+      <SideHint title="Người góp ý sẽ thấy" items={["Nội dung bài viết", "Yêu cầu sửa lỗi cụ thể", "File đính kèm nếu có"]} />
     </div>
   );
 }
@@ -384,12 +384,12 @@ function PollPostForm({ options, setOptions }: { options: string[]; setOptions: 
 
   return (
     <div className="space-y-4">
-      <FormInput label="CÃ¢u há»i thÄƒm dÃ²" placeholder="Báº¡n muá»‘n há»c chá»§ Ä‘á» nÃ o trong tuáº§n nÃ y?" />
+      <FormInput label="Câu hỏi thăm dò" placeholder="Bạn muốn học chủ đề nào trong tuần này?" />
       <div className="space-y-3 rounded-2xl border border-[#e8e9f5] p-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-black">CÃ¡c lá»±a chá»n</h3>
+          <h3 className="font-black">Các lựa chọn</h3>
           <button type="button" onClick={() => setOptions([...options, ""])} className="rounded-xl bg-[#efe9ff] px-4 py-2 text-sm font-black text-[#6d35ff]">
-            + ThÃªm lá»±a chá»n
+            + Thêm lựa chọn
           </button>
         </div>
         {options.map((option, index) => (
@@ -397,13 +397,13 @@ function PollPostForm({ options, setOptions }: { options: string[]; setOptions: 
             key={index}
             value={option}
             onChange={(event) => updateOption(index, event.target.value)}
-            placeholder={`Lá»±a chá»n ${index + 1}`}
+            placeholder={`Lựa chọn ${index + 1}`}
             className="w-full rounded-xl border border-[#e8e9f5] px-4 py-3 font-bold outline-none focus:border-[#6d35ff]"
           />
         ))}
       </div>
       <div className="rounded-2xl bg-[#fff8e8] p-4 text-sm font-bold text-[#8a5a00]">
-        Poll sáº½ hiá»ƒn thá»‹ káº¿t quáº£ theo thá»i gian thá»±c sau khi ngÆ°á»i dÃ¹ng bÃ¬nh chá»n.
+        Poll sẽ hiển thị kết quả theo thời gian thực sau khi người dùng bình chọn.
       </div>
     </div>
   );
@@ -412,12 +412,12 @@ function PollPostForm({ options, setOptions }: { options: string[]; setOptions: 
 function QuestionPostForm() {
   return (
     <div className="space-y-4">
-      <FormInput label="CÃ¢u há»i" placeholder="Khi nÃ o dÃ¹ng for vÃ  since?" />
-      <FormTextarea label="MÃ´ táº£ chi tiáº¿t" rows={7} placeholder="Báº¡n Ä‘ang vÆ°á»›ng pháº§n nÃ o? ThÃªm vÃ­ dá»¥ Ä‘á»ƒ cá»™ng Ä‘á»“ng tráº£ lá»i chÃ­nh xÃ¡c hÆ¡n..." />
+      <FormInput label="Câu hỏi" placeholder="Khi nào dùng for và since?" />
+      <FormTextarea label="Mô tả chi tiết" rows={7} placeholder="Bạn đang vướng phần nào? Thêm ví dụ để cộng đồng trả lời chính xác hơn..." />
       <div className="grid gap-3 sm:grid-cols-3">
-        <FormSelect label="Ká»¹ nÄƒng" options={["Ngữ pháp", "Từ vựng", "Luyện nghe", "Luyện nói"]} />
-        <FormSelect label="TrÃ¬nh Ä‘á»™" options={["A1", "A2", "B1", "B2", "C1"]} />
-        <FormSelect label="Tráº¡ng thÃ¡i" options={["Cáº§n tráº£ lá»i", "Cáº§n vÃ­ dá»¥", "Cáº§n sá»­a lá»—i"]} />
+        <FormSelect label="Kỹ năng" options={["Ngữ pháp", "Từ vựng", "Luyện nghe", "Luyện nói"]} />
+        <FormSelect label="Trình độ" options={["A1", "A2", "B1", "B2", "C1"]} />
+        <FormSelect label="Trạng thái" options={["Cần trả lời", "Cần ví dụ", "Cần sửa lỗi"]} />
       </div>
     </div>
   );
@@ -426,15 +426,15 @@ function QuestionPostForm() {
 function SpeakingPostForm() {
   return (
     <div className="space-y-4">
-      <FormInput label="CÃ¢u luyá»‡n nÃ³i" placeholder="I want to improve my English speaking." />
-      <FormTextarea label="Ghi chÃº" rows={5} placeholder="Báº¡n muá»‘n má»i ngÆ°á»i gÃ³p Ã½ phÃ¡t Ã¢m, ngá»¯ Ä‘iá»‡u hay Ä‘á»™ tá»± nhiÃªn?" />
+      <FormInput label="Câu luyện nói" placeholder="I want to improve my English speaking." />
+      <FormTextarea label="Ghi chú" rows={5} placeholder="Bạn muốn mọi người góp ý phát âm, ngữ điệu hay độ tự nhiên?" />
       <div className="rounded-2xl border border-[#e8e9f5] bg-[#fbf9ff] p-5">
         <div className="flex flex-wrap items-center gap-3">
-          <button type="button" className="rounded-xl bg-[#6d35ff] px-5 py-3 text-sm font-black text-white">ðŸŽ™ Ghi Ã¢m</button>
-          <button type="button" className="rounded-xl border border-[#d9ceff] px-5 py-3 text-sm font-black text-[#6d35ff]">ðŸ”Š Nghe máº«u</button>
+          <button type="button" className="rounded-xl bg-[#6d35ff] px-5 py-3 text-sm font-black text-white">🎙 Ghi âm</button>
+          <button type="button" className="rounded-xl border border-[#d9ceff] px-5 py-3 text-sm font-black text-[#6d35ff]">🔊 Nghe mẫu</button>
         </div>
         <div className="mt-5 flex h-14 items-end gap-1 text-3xl text-[#6d35ff]">
-          <span>â–‚</span><span>â–ƒ</span><span>â–…</span><span>â–‡</span><span>â–…</span><span>â–ƒ</span><span>â–‚</span>
+          <span>▂</span><span>▃</span><span>▅</span><span>▇</span><span>▅</span><span>▃</span><span>▂</span>
         </div>
       </div>
     </div>
@@ -444,12 +444,12 @@ function SpeakingPostForm() {
 function WordPostForm() {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      <FormInput label="Tá»« má»›i" placeholder="Resilient" />
-      <FormInput label="PhiÃªn Ã¢m" placeholder="/rÉªËˆzÉªliÉ™nt/" />
-      <FormInput label="NghÄ©a" placeholder="KiÃªn cÆ°á»ng" />
-      <FormInput label="VÃ­ dá»¥" placeholder="She is resilient." />
+      <FormInput label="Từ mới" placeholder="Resilient" />
+      <FormInput label="Phiên âm" placeholder="/rÉªËˆzɪliənt/" />
+      <FormInput label="Nghĩa" placeholder="Kiên cường" />
+      <FormInput label="Ví dụ" placeholder="She is resilient." />
       <div className="sm:col-span-2">
-        <FormTextarea label="Máº¹o ghi nhá»›" rows={5} placeholder="Chia sáº» cÃ¡ch báº¡n ghi nhá»› tá»« nÃ y..." />
+        <FormTextarea label="Mẹo ghi nhớ" rows={5} placeholder="Chia sẻ cách bạn ghi nhớ từ này..." />
       </div>
     </div>
   );
@@ -458,7 +458,7 @@ function WordPostForm() {
 function UploadTile({ add, label, play }: { add?: boolean; label: string; play?: boolean }) {
   return (
     <label className="flex h-32 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-[#b99cff] bg-[#fbf9ff] text-center font-black text-[#6d35ff]">
-      <span className="text-3xl">{play ? "â–¶" : add ? "+" : "â–§"}</span>
+      <span className="text-3xl">{play ? "▶" : add ? "+" : "▧"}</span>
       <span className="mt-2 text-sm">{label}</span>
       <input type="file" className="hidden" accept={play ? "video/*" : "image/*,video/*"} />
     </label>
@@ -472,7 +472,7 @@ function SideHint({ items, title }: { items: string[]; title: string }) {
       <div className="mt-4 space-y-3">
         {items.map((item) => (
           <div key={item} className="flex gap-3 text-sm font-bold leading-6 text-[#59627f]">
-            <span className="text-[#6d35ff]">âœ“</span>
+            <span className="text-[#6d35ff]">✓</span>
             {item}
           </div>
         ))}

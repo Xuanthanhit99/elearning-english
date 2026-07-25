@@ -31,7 +31,7 @@ export default function SpeakingPracticePage() {
     let active = true;
     getSpeakingPractice(sessionId)
       .then((result) => active && setData(result))
-      .catch((err) => active && setError(errorText(err, 'KhÃ´ng táº£i Ä‘Æ°á»£c bÃ i luyá»‡n nÃ³i.')))
+      .catch((err) => active && setError(errorText(err, 'Không tải được bài luyện nói.')))
       .finally(() => active && setLoading(false));
 
     return () => {
@@ -128,7 +128,7 @@ export default function SpeakingPracticePage() {
       router.replace(`/speaking/sessions/${sessionId}/processing`);
     } catch (err) {
       setState('READY');
-      setError(errorText(err, 'KhÃ´ng thá»ƒ táº£i báº£n ghi Ã¢m lÃªn.'));
+      setError(errorText(err, 'Không thể tải bản ghi âm lên.'));
     }
   }
 
@@ -160,15 +160,15 @@ export default function SpeakingPracticePage() {
     }
   }
 
-  if (loading) return <PageState text="Äang táº£i bÃ i luyá»‡n nÃ³i..." />;
-  if (!data) return <PageState text={error || 'KhÃ´ng cÃ³ dá»¯ liá»‡u bÃ i há»c.'} />;
+  if (loading) return <PageState text="Đang tải bài luyện nói..." />;
+  if (!data) return <PageState text={error || 'Không có dữ liệu bài học.'} />;
 
   return (
     <main className="min-h-screen bg-[#fbfbff] px-4 py-6 text-slate-900 md:px-8">
       <div className="mx-auto max-w-[1350px]">
         <header className="flex flex-col gap-4 rounded-3xl border border-violet-100 bg-white p-5 shadow-sm md:flex-row md:items-center md:justify-between">
           <button onClick={() => router.back()} className="inline-flex items-center gap-2 font-black text-violet-600">
-            <ChevronLeft size={18} /> Quay láº¡i
+            <ChevronLeft size={18} /> Quay lại
           </button>
           <div className="text-right">
             <p className="text-sm font-bold text-slate-400">{data.topic?.title ?? 'Speaking'}</p>
@@ -182,12 +182,12 @@ export default function SpeakingPracticePage() {
               <div className="flex flex-wrap gap-3">
                 <span className="rounded-full bg-violet-50 px-4 py-2 text-xs font-black text-violet-700">{data.lesson.type.replaceAll('_', ' ')}</span>
                 <span className="rounded-full bg-emerald-50 px-4 py-2 text-xs font-black text-emerald-700">{data.lesson.level}</span>
-                <span className="rounded-full bg-orange-50 px-4 py-2 text-xs font-black text-orange-700">{data.lesson.estimatedMinutes} phÃºt</span>
+                <span className="rounded-full bg-orange-50 px-4 py-2 text-xs font-black text-orange-700">{data.lesson.estimatedMinutes} phút</span>
               </div>
               <h2 className="mt-6 text-3xl font-black">{data.lesson.prompt}</h2>
               {data.lesson.expectedText && (
                 <div className="mt-6 rounded-2xl border border-violet-100 bg-violet-50 p-5">
-                  <p className="text-xs font-black uppercase tracking-wide text-violet-500">CÃ¢u máº«u</p>
+                  <p className="text-xs font-black uppercase tracking-wide text-violet-500">Câu mẫu</p>
                   <p className="mt-3 text-lg font-bold leading-8 text-violet-900">{data.lesson.expectedText}</p>
                 </div>
               )}
@@ -201,20 +201,20 @@ export default function SpeakingPracticePage() {
               <p className="mt-2 text-sm font-semibold text-slate-500">{statusText(state)}</p>
 
               <div className="mt-7 flex flex-wrap justify-center gap-3">
-                {state === 'IDLE' && <Action onClick={startRecording} icon={<Mic size={18} />} label="Báº¯t Ä‘áº§u ghi Ã¢m" primary />}
+                {state === 'IDLE' && <Action onClick={startRecording} icon={<Mic size={18} />} label="Bắt đầu ghi âm" primary />}
                 {state === 'RECORDING' && <>
-                  <Action onClick={pauseRecording} icon={<Pause size={18} />} label="Táº¡m dá»«ng" />
-                  <Action onClick={stopRecording} icon={<Square size={18} />} label="Dá»«ng" danger />
+                  <Action onClick={pauseRecording} icon={<Pause size={18} />} label="Tạm dừng" />
+                  <Action onClick={stopRecording} icon={<Square size={18} />} label="Dừng" danger />
                 </>}
                 {state === 'PAUSED' && <>
-                  <Action onClick={resumeRecording} icon={<Play size={18} />} label="Tiáº¿p tá»¥c" primary />
-                  <Action onClick={stopRecording} icon={<Square size={18} />} label="Dá»«ng" danger />
+                  <Action onClick={resumeRecording} icon={<Play size={18} />} label="Tiếp tục" primary />
+                  <Action onClick={stopRecording} icon={<Square size={18} />} label="Dừng" danger />
                 </>}
                 {state === 'READY' && <>
-                  <Action onClick={startRecording} icon={<RotateCcw size={18} />} label="Ghi láº¡i" />
-                  <Action onClick={submitRecording} icon={<Upload size={18} />} label="Gá»­i cho AI" primary />
+                  <Action onClick={startRecording} icon={<RotateCcw size={18} />} label="Ghi lại" />
+                  <Action onClick={submitRecording} icon={<Upload size={18} />} label="Gửi cho AI" primary />
                 </>}
-                {state === 'UPLOADING' && <Action disabled icon={<Upload size={18} />} label="Äang táº£i lÃªn..." primary />}
+                {state === 'UPLOADING' && <Action disabled icon={<Upload size={18} />} label="Đang tải lên..." primary />}
               </div>
 
               {audioUrl && <audio controls src={audioUrl} className="mx-auto mt-7 w-full max-w-xl" />}
@@ -224,13 +224,13 @@ export default function SpeakingPracticePage() {
           </section>
 
           <aside className="space-y-5">
-            <SideCard title="Quy trÃ¬nh">
+            <SideCard title="Quy trình">
               <div className="space-y-4">{(data.steps ?? defaultSteps).map((step) => <div key={step.order} className="flex gap-3"><div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-violet-100 text-sm font-black text-violet-700">{step.order}</div><div><p className="font-black">{step.title}</p><p className="mt-1 text-sm text-slate-500">{step.description}</p></div></div>)}</div>
             </SideCard>
-            <SideCard title="Ká»¹ nÄƒng trá»ng tÃ¢m">
+            <SideCard title="Kỹ năng trọng tâm">
               <div className="space-y-4">{(data.focusSkills ?? []).map((item) => <div key={item.title} className="flex items-center gap-3"><span className="text-2xl">{item.icon}</span><div><p className="font-black">{item.title}</p><p className="text-sm text-slate-500">{item.description}</p></div></div>)}</div>
             </SideCard>
-            <SideCard title="Máº¹o ghi Ã¢m">
+            <SideCard title="Mẹo ghi âm">
               <div className="space-y-4">{(data.tips ?? []).map((item) => <div key={item.title} className="flex items-start gap-3"><CheckCircle2 size={18} className="mt-0.5 shrink-0 text-emerald-600" /><div><p className="font-black">{item.title}</p><p className="text-sm text-slate-500">{item.description}</p></div></div>)}</div>
             </SideCard>
           </aside>
@@ -241,9 +241,9 @@ export default function SpeakingPracticePage() {
 }
 
 const defaultSteps = [
-  { order: 1, title: 'Äá»c vÃ  ghi Ã¢m', description: 'NÃ³i rÃµ rÃ ng vÃ  tá»± nhiÃªn.' },
-  { order: 2, title: 'AI phÃ¢n tÃ­ch', description: 'Chuyá»ƒn giá»ng nÃ³i vÃ  cháº¥m Ä‘iá»ƒm.' },
-  { order: 3, title: 'Nháº­n pháº£n há»“i', description: 'Xem lá»—i vÃ  cÃ¡ch cáº£i thiá»‡n.' },
+  { order: 1, title: 'Đọc và ghi âm', description: 'Nói rõ ràng và tự nhiên.' },
+  { order: 2, title: 'AI phân tích', description: 'Chuyển giọng nói và chấm điểm.' },
+  { order: 3, title: 'Nhận phản hồi', description: 'Xem lỗi và cách cải thiện.' },
 ];
 
 function Action({ onClick, icon, label, primary, danger, disabled }: { onClick?: () => void; icon: React.ReactNode; label: string; primary?: boolean; danger?: boolean; disabled?: boolean }) {
@@ -259,7 +259,7 @@ function PageState({ text }: { text: string }) {
 }
 
 function statusText(state: RecorderState) {
-  return state === 'RECORDING' ? 'Äang ghi Ã¢m...' : state === 'PAUSED' ? 'ÄÃ£ táº¡m dá»«ng' : state === 'READY' ? 'Báº£n ghi Ä‘Ã£ sáºµn sÃ ng' : state === 'UPLOADING' ? 'Äang táº£i báº£n ghi lÃªn' : 'Nháº¥n nÃºt Ä‘á»ƒ báº¯t Ä‘áº§u';
+  return state === 'RECORDING' ? 'Đang ghi âm...' : state === 'PAUSED' ? '?ã tạm dừng' : state === 'READY' ? 'Bản ghi đã sẵn sàng' : state === 'UPLOADING' ? 'Đang tải bản ghi lên' : 'Nhấn nút để bắt đầu';
 }
 
 function resolveMimeType() {
@@ -267,9 +267,9 @@ function resolveMimeType() {
 }
 
 function microphoneError(error: unknown) {
-  if (error instanceof DOMException && error.name === 'NotAllowedError') return 'Báº¡n chÆ°a cáº¥p quyá»n sá»­ dá»¥ng microphone.';
-  if (error instanceof DOMException && error.name === 'NotFoundError') return 'KhÃ´ng tÃ¬m tháº¥y microphone trÃªn thiáº¿t bá»‹.';
-  return 'KhÃ´ng thá»ƒ má»Ÿ microphone. HÃ£y kiá»ƒm tra quyá»n trÃ¬nh duyá»‡t.';
+  if (error instanceof DOMException && error.name === 'NotAllowedError') return 'Bạn chưa cấp quyền sử dụng microphone.';
+  if (error instanceof DOMException && error.name === 'NotFoundError') return 'Không tìm thấy microphone trên thiết bị.';
+  return 'Không thể mở microphone. Hãy kiểm tra quyền trình duyệt.';
 }
 
 function errorText(error: unknown, fallback: string) {

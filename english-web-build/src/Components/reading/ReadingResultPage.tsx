@@ -83,7 +83,7 @@ export default function ReadingResultPage({
 
       await reload();
     } catch {
-      setError("KhÃ´ng táº£i Ä‘Æ°á»£c káº¿t quáº£ bÃ i Ä‘á»c.");
+      setError("Không tải được kết quả bài đọc.");
     } finally {
       setLoading(false);
     }
@@ -105,11 +105,11 @@ export default function ReadingResultPage({
   }, [data?.summary.score]);
 
   if (loading) {
-    return <State text="Äang táº£i káº¿t quáº£..." />;
+    return <State text="Đang tải kết quả..." />;
   }
 
   if (error || !data) {
-    return <State text={error || "KhÃ´ng cÃ³ káº¿t quáº£."} action={load} />;
+    return <State text={error || "Không có kết quả."} action={load} />;
   }
 
   const { summary } = data;
@@ -126,7 +126,7 @@ export default function ReadingResultPage({
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-black">
                 <Trophy size={16} />
-                Káº¾T QUáº¢ READING
+                KẾT QUẢ READING
               </div>
 
               <h1 className="mt-4 text-3xl font-black md:text-4xl">
@@ -146,7 +146,7 @@ export default function ReadingResultPage({
                         : "text-white/25"
                     }`}
                   >
-                    â˜…
+                    ★
                   </span>
                 ))}
               </div>
@@ -154,13 +154,13 @@ export default function ReadingResultPage({
 
             <div className="rounded-3xl bg-white/10 p-6 text-center backdrop-blur">
               <p className="text-sm font-bold text-white/70">
-                Äiá»ƒm sá»‘
+                Điểm số
               </p>
               <p className="mt-1 text-6xl font-black">
                 {summary.score}
               </p>
               <p className="mt-2 text-sm font-bold">
-                {summary.correctAnswers}/{summary.totalQuestions} cÃ¢u Ä‘Ãºng
+                {summary.correctAnswers}/{summary.totalQuestions} câu đúng
               </p>
               <p className="mt-3 text-lg font-black text-yellow-300">
                 +{summary.xpReward} XP
@@ -177,10 +177,10 @@ export default function ReadingResultPage({
               </div>
               <div>
                 <h2 className="text-lg font-black text-emerald-800">
-                  Nhiá»‡m vá»¥ Reading Ä‘Ã£ Ä‘Æ°á»£c cáº­p nháº­t
+                  Nhiệm vụ Reading đã được cập nhật
                 </h2>
                 <p className="mt-1 text-sm text-emerald-700">
-                  BÃ i Ä‘á»c, quiz vÃ  thá»i gian há»c Ä‘Ã£ Ä‘Æ°á»£c ghi nháº­n.
+                  Bài đọc, quiz và thời gian học đã được ghi nhận.
                 </p>
               </div>
             </div>
@@ -192,29 +192,29 @@ export default function ReadingResultPage({
             <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <Stat
                 title={`${summary.accuracy}%`}
-                label="Äá»™ chÃ­nh xÃ¡c"
+                label="Độ chính xác"
                 icon={<Target size={22} />}
               />
               <Stat
                 title={summary.spentTimeText}
-                label="Thá»i gian"
+                label="Thời gian"
                 icon={<Sparkles size={22} />}
               />
               <Stat
                 title={String(summary.correctAnswers)}
-                label="CÃ¢u Ä‘Ãºng"
+                label="Câu đúng"
                 icon={<CheckCircle2 size={22} />}
               />
               <Stat
                 title={String(summary.wrongAnswers)}
-                label="CÃ¢u sai"
+                label="Câu sai"
                 icon={<XCircle size={22} />}
               />
             </section>
 
             <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
               <h2 className="text-xl font-black">
-                Hiá»‡u suáº¥t theo ká»¹ nÄƒng
+                Hiệu suất theo kỹ năng
               </h2>
 
               <div className="mt-6 space-y-5">
@@ -240,10 +240,10 @@ export default function ReadingResultPage({
             <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-black">
-                  Xem láº¡i cÃ¢u há»i
+                  Xem lại câu hỏi
                 </h2>
                 <span className="text-sm font-bold text-slate-500">
-                  {summary.correctAnswers}/{summary.totalQuestions} Ä‘Ãºng
+                  {summary.correctAnswers}/{summary.totalQuestions} đúng
                 </span>
               </div>
 
@@ -275,12 +275,12 @@ export default function ReadingResultPage({
                           {item.index}. {item.question}
                         </h3>
                         <p className="mt-2 text-sm text-slate-600">
-                          Báº¡n chá»n:{" "}
-                          <strong>{item.selected ?? "ChÆ°a tráº£ lá»i"}</strong>
+                          Bạn chọn:{" "}
+                          <strong>{item.selected ?? "Chưa trả lời"}</strong>
                         </p>
                         {!item.isCorrect && (
                           <p className="mt-1 text-sm text-emerald-700">
-                            ÄÃ¡p Ã¡n Ä‘Ãºng:{" "}
+                            ?áp án đúng:{" "}
                             <strong>{item.correctAnswer}</strong>
                           </p>
                         )}
@@ -302,7 +302,7 @@ export default function ReadingResultPage({
                   }
                   className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-50 py-3 font-bold text-violet-600"
                 >
-                  {showAllQuestions ? "Thu gá»n" : "Xem táº¥t cáº£"}
+                  {showAllQuestions ? "Thu gọn" : "Xem tất cả"}
                   <ChevronDown
                     size={17}
                     className={
@@ -316,7 +316,7 @@ export default function ReadingResultPage({
             <section className="grid gap-6 md:grid-cols-2">
               <article className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
                 <h2 className="text-xl font-black">
-                  Tá»« vá»±ng má»›i
+                  Từ vựng mới
                 </h2>
                 <div className="mt-5 space-y-4">
                   {data.vocabulary.slice(0, 6).map((word) => (
@@ -350,7 +350,7 @@ export default function ReadingResultPage({
                 <div className="flex items-center gap-3">
                   <Brain className="text-violet-600" />
                   <h2 className="text-xl font-black">
-                    AI gá»£i Ã½ cáº£i thiá»‡n
+                    AI gợi ý cải thiện
                   </h2>
                 </div>
 
@@ -373,17 +373,17 @@ export default function ReadingResultPage({
 
           <aside className="space-y-6">
             <MissionSummary
-              title="Nhiá»‡m vá»¥ hÃ´m nay"
+              title="Nhiệm vụ hôm nay"
               mission={dailyMission}
             />
             <MissionSummary
-              title="Má»¥c tiÃªu tuáº§n"
+              title="Mục tiêu tuần"
               mission={weeklyMission}
             />
 
             <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
               <h2 className="text-lg font-black">
-                Tiáº¿p tá»¥c Learning Path
+                Tiếp tục Learning Path
               </h2>
 
               {nextArticle ? (
@@ -392,7 +392,7 @@ export default function ReadingResultPage({
                     {nextArticle.title}
                   </h3>
                   <p className="mt-2 text-sm text-slate-500">
-                    {nextArticle.categoryName} Â·{" "}
+                    {nextArticle.categoryName} ·{" "}
                     {nextArticle.difficultyText}
                   </p>
                   <button
@@ -403,13 +403,13 @@ export default function ReadingResultPage({
                     }
                     className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 py-3 font-black text-white"
                   >
-                    Há»c bÃ i tiáº¿p theo
+                    Học bài tiếp theo
                     <ArrowRight size={17} />
                   </button>
                 </>
               ) : (
                 <p className="mt-4 text-sm text-slate-500">
-                  ChÆ°a cÃ³ bÃ i Ä‘á»c tiáº¿p theo.
+                  Chưa có bài đọc tiếp theo.
                 </p>
               )}
             </section>
@@ -423,14 +423,14 @@ export default function ReadingResultPage({
               className="flex w-full items-center justify-center gap-2 rounded-xl border border-violet-200 bg-white py-3 font-black text-violet-600"
             >
               <RotateCcw size={17} />
-              Ã”n láº¡i bÃ i Ä‘á»c
+              Ôn lại bài đọc
             </button>
 
             <button
               onClick={() => router.push("/reading")}
               className="w-full rounded-xl bg-slate-900 py-3 font-black text-white"
             >
-              Vá» Reading Home
+              Về Reading Home
             </button>
           </aside>
         </div>
@@ -495,7 +495,7 @@ function MissionSummary({
         </>
       ) : (
         <p className="mt-4 text-sm text-slate-500">
-          ChÆ°a cÃ³ nhiá»‡m vá»¥ Reading.
+          Chưa có nhiệm vụ Reading.
         </p>
       )}
     </section>
@@ -518,7 +518,7 @@ function State({
             onClick={action}
             className="mt-4 rounded-xl bg-violet-600 px-5 py-2 font-bold text-white"
           >
-            Táº£i láº¡i
+            Tải lại
           </button>
         )}
       </div>

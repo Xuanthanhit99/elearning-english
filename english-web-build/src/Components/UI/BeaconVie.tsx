@@ -153,7 +153,7 @@ export function BeaconVieProgress({
  * Spinner + status text for a full-section loading state (page still
  * waiting on its first response). Distinct from BeaconVieSkeleton (a
  * placeholder shape with no text) and BeaconVieState (empty/error, with a
- * retry action) â€” this is the "Loading lesson...", "Generating...",
+ * retry action) — this is the "Loading lesson...", "Generating...",
  * "Saving...", "Retrying..." case.
  */
 export function BeaconVieLoadingState({

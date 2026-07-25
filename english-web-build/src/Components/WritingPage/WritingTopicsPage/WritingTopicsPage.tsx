@@ -71,7 +71,7 @@ export default function WritingTopicsPage() {
       setData(res.data);
     } catch (err) {
       console.error(err);
-      setError("KhÃ´ng táº£i Ä‘Æ°á»£c danh sÃ¡ch chá»§ Ä‘á».");
+      setError("Không tải được danh sách chủ đề.");
     } finally {
       setLoading(false);
     }
@@ -201,7 +201,7 @@ export default function WritingTopicsPage() {
             {loading && (
               <BeaconVieLoadingState
                 className="mt-8"
-                label="Äang táº£i chá»§ Ä‘á» luyá»‡n viáº¿t..."
+                label="Đang tải chủ đề luyện viết..."
               />
             )}
 
@@ -213,7 +213,7 @@ export default function WritingTopicsPage() {
 
             {!loading && !error && data?.items.length === 0 && (
               <div className="mt-8 rounded-xl bg-white p-8 text-center text-slate-500 shadow-sm">
-                KhÃ´ng tÃ¬m tháº¥y chá»§ Ä‘á» phÃ¹ há»£p.
+                Không tìm thấy chủ đề phù hợp.
               </div>
             )}
 

@@ -110,6 +110,7 @@ const vi: Dictionary = {
     discover: "Khám phá nội dung",
     community: "Cộng đồng",
     studyRooms: "Phòng học",
+    Arena: "Arena",
     missions: "Nhiệm vụ",
     leaderboard: "Bảng xếp hạng",
     groupSystem: "Hệ thống",

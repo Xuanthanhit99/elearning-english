@@ -133,7 +133,7 @@ export default function ReadingCategoriesPage() {
 
       setData(payload);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "CÃ³ lá»—i xáº£y ra");
+      setError(err instanceof Error ? err.message : "Có lỗi xảy ra");
     } finally {
       setLoading(false);
     }
@@ -169,7 +169,7 @@ export default function ReadingCategoriesPage() {
       <div className="grid min-h-screen place-items-center bg-[#fbfbff]">
         <div className="rounded-2xl bg-white px-8 py-6 text-center shadow-sm">
           <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-violet-200 border-t-violet-600" />
-          <p className="font-bold text-slate-700">Äang táº£i danh sÃ¡ch chá»§ Ä‘á»...</p>
+          <p className="font-bold text-slate-700">Đang tải danh sách chủ đề...</p>
         </div>
       </div>
     );
@@ -184,7 +184,7 @@ export default function ReadingCategoriesPage() {
             onClick={fetchCategories}
             className="rounded-xl bg-violet-600 px-5 py-2 text-sm font-bold text-white"
           >
-            Táº£i láº¡i
+            Tải lại
           </button>
         </div>
       </div>
@@ -202,9 +202,9 @@ export default function ReadingCategoriesPage() {
           <div className="grid grid-cols-[1fr_430px] gap-7 p-8">
             <section className="space-y-6">
               <div className="flex items-center gap-2 text-sm font-semibold text-slate-500">
-                <button onClick={() => router.push("/reading")}>Äá»c hiá»ƒu</button>
+                <button onClick={() => router.push("/reading")}>Đọc hiểu</button>
                 <ChevronRight size={16} />
-                <span className="text-slate-900">Danh sÃ¡ch chá»§ Ä‘á»</span>
+                <span className="text-slate-900">Danh sách chủ đề</span>
               </div>
 
               <button
@@ -217,14 +217,14 @@ export default function ReadingCategoriesPage() {
                     <BookOpen size={42} className="text-violet-600" />
                   </div>
                   <div>
-                    <h1 className="text-4xl font-extrabold">Danh sÃ¡ch chá»§ Ä‘á»</h1>
+                    <h1 className="text-4xl font-extrabold">Danh sách chủ đề</h1>
                     <p className="mt-3 text-slate-500">
-                      KhÃ¡m phÃ¡ cÃ¡c chá»§ Ä‘á» Ä‘a dáº¡ng Ä‘á»ƒ luyá»‡n ká»¹ nÄƒng Ä‘á»c hiá»ƒu cá»§a báº¡n.
+                      Khám phá các chủ đề đa dạng để luyện kỹ năng đọc hiểu của bạn.
                     </p>
                   </div>
                 </div>
 
-                <div className="pr-12 text-7xl">ðŸ“šâ˜•</div>
+                <div className="pr-12 text-7xl">📚☕</div>
               </button>
 
               <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
@@ -232,22 +232,22 @@ export default function ReadingCategoriesPage() {
                   <div className="flex gap-4">
                     <FilterButton
                       active={difficulty === "ALL"}
-                      label={`Táº¥t cáº£ chá»§ Ä‘á» (${totalCategoryText})`}
+                      label={`Tất cả chủ đề (${totalCategoryText})`}
                       onClick={() => handleDifficultyChange("ALL")}
                     />
                     <FilterButton
                       active={difficulty === "EASY"}
-                      label="Dá»…"
+                      label="Dễ"
                       onClick={() => handleDifficultyChange("EASY")}
                     />
                     <FilterButton
                       active={difficulty === "MEDIUM"}
-                      label="Trung bÃ¬nh"
+                      label="Trung bình"
                       onClick={() => handleDifficultyChange("MEDIUM")}
                     />
                     <FilterButton
                       active={difficulty === "HARD"}
-                      label="KhÃ³"
+                      label="Khó"
                       onClick={() => handleDifficultyChange("HARD")}
                     />
                   </div>
@@ -257,31 +257,31 @@ export default function ReadingCategoriesPage() {
                     onChange={(e) => handleSortChange(e.target.value as SortType)}
                     className="rounded-xl bg-slate-50 px-5 py-3 text-sm font-bold text-slate-700 outline-none"
                   >
-                    <option value="recommended">Sáº¯p xáº¿p: Äá» xuáº¥t</option>
-                    <option value="progress">Sáº¯p xáº¿p: Tiáº¿n Ä‘á»™</option>
-                    <option value="newest">Sáº¯p xáº¿p: Má»›i nháº¥t</option>
-                    <option value="name">Sáº¯p xáº¿p: TÃªn A-Z</option>
+                    <option value="recommended">Sắp xếp: Đề xuất</option>
+                    <option value="progress">Sắp xếp: Tiến độ</option>
+                    <option value="newest">Sắp xếp: Mới nhất</option>
+                    <option value="name">Sắp xếp: Tên A-Z</option>
                   </select>
                 </div>
               </div>
 
               {loading && (
                 <div className="rounded-2xl bg-white p-4 text-sm font-bold text-slate-500">
-                  Äang cáº­p nháº­t dá»¯ liá»‡u...
+                  Đang cập nhật dữ liệu...
                 </div>
               )}
 
               {data.categories.length === 0 ? (
                 <div className="rounded-2xl bg-white p-10 text-center shadow-sm">
                   <p className="font-bold text-slate-700">
-                    ChÆ°a cÃ³ chá»§ Ä‘á» phÃ¹ há»£p.
+                    Chưa có chủ đề phù hợp.
                   </p>
                   <button
                     type="button"
                     onClick={resetFilters}
                     className="mt-4 rounded-xl bg-violet-600 px-5 py-3 text-sm font-bold text-white"
                   >
-                    XÃ³a bá»™ lá»c
+                    Xóa bộ lọc
                   </button>
                 </div>
               ) : (
@@ -305,13 +305,13 @@ export default function ReadingCategoriesPage() {
                         <div className="p-4">
                           <h3 className="text-lg font-extrabold">{item.name}</h3>
                           <p className="mt-3 min-h-[48px] text-sm leading-6 text-slate-500">
-                            {item.description || "Chá»§ Ä‘á» luyá»‡n Ä‘á»c hiá»ƒu tiáº¿ng Anh."}
+                            {item.description || "Chủ đề luyện đọc hiểu tiếng Anh."}
                           </p>
 
                           <div className="mt-4 flex items-center justify-between text-sm">
                             <div className="flex items-center gap-1 font-semibold text-slate-500">
                               <Icon size={16} />
-                              {item.articleCount} bÃ i Ä‘á»c
+                              {item.articleCount} bài đọc
                             </div>
                             <span
                               className={`rounded-lg px-2 py-1 text-xs font-bold ${getDifficultyBadge(
@@ -342,39 +342,39 @@ export default function ReadingCategoriesPage() {
             </section>
 
             <aside className="space-y-6">
-              <RightCard title="Tiáº¿n Ä‘á»™ Ä‘á»c hiá»ƒu">
+              <RightCard title="Tiến độ đọc hiểu">
                 <div className="flex items-center gap-7">
                   <div className="grid h-44 w-44 place-items-center rounded-full border-[12px] border-violet-600">
                     <div className="text-center">
                       <p className="text-4xl font-extrabold">
                         {data.progress.percent}%
                       </p>
-                      <p className="text-sm text-slate-500">HoÃ n thÃ nh</p>
+                      <p className="text-sm text-slate-500">Hoàn thành</p>
                     </div>
                   </div>
 
                   <div className="space-y-5">
                     <ProgressItem
                       value={String(data.progress.completedArticles)}
-                      label="BÃ i Ä‘Ã£ hoÃ n thÃ nh"
+                      label="Bài đã hoàn thành"
                     />
                     <ProgressItem
                       value={String(data.progress.learningArticles)}
-                      label="BÃ i Ä‘ang há»c"
+                      label="Bài đang học"
                     />
                     <ProgressItem
                       value={String(data.progress.notStartedArticles)}
-                      label="BÃ i chÆ°a há»c"
+                      label="Bài chưa học"
                     />
                   </div>
                 </div>
 
                 <p className="mt-4 text-center text-sm font-semibold text-slate-500">
-                  Tá»•ng: {data.progress.totalArticles} bÃ i Ä‘á»c
+                  Tổng: {data.progress.totalArticles} bài đọc
                 </p>
               </RightCard>
 
-              <RightCard title="TrÃ¬nh Ä‘á»™ hiá»‡n táº¡i">
+              <RightCard title="Trình độ hiện tại">
                 <div className="rounded-2xl bg-violet-50 p-5">
                   <div className="flex items-center gap-4">
                     <div className="grid h-14 w-14 place-items-center rounded-xl bg-violet-100">
@@ -383,7 +383,7 @@ export default function ReadingCategoriesPage() {
                     <div>
                       <h3 className="font-extrabold">{data.currentLevel.title}</h3>
                       <p className="mt-1 text-sm text-slate-500">
-                        Báº¡n Ä‘ang á»Ÿ trÃ¬nh Ä‘á»™ tá»‘t! HÃ£y tiáº¿p tá»¥c luyá»‡n táº­p Ä‘á»ƒ lÃªn cáº¥p Ä‘á»™ cao hÆ¡n nhÃ©.
+                        Bạn đang ở trình độ tốt! Hãy tiếp tục luyện tập để lên cấp độ cao hơn nhé.
                       </p>
                     </div>
                   </div>
@@ -401,16 +401,16 @@ export default function ReadingCategoriesPage() {
                 </p>
               </RightCard>
 
-              <RightCard title="Chuá»—i há»c táº­p">
+              <RightCard title="Chuỗi học tập">
                 <div className="flex items-center gap-4">
                   <div className="grid h-14 w-14 place-items-center rounded-full bg-red-50">
                     <Flame className="text-red-500" />
                   </div>
                   <div>
                     <p className="text-lg font-extrabold text-orange-500">
-                      {data.streak.currentStreak} ngÃ y
+                      {data.streak.currentStreak} ngày
                     </p>
-                    <p className="text-sm text-slate-500">Chuá»—i hiá»‡n táº¡i</p>
+                    <p className="text-sm text-slate-500">Chuỗi hiện tại</p>
                   </div>
                 </div>
 
@@ -430,19 +430,19 @@ export default function ReadingCategoriesPage() {
                 </div>
 
                 <p className="mt-5 text-center text-sm text-slate-500">
-                  Há»c liÃªn tá»¥c Ä‘á»ƒ duy trÃ¬ chuá»—i cá»§a báº¡n!
+                  Học liên tục để duy trì chuỗi của bạn!
                 </p>
               </RightCard>
 
               <RightCard
-                title="Gá»£i Ã½ chá»§ Ä‘á» cho báº¡n"
+                title="Gợi ý chủ đề cho bạn"
                 action={
                   <button
                     type="button"
                     onClick={() => router.push("/reading/articles")}
                     className="text-sm font-bold text-violet-600"
                   >
-                    Xem thÃªm
+                    Xem thêm
                   </button>
                 }
               >
@@ -519,7 +519,7 @@ function SuggestCard({
         <p className="mt-1 text-sm text-slate-500">{desc}</p>
       </div>
       <span className="rounded-xl bg-violet-50 px-4 py-2 text-sm font-bold text-violet-600">
-        KhÃ¡m phÃ¡
+        Khám phá
       </span>
     </button>
   );

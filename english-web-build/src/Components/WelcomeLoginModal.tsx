@@ -14,7 +14,7 @@ type Props = {
 
 export default function WelcomeLoginModal({
   open,
-  fullname = "báº¡n",
+  fullname = "bạn",
   avatar = "/brand/beaconvie-ai-mascot.png",
   onClose,
 }: Props) {
@@ -56,10 +56,10 @@ export default function WelcomeLoginModal({
         <button
           type="button"
           onClick={onClose}
-          aria-label="ÄÃ³ng"
+          aria-label="?óng"
           className="absolute right-6 top-5 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white/20 text-2xl font-bold text-white backdrop-blur hover:bg-white/30"
         >
-          <span aria-hidden>Ã—</span>
+          <span aria-hidden>×</span>
         </button>
 
         <div className="relative h-[300px] overflow-hidden bg-gradient-to-br from-[#8b73bd] via-[#7b63ad] to-[#5b438c] px-8 py-8">
@@ -70,7 +70,7 @@ export default function WelcomeLoginModal({
           </div>
 
           <div className="absolute right-20 top-24 flex h-16 w-16 animate-pulse items-center justify-center rounded-full border border-white/30 bg-white/20 text-3xl">
-            ðŸŽ‰
+            🎉
           </div>
 
           <div className="absolute right-80 bottom-16 flex h-16 w-16 animate-bounce items-center justify-center rounded-full border border-white/30 bg-white/20">
@@ -79,13 +79,13 @@ export default function WelcomeLoginModal({
 
           <div className="relative z-10 max-w-md rounded-[22px] border border-white/40 bg-white p-6 shadow-xl dark:border-white/10 dark:bg-slate-950/88">
             <h2 className="text-2xl font-extrabold text-[#ff6b00]">
-              ChÃ o má»«ng trá»Ÿ láº¡i, {fullname}!
+              Chào mừng trở lại, {fullname}!
             </h2>
 
-            <div className="mt-2 text-3xl">ðŸ‘‹</div>
+            <div className="mt-2 text-3xl">👋</div>
 
             <p className="mt-3 text-lg font-bold leading-8 text-[var(--BeaconVie-muted)]">
-              Beacon Ä‘Ã£ chuáº©n bá»‹ nhiá»‡m vá»¥ nháº¹ nhÃ ng Ä‘á»ƒ báº¡n giá»¯ chuá»—i há»c hÃ´m nay.
+              Beacon đã chuẩn bị nhiệm vụ nhẹ nhàng để bạn giữ chuỗi học hôm nay.
             </p>
 
             <div className="absolute -bottom-4 right-10 h-8 w-8 rotate-45 bg-white dark:bg-slate-950/88" />
@@ -104,26 +104,26 @@ export default function WelcomeLoginModal({
 
         <div className="px-8 py-8">
           <div className="grid gap-4 md:grid-cols-3">
-            <StatCard icon="ðŸ”¥" value="12" label="ngÃ y liÃªn tiáº¿p" />
-            <StatCard icon="" value="320" label="XP tÃ­ch lÅ©y" />
-            <StatCard icon="" value="68%" label="tiáº¿n Ä‘á»™ tuáº§n" />
+            <StatCard icon="🔥" value="12" label="ngày liên tiếp" />
+            <StatCard icon="" value="320" label="XP tích lũy" />
+            <StatCard icon="" value="68%" label="tiến độ tuần" />
           </div>
 
           <div className="mt-6 rounded-[24px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-5">
             <h3 className="text-2xl font-extrabold text-[var(--BeaconVie-ink)]">
-              Nhiá»‡m vá»¥ gá»£i Ã½ hÃ´m nay
+              Nhiệm vụ gợi ý hôm nay
             </h3>
 
             <div className="mt-4 space-y-3">
-              <Mission icon="ðŸ”¤" title="Check 5 tá»« má»›i" time="3 phÃºt" />
-              <Mission icon="ðŸŽ§" title="Nghe 1 Ä‘oáº¡n há»™i thoáº¡i" time="5 phÃºt" />
-              <Mission icon="ðŸŽ™ï¸" title="NÃ³i láº¡i 2 máº«u cÃ¢u" time="2 phÃºt" />
+              <Mission icon="🔤" title="Check 5 từ mới" time="3 phút" />
+              <Mission icon="🎧" title="Nghe 1 đoạn hội thoại" time="5 phút" />
+              <Mission icon="🎙️" title="Nói lại 2 mẫu câu" time="2 phút" />
             </div>
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <button className="rounded-2xl bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] px-7 py-4 font-extrabold text-white shadow-lg shadow-blue-200/40 transition hover:opacity-95 dark:shadow-black/20">
-              Báº¯t Ä‘áº§u nhiá»‡m vá»¥
+              Bắt đầu nhiệm vụ
             </button>
 
             <button
@@ -131,11 +131,11 @@ export default function WelcomeLoginModal({
               onClick={onClose}
               className="rounded-2xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] px-7 py-4 font-extrabold text-[var(--BeaconVie-ink)] transition hover:bg-[var(--BeaconVie-card)]"
             >
-              Äá»ƒ sau
+              Để sau
             </button>
 
             <span className="ml-auto font-bold text-[var(--BeaconVie-muted)]">
-              Tá»± Ä‘Ã³ng sau {countdown}s
+              Tự đóng sau {countdown}s
             </span>
           </div>
         </div>
@@ -156,7 +156,7 @@ function StatCard({
   return (
     <div className="rounded-[22px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-5 text-center">
       <div className="flex items-center justify-center gap-2 text-2xl font-extrabold text-[#ff6b00]">
-        <LegacyIcon icon={icon || "â­"} label={label} tone="orange" size={16} /> {value}
+        <LegacyIcon icon={icon || "⭐"} label={label} tone="orange" size={16} /> {value}
       </div>
       <p className="mt-2 font-extrabold text-[var(--BeaconVie-muted)]">{label}</p>
     </div>

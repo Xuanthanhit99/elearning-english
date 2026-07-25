@@ -109,7 +109,7 @@ export default function WritingTopicDetailPage() {
       setData(res.data);
     } catch (err) {
       console.error(err);
-      setError("KhÃ´ng táº£i Ä‘Æ°á»£c chi tiáº¿t chá»§ Ä‘á».");
+      setError("Không tải được chi tiết chủ đề.");
     } finally {
       setLoading(false);
     }
@@ -141,7 +141,7 @@ export default function WritingTopicDetailPage() {
 
   if (loading)
     return (
-      <BeaconVieLoadingState className="m-10" label="Äang táº£i bÃ i luyá»‡n viáº¿t..." />
+      <BeaconVieLoadingState className="m-10" label="Đang tải bài luyện viết..." />
     );
 
   if (error) {
@@ -158,7 +158,7 @@ export default function WritingTopicDetailPage() {
     );
   }
 
-  if (!data) return <div className="p-10">KhÃ´ng tÃ¬m tháº¥y chá»§ Ä‘á».</div>;
+  if (!data) return <div className="p-10">Không tìm thấy chủ đề.</div>;
 
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
@@ -570,9 +570,9 @@ function AIRecommendationCard({
 
       <div className="mt-4 flex items-center gap-4 text-xs font-bold text-slate-500">
         <span>{formatType(recommendation.type)}</span>
-        <span>â€¢</span>
+        <span>•</span>
         <span>{recommendation.level}</span>
-        <span>â€¢</span>
+        <span>•</span>
         <span>{recommendation.estimatedTime} min</span>
       </div>
 
@@ -614,7 +614,7 @@ function InfoBox({ title, items }: { title: string; items: string[] }) {
       <div className="mt-4 space-y-3">
         {items.map((item, index) => (
           <p key={index} className="text-sm leading-6 text-slate-600">
-            â€¢ {item}
+            • {item}
           </p>
         ))}
       </div>

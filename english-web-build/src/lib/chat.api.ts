@@ -16,7 +16,7 @@ export async function sendChatMessage(
     return (data?.data ?? data) as SendMessageResponse;
   } catch (error) {
     throw new Error(
-      getApiErrorMessage(error, "Beacon Ä‘ang lag xÃ­u, Thử lại sau nhÃ©"),
+      getApiErrorMessage(error, "Beacon đang lag xíu, Thử lại sau nhé"),
     );
   }
 }
@@ -27,7 +27,7 @@ export async function createChatSession(): Promise<{ id: string }> {
     return (data?.data ?? data) as { id: string };
   } catch (error) {
     throw new Error(
-      getApiErrorMessage(error, "KhÃ´ng thá»ƒ táº¡o phiÃªn trÃ² chuyá»‡n"),
+      getApiErrorMessage(error, "Không thể tạo phiên trò chuyện"),
     );
   }
 }
@@ -42,7 +42,7 @@ export async function getChatMessages(
     return (data?.data ?? data) as ChatMessage[];
   } catch (error) {
     throw new Error(
-      getApiErrorMessage(error, "KhÃ´ng thá»ƒ táº£i lá»‹ch sá»­ trÃ² chuyá»‡n"),
+      getApiErrorMessage(error, "Không thể tải lịch sử trò chuyện"),
     );
   }
 }
@@ -53,7 +53,7 @@ export async function getPetStatus(): Promise<PetStatus> {
     return (data?.data ?? data) as PetStatus;
   } catch (error) {
     throw new Error(
-      getApiErrorMessage(error, "KhÃ´ng thá»ƒ táº£i thÃ´ng tin linh thÃº"),
+      getApiErrorMessage(error, "Không thể tải thông tin linh thú"),
     );
   }
 }

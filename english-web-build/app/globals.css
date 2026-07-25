@@ -2,20 +2,20 @@
 
 /* Switch Tailwind's `dark:` variant from prefers-color-scheme to a
    `.dark` class on <html>, so the theme can be chosen explicitly
-   (SÃ¡ng/Tá»‘i/Theo há»‡ thá»‘ng) instead of only following the OS. */
+   (Sáng/Tối/Theo hệ thống) instead of only following the OS. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ===================================================================
    BeaconVie design tokens.
    Two themes, one continuous brand story: a lighthouse guiding a
-   learner across open water â€” Beacon Day (morning sky + ocean) and
+   learner across open water — Beacon Day (morning sky + ocean) and
    Beacon Night (deep ocean + the beacon's own light as the brightest
    accent). Variable names keep the existing `--BeaconVie-*` prefix so
    every consumer across the app keeps working unchanged; only the
    values and the token set were revisited for the rebrand.
    =================================================================== */
 :root {
-  /* Beacon Day â€” morning sky, soft ocean, sunlit horizon. */
+  /* Beacon Day — morning sky, soft ocean, sunlit horizon. */
   --background: #eef6ff;
   --foreground: #0d2440;
   --BeaconVie-ink: #0d2440;
@@ -56,7 +56,7 @@
   --BeaconVie-shell-surface-strong: rgba(255, 255, 255, 0.92);
   --BeaconVie-overlay: rgba(13, 36, 64, 0.4);
 
-  /* Gamification accents â€” the beacon's light, applied to XP, rank, arena. */
+  /* Gamification accents — the beacon's light, applied to XP, rank, arena. */
   --BeaconVie-xp: var(--BeaconVie-gold);
   --BeaconVie-ranking: #f2a93b;
   --BeaconVie-arena: var(--BeaconVie-violet);
@@ -75,12 +75,12 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-poppins);
-  --font-mono: var(--font-poppins);
+  --font-sans: var(--font-be-vietnam-pro);
+  --font-mono: var(--font-be-vietnam-pro);
 }
 
 .dark {
-  /* Beacon Night â€” deep ocean navy, moonlight, the beacon's own glow.
+  /* Beacon Night — deep ocean navy, moonlight, the beacon's own glow.
      Deliberately navy, not black or neutral gray. */
   --background: #060f22;
   --foreground: #eaf1ff;
@@ -132,7 +132,13 @@ body {
     radial-gradient(circle at 50% 120%, rgba(255, 182, 72, 0.1), transparent 42rem),
     linear-gradient(180deg, #ffffff 0%, var(--background) 46%, #e6f2ff 100%);
   color: var(--foreground);
-  font-family: var(--font-poppins), Arial, Helvetica, sans-serif;
+  font-family:
+    var(--font-be-vietnam-pro),
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
   min-width: 320px;
   min-height: 100dvh;
 }
@@ -186,8 +192,8 @@ code {
 }
 
 /* Wrapped in the `components` layer (declared by `@import "tailwindcss"`
-   above) so Tailwind's own utilities â€” including responsive variants like
-   `lg:hidden` â€” always retain priority over these classes. Unlayered/plain
+   above) so Tailwind's own utilities — including responsive variants like
+   `lg:hidden` — always retain priority over these classes. Unlayered/plain
    CSS otherwise beats every layered utility regardless of source order or
    specificity, which previously made `lg:hidden`/`md:hidden` inert on any
    element that also carried `.BeaconVie-button-soft` or `.BeaconVie-button-primary`
@@ -486,7 +492,7 @@ code {
     background: linear-gradient(90deg, transparent, rgba(150, 180, 255, 0.16), transparent);
   }
 
-  /* Beacon glow â€” a soft, restrained highlight for gamification accents
+  /* Beacon glow — a soft, restrained highlight for gamification accents
      (XP, streak, ranking, arena). The lighthouse's own light: barely
      there by day, the brightest thing on the page by night. */
   .BeaconVie-beacon-glow {

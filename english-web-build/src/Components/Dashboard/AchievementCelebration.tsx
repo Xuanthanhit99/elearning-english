@@ -17,7 +17,7 @@ type CelebrationState =
 function fireConfetti() {
   // canvas-confetti and framer-motion were both already installed dependencies
   // with zero real usage anywhere in the app (per the achievement-production
-  // audit) â€” reused here rather than hand-rolling another bespoke CSS confetti
+  // audit) — reused here rather than hand-rolling another bespoke CSS confetti
   // effect like the two pre-existing, non-reusable ones in Listening/Vocabulary.
   confetti({
     particleCount: 120,
@@ -31,7 +31,7 @@ function fireConfetti() {
  * Client-only "new achievement" / "level up" celebration. Deliberately
  * requires no backend schema change: it diffs the Dashboard's existing
  * `recentAchievements`/level data against a localStorage-tracked "last seen"
- * marker, so only genuinely-new-since-last-visit events celebrate â€” not
+ * marker, so only genuinely-new-since-last-visit events celebrate — not
  * every achievement the user has ever earned on first-ever page load.
  */
 export function AchievementCelebration({ data }: { data: DashboardData | null }) {
@@ -46,7 +46,7 @@ export function AchievementCelebration({ data }: { data: DashboardData | null })
       checkAchievements(data, setCelebration);
       checkLevelUp(data, setCelebration);
     } catch {
-      // localStorage can throw in some privacy modes â€” celebration is
+      // localStorage can throw in some privacy modes — celebration is
       // cosmetic, never worth breaking the dashboard over.
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -94,8 +94,8 @@ export function AchievementCelebration({ data }: { data: DashboardData | null })
                   </p>
                   <p className="mt-0.5 truncate text-sm font-semibold text-[var(--BeaconVie-muted)]">
                     {celebration.title}
-                    {celebration.xp > 0 ? ` Â· +${celebration.xp} XP` : ""}
-                    {celebration.coins > 0 ? ` Â· +${celebration.coins} coins` : ""}
+                    {celebration.xp > 0 ? ` · +${celebration.xp} XP` : ""}
+                    {celebration.coins > 0 ? ` · +${celebration.coins} coins` : ""}
                   </p>
                 </>
               )}
@@ -127,7 +127,7 @@ function checkAchievements(
   const latestTime = new Date(latest.earnedAt).getTime();
 
   if (!lastSeenRaw) {
-    // First-ever dashboard visit with achievement data â€” establish the
+    // First-ever dashboard visit with achievement data — establish the
     // baseline silently instead of celebrating the user's entire history.
     window.localStorage.setItem(ACHIEVEMENT_SEEN_KEY, latest.earnedAt);
     return;
@@ -164,7 +164,7 @@ function checkLevelUp(
 
   window.localStorage.setItem(LEVEL_SEEN_KEY, String(currentLevel));
   // Achievement unlocks take visual priority if both happen on the same
-  // load â€” level-up only celebrates when nothing else already claimed the
+  // load — level-up only celebrates when nothing else already claimed the
   // slot, since setCelebration below would otherwise overwrite it.
   setCelebration((current) => current ?? { kind: "level-up", level: currentLevel });
 }

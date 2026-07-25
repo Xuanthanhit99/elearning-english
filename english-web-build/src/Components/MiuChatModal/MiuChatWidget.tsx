@@ -19,7 +19,7 @@ export default function MiuChatWidget() {
         const res = await api.get('/pets/me');
         if (!active) return;
         setPet({
-          name: res.data.isChosen ? res.data.petName : 'Linh thÃº',
+          name: res.data.isChosen ? res.data.petName : 'Linh thú',
           level: res.data.level || 1,
           streak: res.data.streak || 0,
           hp: res.data.hp ?? 100,
@@ -50,13 +50,13 @@ export default function MiuChatWidget() {
     <button
       type="button"
       onClick={() => setOpen(true)}
-      aria-label="Gá»i linh thÃº Ä‘á»“ng hÃ nh"
+      aria-label="Gọi linh thú đồng hành"
       className="group fixed bottom-4 right-4 z-[9000] flex h-16 w-16 items-center justify-center rounded-full bg-white text-4xl shadow-[0_20px_50px_rgba(31,42,68,0.25)] ring-4 ring-white transition hover:scale-105 sm:bottom-5 sm:right-5"
     >
-      ðŸ±
+      🐱
       {pet.streak > 0 && (
         <span className="absolute -right-1 -top-1 flex h-6 min-w-6 items-center justify-center rounded-full bg-orange-500 px-1.5 text-xs font-black text-white shadow">
-          {pet.streak}ðŸ”¥
+          {pet.streak}🔥
         </span>
       )}
     </button>

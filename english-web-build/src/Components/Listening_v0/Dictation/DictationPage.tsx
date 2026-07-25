@@ -36,14 +36,14 @@ const questions = [
 ];
 
 const menu = [
-  { label: "Trang chá»§", icon: Home },
-  { label: "Tá»•ng quan", icon: BookOpen },
-  { label: "Tá»« vá»±ng", icon: BookOpen },
-  { label: "Ngá»¯ phÃ¡p", icon: ShieldCheck },
+  { label: "Trang chủ", icon: Home },
+  { label: "Tổng quan", icon: BookOpen },
+  { label: "Từ vựng", icon: BookOpen },
+  { label: "Ngữ pháp", icon: ShieldCheck },
   { label: "Nghe", icon: Volume2, active: true },
-  { label: "NÃ³i", icon: Mic },
-  { label: "Äá»c hiá»ƒu", icon: BookOpen },
-  { label: "Viáº¿t", icon: PenLine },
+  { label: "Nói", icon: Mic },
+  { label: "Đọc hiểu", icon: BookOpen },
+  { label: "Viết", icon: PenLine },
 ];
 
 export default function DictationPage() {
@@ -51,7 +51,7 @@ export default function DictationPage() {
     <div className="min-h-screen bg-[#fbfbff] text-[#14134f]">
       <aside className="fixed left-0 top-0 h-screen w-[285px] border-r border-indigo-100 bg-white px-6 py-6">
         <div className="mb-10 flex items-center gap-3">
-          <div className="text-4xl">ðŸ¦Š</div>
+          <div className="text-4xl">🦊</div>
           <h1 className="text-3xl font-black">
             Study<span className="text-violet-600">Arena</span>
           </h1>
@@ -78,12 +78,12 @@ export default function DictationPage() {
         </nav>
 
         <div className="mt-5 border-l-2 border-indigo-100 pl-5">
-          {["Luyá»‡n nghe", "Nghe chÃ©p chÃ­nh táº£", "Nghe hiá»ƒu Ä‘oáº¡n", "Nghe theo chá»§ Ä‘á»"].map(
+          {["Luyện nghe", "Nghe chép chính tả", "Nghe hiểu đoạn", "Nghe theo chủ đề"].map(
             (x) => (
               <div
                 key={x}
                 className={`my-2 rounded-lg px-3 py-2 text-sm font-bold ${
-                  x === "Nghe chÃ©p chÃ­nh táº£"
+                  x === "Nghe chép chính tả"
                     ? "bg-violet-100 text-violet-700"
                     : "text-indigo-950"
                 }`}
@@ -95,12 +95,12 @@ export default function DictationPage() {
         </div>
 
         <div className="absolute bottom-6 left-6 right-6 rounded-2xl bg-violet-50 p-4">
-          <div className="mb-2 font-black text-violet-700">ðŸ‘‘ NÃ¢ng cáº¥p Premium</div>
+          <div className="mb-2 font-black text-violet-700">👑 Nâng cấp Premium</div>
           <p className="text-xs text-indigo-500">
-            Há»c khÃ´ng giá»›i háº¡n, nháº­n nhiá»u Ä‘áº·c quyá»n háº¥p dáº«n!
+            Học không giới hạn, nhận nhiều đặc quyền hấp dẫn!
           </p>
           <button className="mt-3 rounded-xl bg-violet-600 px-4 py-2 text-xs font-bold text-white">
-            NÃ¢ng cáº¥p ngay
+            Nâng cấp ngay
           </button>
         </div>
       </aside>
@@ -111,13 +111,13 @@ export default function DictationPage() {
             <Search className="text-indigo-300" />
             <input
               className="w-full outline-none placeholder:text-indigo-300"
-              placeholder="TÃ¬m bÃ i há»c, tá»« vá»±ng, ngá»¯ phÃ¡p..."
+              placeholder="Tìm bài học, từ vựng, ngữ pháp..."
             />
           </div>
 
           <div className="flex items-center gap-8">
             <TopStat icon={<Flame className="text-red-500" />} value="18" label="Streak" />
-            <TopStat icon={<Star className="text-yellow-400" />} value="2,450" label="XP hÃ´m nay" />
+            <TopStat icon={<Star className="text-yellow-400" />} value="2,450" label="XP hôm nay" />
             <TopStat icon={<Diamond className="text-sky-500" />} value="5,230" label="Xu" />
 
             <div className="rounded-full border p-3 text-violet-600">
@@ -133,7 +133,7 @@ export default function DictationPage() {
 
             <div className="flex items-center gap-3">
               <div className="grid h-12 w-12 place-items-center rounded-full bg-orange-100 text-2xl">
-                ðŸ‘©
+                👩
               </div>
               <div>
                 <div className="font-black">Minh Anh</div>
@@ -146,31 +146,31 @@ export default function DictationPage() {
         <div className="grid grid-cols-[1fr_400px] gap-10 px-12 py-8">
           <section>
             <div className="mb-8 text-sm font-semibold text-indigo-400">
-              Trang chá»§ ã€‰ Nghe ã€‰{" "}
-              <span className="font-black text-indigo-950">Nghe chÃ©p chÃ­nh táº£</span>
+              Trang chủ 〉 Nghe 〉{" "}
+              <span className="font-black text-indigo-950">Nghe chép chính tả</span>
             </div>
 
             <div className="mb-8 flex items-center justify-between">
               <div>
                 <h2 className="flex items-center gap-3 text-4xl font-black">
-                  Nghe chÃ©p chÃ­nh táº£
+                  Nghe chép chính tả
                   <Volume2 className="text-violet-600" />
                 </h2>
                 <p className="mt-3 text-lg text-indigo-400">
-                  Nghe vÃ  gÃµ láº¡i ná»™i dung báº¡n nghe Ä‘Æ°á»£c
+                  Nghe và gõ lại nội dung bạn nghe được
                 </p>
               </div>
 
               <button className="flex items-center gap-2 rounded-xl border border-indigo-100 bg-white px-6 py-4 font-bold shadow-sm">
-                ThoÃ¡t bÃ i <LogOut size={18} />
+                Thoát bài <LogOut size={18} />
               </button>
             </div>
 
             <div className="rounded-2xl border border-indigo-100 bg-white p-8 shadow-sm">
               <div className="mb-7 flex gap-5">
-                <Badge>ðŸŽ§ CÃ¢u 3 / 10</Badge>
-                <Badge green>âœ… B1 - Trung cáº¥p</Badge>
-                <Badge>ðŸŒ¿ Chá»§ Ä‘á»: Environment</Badge>
+                <Badge>🎧 Câu 3 / 10</Badge>
+                <Badge green>✅ B1 - Trung cấp</Badge>
+                <Badge>🌿 Chủ đề: Environment</Badge>
               </div>
 
               <div className="rounded-2xl bg-violet-50 p-7">
@@ -202,33 +202,33 @@ export default function DictationPage() {
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-black">Nghe vÃ  chÃ©p láº¡i Ä‘oáº¡n vÄƒn báº¡n nghe Ä‘Æ°á»£c</h3>
+                      <h3 className="font-black">Nghe và chép lại đoạn văn bạn nghe được</h3>
                       <p className="mt-1 text-sm text-indigo-400">
-                        Báº¡n cÃ³ thá»ƒ nghe láº¡i tá»‘i Ä‘a 3 láº§n
+                        Bạn có thể nghe lại tối đa 3 lần
                       </p>
                     </div>
 
                     <div className="rounded-xl bg-violet-50 px-4 py-2 text-sm font-bold text-violet-700">
-                      ðŸŽ§ LÆ°á»£t nghe cÃ²n láº¡i: 3
+                      🎧 Lượt nghe còn lại: 3
                     </div>
                   </div>
 
                   <div className="relative mt-8">
                     <textarea
                       className="h-56 w-full resize-none rounded-xl border-2 border-violet-400 p-6 text-lg outline-none placeholder:text-indigo-300"
-                      placeholder="Nháº­p ná»™i dung báº¡n nghe Ä‘Æ°á»£c á»Ÿ Ä‘Ã¢y..."
+                      placeholder="Nhập nội dung bạn nghe được ở đây..."
                     />
                     <span className="absolute bottom-5 right-6 text-sm font-bold text-indigo-400">
-                      0 tá»«
+                      0 từ
                     </span>
                   </div>
 
                   <div className="mt-8 flex justify-between">
                     <button className="rounded-xl border border-violet-300 px-8 py-4 font-black text-violet-700">
-                      â­ Bá» qua cÃ¢u nÃ y
+                      ⏭ Bỏ qua câu này
                     </button>
                     <button className="rounded-xl bg-violet-700 px-20 py-4 font-black text-white shadow-lg shadow-violet-200">
-                      Kiá»ƒm tra Ä‘Ã¡p Ã¡n
+                      Kiểm tra đáp án
                     </button>
                   </div>
                 </div>
@@ -237,18 +237,18 @@ export default function DictationPage() {
 
             <div className="mt-10 flex items-center gap-8 rounded-2xl bg-yellow-50 p-8">
               <div className="grid h-20 w-20 place-items-center rounded-full border-4 border-yellow-300 text-3xl">
-                â­
+                ⭐
               </div>
 
               <div>
-                <h3 className="mb-4 text-lg font-black">Ká»¹ nÄƒng báº¡n Ä‘ang luyá»‡n táº­p</h3>
+                <h3 className="mb-4 text-lg font-black">Kỹ năng bạn đang luyện tập</h3>
                 <div className="flex gap-5">
-                  {["Nghe chi tiáº¿t", "ChÃ­nh táº£", "Táº­p trung", "Ghi nhá»›"].map((x) => (
+                  {["Nghe chi tiết", "Chính tả", "Tập trung", "Ghi nhớ"].map((x) => (
                     <span
                       key={x}
                       className="rounded-full bg-white px-6 py-3 text-sm font-bold text-indigo-600"
                     >
-                      ðŸ’  {x} âœ¨
+                      💠 {x} ✨
                     </span>
                   ))}
                 </div>
@@ -258,7 +258,7 @@ export default function DictationPage() {
 
           <aside className="space-y-6">
             <div className="rounded-2xl border border-indigo-100 bg-white p-6 shadow-sm">
-              <h3 className="mb-5 text-xl font-black">Tiáº¿n Ä‘á»™ bÃ i há»c</h3>
+              <h3 className="mb-5 text-xl font-black">Tiến độ bài học</h3>
               <div className="mb-7 flex items-center gap-4">
                 <div className="h-3 flex-1 rounded-full bg-indigo-100">
                   <div className="h-3 w-[30%] rounded-full bg-violet-600" />
@@ -267,14 +267,14 @@ export default function DictationPage() {
               </div>
 
               <div className="grid grid-cols-3 text-center">
-                <Progress icon={<CheckCircle />} value="3" label="ÄÃºng" green />
+                <Progress icon={<CheckCircle />} value="3" label="?úng" green />
                 <Progress icon={<XCircle />} value="0" label="Sai" red />
-                <Progress icon={<XCircle />} value="0" label="ChÆ°a lÃ m" />
+                <Progress icon={<XCircle />} value="0" label="Chưa làm" />
               </div>
             </div>
 
             <div className="rounded-2xl border border-indigo-100 bg-white p-6 shadow-sm">
-              <h3 className="mb-5 text-xl font-black">Danh sÃ¡ch cÃ¢u</h3>
+              <h3 className="mb-5 text-xl font-black">Danh sách câu</h3>
 
               <div className="space-y-2">
                 {questions.map((q) => (
@@ -299,14 +299,14 @@ export default function DictationPage() {
 
             <div className="flex items-center justify-between rounded-2xl bg-violet-50 p-6">
               <div>
-                <h3 className="mb-4 text-xl font-black">ðŸ’¡ Máº¹o nhá»</h3>
+                <h3 className="mb-4 text-xl font-black">💡 Mẹo nhỏ</h3>
                 <ul className="space-y-3 text-sm font-medium text-indigo-700">
-                  <li>â€¢ Nghe toÃ n bá»™ trÆ°á»›c khi báº¯t Ä‘áº§u chÃ©p.</li>
-                  <li>â€¢ ChÃº Ã½ Ä‘áº¿n dáº¥u cÃ¢u vÃ  chÃ­nh táº£.</li>
-                  <li>â€¢ Sá»­ dá»¥ng tá»« viáº¿t táº¯t náº¿u cáº§n.</li>
+                  <li>• Nghe toàn bộ trước khi bắt đầu chép.</li>
+                  <li>• Chú ý đến dấu câu và chính tả.</li>
+                  <li>• Sử dụng từ viết tắt nếu cần.</li>
                 </ul>
               </div>
-              <div className="text-7xl">ðŸ¦Š</div>
+              <div className="text-7xl">🦊</div>
             </div>
           </aside>
         </div>

@@ -37,12 +37,12 @@ const skillMeta: Record<
   LearningSkill,
   { label: string; icon: typeof Type }
 > = {
-  VOCABULARY: { label: 'Tá»« vá»±ng', icon: Type },
-  GRAMMAR: { label: 'Ngá»¯ phÃ¡p', icon: BookOpen },
-  LISTENING: { label: 'Nghe hiá»ƒu', icon: Headphones },
-  READING: { label: 'Äá»c hiá»ƒu', icon: BookOpen },
-  SPEAKING: { label: 'NÃ³i', icon: Mic2 },
-  WRITING: { label: 'Viáº¿t', icon: PencilLine },
+  VOCABULARY: { label: 'Từ vựng', icon: Type },
+  GRAMMAR: { label: 'Ngữ pháp', icon: BookOpen },
+  LISTENING: { label: 'Nghe hiểu', icon: Headphones },
+  READING: { label: 'Đọc hiểu', icon: BookOpen },
+  SPEAKING: { label: 'Nói', icon: Mic2 },
+  WRITING: { label: 'Viết', icon: PencilLine },
 };
 
 export default function PlacementDashboardScreen() {
@@ -66,7 +66,7 @@ export default function PlacementDashboardScreen() {
       setError(
         err instanceof Error
           ? err.message
-          : 'KhÃ´ng thá»ƒ táº£i Placement Dashboard.',
+          : 'Không thể tải Placement Dashboard.',
       );
     } finally {
       setLoading(false);
@@ -83,7 +83,7 @@ export default function PlacementDashboardScreen() {
       setError(
         err instanceof Error
           ? err.message
-          : 'KhÃ´ng thá»ƒ táº¡o bÃ i kiá»ƒm tra má»›i.',
+          : 'Không thể tạo bài kiểm tra mới.',
       );
       if (!force) setShowRetakeModal(true);
     } finally {
@@ -122,7 +122,7 @@ export default function PlacementDashboardScreen() {
     return data.skills
       .map((item) => {
         const label = skillMeta[item.skill].label;
-        const score = item.status === 'SKIPPED' ? 'chÆ°a Ä‘Ã¡nh giÃ¡' : `${Math.round(item.score)}/100`;
+        const score = item.status === 'SKIPPED' ? 'chưa đánh giá' : `${Math.round(item.score)}/100`;
         return `${label}: ${score}`;
       })
       .join(', ');
@@ -135,7 +135,7 @@ export default function PlacementDashboardScreen() {
         aria-busy="true"
         aria-live="polite"
       >
-        <span className="sr-only">Äang táº£i Placement Dashboardâ€¦</span>
+        <span className="sr-only">Đang tải Placement Dashboard…</span>
         <div className="mx-auto max-w-[1500px] space-y-5">
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(390px,0.95fr)]">
             <BeaconVieSkeleton className="h-[320px]" />
@@ -155,8 +155,8 @@ export default function PlacementDashboardScreen() {
     return (
       <main className="mx-auto flex min-h-[70vh] max-w-2xl items-center justify-center px-4 py-10">
         <BeaconVieState
-          title="KhÃ´ng thá»ƒ táº£i dá»¯ liá»‡u"
-          description={error || 'Vui lÃ²ng Thử lại.'}
+          title="Không thể tải dữ liệu"
+          description={error || 'Vui lòng Thử lại.'}
           actionLabel="Thử lại"
           tone="error"
           onAction={() => void load()}
@@ -168,9 +168,9 @@ export default function PlacementDashboardScreen() {
   if (data.state === 'FIRST_TIME') {
     return (
       <StatusState
-        title="HÃ£y báº¯t Ä‘áº§u Placement Test"
-        description="AI sáº½ Ä‘Ã¡nh giÃ¡ trÃ¬nh Ä‘á»™ vÃ  táº¡o lá»™ trÃ¬nh há»c phÃ¹ há»£p cho báº¡n."
-        buttonLabel="Báº¯t Ä‘áº§u kiá»ƒm tra"
+        title="Hãy bắt đầu Placement Test"
+        description="AI sẽ đánh giá trình độ và tạo lộ trình học phù hợp cho bạn."
+        buttonLabel="Bắt đầu kiểm tra"
         onClick={() => router.push('/placement/introduction')}
       />
     );
@@ -179,9 +179,9 @@ export default function PlacementDashboardScreen() {
   if (data.state === 'IN_PROGRESS') {
     return (
       <StatusState
-        title="Báº¡n cÃ³ bÃ i kiá»ƒm tra chÆ°a hoÃ n thÃ nh"
-        description="Tiáº¿n trÃ¬nh cá»§a báº¡n Ä‘Ã£ Ä‘Æ°á»£c tá»± Ä‘á»™ng lÆ°u."
-        buttonLabel="Tiáº¿p tá»¥c bÃ i kiá»ƒm tra"
+        title="Bạn có bài kiểm tra chưa hoàn thành"
+        description="Tiến trình của bạn đã được tự động lưu."
+        buttonLabel="Tiếp tục bài kiểm tra"
         onClick={() =>
           router.push(data.currentTest?.testUrl ?? '/placement')
         }
@@ -192,9 +192,9 @@ export default function PlacementDashboardScreen() {
   if (data.state === 'PROCESSING') {
     return (
       <StatusState
-        title="AI Ä‘ang xá»­ lÃ½ bÃ i kiá»ƒm tra"
-        description="Káº¿t quáº£ vÃ  lá»™ trÃ¬nh cÃ¡ nhÃ¢n hÃ³a sáº½ sá»›m hoÃ n táº¥t."
-        buttonLabel="Xem tiáº¿n trÃ¬nh"
+        title="AI đang xử lý bài kiểm tra"
+        description="Kết quả và lộ trình cá nhân hóa sẽ sớm hoàn tất."
+        buttonLabel="Xem tiến trình"
         onClick={() =>
           router.push(
             data.currentTest?.processingUrl ?? '/placement',
@@ -216,7 +216,7 @@ export default function PlacementDashboardScreen() {
               <div className="relative h-[300px]">
                 <Image
                   src="/images/placement/BeaconVie-completed.png"
-                  alt="Beacon chÃºc má»«ng"
+                  alt="Beacon chúc mừng"
                   fill
                   priority
                   className="object-contain"
@@ -226,7 +226,7 @@ export default function PlacementDashboardScreen() {
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-black text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
                   <CheckCircle2 aria-hidden className="h-4 w-4" />
-                  ÄÃ£ hoÃ n thÃ nh
+                  ?ã hoàn thành
                 </div>
 
                 <h1 className="mt-4 text-4xl font-black text-[var(--BeaconVie-ink)]">
@@ -234,31 +234,31 @@ export default function PlacementDashboardScreen() {
                 </h1>
 
                 <p className="mt-2 leading-7 text-[var(--BeaconVie-muted)]">
-                  Báº¡n Ä‘Ã£ hoÃ n thÃ nh bÃ i kiá»ƒm tra Ä‘Ã¡nh giÃ¡ trÃ¬nh Ä‘á»™ tiáº¿ng Anh.
+                  Bạn đã hoàn thành bài kiểm tra đánh giá trình độ tiếng Anh.
                 </p>
 
                 <div className="mt-6 grid gap-4 md:grid-cols-3">
                   <MetricCard
-                    title="TrÃ¬nh Ä‘á»™ cá»§a báº¡n"
+                    title="Trình độ của bạn"
                     value={latest.overallLevel}
                     footer={levelLabel(latest.overallLevel)}
                   />
                   <MetricCard
-                    title="Äá»™ tin cáº­y AI"
+                    title="Độ tin cậy AI"
                     value={`${latest.confidence ?? 0}%`}
-                    footer={`PhÃ¢n tÃ­ch tá»« ${latest.totalQuestions} cÃ¢u há»i`}
+                    footer={`Phân tích từ ${latest.totalQuestions} câu hỏi`}
                   />
                   <MetricCard
-                    title="Thá»© háº¡ng"
+                    title="Thứ hạng"
                     value={`${latest.percentile ?? 0}th`}
-                    footer="so vá»›i ngÆ°á»i cÃ³ káº¿t quáº£ tÆ°Æ¡ng tá»±"
+                    footer="so với người có kết quả tương tự"
                   />
                 </div>
 
                 <p className="mt-4 text-sm text-[var(--BeaconVie-muted)]">
                   {latest.completedAt
                     ? new Date(latest.completedAt).toLocaleString('vi-VN')
-                    : 'Vá»«a hoÃ n thÃ nh'}
+                    : 'Vừa hoàn thành'}
                 </p>
               </div>
             </div>
@@ -266,14 +266,14 @@ export default function PlacementDashboardScreen() {
 
           <aside className="BeaconVie-card p-6">
             <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">
-              Báº¡n muá»‘n lÃ m gÃ¬ tiáº¿p theo?
+              Bạn muốn làm gì tiếp theo?
             </h2>
 
             <div className="mt-5 space-y-3">
               <ActionRow
                 icon={BookOpen}
-                title="Tiáº¿p tá»¥c há»c"
-                description="Tiáº¿p tá»¥c lá»™ trÃ¬nh cÃ¡ nhÃ¢n hÃ³a dá»±a trÃªn trÃ¬nh Ä‘á»™ hiá»‡n táº¡i."
+                title="Tiếp tục học"
+                description="Tiếp tục lộ trình cá nhân hóa dựa trên trình độ hiện tại."
                 onClick={() =>
                   router.push(data.actions.continueLearningUrl)
                 }
@@ -281,12 +281,12 @@ export default function PlacementDashboardScreen() {
 
               <ActionRow
                 icon={RefreshCw}
-                title="LÃ m láº¡i bÃ i kiá»ƒm tra"
+                title="Làm lại bài kiểm tra"
                 description={data.retake.message}
                 badge={
                   data.retake.allowed
-                    ? 'CÃ³ thá»ƒ lÃ m ngay'
-                    : `NÃªn lÃ m láº¡i sau ${data.retake.remainingDays} ngÃ y`
+                    ? 'Có thể làm ngay'
+                    : `Nên làm lại sau ${data.retake.remainingDays} ngày`
                 }
                 disabled={retaking}
                 onClick={() => {
@@ -300,8 +300,8 @@ export default function PlacementDashboardScreen() {
 
               <ActionRow
                 icon={BarChart3}
-                title="Xem káº¿t quáº£ chi tiáº¿t"
-                description="PhÃ¢n tÃ­ch sÃ¢u tá»«ng ká»¹ nÄƒng vÃ  gá»£i Ã½ cáº£i thiá»‡n."
+                title="Xem kết quả chi tiết"
+                description="Phân tích sâu từng kỹ năng và gợi ý cải thiện."
                 onClick={() => {
                   if (data.actions.detailedAnalysisUrl) {
                     router.push(data.actions.detailedAnalysisUrl);
@@ -314,8 +314,8 @@ export default function PlacementDashboardScreen() {
               <div className="flex gap-3">
                 <Sparkles aria-hidden className="h-5 w-5 shrink-0 text-[var(--BeaconVie-primary)]" />
                 <p className="text-sm leading-6 text-[var(--BeaconVie-muted)]">
-                  Luyá»‡n táº­p thÆ°á»ng xuyÃªn sáº½ giÃºp cáº­p nháº­t lá»™ trÃ¬nh chÃ­nh xÃ¡c hÆ¡n
-                  trong láº§n kiá»ƒm tra tiáº¿p theo.
+                  Luyện tập thường xuyên sẽ giúp cập nhật lộ trình chính xác hơn
+                  trong lần kiểm tra tiếp theo.
                 </p>
               </div>
             </div>
@@ -324,13 +324,13 @@ export default function PlacementDashboardScreen() {
 
         <section className="grid gap-4 lg:grid-cols-3">
           <SummaryCard
-            title="Äiá»ƒm máº¡nh ná»•i báº­t"
+            title="Điểm mạnh nổi bật"
             items={latest.strengths}
             positive
             icon={Trophy}
           />
           <SummaryCard
-            title="Ká»¹ nÄƒng cáº§n cáº£i thiá»‡n"
+            title="Kỹ năng cần cải thiện"
             items={latest.improvements}
             icon={Target}
           />
@@ -339,17 +339,17 @@ export default function PlacementDashboardScreen() {
               <Rocket aria-hidden className="h-10 w-10 shrink-0 text-[var(--BeaconVie-primary)]" />
               <div>
                 <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">
-                  Dá»± Ä‘oÃ¡n tiáº¿n bá»™
+                  Dự đoán tiến bộ
                 </h2>
                 <p className="mt-3 leading-7 text-[var(--BeaconVie-muted)]">
-                  Náº¿u há»c Ä‘á»u 20 phÃºt/ngÃ y, báº¡n cÃ³ thá»ƒ Ä‘áº¡t{' '}
+                  Nếu học đều 20 phút/ngày, bạn có thể đạt{' '}
                   <strong className="text-[var(--BeaconVie-primary)]">
-                    {latest.projectedLevel ?? 'má»©c tiáº¿p theo'}
+                    {latest.projectedLevel ?? 'mức tiếp theo'}
                   </strong>{' '}
                   trong{' '}
                   <strong className="text-[var(--BeaconVie-ink)]">
-                    {latest.projectedWeeksMin ?? 0}â€“
-                    {latest.projectedWeeksMax ?? 0} tuáº§n
+                    {latest.projectedWeeksMin ?? 0}–
+                    {latest.projectedWeeksMax ?? 0} tuần
                   </strong>
                   .
                 </p>
@@ -361,7 +361,7 @@ export default function PlacementDashboardScreen() {
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(390px,0.95fr)]">
           <div className="BeaconVie-card p-6">
             <h2 className="text-2xl font-black text-[var(--BeaconVie-ink)]">
-              Tá»•ng quan ká»¹ nÄƒng
+              Tổng quan kỹ năng
             </h2>
 
             <div className="mt-6 grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
@@ -392,7 +392,7 @@ export default function PlacementDashboardScreen() {
 
                       <div className="text-2xl font-black text-[var(--BeaconVie-primary)]">
                         {item.status === 'SKIPPED'
-                          ? 'â€”'
+                          ? '—'
                           : Math.round(item.score)}
                         <span className="text-sm text-[var(--BeaconVie-muted)]">
                           /100
@@ -400,14 +400,14 @@ export default function PlacementDashboardScreen() {
                       </div>
 
                       <span className="self-start rounded-full bg-black/5 px-3 py-1 text-center text-xs font-bold text-[var(--BeaconVie-muted)] dark:bg-white/8">
-                        {item.label ?? 'ÄÃ£ Ä‘Ã¡nh giÃ¡'}
+                        {item.label ?? '?ã đánh giá'}
                       </span>
 
                       <div className="text-sm leading-6 text-[var(--BeaconVie-muted)]">
                         <p>{item.feedback}</p>
                         {item.improvements[0] ? (
                           <p className="mt-1 text-orange-600 dark:text-orange-400">
-                            Cáº§n cáº£i thiá»‡n: {item.improvements[0]}
+                            Cần cải thiện: {item.improvements[0]}
                           </p>
                         ) : null}
                       </div>
@@ -448,18 +448,18 @@ export default function PlacementDashboardScreen() {
           <div className="grid items-center gap-5 lg:grid-cols-[minmax(0,1fr)_auto]">
             <div>
               <h2 className="text-2xl font-black text-[var(--BeaconVie-ink)]">
-                Tiáº¿p tá»¥c hÃ nh trÃ¬nh há»c táº­p cá»§a báº¡n!
+                Tiếp tục hành trình học tập của bạn!
               </h2>
               <p className="mt-2 max-w-3xl leading-7 text-[var(--BeaconVie-muted)]">
-                Báº¡n Ä‘ang á»Ÿ trÃ¬nh Ä‘á»™ {latest.overallLevel}. HÃ£y tiáº¿p tá»¥c há»c
-                theo lá»™ trÃ¬nh AI Ä‘á»ƒ cáº£i thiá»‡n cÃ¡c ká»¹ nÄƒng Æ°u tiÃªn.
+                Bạn đang ở trình độ {latest.overallLevel}. Hãy tiếp tục học
+                theo lộ trình AI để cải thiện các kỹ năng ưu tiên.
               </p>
             </div>
 
             <BeaconVieButton
               onClick={() => router.push(data.actions.continueLearningUrl)}
             >
-              Tiáº¿p tá»¥c há»c
+              Tiếp tục học
               <ArrowRight aria-hidden className="h-5 w-5" />
             </BeaconVieButton>
           </div>
@@ -591,7 +591,7 @@ function SummaryCard(props: {
       <div className="mt-4 space-y-2">
         {props.items.slice(0, 4).map((item) => (
           <p key={item} className="text-sm leading-6 text-[var(--BeaconVie-ink)]">
-            âœ“ {item}
+            ✓ {item}
           </p>
         ))}
       </div>
@@ -606,7 +606,7 @@ function RadarChart(props: { points: string; overall: number; summary: string })
         viewBox="0 0 220 220"
         className="h-[250px] w-[250px]"
         role="img"
-        aria-label={`Biá»ƒu Ä‘á»“ tá»•ng quan ká»¹ nÄƒng. Äiá»ƒm tá»•ng: ${Math.round(props.overall)}/100. ${props.summary}`}
+        aria-label={`Biểu đồ tổng quan kỹ năng. Điểm tổng: ${Math.round(props.overall)}/100. ${props.summary}`}
       >
         {[84, 64, 44, 24].map((radius) => (
           <polygon
@@ -654,7 +654,7 @@ function PriorityPanel(props: {
   return (
     <section className="BeaconVie-card p-6">
       <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">
-        Æ¯u tiÃªn cáº£i thiá»‡n (AI gá»£i Ã½)
+        Ưu tiên cải thiện (AI gợi ý)
       </h2>
       <div className="mt-4 space-y-3">
         {props.priorities.map((item) => (
@@ -686,7 +686,7 @@ function LearningPathPanel(props: {
   return (
     <section className="BeaconVie-card p-6">
       <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">
-        Lá»™ trÃ¬nh há»c táº­p cÃ¡ nhÃ¢n hÃ³a
+        Lộ trình học tập cá nhân hóa
       </h2>
       <div className="mt-4 grid gap-3">
         {props.phases.map((phase) => (
@@ -695,10 +695,10 @@ function LearningPathPanel(props: {
             className="rounded-2xl border border-[var(--BeaconVie-border)] p-4"
           >
             <p className="text-sm font-black text-[var(--BeaconVie-primary)]">
-              Giai Ä‘oáº¡n {phase.phase}
+              Giai đoạn {phase.phase}
             </p>
             <p className="mt-1 text-xs text-[var(--BeaconVie-muted)]">
-              {phase.weeksMin}â€“{phase.weeksMax} tuáº§n
+              {phase.weeksMin}–{phase.weeksMax} tuần
             </p>
             <h3 className="mt-3 font-black text-[var(--BeaconVie-ink)]">
               {phase.title}
@@ -725,14 +725,14 @@ function HistoryPanel(props: {
     <section className="BeaconVie-card p-6">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">
-          Lá»‹ch sá»­ bÃ i kiá»ƒm tra
+          Lịch sử bài kiểm tra
         </h2>
         <button
           type="button"
           onClick={props.onViewAll}
           className="text-sm font-bold text-[var(--BeaconVie-primary)]"
         >
-          Xem táº¥t cáº£
+          Xem tất cả
         </button>
       </div>
       <div className="mt-4 space-y-3">
@@ -747,10 +747,10 @@ function HistoryPanel(props: {
               <p className="text-sm font-bold text-[var(--BeaconVie-ink)]">
                 {item.completedAt
                   ? new Date(item.completedAt).toLocaleDateString('vi-VN')
-                  : 'KhÃ´ng rÃµ ngÃ y'}
+                  : 'Không rõ ngày'}
               </p>
               <p className="mt-1 text-xs text-[var(--BeaconVie-muted)]">
-                {item.isLatest ? 'Káº¿t quáº£ gáº§n nháº¥t' : levelLabel(item.level)}
+                {item.isLatest ? 'Kết quả gần nhất' : levelLabel(item.level)}
               </p>
             </div>
             <div className="text-right">
@@ -775,33 +775,33 @@ function ComparisonPanel(props: {
   return (
     <section className="BeaconVie-card p-6">
       <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">
-        So sÃ¡nh tiáº¿n bá»™
+        So sánh tiến bộ
       </h2>
       {props.comparison.hasPrevious ? (
         <div className="mt-5 grid gap-4 sm:grid-cols-3">
           <CompareMetric
-            title="Äiá»ƒm cÅ©"
+            title="Điểm cũ"
             value={`${Math.round(
               props.comparison.previousScore ?? 0,
             )}/100`}
           />
           <CompareMetric
-            title="Äiá»ƒm sá»‘"
+            title="Điểm số"
             value={`${
               (props.comparison.scoreDelta ?? 0) >= 0 ? '+' : ''
             }${Math.round(props.comparison.scoreDelta ?? 0)}`}
             positive={(props.comparison.scoreDelta ?? 0) >= 0}
           />
           <CompareMetric
-            title="Cáº¥p Ä‘á»™"
-            value={`${props.comparison.previousLevel} â†’ ${props.currentLevel}`}
+            title="Cấp độ"
+            value={`${props.comparison.previousLevel} → ${props.currentLevel}`}
             positive={(props.comparison.levelDelta ?? 0) >= 0}
           />
         </div>
       ) : (
         <p className="mt-5 rounded-2xl bg-black/[0.03] p-5 text-sm text-[var(--BeaconVie-muted)] dark:bg-white/5">
-          ÄÃ¢y lÃ  káº¿t quáº£ Ä‘áº§u tiÃªn. Sau láº§n kiá»ƒm tra tiáº¿p theo, há»‡ thá»‘ng sáº½
-          hiá»ƒn thá»‹ tiáº¿n bá»™ táº¡i Ä‘Ã¢y.
+          ?ây là kết quả đầu tiên. Sau lần kiểm tra tiếp theo, hệ thống sẽ
+          hiển thị tiến bộ tại đây.
         </p>
       )}
     </section>
@@ -834,7 +834,7 @@ function CoursePanel(props: {
   return (
     <section className="BeaconVie-card p-6">
       <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">
-        KhÃ³a há»c AI Ä‘á» xuáº¥t cho báº¡n
+        Khóa học AI đề xuất cho bạn
       </h2>
       <div className="mt-4 grid gap-3">
         {props.courses.slice(0, 3).map((course) => (
@@ -859,11 +859,11 @@ function CoursePanel(props: {
             <div>
               <p className="font-black text-[var(--BeaconVie-ink)]">{course.title}</p>
               <p className="mt-1 text-xs text-amber-500">
-                â˜… {course.rating ?? 0}
+                ★ {course.rating ?? 0}
                 {course.reviews !== null ? ` (${course.reviews})` : ''}
               </p>
               <p className="mt-1 text-sm text-[var(--BeaconVie-muted)]">
-                {course.lessonCount ?? 0} bÃ i há»c
+                {course.lessonCount ?? 0} bài học
               </p>
             </div>
           </button>
@@ -884,22 +884,22 @@ function RetakeDialog(props: {
     <BeaconVieDialog open={props.open} onClose={props.onClose} titleId="dashboard-retake-title">
       <div className="flex items-start justify-between gap-4">
         <h2 id="dashboard-retake-title" className="text-2xl font-black text-[var(--BeaconVie-ink)]">
-          LÃ m láº¡i Placement Test?
+          Làm lại Placement Test?
         </h2>
-        <BeaconVieDialogCloseButton onClose={props.onClose} label="ÄÃ³ng há»™p thoáº¡i" />
+        <BeaconVieDialogCloseButton onClose={props.onClose} label="?óng hộp thoại" />
       </div>
       <p className="mt-3 leading-7 text-[var(--BeaconVie-muted)]">
         {props.message}
       </p>
       <div className="mt-5 rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
-        Káº¿t quáº£ má»›i sáº½ Ä‘Æ°á»£c lÆ°u riÃªng vÃ  khÃ´ng xÃ³a lá»‹ch sá»­ cÅ©.
+        Kết quả mới sẽ được lưu riêng và không xóa lịch sử cũ.
       </div>
       <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <BeaconVieButton tone="ghost" disabled={props.loading} onClick={props.onClose}>
-          Quay láº¡i
+          Quay lại
         </BeaconVieButton>
         <BeaconVieButton loading={props.loading} onClick={props.onConfirm}>
-          Váº«n lÃ m láº¡i
+          Vẫn làm lại
         </BeaconVieButton>
       </div>
     </BeaconVieDialog>
@@ -908,12 +908,12 @@ function RetakeDialog(props: {
 
 function levelLabel(level: string) {
   const labels: Record<string, string> = {
-    A1: 'SÆ¡ cáº¥p',
-    A2: 'SÆ¡ trung cáº¥p',
-    B1: 'Trung cáº¥p',
-    B2: 'Trung cáº¥p cao',
-    C1: 'Cao cáº¥p',
-    C2: 'ThÃ nh tháº¡o',
+    A1: 'Sơ cấp',
+    A2: 'Sơ trung cấp',
+    B1: 'Trung cấp',
+    B2: 'Trung cấp cao',
+    C1: 'Cao cấp',
+    C2: 'Thành thạo',
   };
   return labels[level] ?? level;
 }

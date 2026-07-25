@@ -14,7 +14,7 @@ export function LeaderboardTable({
     <section className="mt-6 overflow-hidden rounded-3xl bg-white shadow-sm">
       <div className="border-b px-5 py-4">
         <h2 className="text-lg font-black">
-          Xáº¿p háº¡ng tuáº§n nÃ y
+          Xếp hạng tuần này
         </h2>
       </div>
 
@@ -51,7 +51,7 @@ function LeaderboardRow({
     >
       <div className="text-center text-lg font-black">
         {entry.rank <= 3
-          ? ['ðŸ¥‡', 'ðŸ¥ˆ', 'ðŸ¥‰'][entry.rank - 1]
+          ? ['🥇', '🥈', '🥉'][entry.rank - 1]
           : `#${entry.rank}`}
       </div>
 
@@ -71,15 +71,15 @@ function LeaderboardRow({
         <div className="min-w-0">
           <p className="truncate font-black">
             {entry.user.displayName}
-            {active ? ' (Báº¡n)' : ''}
+            {active ? ' (Bạn)' : ''}
           </p>
 
           <p className="truncate text-xs text-slate-500">
             {entry.user.learnedToday
-              ? 'ðŸŸ¢ ÄÃ£ há»c hÃ´m nay'
-              : 'âšª ChÆ°a há»c hÃ´m nay'}
+              ? '🟢 ?ã học hôm nay'
+              : '⚪ Chưa học hôm nay'}
             {entry.user.streak
-              ? ` Â· ðŸ”¥ ${entry.user.streak}`
+              ? ` · 🔥 ${entry.user.streak}`
               : ''}
           </p>
         </div>

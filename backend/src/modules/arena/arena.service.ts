@@ -1133,12 +1133,12 @@ export class ArenaService {
         },
       },
     });
-    if (!room) throw new NotFoundException('KhÃ´ng tÃ¬m tháº¥y phÃ²ng Arena');
+    if (!room) throw new NotFoundException('Không tìm thấy phòng Arena');
     const participant = room.participants.find(
       (item) => item.userId === userId,
     );
     if (!participant)
-      throw new ForbiddenException('Báº¡n chÆ°a á»Ÿ trong phÃ²ng nÃ y');
+      throw new ForbiddenException('Bạn chưa ở trong phòng này');
 
     const remainingParticipants = room.participants.filter(
       (item) => item.userId !== userId,

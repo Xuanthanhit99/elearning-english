@@ -67,7 +67,7 @@ export default function AchievementDetailPage() {
     let active = true;
     async function load() {
       if (!achievementKey) {
-        setMessage("Thiáº¿u mÃ£ thÃ nh tÃ­ch.");
+        setMessage("Thiếu mã thành tích.");
         setLoading(false);
         return;
       }
@@ -78,7 +78,7 @@ export default function AchievementDetailPage() {
         );
         if (active) setData(res.data);
       } catch {
-        if (active) setMessage("ChÆ°a táº£i Ä‘Æ°á»£c chi tiáº¿t thÃ nh tÃ­ch.");
+        if (active) setMessage("Chưa tải được chi tiết thành tích.");
       } finally {
         if (active) setLoading(false);
       }
@@ -108,7 +108,7 @@ export default function AchievementDetailPage() {
     return (
       <div className="px-4 py-7 lg:px-8">
         <section className="rounded-3xl border border-red-100 bg-red-50 p-6 font-bold text-red-600">
-          {message || "KhÃ´ng cÃ³ dá»¯ liá»‡u thÃ nh tÃ­ch."}
+          {message || "Không có dữ liệu thành tích."}
         </section>
       </div>
     );
@@ -166,13 +166,13 @@ export default function AchievementDetailPage() {
   return (
     <div className="px-4 py-7 lg:px-8">
       <div className="mb-7 flex items-center gap-2 text-sm font-bold text-[#73799b]">
-        <Link href="/">Trang chá»§</Link>
+        <Link href="/">Trang chủ</Link>
         <ChevronRight size={16} />
-        <Link href="/vocabulary/overview">Tá»•ng quan</Link>
+        <Link href="/vocabulary/overview">Tổng quan</Link>
         <ChevronRight size={16} />
-        <Link href="/vocabulary/achievements">ThÃ nh tÃ­ch gáº§n Ä‘Ã¢y</Link>
+        <Link href="/vocabulary/achievements">Thành tích gần đây</Link>
         <ChevronRight size={16} />
-        <span className="text-[#101733]">Chi tiáº¿t thÃ nh tÃ­ch</span>
+        <span className="text-[#101733]">Chi tiết thành tích</span>
       </div>
 
       <div className="grid gap-7 xl:grid-cols-[1fr_420px]">
@@ -204,12 +204,12 @@ export default function AchievementDetailPage() {
                   {data.achievement.description}
                 </p>
                 <p className="mt-3 inline-flex rounded-full bg-[#f7f5ff] px-3 py-1 text-xs font-black text-[#69708b]">
-                  Äáº¡t Ä‘Æ°á»£c: {data.achievement.achievedAt}
+                  Đạt được: {data.achievement.achievedAt}
                 </p>
               </div>
             </div>
             <button className="inline-flex h-12 items-center gap-2 rounded-xl border border-[#cdbdff] px-5 text-sm font-black text-[#6d35ff]">
-              <Share2 size={17} /> Chia sáº»
+              <Share2 size={17} /> Chia sẻ
             </button>
           </header>
           {notice && (
@@ -231,7 +231,7 @@ export default function AchievementDetailPage() {
                   {data.overview.current} / {data.overview.target}{" "}
                   {data.overview.unit}
                 </p>
-                <p className="mt-3 font-bold text-[#69708b]">Tiáº¿n Ä‘á»™ cá»§a báº¡n</p>
+                <p className="mt-3 font-bold text-[#69708b]">Tiến độ của bạn</p>
                 <div className="mt-4 h-2 rounded-full bg-[#ece9f9]">
                   <div
                     className="h-2 rounded-full bg-[#6d35ff]"
@@ -270,16 +270,16 @@ export default function AchievementDetailPage() {
             </div>
             <div className="mt-8 rounded-2xl bg-[#fbf8ff] p-5 text-sm font-bold text-[#4f5575]">
               <AppIcon name="sparkles" tone="purple" className="mr-3" />
-              Máº¹o: {data.overview.tip}
+              Mẹo: {data.overview.tip}
             </div>
           </section>
 
           <section className="rounded-3xl border border-[#ebeaf6] bg-white p-7 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
             <h2 className="text-xl font-black text-[#101733]">
-              Lá»‹ch sá»­ hoáº¡t Ä‘á»™ng
+              Lịch sử hoạt động
             </h2>
             <p className="mt-2 text-sm font-bold text-[#69708b]">
-              CÃ¡c hoáº¡t Ä‘á»™ng há»c táº­p liÃªn quan Ä‘áº¿n thÃ nh tÃ­ch nÃ y
+              Các hoạt động học tập liên quan đến thành tích này
             </p>
             <div className="mt-5 divide-y divide-[#ebeaf6]">
               {data.activities.map((item, index) => (
@@ -295,7 +295,7 @@ export default function AchievementDetailPage() {
                     </p>
                   </div>
                   <span className="text-sm font-bold text-[#69708b]">
-                    {item.time || "Gáº§n Ä‘Ã¢y"}
+                    {item.time || "Gần đây"}
                   </span>
                   <span className="font-black text-[#6d35ff]">
                     +{item.xp} XP
@@ -308,7 +308,7 @@ export default function AchievementDetailPage() {
                 href={`/vocabulary/achievements/activity?key=${encodeURIComponent(data.achievement.key)}&type=${encodeURIComponent(firstActivity.type || "")}&id=${encodeURIComponent(firstActivity.id || "")}`}
                 className="mx-auto mt-6 flex h-12 w-fit min-w-[220px] items-center justify-center rounded-xl border border-[#d8d4ee] px-6 text-sm font-black text-[#27245f] hover:bg-[#fbfaff]"
               >
-                Xem chi tiáº¿t hoáº¡t Ä‘á»™ng
+                Xem chi tiết hoạt động
               </Link>
             )}
           </section>
@@ -316,9 +316,9 @@ export default function AchievementDetailPage() {
 
         <aside className="space-y-6">
           <section className="rounded-3xl border border-[#ebeaf6] bg-white p-6 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
-            <h2 className="text-xl font-black text-[#101733]">Pháº§n thÆ°á»Ÿng</h2>
+            <h2 className="text-xl font-black text-[#101733]">Phần thưởng</h2>
             <p className="mt-2 text-sm font-bold text-[#4f5575]">
-              Nháº­n khi hoÃ n thÃ nh cÃ¡c má»‘c thÃ nh tÃ­ch
+              Nhận khi hoàn thành các mốc thành tích
             </p>
             <div className="mt-5 space-y-3">
               {data.rewards.map((reward) => (
@@ -336,8 +336,8 @@ export default function AchievementDetailPage() {
                     </h3>
                     <p className="text-sm font-bold text-[#69708b]">
                       {reward.claimed
-                        ? "ÄÃ£ nháº­n"
-                        : `Cáº§n Ä‘áº¡t ${reward.required}`}
+                        ? "?ã nhận"
+                        : `Cần đạt ${reward.required}`}
                     </p>
                   </div>
                   <span className="font-black text-[#6d35ff]">
@@ -366,7 +366,7 @@ export default function AchievementDetailPage() {
           </section>
 
           <section className="rounded-3xl border border-[#ebeaf6] bg-white p-6 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
-            <h2 className="text-xl font-black text-[#101733]">Gá»£i Ã½ cho báº¡n</h2>
+            <h2 className="text-xl font-black text-[#101733]">Gợi ý cho bạn</h2>
             <div className="mt-5 space-y-4">
               {data.suggestions.map((item) => (
                 <div
@@ -387,7 +387,7 @@ export default function AchievementDetailPage() {
               href="/vocabulary"
               className="mt-6 flex h-12 items-center justify-center gap-2 rounded-xl bg-[#6d35ff] text-sm font-black text-white"
             >
-              Báº¯t Ä‘áº§u há»c ngay <ChevronRight size={17} />
+              Bắt đầu học ngay <ChevronRight size={17} />
             </Link>
           </section>
         </aside>

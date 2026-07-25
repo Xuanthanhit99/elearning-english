@@ -236,7 +236,7 @@ function SkillCard({ skill }: { skill: PlacementResultData["skills"][number] }) 
           </div>
         </div>
         <span className="text-2xl font-black text-[var(--BeaconVie-primary)]">
-          {skipped ? "â€”" : Math.round(skill.score)}
+          {skipped ? "—" : Math.round(skill.score)}
         </span>
       </div>
       {!skipped ? <BeaconVieProgress value={skill.score} className="mt-4" /> : null}
@@ -330,7 +330,7 @@ function LearningDirection({ data }: { data: PlacementResultData }) {
           <article key={phase.phase} className="rounded-3xl border border-[var(--BeaconVie-border)] bg-white/75 p-4">
             <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-primary)]">
               Phase {phase.phase}
-              {phase.targetLevel ? ` â€¢ ${phase.targetLevel}` : ""}
+              {phase.targetLevel ? ` • ${phase.targetLevel}` : ""}
             </p>
             <h3 className="mt-3 font-black text-[var(--BeaconVie-ink)]">{phase.title}</h3>
             <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">

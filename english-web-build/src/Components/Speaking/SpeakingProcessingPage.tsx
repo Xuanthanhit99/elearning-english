@@ -7,12 +7,12 @@ import { getSpeakingProcessingStatus, retrySpeakingProcessing } from '@/src/lib/
 import type { SpeakingProcessingStatus } from '@/src/lib/speaking-processing.types';
 
 const meta = {
-  UPLOAD_COMPLETED: { icon: Mic, title: 'ÄÃ£ táº£i báº£n ghi' },
-  TRANSCRIBING: { icon: WandSparkles, title: 'Äang chuyá»ƒn giá»ng nÃ³i' },
-  AI_SCORING: { icon: Sparkles, title: 'AI Ä‘ang cháº¥m bÃ i' },
-  UPDATING_MISSIONS: { icon: CheckCircle2, title: 'Äang cáº­p nháº­t tiáº¿n Ä‘á»™' },
-  COMPLETED: { icon: CheckCircle2, title: 'HoÃ n thÃ nh' },
-  FAILED: { icon: XCircle, title: 'Xá»­ lÃ½ tháº¥t báº¡i' },
+  UPLOAD_COMPLETED: { icon: Mic, title: '?ã tải bản ghi' },
+  TRANSCRIBING: { icon: WandSparkles, title: 'Đang chuyển giọng nói' },
+  AI_SCORING: { icon: Sparkles, title: 'AI đang chấm bài' },
+  UPDATING_MISSIONS: { icon: CheckCircle2, title: 'Đang cập nhật tiến độ' },
+  COMPLETED: { icon: CheckCircle2, title: 'Hoàn thành' },
+  FAILED: { icon: XCircle, title: 'Xử lý thất bại' },
 } as const;
 
 export default function SpeakingProcessingPage() {
@@ -46,7 +46,7 @@ export default function SpeakingProcessingPage() {
         if (result.status !== 'FAILED') timer = window.setTimeout(poll, 1800);
       } catch (err) {
         if (cancelled) return;
-        setError(errorText(err, 'KhÃ´ng táº£i Ä‘Æ°á»£c tráº¡ng thÃ¡i xá»­ lÃ½.'));
+        setError(errorText(err, 'Không tải được trạng thái xử lý.'));
         timer = window.setTimeout(poll, 3000);
       }
     }
@@ -75,13 +75,13 @@ export default function SpeakingProcessingPage() {
         status: result.status as SpeakingProcessingStatus['status'],
         step: result.status === 'QUEUED' ? 'UPLOAD_COMPLETED' : (prev?.step ?? 'UPLOAD_COMPLETED'),
         progress: result.status === 'QUEUED' ? 10 : (prev?.progress ?? 10),
-        message: 'ÄÃ£ gá»­i láº¡i bÃ i luyá»‡n nÃ³i Ä‘á»ƒ AI cháº¥m Ä‘iá»ƒm.',
+        message: '?ã gửi lại bài luyện nói để AI chấm điểm.',
         retryable: false,
         isStale: false,
       }));
       setPollVersion((value) => value + 1);
     } catch (err) {
-      setError(errorText(err, 'KhÃ´ng gá»­i láº¡i Ä‘Æ°á»£c bÃ i luyá»‡n nÃ³i.'));
+      setError(errorText(err, 'Không gửi lại được bài luyện nói.'));
     } finally {
       setRetrying(false);
     }
@@ -95,7 +95,7 @@ export default function SpeakingProcessingPage() {
         </div>
         <p className="mt-7 text-sm font-black uppercase tracking-[0.2em] text-violet-500">Speaking AI Coach</p>
         <h1 className="mt-3 text-3xl font-black">{current.title}</h1>
-        <p className="mx-auto mt-4 max-w-lg leading-7 text-slate-500">{status?.message ?? 'Há»‡ thá»‘ng Ä‘ang chuáº©n bá»‹ phÃ¢n tÃ­ch báº£n ghi cá»§a báº¡n.'}</p>
+        <p className="mx-auto mt-4 max-w-lg leading-7 text-slate-500">{status?.message ?? 'Hệ thống đang chuẩn bị phân tích bản ghi của bạn.'}</p>
 
         <div className="mt-8 h-4 overflow-hidden rounded-full bg-slate-100">
           <div className="h-full rounded-full bg-violet-600 transition-all duration-500" style={{ width: `${progress}%` }} />
@@ -111,8 +111,8 @@ export default function SpeakingProcessingPage() {
 
         {(error || status?.status === 'FAILED') && (
           <div className="mt-7 rounded-2xl border border-red-200 bg-red-50 p-5 text-left text-red-700">
-            <p className="font-black">KhÃ´ng thá»ƒ xá»­ lÃ½ bÃ i nÃ³i</p>
-            <p className="mt-2 text-sm">{status?.errorMessage || error || 'Vui lÃ²ng thá»­ ghi Ã¢m láº¡i.'}</p>
+            <p className="font-black">Không thể xử lý bài nói</p>
+            <p className="mt-2 text-sm">{status?.errorMessage || error || 'Vui lòng thử ghi âm lại.'}</p>
             <div className="mt-4 flex flex-wrap gap-3">
               {status?.retryable && (
                 <button
@@ -121,10 +121,10 @@ export default function SpeakingProcessingPage() {
                   className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-3 font-black text-white disabled:opacity-60"
                 >
                   <LoaderCircle size={18} className={retrying ? 'animate-spin' : ''} />
-                  {retrying ? 'Äang gá»­i láº¡i...' : 'Thá»­ cháº¥m láº¡i'}
+                  {retrying ? 'Đang gửi lại...' : 'Thử chấm lại'}
                 </button>
               )}
-              <button onClick={() => router.replace(`/speaking/practice/${sessionId}`)} className="rounded-xl bg-red-600 px-5 py-3 font-black text-white">Quay láº¡i ghi Ã¢m</button>
+              <button onClick={() => router.replace(`/speaking/practice/${sessionId}`)} className="rounded-xl bg-red-600 px-5 py-3 font-black text-white">Quay lại ghi âm</button>
             </div>
           </div>
         )}

@@ -23,18 +23,18 @@ export function CommunityLeaderboardView() {
             <Trophy size={22} />
           </div>
           <div>
-            <h2 className="text-xl font-bold">Báº£ng xáº¿p háº¡ng</h2>
+            <h2 className="text-xl font-bold">Bảng xếp hạng</h2>
             <p className="text-sm text-slate-500">
-              Xáº¿p háº¡ng theo hoáº¡t Ä‘á»™ng trong cá»™ng Ä‘á»“ng.
+              Xếp hạng theo hoạt động trong cộng đồng.
             </p>
           </div>
         </div>
 
         <div className="flex rounded-xl bg-slate-100 p-1">
           {[
-            ['WEEKLY', 'Tuáº§n'],
-            ['MONTHLY', 'ThÃ¡ng'],
-            ['ALL_TIME', 'Táº¥t cáº£'],
+            ['WEEKLY', 'Tuần'],
+            ['MONTHLY', 'Tháng'],
+            ['ALL_TIME', 'Tất cả'],
           ].map(([value, label]) => (
             <button
               key={value}
@@ -92,7 +92,7 @@ export function CommunityLeaderboardView() {
               </span>
             </div>
             <strong className="text-indigo-600">
-              {item.points} Ä‘iá»ƒm
+              {item.points} điểm
             </strong>
           </div>
         ))}

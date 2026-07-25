@@ -34,8 +34,8 @@ import {
 const activities = [
   {
     icon: Headphones,
-    title: "Luyá»‡n nghe chá»§ Ä‘á» Du lá»‹ch",
-    desc: "BÃ i 5: At the airport",
+    title: "Luyện nghe chủ đề Du lịch",
+    desc: "Bài 5: At the airport",
     time: "09:15",
     xp: "+20 XP",
     bg: "bg-purple-100",
@@ -43,8 +43,8 @@ const activities = [
   },
   {
     icon: BookOpen,
-    title: "Há»c tá»« vá»±ng má»›i",
-    desc: "Há»c 15 tá»« má»›i",
+    title: "Học từ vựng mới",
+    desc: "Học 15 từ mới",
     time: "09:30",
     xp: "+15 XP",
     bg: "bg-pink-100",
@@ -52,8 +52,8 @@ const activities = [
   },
   {
     icon: Target,
-    title: "LÃ m bÃ i táº­p ngá»¯ phÃ¡p",
-    desc: "ThÃ¬ hiá»‡n táº¡i hoÃ n thÃ nh",
+    title: "Làm bài tập ngữ pháp",
+    desc: "Thì hiện tại hoàn thành",
     time: "09:40",
     xp: "+10 XP",
     bg: "bg-orange-100",
@@ -61,8 +61,8 @@ const activities = [
   },
   {
     icon: PenLine,
-    title: "Viáº¿t cÃ¢u",
-    desc: "Viáº¿t 2 cÃ¢u vá» chá»§ Ä‘á» Du lá»‹ch",
+    title: "Viết câu",
+    desc: "Viết 2 câu về chủ đề Du lịch",
     time: "09:42",
     xp: "+10 XP",
     bg: "bg-sky-100",
@@ -71,11 +71,11 @@ const activities = [
 ];
 
 const rewards = [
-  { day: "1 ngÃ y", reward: "+10 XP", active: true, received: true },
-  { day: "3 ngÃ y", reward: "+30 XP" },
-  { day: "7 ngÃ y", reward: "+100 X ðŸ’Ž" },
-  { day: "14 ngÃ y", reward: "+ 200 XP" },
-  { day: "30 ngÃ y", reward: "+ 500 XP" },
+  { day: "1 ngày", reward: "+10 XP", active: true, received: true },
+  { day: "3 ngày", reward: "+30 XP" },
+  { day: "7 ngày", reward: "+100 X 💎" },
+  { day: "14 ngày", reward: "+ 200 XP" },
+  { day: "30 ngày", reward: "+ 500 XP" },
 ];
 
 export default function AchievementDetailPage() {
@@ -93,14 +93,14 @@ export default function AchievementDetailPage() {
                 size={22}
               />
               <input
-                placeholder="TÃ¬m bÃ i há»c, tá»« vá»±ng, ngá»¯ phÃ¡p..."
+                placeholder="Tìm bài học, từ vựng, ngữ pháp..."
                 className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 pl-12 pr-4 text-sm font-semibold outline-none focus:border-violet-400"
               />
             </div>
 
             <div className="hidden items-center gap-8 md:flex">
               <TopStat icon={<Flame />} value="18" label="Streak" />
-              <TopStat icon={<Star />} value="2,450" label="XP hÃ´m nay" />
+              <TopStat icon={<Star />} value="2,450" label="XP hôm nay" />
               <TopStat icon={<Gem />} value="5,230" label="Xu" />
 
               <Gift className="text-violet-600" />
@@ -113,7 +113,7 @@ export default function AchievementDetailPage() {
 
               <div className="flex items-center gap-3">
                 <div className="grid h-11 w-11 place-items-center rounded-full bg-emerald-100 text-2xl">
-                  ðŸ§‘â€ðŸŽ“
+                  🧑‍🎓
                 </div>
                 <div>
                   <p className="font-black">Minh Anh</p>
@@ -127,13 +127,13 @@ export default function AchievementDetailPage() {
             <section>
               {/* Breadcrumb */}
               <div className="mb-8 flex items-center gap-3 text-sm font-bold text-indigo-400">
-                <span>Trang chá»§</span>
+                <span>Trang chủ</span>
                 <ChevronRight size={16} />
-                <span>Tá»•ng quan</span>
+                <span>Tổng quan</span>
                 <ChevronRight size={16} />
-                <span>ThÃ nh tÃ­ch gáº§n Ä‘Ã¢y</span>
+                <span>Thành tích gần đây</span>
                 <ChevronRight size={16} />
-                <span className="text-indigo-950">Chi tiáº¿t thÃ nh tÃ­ch</span>
+                <span className="text-indigo-950">Chi tiết thành tích</span>
               </div>
 
               {/* Hero */}
@@ -150,44 +150,44 @@ export default function AchievementDetailPage() {
                   <div>
                     <div className="mb-2 flex items-center gap-3">
                       <h2 className="text-2xl font-black">
-                        1 ngÃ y liÃªn tiáº¿p
+                        1 ngày liên tiếp
                       </h2>
                       <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-black text-violet-600">
-                        Chuá»—i ngÃ y há»c
+                        Chuỗi ngày học
                       </span>
                     </div>
                     <p className="mb-3 font-semibold text-indigo-400">
-                      ChÃºc má»«ng! Báº¡n Ä‘Ã£ duy trÃ¬ há»c táº­p 1 ngÃ y liÃªn tiáº¿p.
+                      Chúc mừng! Bạn đã duy trì học tập 1 ngày liên tiếp.
                     </p>
                     <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-500">
-                      â—Ž Äáº¡t Ä‘Æ°á»£c hÃ´m nay lÃºc 09:42
+                      ◎ Đạt được hôm nay lúc 09:42
                     </span>
                   </div>
                 </div>
 
                 <button className="hidden items-center gap-2 rounded-xl border border-violet-300 px-5 py-3 font-black text-violet-600 md:flex">
                   <Share2 size={18} />
-                  Chia sáº»
+                  Chia sẻ
                 </button>
               </div>
 
               {/* Overview card */}
               <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
                 <h3 className="mb-2 text-lg font-black">
-                  Tá»•ng quan thÃ nh tÃ­ch
+                  Tổng quan thành tích
                 </h3>
                 <p className="mb-10 text-sm font-semibold text-indigo-950">
-                  Duy trÃ¬ há»c táº­p má»—i ngÃ y Ä‘á»ƒ xÃ¢y dá»±ng thÃ³i quen vÃ  Ä‘áº¡t chuá»—i dÃ i
-                  hÆ¡n!
+                  Duy trì học tập mỗi ngày để xây dựng thói quen và đạt chuỗi dài
+                  hơn!
                 </p>
 
-                <p className="mb-5 font-black">Tiáº¿n Ä‘á»™ cá»§a báº¡n</p>
+                <p className="mb-5 font-black">Tiến độ của bạn</p>
 
                 <div className="flex items-center gap-8">
                   <div className="min-w-[150px]">
-                    <p className="text-4xl font-black">1 / 7 ngÃ y</p>
+                    <p className="text-4xl font-black">1 / 7 ngày</p>
                     <p className="mt-3 text-sm font-semibold text-indigo-400">
-                      Há»c liÃªn tá»¥c
+                      Học liên tục
                     </p>
                   </div>
 
@@ -208,7 +208,7 @@ export default function AchievementDetailPage() {
                               {active ? index + 1 : <Lock size={16} />}
                             </div>
                             <p className="mt-3 text-sm font-bold text-indigo-500">
-                              {index + 1} ngÃ y
+                              {index + 1} ngày
                             </p>
                             {active && (
                               <p className="mt-1 text-sm font-black text-orange-500">
@@ -230,22 +230,22 @@ export default function AchievementDetailPage() {
                   <div className="flex items-center gap-4">
                     <Lightbulb className="text-violet-600" />
                     <p className="text-sm font-bold text-indigo-900">
-                      Máº¹o:{" "}
+                      Mẹo:{" "}
                       <span className="font-semibold text-indigo-500">
-                        Há»c má»—i ngÃ y má»™t chÃºt sáº½ giÃºp báº¡n tiáº¿n bá»™ nhanh hÆ¡n vÃ 
-                        ghi nhá»› lÃ¢u hÆ¡n!
+                        Học mỗi ngày một chút sẽ giúp bạn tiến bộ nhanh hơn và
+                        ghi nhớ lâu hơn!
                       </span>
                     </p>
                   </div>
-                  <div className="hidden text-6xl md:block">ðŸ¦Š</div>
+                  <div className="hidden text-6xl md:block">🦊</div>
                 </div>
               </div>
 
               {/* Activity */}
               <div className="mt-7 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-                <h3 className="text-lg font-black">Lá»‹ch sá»­ hoáº¡t Ä‘á»™ng</h3>
+                <h3 className="text-lg font-black">Lịch sử hoạt động</h3>
                 <p className="mb-5 text-sm font-semibold text-slate-400">
-                  CÃ¡c hoáº¡t Ä‘á»™ng há»c táº­p cá»§a báº¡n trong ngÃ y
+                  Các hoạt động học tập của bạn trong ngày
                 </p>
 
                 <div className="divide-y divide-slate-100">
@@ -278,7 +278,7 @@ export default function AchievementDetailPage() {
 
                 <div className="mt-6 text-center">
                   <button className="rounded-xl border border-indigo-200 px-8 py-3 font-black text-indigo-950">
-                    Xem chi tiáº¿t hoáº¡t Ä‘á»™ng
+                    Xem chi tiết hoạt động
                   </button>
                 </div>
               </div>
@@ -287,9 +287,9 @@ export default function AchievementDetailPage() {
             {/* Right sidebar */}
             <aside className="space-y-7">
               <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 className="text-lg font-black">Pháº§n thÆ°á»Ÿng</h3>
+                <h3 className="text-lg font-black">Phần thưởng</h3>
                 <p className="mb-5 text-sm font-semibold text-indigo-950">
-                  Nháº­n khi hoÃ n thÃ nh cÃ¡c má»‘c chuá»—i ngÃ y
+                  Nhận khi hoàn thành các mốc chuỗi ngày
                 </p>
 
                 <div className="space-y-3">
@@ -318,7 +318,7 @@ export default function AchievementDetailPage() {
                           <p className="font-black">{item.day}</p>
                           {item.received && (
                             <p className="text-xs font-bold text-indigo-950">
-                              ÄÃ£ nháº­n
+                              ?ã nhận
                             </p>
                           )}
                         </div>
@@ -335,17 +335,17 @@ export default function AchievementDetailPage() {
               <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="mb-6 flex items-center gap-3">
                   <Star className="text-violet-600" />
-                  <h3 className="text-lg font-black">Gá»£i Ã½ cho báº¡n</h3>
+                  <h3 className="text-lg font-black">Gợi ý cho bạn</h3>
                 </div>
 
                 <div className="mb-5 rounded-xl bg-violet-50 p-5">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-black text-indigo-950">
-                        Há»c thÃªm 6 ngÃ y ná»¯a Ä‘á»ƒ má»Ÿ khÃ³a má»‘c 3 ngÃ y!
+                        Học thêm 6 ngày nữa để mở khóa mốc 3 ngày!
                       </p>
                       <p className="mt-2 text-sm font-semibold text-indigo-500">
-                        Báº¡n sáº½ nháº­n Ä‘Æ°á»£c{" "}
+                        Bạn sẽ nhận được{" "}
                         <span className="font-black">+30 XP</span>
                       </p>
                     </div>
@@ -355,25 +355,25 @@ export default function AchievementDetailPage() {
 
                 <Suggest
                   icon={<CheckCircle />}
-                  title="Äáº·t má»¥c tiÃªu há»c má»—i ngÃ y"
-                  desc="Chá»‰ 15-20 phÃºt má»—i ngÃ y thÃ´i!"
+                  title="Đặt mục tiêu học mỗi ngày"
+                  desc="Chỉ 15-20 phút mỗi ngày thôi!"
                   bg="bg-emerald-100"
                 />
                 <Suggest
                   icon={<Calendar />}
-                  title="Há»c vÃ o cÃ¹ng má»™t thá»i gian"
-                  desc="Táº¡o thÃ³i quen dá»… dÃ ng hÆ¡n"
+                  title="Học vào cùng một thời gian"
+                  desc="Tạo thói quen dễ dàng hơn"
                   bg="bg-indigo-100"
                 />
                 <Suggest
                   icon={<Zap />}
-                  title="Theo dÃµi tiáº¿n Ä‘á»™ thÆ°á»ng xuyÃªn"
-                  desc="Báº¡n sáº½ cÃ³ thÃªm Ä‘á»™ng lá»±c!"
+                  title="Theo dõi tiến độ thường xuyên"
+                  desc="Bạn sẽ có thêm động lực!"
                   bg="bg-violet-100"
                 />
 
                 <button className="mt-6 flex w-full items-center justify-center gap-3 rounded-xl bg-violet-600 px-5 py-4 font-black text-white">
-                  Báº¯t Ä‘áº§u há»c ngay
+                  Bắt đầu học ngay
                   <ChevronRight size={20} />
                 </button>
               </div>

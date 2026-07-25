@@ -48,7 +48,7 @@ async function handleUnauthorized(code?: ArenaUnauthorizedCode) {
 
   try {
     await refreshSession();
-    // Cookie was rotated by /auth/refresh â€” drop the old client and open a
+    // Cookie was rotated by /auth/refresh — drop the old client and open a
     // fresh connection so the new access_token cookie is actually sent.
     socket = null;
     connectArenaSocket();

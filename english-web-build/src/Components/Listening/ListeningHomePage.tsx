@@ -59,7 +59,7 @@ export default function ListeningHomePage() {
       setData(unwrap(response.data));
     } catch (requestError) {
       setError(
-        getApiErrorMessage(requestError, "KhÃ´ng táº£i Ä‘Æ°á»£c Listening Home."),
+        getApiErrorMessage(requestError, "Không tải được Listening Home."),
       );
     } finally {
       setLoading(false);
@@ -92,7 +92,7 @@ export default function ListeningHomePage() {
       router.push(`/listening/practice/${payload.sessionId}`);
     } catch (requestError) {
       setError(
-        getApiErrorMessage(requestError, "KhÃ´ng báº¯t Ä‘áº§u Ä‘Æ°á»£c bÃ i luyá»‡n nghe."),
+        getApiErrorMessage(requestError, "Không bắt đầu được bài luyện nghe."),
       );
     } finally {
       setStarting(false);
@@ -100,7 +100,7 @@ export default function ListeningHomePage() {
   }
 
   if (loading) {
-    return <PageState text="Äang táº£i Listening..." />;
+    return <PageState text="Đang tải Listening..." />;
   }
 
   if (error && !data) {
@@ -111,17 +111,17 @@ export default function ListeningHomePage() {
 
   const stats = [
     {
-      label: "BÃ i hoÃ n thÃ nh",
+      label: "Bài hoàn thành",
       value: data.stats.completedSessions,
       icon: Trophy,
     },
     {
-      label: "Äá»™ chÃ­nh xÃ¡c",
+      label: "Độ chính xác",
       value: `${data.stats.averageAccuracy}%`,
       icon: Target,
     },
     {
-      label: "Thá»i gian nghe",
+      label: "Thời gian nghe",
       value: data.stats.totalListeningTimeText,
       icon: Clock,
     },
@@ -146,13 +146,13 @@ export default function ListeningHomePage() {
                   </div>
 
                   <h1 className="mt-4 text-3xl font-black md:text-4xl">
-                    Luyá»‡n nghe má»—i ngÃ y
+                    Luyện nghe mỗi ngày
                   </h1>
 
                   <p className="mt-3 max-w-2xl text-white/75">
-                    HÃ´m nay: <strong>{data.dailyRecommendation.topic}</strong> Â·{" "}
-                    {data.dailyRecommendation.level} Â·{" "}
-                    {data.dailyRecommendation.limit} cÃ¢u.
+                    Hôm nay: <strong>{data.dailyRecommendation.topic}</strong> ·{" "}
+                    {data.dailyRecommendation.level} ·{" "}
+                    {data.dailyRecommendation.limit} câu.
                   </p>
 
                   <div className="mt-6 flex flex-wrap gap-3">
@@ -165,7 +165,7 @@ export default function ListeningHomePage() {
                         }
                         className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-black text-violet-700"
                       >
-                        Tiáº¿p tá»¥c bÃ i Ä‘ang há»c
+                        Tiếp tục bài đang học
                         <ArrowRight size={18} />
                       </button>
                     ) : (
@@ -174,7 +174,7 @@ export default function ListeningHomePage() {
                         onClick={() => startPractice()}
                         className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-black text-violet-700 disabled:opacity-60"
                       >
-                        {starting ? "Äang chuáº©n bá»‹..." : "Báº¯t Ä‘áº§u bÃ i hÃ´m nay"}
+                        {starting ? "Đang chuẩn bị..." : "Bắt đầu bài hôm nay"}
                         <Play size={18} />
                       </button>
                     )}
@@ -184,7 +184,7 @@ export default function ListeningHomePage() {
                       className="inline-flex items-center gap-2 rounded-xl bg-white/15 px-5 py-3 font-black"
                     >
                       <History size={18} />
-                      Lá»‹ch sá»­
+                      Lịch sử
                     </button>
                   </div>
                 </div>
@@ -196,7 +196,7 @@ export default function ListeningHomePage() {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-white/70">
-                        Cáº¥p Ä‘á»™ hiá»‡n táº¡i
+                        Cấp độ hiện tại
                       </p>
                       <p className="text-3xl font-black">
                         {data.level.current}
@@ -211,10 +211,10 @@ export default function ListeningHomePage() {
                     <Flame className="text-orange-300" />
                     <div>
                       <p className="font-black">
-                        {data.streak.current} ngÃ y liÃªn tiáº¿p
+                        {data.streak.current} ngày liên tiếp
                       </p>
                       <p className="text-xs text-white/65">
-                        Ká»· lá»¥c {data.streak.longest} ngÃ y
+                        Kỷ lục {data.streak.longest} ngày
                       </p>
                     </div>
                   </div>
@@ -252,9 +252,9 @@ export default function ListeningHomePage() {
             <div className="mt-7 grid gap-7 xl:grid-cols-[minmax(0,1fr)_370px]">
               <section className="space-y-7">
                 <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
-                  <h2 className="text-xl font-black">Luyá»‡n nghe theo chá»§ Ä‘á»</h2>
+                  <h2 className="text-xl font-black">Luyện nghe theo chủ đề</h2>
                   <p className="mt-1 text-sm text-slate-500">
-                    Backend hiá»‡n táº¡o bÃ i theo level vÃ  topic.
+                    Backend hiện tạo bài theo level và topic.
                   </p>
 
                   <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -271,10 +271,10 @@ export default function ListeningHomePage() {
                         }
                         className="rounded-2xl bg-slate-50 p-5 text-left transition hover:bg-violet-50 disabled:opacity-50"
                       >
-                        <div className="text-3xl">ðŸŽ§</div>
+                        <div className="text-3xl">🎧</div>
                         <h3 className="mt-3 font-black">{topic}</h3>
                         <p className="mt-1 text-xs font-bold text-slate-500">
-                          {data.level.current} Â· 10 cÃ¢u
+                          {data.level.current} · 10 câu
                         </p>
                       </button>
                     ))}
@@ -283,12 +283,12 @@ export default function ListeningHomePage() {
 
                 <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-black">Hoáº¡t Ä‘á»™ng gáº§n Ä‘Ã¢y</h2>
+                    <h2 className="text-xl font-black">Hoạt động gần đây</h2>
                     <button
                       onClick={() => router.push("/listening/history")}
                       className="font-bold text-violet-600"
                     >
-                      Xem táº¥t cáº£
+                      Xem tất cả
                     </button>
                   </div>
 
@@ -309,8 +309,8 @@ export default function ListeningHomePage() {
                               {session.topic || "Luyện nghe"}
                             </h3>
                             <p className="mt-1 text-sm text-slate-500">
-                              {session.level} Â· {session.correct}/
-                              {session.total} cÃ¢u Ä‘Ãºng
+                              {session.level} · {session.correct}/
+                              {session.total} câu đúng
                             </p>
                           </div>
                           <span className="text-xl font-black text-violet-600">
@@ -320,7 +320,7 @@ export default function ListeningHomePage() {
                       ))
                     ) : (
                       <p className="text-sm text-slate-500">
-                        ChÆ°a cÃ³ bÃ i Listening Ä‘Ã£ hoÃ n thÃ nh.
+                        Chưa có bài Listening đã hoàn thành.
                       </p>
                     )}
                   </div>
@@ -329,12 +329,12 @@ export default function ListeningHomePage() {
 
               <aside className="space-y-6">
                 <MissionCard
-                  title="Nhiá»‡m vá»¥ hÃ´m nay"
+                  title="Nhiệm vụ hôm nay"
                   mission={dailyMission}
                   loading={missionLoading}
                 />
                 <MissionCard
-                  title="Má»¥c tiÃªu tuáº§n"
+                  title="Mục tiêu tuần"
                   mission={weeklyMission}
                   loading={missionLoading}
                 />
@@ -361,7 +361,7 @@ function MissionCard({
       <h2 className="font-black">{title}</h2>
 
       {loading ? (
-        <p className="mt-4 text-sm text-slate-500">Äang táº£i nhiá»‡m vá»¥...</p>
+        <p className="mt-4 text-sm text-slate-500">Đang tải nhiệm vụ...</p>
       ) : mission ? (
         <>
           <h3 className="mt-4 font-black">{mission.title}</h3>
@@ -385,7 +385,7 @@ function MissionCard({
         </>
       ) : (
         <p className="mt-4 text-sm text-slate-500">
-          ChÆ°a cÃ³ nhiá»‡m vá»¥ Listening.
+          Chưa có nhiệm vụ Listening.
         </p>
       )}
     </section>
@@ -402,7 +402,7 @@ function PageState({ text, action }: { text: string; action?: () => void }) {
             onClick={action}
             className="mt-4 rounded-xl bg-violet-600 px-5 py-2 font-bold text-white"
           >
-            Táº£i láº¡i
+            Tải lại
           </button>
         )}
       </div>

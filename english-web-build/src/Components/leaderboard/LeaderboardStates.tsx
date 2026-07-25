@@ -21,7 +21,7 @@ export function LeaderboardError({
   return (
     <div className="mt-6 rounded-3xl border border-rose-200 bg-rose-50 p-8 text-center">
       <p className="text-lg font-black text-rose-700">
-        KhÃ´ng thá»ƒ táº£i báº£ng xáº¿p háº¡ng
+        Không thể tải bảng xếp hạng
       </p>
       <p className="mt-2 text-sm text-rose-600">
         {message}
@@ -43,16 +43,16 @@ export function LeaderboardEmpty({
 }) {
   const message =
     scope === 'FRIENDS'
-      ? 'HÃ£y káº¿t báº¡n Ä‘á»ƒ báº¯t Ä‘áº§u thi Ä‘ua cÃ¹ng nhau.'
+      ? 'Hãy kết bạn để bắt đầu thi đua cùng nhau.'
       : scope === 'CLUB'
-        ? 'Club chÆ°a cÃ³ hoáº¡t Ä‘á»™ng XP trong tuáº§n nÃ y.'
-        : 'ChÆ°a cÃ³ dá»¯ liá»‡u báº£ng xáº¿p háº¡ng.';
+        ? 'Club chưa có hoạt động XP trong tuần này.'
+        : 'Chưa có dữ liệu bảng xếp hạng.';
 
   return (
     <div className="mt-6 rounded-3xl border border-dashed bg-white p-10 text-center">
-      <div className="text-5xl">ðŸ</div>
+      <div className="text-5xl">🏁</div>
       <p className="mt-4 text-lg font-black">
-        ChÆ°a cÃ³ thá»© háº¡ng
+        Chưa có thứ hạng
       </p>
       <p className="mt-2 text-sm text-slate-500">
         {message}

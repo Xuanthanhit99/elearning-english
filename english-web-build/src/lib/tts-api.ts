@@ -11,11 +11,11 @@ export async function synthesizeSpeech(
   try {
     const { data } = await api.post("/tts/speak", { text, lang });
     const audioUrl = (data?.data ?? data)?.audioUrl;
-    if (!audioUrl) throw new Error("KhÃ´ng cÃ³ audio tráº£ vá»");
+    if (!audioUrl) throw new Error("Không có audio trả về");
     return audioUrl as string;
   } catch (error) {
     throw new Error(
-      getApiErrorMessage(error, "KhÃ´ng táº¡o Ä‘Æ°á»£c audio phÃ¡t Ã¢m"),
+      getApiErrorMessage(error, "Không tạo được audio phát âm"),
     );
   }
 }
@@ -23,11 +23,11 @@ export async function synthesizeSpeech(
 const pendingSpeech = new Map<string, Promise<string>>();
 
 /**
- * PhÃ¡t audio nhanh cho cÃ¡c nÃºt loa "fire-and-forget" Ä‘Ã£ dÃ¹ng
- * `new Audio(word.audio).play()` sáºµn trong VocabularyPage/Review â€” Æ°u
- * tiÃªn `audioUrl` cÃ³ sáºµn, náº¿u rá»—ng thÃ¬ gá»i backend TTS. Gá»™p cÃ¡c lÆ°á»£t
- * gá»i trÃ¹ng (cÃ¹ng text/lang) khi audio Ä‘ang Ä‘Æ°á»£c tá»•ng há»£p Ä‘á»ƒ trÃ¡nh
- * spam click báº¯n nhiá»u request.
+ * Phát audio nhanh cho các nút loa "fire-and-forget" đã dùng
+ * `new Audio(word.audio).play()` sẵn trong VocabularyPage/Review — ưu
+ * tiên `audioUrl` có sẵn, nếu rỗng thì gọi backend TTS. Gộp các lượt
+ * gọi trùng (cùng text/lang) khi audio đang được tổng hợp để tránh
+ * spam click bắn nhiều request.
  */
 export async function speakWord(
   text: string,

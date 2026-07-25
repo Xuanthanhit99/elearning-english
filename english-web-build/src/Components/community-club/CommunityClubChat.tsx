@@ -9,7 +9,7 @@ import {
 } from '@/src/lib/community-club-api';
 import type { ClubMessage } from '@/src/types/community-club';
 
-const emojis = ['ðŸ˜€', 'ðŸ˜‚', 'ðŸ˜', 'ðŸ‘', 'ðŸ‘', 'ðŸ”¥', 'â¤ï¸', 'ðŸŽ‰'];
+const emojis = ['😀', '😂', '😍', '👍', '👏', '🔥', '❤️', '🎉'];
 
 export function CommunityClubChat({
   clubId,
@@ -96,10 +96,10 @@ export function CommunityClubChat({
     <div className="flex min-h-[560px] flex-col overflow-hidden rounded-3xl border-2 border-slate-200 bg-white shadow-sm">
       <div className="border-b-2 border-slate-100 px-5 py-4">
         <h3 className="font-extrabold text-slate-950">
-          Chat nhÃ³m
+          Chat nhóm
         </h3>
         <p className="text-sm text-slate-500">
-          Chá»‰ thÃ nh viÃªn cÃ¢u láº¡c bá»™ má»›i cÃ³ thá»ƒ nháº¯n tin.
+          Chỉ thành viên câu lạc bộ mới có thể nhắn tin.
         </p>
       </div>
 
@@ -131,7 +131,7 @@ export function CommunityClubChat({
 
         {typingUsers.length > 0 && (
           <p className="text-xs font-medium text-slate-500">
-            {typingUsers.join(', ')} Ä‘ang nháº­p...
+            {typingUsers.join(', ')} đang nhập...
           </p>
         )}
       </div>
@@ -173,7 +173,7 @@ export function CommunityClubChat({
               }
             }}
             rows={2}
-            placeholder="Nháº¯n tin cho cÃ¢u láº¡c bá»™..."
+            placeholder="Nhắn tin cho câu lạc bộ..."
             className="flex-1 resize-none rounded-2xl border-2 border-slate-200 px-4 py-3 text-sm outline-none focus:border-indigo-500"
           />
 

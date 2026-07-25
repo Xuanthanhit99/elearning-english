@@ -23,13 +23,13 @@ import { CommunityFollowButton } from "../community-club/CommunityFollowButton";
 import { useAuthStore } from "@/src/store/authStore";
 
 const typeLabel: Record<string, string> = {
-  SHARE: "Chia sáº»",
-  QUESTION: "Há»i Ä‘Ã¡p",
+  SHARE: "Chia sẻ",
+  QUESTION: "Hỏi đáp",
   SPEAKING: "Luyện nói",
   WRITING: "Luyện viết",
-  IMAGE: "GÃ³c há»c táº­p",
-  ACHIEVEMENT: "ThÃ nh tÃ­ch",
-  POLL: "Kháº£o sÃ¡t",
+  IMAGE: "Góc học tập",
+  ACHIEVEMENT: "Thành tích",
+  POLL: "Khảo sát",
 };
 
 type CommunityPostView = CommunityPost & {
@@ -48,7 +48,7 @@ function authorName(post: CommunityPostView) {
     post.author.fullname ||
     post.author.name ||
     post.author.username ||
-    "NgÆ°á»i dÃ¹ng"
+    "Người dùng"
   );
 }
 
@@ -123,7 +123,7 @@ export function CommunityPostCard({
 
   async function sharePost() {
     const payload = {
-      title: post.title || "BÃ i viáº¿t cá»™ng Ä‘á»“ng",
+      title: post.title || "Bài viết cộng đồng",
       text: post.content.slice(0, 180),
       url: postUrl,
     };
@@ -156,7 +156,7 @@ export function CommunityPostCard({
                 {authorName(post)}
               </div>
               <div className="mt-0.5 text-xs font-medium text-slate-600">
-                Level {post.author.level ?? 1} Â·{" "}
+                Level {post.author.level ?? 1} ·{" "}
                 {new Date(post.createdAt).toLocaleString("vi-VN")}
               </div>
             </div>
@@ -259,7 +259,7 @@ export function CommunityPostCard({
           >
             {copied ? <Check size={20} /> : <Share2 size={20} />}
             <span className="hidden sm:inline">
-              {copied ? "ÄÃ£ sao chÃ©p" : "Chia sáº»"}
+              {copied ? "?ã sao chép" : "Chia sẻ"}
             </span>
           </button>
 

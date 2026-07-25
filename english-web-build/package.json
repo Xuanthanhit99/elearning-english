@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit --pretty false",
     "test": "node scripts/test-auth-redirect.mjs",
     "test:responsive": "node scripts/responsive-regression-check.mjs",
-    "i18n:check": "node scripts/check-i18n.mjs"
+    "i18n:check": "node scripts/check-i18n.mjs",
+    "check:utf8": "node ../scripts/check-utf8.mjs"
   },
   "dependencies": {
     "@capacitor/cli": "^7.6.7",

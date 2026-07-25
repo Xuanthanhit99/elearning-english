@@ -65,7 +65,7 @@ export default function AchievementOverviewPage() {
         const res = await api.get<AchievementData>("/vocabulary/overview/achievements");
         if (active) setData(res.data);
       } catch {
-        if (active) setMessage("ChÆ°a táº£i Ä‘Æ°á»£c thÃ nh tÃ­ch cá»§a báº¡n.");
+        if (active) setMessage("Chưa tải được thành tích của bạn.");
       } finally {
         if (active) setLoading(false);
       }
@@ -103,7 +103,7 @@ export default function AchievementOverviewPage() {
     return (
       <div className="px-4 py-7 lg:px-8">
         <section className="rounded-3xl border border-red-100 bg-red-50 p-6 font-bold text-red-600">
-          {message || "KhÃ´ng cÃ³ dá»¯ liá»‡u thÃ nh tÃ­ch."}
+          {message || "Không có dữ liệu thành tích."}
         </section>
       </div>
     );
@@ -113,18 +113,18 @@ export default function AchievementOverviewPage() {
     <div className="px-4 py-7 lg:px-8">
       <div className="mb-7">
         <div className="mb-4 flex items-center gap-2 text-sm font-bold text-[#73799b]">
-          <Link href="/">Trang chá»§</Link>
+          <Link href="/">Trang chủ</Link>
           <ChevronRight size={16} />
-          <Link href="/vocabulary/overview">Tá»•ng quan</Link>
+          <Link href="/vocabulary/overview">Tổng quan</Link>
           <ChevronRight size={16} />
-          <span className="text-[#101733]">ThÃ nh tÃ­ch gáº§n Ä‘Ã¢y</span>
+          <span className="text-[#101733]">Thành tích gần đây</span>
         </div>
         <h1 className="flex items-center gap-3 text-3xl font-black text-[#101733]">
-          ThÃ nh tÃ­ch gáº§n Ä‘Ã¢y
+          Thành tích gần đây
           <AppIcon name="star" tone="yellow" />
         </h1>
         <p className="mt-3 text-base font-bold text-[#69708b]">
-          Theo dÃµi cÃ¡c hoáº¡t Ä‘á»™ng vÃ  thÃ nh tÃ­ch ná»•i báº­t cá»§a báº¡n
+          Theo dõi các hoạt động và thành tích nổi bật của bạn
         </p>
       </div>
 
@@ -152,9 +152,9 @@ export default function AchievementOverviewPage() {
             ) : (
               <section className="rounded-3xl border border-[#ebeaf6] bg-white p-8 text-center shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
                 <AppIcon name="star" tone="yellow" className="mx-auto h-16 w-16" size={30} />
-                <h2 className="mt-4 text-xl font-black text-[#101733]">ChÆ°a cÃ³ thÃ nh tÃ­ch trong má»¥c nÃ y</h2>
+                <h2 className="mt-4 text-xl font-black text-[#101733]">Chưa có thành tích trong mục này</h2>
                 <p className="mt-2 text-sm font-bold text-[#69708b]">
-                  HÃ£y há»c thÃªm má»™t bÃ i Ä‘á»ƒ há»‡ thá»‘ng ghi nháº­n thÃ nh tÃ­ch má»›i cho báº¡n.
+                  Hãy học thêm một bài để hệ thống ghi nhận thành tích mới cho bạn.
                 </p>
               </section>
             )}
@@ -162,28 +162,28 @@ export default function AchievementOverviewPage() {
 
           {achievements.length > 5 && (
             <button className="mx-auto mt-5 flex h-12 min-w-[220px] items-center justify-center gap-2 rounded-xl border border-[#e0def1] bg-white text-sm font-black text-[#101733]">
-              Xem thÃªm <ChevronDown size={16} />
+              Xem thêm <ChevronDown size={16} />
             </button>
           )}
         </main>
 
         <aside className="space-y-6">
           <section className="rounded-3xl border border-[#ebeaf6] bg-white p-6 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
-            <h2 className="font-black text-[#101733]">Tá»•ng quan thÃ nh tÃ­ch</h2>
+            <h2 className="font-black text-[#101733]">Tổng quan thành tích</h2>
             <div className="mt-5 grid grid-cols-2 gap-3">
-              <SummaryBox icon="star" tone="purple" value={data.summary.totalAchievements} label="ThÃ nh tÃ­ch" />
-              <SummaryBox icon="zap" tone="emerald" value={data.summary.xpEarned} label="XP nháº­n Ä‘Æ°á»£c" />
-              <SummaryBox icon="target" tone="orange" value={data.summary.completedChallenges} label="Thá»­ thÃ¡ch hoÃ n thÃ nh" />
-              <SummaryBox icon="calendar" tone="pink" value={data.summary.longestStreak} label="Chuá»—i dÃ i nháº¥t" />
+              <SummaryBox icon="star" tone="purple" value={data.summary.totalAchievements} label="Thành tích" />
+              <SummaryBox icon="zap" tone="emerald" value={data.summary.xpEarned} label="XP nhận được" />
+              <SummaryBox icon="target" tone="orange" value={data.summary.completedChallenges} label="Thử thách hoàn thành" />
+              <SummaryBox icon="calendar" tone="pink" value={data.summary.longestStreak} label="Chuỗi dài nhất" />
             </div>
           </section>
 
           <section className="overflow-hidden rounded-3xl border border-[#ebeaf6] bg-[#fbf8ff] p-6 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
             <div className="grid grid-cols-[1fr_150px] items-center gap-4">
               <div>
-                <h2 className="font-black text-[#101733]">Báº¡n Ä‘ang ráº¥t xuáº¥t sáº¯c!</h2>
+                <h2 className="font-black text-[#101733]">Bạn đang rất xuất sắc!</h2>
                 <p className="mt-4 text-sm font-bold leading-6 text-[#4f5575]">
-                  HÃ£y duy trÃ¬ thÃ³i quen há»c táº­p Ä‘á»ƒ Ä‘áº¡t Ä‘Æ°á»£c nhiá»u thÃ nh tÃ­ch hÆ¡n ná»¯a nhÃ©!
+                  Hãy duy trì thói quen học tập để đạt được nhiều thành tích hơn nữa nhé!
                 </p>
               </div>
               <img src="/brand/beaconvie-app-icon.png" alt="Mascot" className="h-36 w-36 object-contain" />
@@ -192,7 +192,7 @@ export default function AchievementOverviewPage() {
 
           <section className="rounded-3xl border border-[#ebeaf6] bg-white p-6 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
             <div className="flex items-center justify-between">
-              <h2 className="font-black text-[#101733]">ThÃ nh tÃ­ch gáº§n Ä‘áº¡t Ä‘Æ°á»£c</h2>
+              <h2 className="font-black text-[#101733]">Thành tích gần đạt được</h2>
             </div>
             <div className="mt-5 space-y-5">
               {data.goals.map((goal) => <GoalProgress key={goal.key} goal={goal} />)}
@@ -201,7 +201,7 @@ export default function AchievementOverviewPage() {
               href="/missions"
               className="mt-6 flex h-12 items-center justify-center gap-2 rounded-xl bg-[#fbfaff] text-sm font-black text-[#6d35ff]"
             >
-              Xem táº¥t cáº£ thÃ nh tÃ­ch <ChevronRight size={17} />
+              Xem tất cả thành tích <ChevronRight size={17} />
             </Link>
           </section>
         </aside>
@@ -229,7 +229,7 @@ function AchievementRow({ item }: { item: AchievementItem }) {
       <span className="text-lg font-black text-[#6d35ff]">+ {numberText(item.xp)} XP</span>
       <div className="flex items-center justify-between gap-4">
         <span className="rounded-xl bg-[#f7f5ff] px-4 py-2 text-sm font-bold text-[#69708b]">
-          {item.dateLabel || "Gáº§n Ä‘Ã¢y"}
+          {item.dateLabel || "Gần đây"}
         </span>
         <ChevronRight className="text-[#8b91aa]" size={20} />
       </div>
@@ -260,10 +260,10 @@ function SummaryBox({
 function GoalProgress({ goal }: { goal: GoalItem }) {
   const percent = goal.progressPercent ?? (goal.target ? Math.min(100, Math.round((goal.current / goal.target) * 100)) : 0);
   const statusLabel = goal.claimed
-    ? "ÄÃ£ nháº­n"
+    ? "?ã nhận"
     : goal.claimable || goal.unlocked
-      ? "CÃ³ thá»ƒ nháº­n"
-      : "Äang khÃ³a";
+      ? "Có thể nhận"
+      : "Đang khóa";
   return (
     <div className="grid grid-cols-[64px_1fr] gap-4">
       <AppIcon

@@ -134,7 +134,7 @@ export default function SpeakingTopicDetailPage() {
             </section>
             <aside className="col-span-3 space-y-5">
               <ProgressCard progress={detail.progress} />
-              <Card title="Youâ€™ll improve">
+              <Card title="You’ll improve">
                 <div className="space-y-5">
                   {detail.improveSkills.map((s) => (
                     <div key={s.title} className="flex items-center gap-4">
@@ -186,7 +186,7 @@ export default function SpeakingTopicDetailPage() {
                   <p className="text-sm font-semibold leading-6 text-indigo-700">
                     {detail.practiceTip.description}
                   </p>
-                  <div className="text-7xl">ðŸ¦Š</div>
+                  <div className="text-7xl">🦊</div>
                 </div>
               </div>
             </aside>
@@ -211,7 +211,7 @@ function Hero({ detail }: { detail: SpeakingTopicDetail }) {
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-6xl">
-              {t.category.icon || "ðŸŽ™ï¸"}
+              {t.category.icon || "🎙️"}
             </div>
           )}
         </div>
@@ -246,7 +246,7 @@ function Hero({ detail }: { detail: SpeakingTopicDetail }) {
           </div>
         </div>
       </div>
-      <div className="col-span-3 hidden text-8xl lg:block">ðŸ’¬ðŸ‘©â€ðŸ¦°â˜•</div>
+      <div className="col-span-3 hidden text-8xl lg:block">💬👩‍🦰☕</div>
     </div>
   );
 }
@@ -298,7 +298,7 @@ function LessonRow({
           </button>
         ) : lesson.status === "COMPLETED" ? (
           <button className="flex items-center gap-2 text-sm font-bold text-green-600">
-            â— Completed
+            ● Completed
             <ChevronRight size={16} />
           </button>
         ) : lesson.status === "IN_PROGRESS" ? (
@@ -306,7 +306,7 @@ function LessonRow({
             onClick={onStart}
             className="flex items-center gap-2 text-sm font-bold text-orange-500"
           >
-            â— In Progress
+            ● In Progress
             <ChevronRight size={16} />
           </button>
         ) : (
@@ -405,13 +405,13 @@ function ProgressCard({
         </div>
         <div className="space-y-5 text-sm">
           <p>
-            âœ… Completed <b>{progress.completed}</b>
+            ✅ Completed <b>{progress.completed}</b>
           </p>
           <p>
-            ðŸŸ  In Progress <b>{progress.inProgress}</b>
+            🟠 In Progress <b>{progress.inProgress}</b>
           </p>
           <p>
-            âšª Not Started <b>{progress.notStarted}</b>
+            ⚪ Not Started <b>{progress.notStarted}</b>
           </p>
         </div>
       </div>
@@ -420,19 +420,19 @@ function ProgressCard({
 }
 function Sidebar({ onGoPremium }: { onGoPremium: () => void }) {
   const menus = [
-    ["Home", "ðŸ ", "/"],
-    ["Từ vựng", "âœš", "/vocabulary"],
-    ["Ngữ pháp", "âœš", "/grammar"],
-    ["Luyện nghe", "ðŸŽ§", "/listening"],
-    ["Luyện nói", "ðŸŽ™ï¸", "/speaking"],
-    ["Luyện đọc", "ðŸ“–", "/reading"],
-    ["Luyện viết", "âœï¸", "/writing"],
-    ["Flashcards", "ðŸ§©", "/vocabulary/flashcards"],
+    ["Home", "🏠", "/"],
+    ["Từ vựng", "✚", "/vocabulary"],
+    ["Ngữ pháp", "✚", "/grammar"],
+    ["Luyện nghe", "🎧", "/listening"],
+    ["Luyện nói", "🎙️", "/speaking"],
+    ["Luyện đọc", "📖", "/reading"],
+    ["Luyện viết", "✏️", "/writing"],
+    ["Flashcards", "🧩", "/vocabulary/flashcards"],
   ];
   return (
     <aside className="min-h-screen w-[270px] border-r border-indigo-50 bg-white px-5 py-7">
       <div className="mb-10 flex items-center gap-3">
-        <div className="text-3xl">ðŸ¦Š</div>
+        <div className="text-3xl">🦊</div>
         <h1 className="text-2xl font-extrabold">
           Speak<span className="text-purple-600">Arena</span>
         </h1>
@@ -450,7 +450,7 @@ function Sidebar({ onGoPremium }: { onGoPremium: () => void }) {
         ))}
       </nav>
       <div className="mt-10 rounded-2xl bg-purple-50 p-5">
-        <p className="mb-2 text-sm font-bold text-purple-700">ðŸ‘‘ Go Premium</p>
+        <p className="mb-2 text-sm font-bold text-purple-700">👑 Go Premium</p>
         <p className="text-xs leading-5 text-indigo-400">
           Unlock all features and learn without limits.
         </p>
@@ -482,7 +482,7 @@ function Topbar({
           placeholder="Search topics, lessons or skills..."
         />
         <div className="rounded-lg bg-white px-3 py-1 text-xs font-semibold text-indigo-500">
-          âŒ˜ K
+          ⌘ K
         </div>
       </div>
       <div className="flex items-center gap-8">

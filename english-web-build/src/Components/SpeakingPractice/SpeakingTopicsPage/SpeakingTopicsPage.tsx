@@ -207,7 +207,7 @@ function TopicRow({
             />
           ) : (
             <div className="flex h-full items-center justify-center text-4xl">
-              {topic.category.icon || "ðŸŽ™ï¸"}
+              {topic.category.icon || "🎙️"}
             </div>
           )}
         </div>
@@ -269,7 +269,7 @@ function Header() {
     <div className="mb-8 flex items-center justify-between">
       <div className="flex items-center gap-5">
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-4xl">
-          ðŸŽ™ï¸
+          🎙️
         </div>
         <div>
           <h1 className="text-4xl font-extrabold">Topic List</h1>
@@ -278,7 +278,7 @@ function Header() {
           </p>
         </div>
       </div>
-      <div className="hidden text-7xl lg:block">ðŸª´ðŸ’¬ðŸŒ</div>
+      <div className="hidden text-7xl lg:block">🪴💬🌍</div>
     </div>
   );
 }
@@ -343,26 +343,26 @@ function LoadingList() {
 function Empty() {
   return (
     <div className="mt-10 rounded-2xl bg-white p-10 text-center">
-      <div className="text-5xl">ðŸŽ™ï¸</div>
-      <h3 className="mt-4 text-xl font-bold">KhÃ´ng tÃ¬m tháº¥y topic</h3>
+      <div className="text-5xl">🎙️</div>
+      <h3 className="mt-4 text-xl font-bold">Không tìm thấy topic</h3>
     </div>
   );
 }
 function Sidebar({ onGoPremium }: { onGoPremium: () => void }) {
   const menus = [
-    ["Home", "ðŸ ", "/"],
-    ["Từ vựng", "âœš", "/vocabulary"],
-    ["Ngữ pháp", "âœš", "/grammar"],
-    ["Luyện nghe", "ðŸŽ§", "/listening"],
-    ["Luyện nói", "ðŸŽ™ï¸", "/speaking"],
-    ["Luyện đọc", "ðŸ“–", "/reading"],
-    ["Luyện viết", "âœï¸", "/writing"],
-    ["Flashcards", "ðŸ§©", "/vocabulary/flashcards"],
+    ["Home", "🏠", "/"],
+    ["Từ vựng", "✚", "/vocabulary"],
+    ["Ngữ pháp", "✚", "/grammar"],
+    ["Luyện nghe", "🎧", "/listening"],
+    ["Luyện nói", "🎙️", "/speaking"],
+    ["Luyện đọc", "📖", "/reading"],
+    ["Luyện viết", "✏️", "/writing"],
+    ["Flashcards", "🧩", "/vocabulary/flashcards"],
   ];
   return (
     <aside className="min-h-screen w-[270px] border-r border-indigo-50 bg-white px-5 py-7">
       <div className="mb-10 flex items-center gap-3">
-        <div className="text-3xl">ðŸ¦Š</div>
+        <div className="text-3xl">🦊</div>
         <h1 className="text-2xl font-extrabold">
           Speak<span className="text-purple-600">Arena</span>
         </h1>
@@ -380,7 +380,7 @@ function Sidebar({ onGoPremium }: { onGoPremium: () => void }) {
         ))}
       </nav>
       <div className="mt-10 rounded-2xl bg-purple-50 p-5">
-        <p className="mb-2 text-sm font-bold text-purple-700">ðŸ‘‘ Go Premium</p>
+        <p className="mb-2 text-sm font-bold text-purple-700">👑 Go Premium</p>
         <p className="text-xs leading-5 text-indigo-400">
           Unlock all features and learn without limits.
         </p>
@@ -412,7 +412,7 @@ function Topbar({
           placeholder="Search topics, lessons or skills..."
         />
         <div className="rounded-lg bg-white px-3 py-1 text-xs font-semibold text-indigo-500">
-          âŒ˜ K
+          ⌘ K
         </div>
       </div>
       <div className="flex items-center gap-8">
@@ -500,13 +500,13 @@ function ProgressCard({
         </div>
         <div className="space-y-5 text-sm">
           <p>
-            âœ… Completed <b>{progress.completed}</b>
+            ✅ Completed <b>{progress.completed}</b>
           </p>
           <p>
-            ðŸŸ  In Progress <b>{progress.inProgress}</b>
+            🟠 In Progress <b>{progress.inProgress}</b>
           </p>
           <p>
-            âšª Not Started <b>{progress.notStarted}</b>
+            ⚪ Not Started <b>{progress.notStarted}</b>
           </p>
         </div>
       </div>

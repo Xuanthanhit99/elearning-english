@@ -14,14 +14,14 @@ import {
 } from "./listening.helpers";
 
 const topics = [
-  { icon: "â˜•", name: "Daily Life" },
-  { icon: "ðŸŽ’", name: "School" },
-  { icon: "ðŸ§³", name: "Travel" },
-  { icon: "ðŸ’¼", name: "Work" },
-  { icon: "ðŸ’—", name: "Health" },
-  { icon: "ðŸ”", name: "Food" },
-  { icon: "ðŸ’»", name: "Technology" },
-  { icon: "ðŸŒ¿", name: "Environment" },
+  { icon: "☕", name: "Daily Life" },
+  { icon: "🎒", name: "School" },
+  { icon: "🧳", name: "Travel" },
+  { icon: "💼", name: "Work" },
+  { icon: "💗", name: "Health" },
+  { icon: "🍔", name: "Food" },
+  { icon: "💻", name: "Technology" },
+  { icon: "🌿", name: "Environment" },
 ];
 
 const levels = ["A1", "A2", "B1", "B2", "C1", "C2"];
@@ -60,7 +60,7 @@ export default function ListeningTopicPage() {
       setError(
         getApiErrorMessage(
           requestError,
-          "KhÃ´ng báº¯t Ä‘áº§u Ä‘Æ°á»£c bÃ i theo chá»§ Ä‘á».",
+          "Không bắt đầu được bài theo chủ đề.",
         ),
       );
     } finally {
@@ -86,11 +86,11 @@ export default function ListeningTopicPage() {
                 <Headphones size={42} />
                 <div>
                   <h1 className="text-3xl font-black">
-                    Nghe theo chá»§ Ä‘á»
+                    Nghe theo chủ đề
                   </h1>
                   <p className="mt-2 text-white/75">
-                    Chá»n level vÃ  topic. Backend sáº½ táº¡o hoáº·c
-                    resume session phÃ¹ há»£p.
+                    Chọn level và topic. Backend sẽ tạo hoặc
+                    resume session phù hợp.
                   </p>
                 </div>
               </div>
@@ -104,7 +104,7 @@ export default function ListeningTopicPage() {
 
             <section className="mt-7 rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
               <h2 className="text-xl font-black">
-                Chá»n trÃ¬nh Ä‘á»™
+                Chọn trình độ
               </h2>
               <div className="mt-4 flex flex-wrap gap-3">
                 {levels.map((level) => (
@@ -125,7 +125,7 @@ export default function ListeningTopicPage() {
               </div>
 
               <h2 className="mt-8 text-xl font-black">
-                Chá»n chá»§ Ä‘á»
+                Chọn chủ đề
               </h2>
               <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {topics.map((topic) => (
@@ -157,8 +157,8 @@ export default function ListeningTopicPage() {
               >
                 <Play size={19} />
                 {starting
-                  ? "Äang chuáº©n bá»‹..."
-                  : `Báº¯t Ä‘áº§u ${selectedTopic} Â· ${selectedLevel}`}
+                  ? "Đang chuẩn bị..."
+                  : `Bắt đầu ${selectedTopic} · ${selectedLevel}`}
               </button>
             </section>
           </div>

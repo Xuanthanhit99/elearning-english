@@ -42,7 +42,7 @@ export default function ListeningHistoryPage() {
       setError(
         getApiErrorMessage(
           requestError,
-          "KhÃ´ng táº£i Ä‘Æ°á»£c lá»‹ch sá»­ Listening.",
+          "Không tải được lịch sử Listening.",
         ),
       );
     } finally {
@@ -69,10 +69,10 @@ export default function ListeningHistoryPage() {
 
             <div className="mt-5">
               <h1 className="text-3xl font-black">
-                Lá»‹ch sá»­ luyá»‡n nghe
+                Lịch sử luyện nghe
               </h1>
               <p className="mt-2 text-slate-500">
-                Xem láº¡i Ä‘iá»ƒm sá»‘, XP vÃ  káº¿t quáº£ tá»«ng phiÃªn.
+                Xem lại điểm số, XP và kết quả từng phiên.
               </p>
             </div>
 
@@ -85,7 +85,7 @@ export default function ListeningHistoryPage() {
             <section className="mt-7 rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
               {loading && !data ? (
                 <p className="text-center font-bold text-slate-500">
-                  Äang táº£i lá»‹ch sá»­...
+                  Đang tải lịch sử...
                 </p>
               ) : data?.items.length ? (
                 <div className="space-y-4">
@@ -108,15 +108,15 @@ export default function ListeningHistoryPage() {
                           {item.topic || "Luyện nghe"}
                         </h2>
                         <p className="mt-1 text-sm text-slate-500">
-                          {item.level} Â· {item.correct}/
-                          {item.total} Ä‘Ãºng Â· {item.skipped} bá» qua
+                          {item.level} · {item.correct}/
+                          {item.total} đúng · {item.skipped} bỏ qua
                         </p>
                       </div>
 
                       <div className="flex gap-6">
                         <div>
                           <p className="text-xs font-bold text-slate-400">
-                            Äiá»ƒm
+                            Điểm
                           </p>
                           <p className="text-xl font-black text-violet-600">
                             {item.score}%
@@ -133,7 +133,7 @@ export default function ListeningHistoryPage() {
                         </div>
                         <div>
                           <p className="text-xs font-bold text-slate-400">
-                            HoÃ n thÃ nh
+                            Hoàn thành
                           </p>
                           <p className="flex items-center gap-1 text-sm font-bold">
                             <Clock size={15} />
@@ -152,7 +152,7 @@ export default function ListeningHistoryPage() {
                 </div>
               ) : (
                 <p className="text-center font-bold text-slate-500">
-                  ChÆ°a cÃ³ lá»‹ch sá»­ Listening.
+                  Chưa có lịch sử Listening.
                 </p>
               )}
 

@@ -13,10 +13,10 @@ import type {
 } from '@/src/types/community-club';
 
 const CLUB_ROLE_LABEL = {
-  OWNER: 'Chá»§ cÃ¢u láº¡c bá»™',
-  ADMIN: 'Quáº£n trá»‹ viÃªn',
-  MODERATOR: 'Äiá»u hÃ nh viÃªn',
-  MEMBER: 'ThÃ nh viÃªn',
+  OWNER: 'Chủ câu lạc bộ',
+  ADMIN: 'Quản trị viên',
+  MODERATOR: 'Điều hành viên',
+  MEMBER: 'Thành viên',
 };
 
 export function CommunityClubMembers({
@@ -62,7 +62,7 @@ export function CommunityClubMembers({
   return (
     <div className="rounded-3xl border-2 border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-5 shadow-sm">
       <h3 className="text-lg font-extrabold text-slate-950">
-        ThÃ nh viÃªn
+        Thành viên
       </h3>
 
       <div className="mt-4 divide-y divide-slate-100">

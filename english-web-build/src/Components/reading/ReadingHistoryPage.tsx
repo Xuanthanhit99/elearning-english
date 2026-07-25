@@ -94,7 +94,7 @@ export default function ReadingHistoryPage() {
       setData(payload);
     } catch (err) {
       console.error(err);
-      setError("KhÃ´ng táº£i Ä‘Æ°á»£c lá»‹ch sá»­ luyá»‡n Ä‘á»c.");
+      setError("Không tải được lịch sử luyện đọc.");
     } finally {
       setLoading(false);
     }
@@ -120,7 +120,7 @@ export default function ReadingHistoryPage() {
       <div className="grid min-h-screen place-items-center bg-[#fbfbff]">
         <div className="rounded-2xl bg-white px-8 py-6 text-center shadow-sm">
           <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-violet-200 border-t-violet-600" />
-          <p className="font-bold text-slate-700">Äang táº£i lá»‹ch sá»­...</p>
+          <p className="font-bold text-slate-700">Đang tải lịch sử...</p>
         </div>
       </div>
     );
@@ -135,7 +135,7 @@ export default function ReadingHistoryPage() {
             onClick={fetchHistory}
             className="rounded-xl bg-violet-600 px-5 py-2 text-sm font-bold text-white"
           >
-            Táº£i láº¡i
+            Tải lại
           </button>
         </div>
       </div>
@@ -154,7 +154,7 @@ export default function ReadingHistoryPage() {
             <section>
               <div className="mb-6 flex items-center gap-2 text-sm font-semibold text-slate-500">
                 <button onClick={() => router.push("/reading")}>
-                  Äá»c hiá»ƒu
+                  Đọc hiểu
                 </button>
                 <ChevronRight size={16} />
                 <span className="text-slate-900">History</span>
@@ -168,10 +168,10 @@ export default function ReadingHistoryPage() {
                     </div>
                     <div>
                       <h1 className="text-4xl font-extrabold">
-                        Lá»‹ch sá»­ luyá»‡n Ä‘á»c
+                        Lịch sử luyện đọc
                       </h1>
                       <p className="mt-2 text-slate-500">
-                        Xem láº¡i quÃ¡ trÃ¬nh luyá»‡n Ä‘á»c cá»§a báº¡n
+                        Xem lại quá trình luyện đọc của bạn
                       </p>
                     </div>
                   </div>
@@ -186,16 +186,16 @@ export default function ReadingHistoryPage() {
                     }}
                     className="rounded-xl border border-slate-100 bg-white px-5 py-3 text-sm font-bold outline-none"
                   >
-                    <option value="ALL_TIME">Táº¥t cáº£ thá»i gian</option>
-                    <option value="7_DAYS">7 ngÃ y qua</option>
-                    <option value="30_DAYS">30 ngÃ y qua</option>
+                    <option value="ALL_TIME">Tất cả thời gian</option>
+                    <option value="7_DAYS">7 ngày qua</option>
+                    <option value="30_DAYS">30 ngày qua</option>
                   </select>
 
                   <button
                     onClick={resetFilter}
                     className="rounded-xl border border-slate-100 bg-white px-5 py-3 text-sm font-bold text-violet-600"
                   >
-                    Lá»c
+                    Lọc
                   </button>
                 </div>
               </div>
@@ -203,7 +203,7 @@ export default function ReadingHistoryPage() {
               <div className="mb-6 flex flex-wrap gap-3">
                 <FilterButton
                   active={status === "ALL"}
-                  label={`Táº¥t cáº£ (${data.summary.total})`}
+                  label={`Tất cả (${data.summary.total})`}
                   onClick={() => {
                     setPage(1);
                     setStatus("ALL");
@@ -211,7 +211,7 @@ export default function ReadingHistoryPage() {
                 />
                 <FilterButton
                   active={status === "COMPLETED"}
-                  label={`HoÃ n thÃ nh (${data.summary.completed})`}
+                  label={`Hoàn thành (${data.summary.completed})`}
                   onClick={() => {
                     setPage(1);
                     setStatus("COMPLETED");
@@ -219,7 +219,7 @@ export default function ReadingHistoryPage() {
                 />
                 <FilterButton
                   active={status === "IN_PROGRESS"}
-                  label={`Äang lÃ m dá»Ÿ (${data.summary.inProgress})`}
+                  label={`Đang làm dở (${data.summary.inProgress})`}
                   onClick={() => {
                     setPage(1);
                     setStatus("IN_PROGRESS");
@@ -227,7 +227,7 @@ export default function ReadingHistoryPage() {
                 />
                 <FilterButton
                   active={status === "FAILED"}
-                  label={`ChÆ°a lÃ m (${data.summary.failed})`}
+                  label={`Chưa làm (${data.summary.failed})`}
                   onClick={() => {
                     setPage(1);
                     setStatus("FAILED");
@@ -237,23 +237,23 @@ export default function ReadingHistoryPage() {
 
               {loading && (
                 <div className="mb-4 rounded-2xl bg-white p-4 text-sm font-bold text-slate-500">
-                  Äang cáº­p nháº­t dá»¯ liá»‡u...
+                  Đang cập nhật dữ liệu...
                 </div>
               )}
 
               <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
                 <div className="grid grid-cols-[1.8fr_0.5fr_0.8fr_0.7fr_0.8fr_40px] border-b border-slate-100 px-6 py-4 text-sm font-extrabold text-slate-500">
-                  <div>BÃ i Ä‘á»c</div>
-                  <div>Cáº¥p Ä‘á»™</div>
-                  <div>Thá»i gian</div>
-                  <div>Äiá»ƒm sá»‘</div>
-                  <div>Tráº¡ng thÃ¡i</div>
+                  <div>Bài đọc</div>
+                  <div>Cấp độ</div>
+                  <div>Thời gian</div>
+                  <div>Điểm số</div>
+                  <div>Trạng thái</div>
                   <div />
                 </div>
 
                 {data.items.length === 0 ? (
                   <div className="p-10 text-center font-bold text-slate-500">
-                    ChÆ°a cÃ³ lá»‹ch sá»­ phÃ¹ há»£p.
+                    Chưa có lịch sử phù hợp.
                   </div>
                 ) : (
                   data.items.map((item) => (
@@ -302,38 +302,38 @@ export default function ReadingHistoryPage() {
             </section>
 
             <aside className="space-y-6">
-              <RightCard title="Thá»‘ng kÃª lá»‹ch sá»­">
+              <RightCard title="Thống kê lịch sử">
                 <div className="space-y-5">
                   <SummaryItem
                     icon={<CheckCircle2 className="text-emerald-500" />}
                     value={String(data.summary.completed)}
-                    label="BÃ i Ä‘Ã£ hoÃ n thÃ nh"
+                    label="Bài đã hoàn thành"
                   />
                   <SummaryItem
                     icon={<Clock className="text-orange-500" />}
                     value={String(data.summary.inProgress)}
-                    label="BÃ i Ä‘ang lÃ m dá»Ÿ"
+                    label="Bài đang làm dở"
                   />
                   <SummaryItem
                     icon={<BookOpen className="text-slate-400" />}
                     value={String(data.summary.failed)}
-                    label="BÃ i chÆ°a hoÃ n thÃ nh"
+                    label="Bài chưa hoàn thành"
                   />
                 </div>
 
                 <p className="mt-6 text-center text-sm font-bold text-slate-500">
-                  Tá»•ng cá»™ng: {data.summary.total} bÃ i Ä‘á»c
+                  Tổng cộng: {data.summary.total} bài đọc
                 </p>
               </RightCard>
 
-              <RightCard title="Thá»i gian luyá»‡n Ä‘á»c">
+              <RightCard title="Thời gian luyện đọc">
                 <div className="mb-4 flex items-center justify-between">
                   <div>
                     <p className="text-4xl font-extrabold">
                       {data.summary.totalTimeText}
                     </p>
                     <p className="mt-1 text-sm text-slate-500">
-                      Tá»•ng thá»i gian
+                      Tổng thời gian
                     </p>
                   </div>
 
@@ -345,9 +345,9 @@ export default function ReadingHistoryPage() {
                     }}
                     className="rounded-xl border border-slate-100 bg-white px-4 py-2 text-sm font-bold outline-none"
                   >
-                    <option value="7_DAYS">7 ngÃ y qua</option>
-                    <option value="30_DAYS">30 ngÃ y qua</option>
-                    <option value="ALL_TIME">Táº¥t cáº£</option>
+                    <option value="7_DAYS">7 ngày qua</option>
+                    <option value="30_DAYS">30 ngày qua</option>
+                    <option value="ALL_TIME">Tất cả</option>
                   </select>
                 </div>
 
@@ -378,13 +378,13 @@ export default function ReadingHistoryPage() {
                 </div>
               </RightCard>
 
-              <RightCard title="Hiá»‡u suáº¥t">
+              <RightCard title="Hiệu suất">
                 <div className="grid h-40 w-40 place-items-center rounded-full border-[12px] border-violet-600">
                   <div className="text-center">
                     <p className="text-4xl font-extrabold">
                       {data.performance.averageAccuracy}%
                     </p>
-                    <p className="text-sm text-slate-500">Tá»· lá»‡ trung bÃ¬nh</p>
+                    <p className="text-sm text-slate-500">Tỷ lệ trung bình</p>
                   </div>
                 </div>
 
@@ -392,17 +392,17 @@ export default function ReadingHistoryPage() {
                   <PerformanceItem
                     color="bg-emerald-500"
                     label="80 - 100%"
-                    value={`${data.performance.high} bÃ i`}
+                    value={`${data.performance.high} bài`}
                   />
                   <PerformanceItem
                     color="bg-orange-500"
                     label="50 - 79%"
-                    value={`${data.performance.medium} bÃ i`}
+                    value={`${data.performance.medium} bài`}
                   />
                   <PerformanceItem
                     color="bg-red-500"
                     label="0 - 49%"
-                    value={`${data.performance.low} bÃ i`}
+                    value={`${data.performance.low} bài`}
                   />
                 </div>
 
@@ -410,7 +410,7 @@ export default function ReadingHistoryPage() {
                   onClick={() => router.push("/reading/articles")}
                   className="mt-6 w-full rounded-xl border border-violet-300 py-3 text-sm font-bold text-violet-600"
                 >
-                  Xem bÃ¡o cÃ¡o chi tiáº¿t
+                  Xem báo cáo chi tiết
                 </button>
               </RightCard>
             </aside>
@@ -497,7 +497,7 @@ function HistoryRow({
           {item.score}%
         </p>
         <p className="text-sm text-slate-500">
-          {item.correctAnswers}/{item.totalQuestions} cÃ¢u
+          {item.correctAnswers}/{item.totalQuestions} câu
         </p>
       </div>
 

@@ -28,57 +28,57 @@ import {
 } from "lucide-react";
 
 const topics = [
-  { icon: "â˜•", name: "Daily Life", count: 12, active: true },
-  { icon: "ðŸŽ’", name: "School", count: 10 },
-  { icon: "ðŸ§³", name: "Travel", count: 10 },
-  { icon: "ðŸ’¼", name: "Work", count: 10 },
-  { icon: "ðŸ’—", name: "Health", count: 8 },
-  { icon: "ðŸ”", name: "Food", count: 10 },
-  { icon: "ðŸ’»", name: "Technology", count: 8 },
+  { icon: "☕", name: "Daily Life", count: 12, active: true },
+  { icon: "🎒", name: "School", count: 10 },
+  { icon: "🧳", name: "Travel", count: 10 },
+  { icon: "💼", name: "Work", count: 10 },
+  { icon: "💗", name: "Health", count: 8 },
+  { icon: "🍔", name: "Food", count: 10 },
+  { icon: "💻", name: "Technology", count: 8 },
 ];
 
 const lessons = [
   {
     title: "My Morning Routine",
-    img: "ðŸŒ…",
+    img: "🌅",
     level: "A1",
-    difficulty: "Dá»…",
+    difficulty: "Dễ",
     time: "02:45",
   },
   {
     title: "At the Supermarket",
-    img: "ðŸ›’",
+    img: "🛒",
     level: "A1",
-    difficulty: "Dá»…",
+    difficulty: "Dễ",
     time: "03:12",
     active: true,
   },
   {
     title: "Family Dinner",
-    img: "ðŸ½ï¸",
+    img: "🍽️",
     level: "A2",
-    difficulty: "Trung bÃ¬nh",
+    difficulty: "Trung bình",
     time: "03:08",
   },
   {
     title: "Weekend in the Park",
-    img: "ðŸŒ³",
+    img: "🌳",
     level: "A2",
-    difficulty: "Trung bÃ¬nh",
+    difficulty: "Trung bình",
     time: "02:58",
   },
   {
     title: "At the Doctor's",
-    img: "ðŸ‘¨â€âš•ï¸",
+    img: "👨‍⚕️",
     level: "B1",
-    difficulty: "KhÃ³",
+    difficulty: "Khó",
     time: "03:34",
   },
   {
     title: "Birthday Party",
-    img: "ðŸŽ‚",
+    img: "🎂",
     level: "B1",
-    difficulty: "KhÃ³",
+    difficulty: "Khó",
     time: "03:21",
   },
 ];
@@ -89,49 +89,49 @@ export default function ListeningTopicPage() {
       <div className="flex">
         <aside className="fixed left-0 top-0 h-screen w-[270px] border-r border-violet-100 bg-white px-5 py-6">
           <div className="mb-10 flex items-center gap-3">
-            <div className="text-4xl">ðŸ¦Š</div>
+            <div className="text-4xl">🦊</div>
             <h1 className="text-2xl font-black">
               Study<span className="text-violet-600">Arena</span>
             </h1>
           </div>
 
-          <SidebarItem icon={<Home size={18} />} text="Trang chá»§" />
+          <SidebarItem icon={<Home size={18} />} text="Trang chủ" />
 
-          <SidebarTitle text="Há»c táº­p" />
-          <SidebarItem icon={<GraduationCap size={18} />} text="Tá»•ng quan" />
-          <SidebarItem icon={<BookOpen size={18} />} text="Tá»« vá»±ng" />
-          <SidebarItem icon={<ScrollText size={18} />} text="Ngá»¯ phÃ¡p" />
+          <SidebarTitle text="Học tập" />
+          <SidebarItem icon={<GraduationCap size={18} />} text="Tổng quan" />
+          <SidebarItem icon={<BookOpen size={18} />} text="Từ vựng" />
+          <SidebarItem icon={<ScrollText size={18} />} text="Ngữ pháp" />
           <SidebarItem icon={<Volume2 size={18} />} text="Nghe" active />
 
           <div className="ml-7 mt-2 space-y-1 border-l border-violet-200 pl-4">
-            <SubItem text="Luyá»‡n nghe" />
-            <SubItem text="Nghe chÃ©p chÃ­nh táº£" />
-            <SubItem text="Nghe hiá»ƒu Ä‘oáº¡n" />
-            <SubItem text="Nghe theo chá»§ Ä‘á»" active />
+            <SubItem text="Luyện nghe" />
+            <SubItem text="Nghe chép chính tả" />
+            <SubItem text="Nghe hiểu đoạn" />
+            <SubItem text="Nghe theo chủ đề" active />
           </div>
 
-          <SidebarItem icon={<Mic size={18} />} text="NÃ³i" />
-          <SidebarItem icon={<BookOpen size={18} />} text="Äá»c hiá»ƒu" />
-          <SidebarItem icon={<PenTool size={18} />} text="Viáº¿t" />
+          <SidebarItem icon={<Mic size={18} />} text="Nói" />
+          <SidebarItem icon={<BookOpen size={18} />} text="Đọc hiểu" />
+          <SidebarItem icon={<PenTool size={18} />} text="Viết" />
 
-          <SidebarTitle text="Cá»™ng Ä‘á»“ng" />
-          <SidebarItem icon={<Users size={18} />} text="Cá»™ng Ä‘á»“ng" />
-          <SidebarItem icon={<MessageCircle size={18} />} text="Há»i Ä‘Ã¡p" />
-          <SidebarItem icon={<Trophy size={18} />} text="ThÃ nh tÃ­ch" />
+          <SidebarTitle text="Cộng đồng" />
+          <SidebarItem icon={<Users size={18} />} text="Cộng đồng" />
+          <SidebarItem icon={<MessageCircle size={18} />} text="Hỏi đáp" />
+          <SidebarItem icon={<Trophy size={18} />} text="Thành tích" />
 
-          <SidebarTitle text="KhÃ¡c" />
+          <SidebarTitle text="Khác" />
           <SidebarItem icon={<ShoppingBag size={18} />} text="Shop" />
-          <SidebarItem icon={<Settings size={18} />} text="CÃ i Ä‘áº·t" />
+          <SidebarItem icon={<Settings size={18} />} text="Cài đặt" />
 
           <div className="absolute bottom-5 left-5 right-5 rounded-2xl bg-violet-50 p-4">
-            <p className="font-bold text-violet-700">ðŸ‘‘ NÃ¢ng cáº¥p Premium</p>
+            <p className="font-bold text-violet-700">👑 Nâng cấp Premium</p>
             <p className="mt-1 text-xs text-slate-500">
-              Há»c khÃ´ng giá»›i háº¡n, nháº­n nhiá»u Ä‘áº·c quyá»n háº¥p dáº«n!
+              Học không giới hạn, nhận nhiều đặc quyền hấp dẫn!
             </p>
             <button className="mt-3 rounded-xl bg-violet-600 px-4 py-2 text-xs font-bold text-white">
-              NÃ¢ng cáº¥p ngay
+              Nâng cấp ngay
             </button>
-            <div className="absolute bottom-0 right-2 text-5xl">ðŸ¦Š</div>
+            <div className="absolute bottom-0 right-2 text-5xl">🦊</div>
           </div>
         </aside>
 
@@ -144,13 +144,13 @@ export default function ListeningTopicPage() {
               />
               <input
                 className="h-12 w-full rounded-xl border border-violet-100 bg-white pl-12 text-sm outline-none focus:border-violet-400"
-                placeholder="TÃ¬m bÃ i há»c, tá»« vá»±ng, ngá»¯ phÃ¡p..."
+                placeholder="Tìm bài học, từ vựng, ngữ pháp..."
               />
             </div>
 
             <div className="flex items-center gap-8">
               <TopStat icon={<Flame />} value="18" label="Streak" />
-              <TopStat icon={<Star />} value="2,450" label="XP hÃ´m nay" />
+              <TopStat icon={<Star />} value="2,450" label="XP hôm nay" />
               <TopStat icon={<Gem />} value="5,230" label="Xu" />
 
               <button className="rounded-full bg-violet-50 p-3 text-violet-600">
@@ -166,7 +166,7 @@ export default function ListeningTopicPage() {
 
               <div className="flex items-center gap-3">
                 <div className="grid h-12 w-12 place-items-center rounded-full bg-orange-100 text-2xl">
-                  ðŸ§‘
+                  🧑
                 </div>
                 <div>
                   <p className="text-sm font-bold">Minh Anh</p>
@@ -180,25 +180,25 @@ export default function ListeningTopicPage() {
           <section className="grid grid-cols-[1fr_380px] gap-8 px-12 py-8">
             <div>
               <div className="mb-6 text-sm text-violet-500">
-                â† Trang chá»§ â€º Nghe â€º{" "}
+                ← Trang chủ › Nghe ›{" "}
                 <span className="font-bold text-[#101043]">
-                  Nghe theo chá»§ Ä‘á»
+                  Nghe theo chủ đề
                 </span>
               </div>
 
               <div className="mb-8 flex items-start justify-between">
                 <div>
                   <h2 className="flex items-center gap-3 text-4xl font-black">
-                    Nghe theo chá»§ Ä‘á»
+                    Nghe theo chủ đề
                     <Volume2 className="text-violet-600" />
                   </h2>
                   <p className="mt-3 text-lg text-slate-500">
-                    Luyá»‡n nghe cÃ¡c bÃ i há»™i thoáº¡i, bÃ i nÃ³i theo tá»«ng chá»§ Ä‘á» quen
-                    thuá»™c.
+                    Luyện nghe các bài hội thoại, bài nói theo từng chủ đề quen
+                    thuộc.
                   </p>
                 </div>
 
-                <div className="text-8xl">ðŸ¦ŠðŸŽ§</div>
+                <div className="text-8xl">🦊🎧</div>
               </div>
 
               <div className="mb-10 flex gap-4">
@@ -220,7 +220,7 @@ export default function ListeningTopicPage() {
                       {topic.name}
                     </p>
                     <p className="mt-1 text-sm text-slate-500">
-                      {topic.count} bÃ i
+                      {topic.count} bài
                     </p>
                   </button>
                 ))}
@@ -232,14 +232,14 @@ export default function ListeningTopicPage() {
 
               <div className="mb-5 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <h3 className="text-2xl font-black">Danh sÃ¡ch bÃ i há»c</h3>
+                  <h3 className="text-2xl font-black">Danh sách bài học</h3>
                   <span className="rounded-full bg-violet-100 px-3 py-1 text-sm font-bold text-violet-600">
-                    12 bÃ i
+                    12 bài
                   </span>
                 </div>
 
                 <button className="flex items-center gap-2 rounded-xl border border-violet-100 bg-white px-6 py-3 font-bold">
-                  Má»›i nháº¥t <ChevronDown size={16} />
+                  Mới nhất <ChevronDown size={16} />
                 </button>
               </div>
 
@@ -283,52 +283,52 @@ export default function ListeningTopicPage() {
               </div>
 
               <button className="mt-6 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-violet-50 font-bold text-violet-700">
-                Xem thÃªm <ChevronDown size={18} />
+                Xem thêm <ChevronDown size={18} />
               </button>
             </div>
 
             <aside className="space-y-8">
               <Card>
-                <h3 className="mb-8 text-xl font-black">Tiáº¿n Ä‘á»™ chá»§ Ä‘á»</h3>
+                <h3 className="mb-8 text-xl font-black">Tiến độ chủ đề</h3>
 
                 <div className="mx-auto grid h-44 w-44 place-items-center rounded-full border-[14px] border-violet-600">
                   <div className="text-center">
                     <p className="text-5xl font-black">70%</p>
-                    <p className="text-sm text-slate-500">ÄÃ£ hoÃ n thÃ nh</p>
+                    <p className="text-sm text-slate-500">?ã hoàn thành</p>
                   </div>
                 </div>
 
                 <div className="mt-8 grid grid-cols-2 text-center">
                   <div>
-                    <p className="text-sm text-slate-500">ÄÃ£ há»c</p>
-                    <p className="mt-2 text-xl font-black">7 bÃ i</p>
+                    <p className="text-sm text-slate-500">?ã học</p>
+                    <p className="mt-2 text-xl font-black">7 bài</p>
                   </div>
                   <div className="border-l border-violet-100">
-                    <p className="text-sm text-slate-500">Tá»•ng sá»‘</p>
-                    <p className="mt-2 text-xl font-black">12 bÃ i</p>
+                    <p className="text-sm text-slate-500">Tổng số</p>
+                    <p className="mt-2 text-xl font-black">12 bài</p>
                   </div>
                 </div>
 
                 <button className="mt-8 h-14 w-full rounded-xl bg-violet-600 font-bold text-white">
-                  Ã”n táº­p chá»§ Ä‘á»
+                  Ôn tập chủ đề
                 </button>
               </Card>
 
               <Card>
-                <h3 className="mb-6 text-xl font-black">Thá»‘ng kÃª nghe</h3>
+                <h3 className="mb-6 text-xl font-black">Thống kê nghe</h3>
 
-                <StatRow icon={<BookOpen />} value="28" label="BÃ i Ä‘Ã£ há»c" />
-                <StatRow icon={<Clock />} value="5h 32m" label="Tá»•ng thá»i gian nghe" />
-                <StatRow icon={<CheckCircle2 />} value="89%" label="Äá»™ chÃ­nh xÃ¡c trung bÃ¬nh" />
+                <StatRow icon={<BookOpen />} value="28" label="Bài đã học" />
+                <StatRow icon={<Clock />} value="5h 32m" label="Tổng thời gian nghe" />
+                <StatRow icon={<CheckCircle2 />} value="89%" label="Độ chính xác trung bình" />
               </Card>
 
               <div className="relative overflow-hidden rounded-2xl bg-violet-50 p-6">
-                <h3 className="mb-4 text-lg font-black">ðŸ’¡ Máº¹o nhá»</h3>
+                <h3 className="mb-4 text-lg font-black">💡 Mẹo nhỏ</h3>
                 <p className="max-w-[230px] text-sm leading-6 text-slate-600">
-                  HÃ£y nghe chá»§ Ä‘á»™ng: táº­p trung vÃ o ná»™i dung, ngá»¯ Ä‘iá»‡u vÃ  cÃ¡ch
-                  phÃ¡t Ã¢m Ä‘á»ƒ cáº£i thiá»‡n ká»¹ nÄƒng nghe tá»‘t hÆ¡n!
+                  Hãy nghe chủ động: tập trung vào nội dung, ngữ điệu và cách
+                  phát âm để cải thiện kỹ năng nghe tốt hơn!
                 </p>
-                <div className="absolute bottom-3 right-4 text-7xl">ðŸ¦ŠðŸŽ§</div>
+                <div className="absolute bottom-3 right-4 text-7xl">🦊🎧</div>
               </div>
             </aside>
           </section>
@@ -401,9 +401,9 @@ function TopStat({
 
 function Badge({ type }: { type: string }) {
   const cls =
-    type === "Dá»…"
+    type === "Dễ"
       ? "bg-green-100 text-green-600"
-      : type === "KhÃ³"
+      : type === "Khó"
       ? "bg-red-100 text-red-600"
       : "bg-orange-100 text-orange-600";
 

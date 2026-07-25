@@ -25,18 +25,18 @@ export function LeaderboardHeader({
           </p>
 
           <h1 className="mt-2 text-3xl font-black sm:text-4xl">
-            Báº£ng xáº¿p háº¡ng
+            Bảng xếp hạng
           </h1>
 
           <p className="mt-2 max-w-xl text-sm text-white/80 sm:text-base">
-            Há»c Ä‘á»u má»—i ngÃ y, tÃ­ch lÅ©y XP vÃ  tiáº¿n lÃªn giáº£i Ä‘áº¥u cao hÆ¡n.
+            Học đều mỗi ngày, tích lũy XP và tiến lên giải đấu cao hơn.
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:min-w-[420px]">
           <div className="rounded-2xl bg-white/15 p-4 backdrop-blur">
             <p className="text-xs font-bold uppercase text-white/70">
-              Giáº£i hiá»‡n táº¡i
+              Giải hiện tại
             </p>
             <p className="mt-2 text-lg font-black">
               {leagueIcons[league]}{' '}
@@ -46,7 +46,7 @@ export function LeaderboardHeader({
 
           <div className="rounded-2xl bg-white/15 p-4 backdrop-blur">
             <p className="text-xs font-bold uppercase text-white/70">
-              Káº¿t thÃºc sau
+              Kết thúc sau
             </p>
             <p className="mt-2 text-lg font-black">
               {countdown.label}
@@ -60,14 +60,14 @@ export function LeaderboardHeader({
           href="/leaderboard/rewards"
           className="rounded-xl bg-white px-4 py-2 text-sm font-black text-violet-700"
         >
-          ðŸŽ Pháº§n thÆ°á»Ÿng
+          🎁 Phần thưởng
         </Link>
 
         <Link
           href="/leaderboard/history"
           className="rounded-xl bg-white/15 px-4 py-2 text-sm font-black text-white backdrop-blur"
         >
-          ðŸ“š Lá»‹ch sá»­
+          📚 Lịch sử
         </Link>
       </div>
     </section>

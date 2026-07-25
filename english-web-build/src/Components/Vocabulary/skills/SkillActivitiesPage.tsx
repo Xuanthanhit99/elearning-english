@@ -47,19 +47,19 @@ type SkillActivitiesData = {
 };
 
 const filters: Array<{ key: SkillFilter; label: string; icon: AppIconName; tone: SkillActivity["tone"] }> = [
-  { key: "all", label: "Táº¥t cáº£", icon: "sparkles", tone: "purple" },
-  { key: "vocabulary", label: "Tá»« vá»±ng", icon: "pen", tone: "emerald" },
-  { key: "grammar", label: "Ngá»¯ phÃ¡p", icon: "exercise", tone: "purple" },
+  { key: "all", label: "Tất cả", icon: "sparkles", tone: "purple" },
+  { key: "vocabulary", label: "Từ vựng", icon: "pen", tone: "emerald" },
+  { key: "grammar", label: "Ngữ pháp", icon: "exercise", tone: "purple" },
   { key: "listening", label: "Nghe", icon: "headphones", tone: "blue" },
-  { key: "speaking", label: "NÃ³i", icon: "mic", tone: "orange" },
-  { key: "reading", label: "Äá»c", icon: "book", tone: "pink" },
-  { key: "writing", label: "Viáº¿t", icon: "pen", tone: "cyan" },
+  { key: "speaking", label: "Nói", icon: "mic", tone: "orange" },
+  { key: "reading", label: "Đọc", icon: "book", tone: "pink" },
+  { key: "writing", label: "Viết", icon: "pen", tone: "cyan" },
 ];
 
 const rangeOptions = [
-  { value: "7d", label: "7 ngÃ y qua" },
-  { value: "14d", label: "14 ngÃ y qua" },
-  { value: "30d", label: "30 ngÃ y qua" },
+  { value: "7d", label: "7 ngày qua" },
+  { value: "14d", label: "14 ngày qua" },
+  { value: "30d", label: "30 ngày qua" },
 ];
 
 const toneText: Record<string, string> = {
@@ -106,7 +106,7 @@ export default function SkillActivitiesPage() {
         });
         if (active) setData(res.data);
       } catch {
-        if (active) setMessage("ChÆ°a táº£i Ä‘Æ°á»£c hoáº¡t Ä‘á»™ng ká»¹ nÄƒng gáº§n Ä‘Ã¢y.");
+        if (active) setMessage("Chưa tải được hoạt động kỹ năng gần đây.");
       } finally {
         if (active) setLoading(false);
       }
@@ -125,15 +125,15 @@ export default function SkillActivitiesPage() {
       <div className="mb-6 flex flex-wrap items-start justify-between gap-5">
         <div>
           <div className="mb-4 flex items-center gap-2 text-sm font-bold text-[#73799b]">
-            <Link href="/">Trang chá»§</Link>
+            <Link href="/">Trang chủ</Link>
             <ChevronRight size={16} />
-            <Link href="/vocabulary/skills">Tiáº¿n Ä‘á»™ ká»¹ nÄƒng</Link>
+            <Link href="/vocabulary/skills">Tiến độ kỹ năng</Link>
             <ChevronRight size={16} />
-            <span className="text-[#101733]">Hoáº¡t Ä‘á»™ng gáº§n Ä‘Ã¢y</span>
+            <span className="text-[#101733]">Hoạt động gần đây</span>
           </div>
-          <h1 className="text-3xl font-black text-[#101733]">Hoáº¡t Ä‘á»™ng gáº§n Ä‘Ã¢y theo ká»¹ nÄƒng</h1>
+          <h1 className="text-3xl font-black text-[#101733]">Hoạt động gần đây theo kỹ năng</h1>
           <p className="mt-3 text-base font-bold text-[#69708b]">
-            Theo dÃµi quÃ¡ trÃ¬nh há»c táº­p cá»§a báº¡n trong thá»i gian gáº§n nháº¥t
+            Theo dõi quá trình học tập của bạn trong thời gian gần nhất
           </p>
         </div>
 
@@ -205,8 +205,8 @@ export default function SkillActivitiesPage() {
             <div className="grid min-h-[360px] place-items-center p-8 text-center">
               <div>
                 <AppIcon name="calendar" tone="purple" className="mx-auto mb-4 h-16 w-16" size={28} />
-                <h2 className="text-2xl font-black text-[#101733]">ChÆ°a cÃ³ hoáº¡t Ä‘á»™ng</h2>
-                <p className="mt-2 font-bold text-[#69708b]">HÃ£y há»c má»™t bÃ i má»›i Ä‘á»ƒ báº¯t Ä‘áº§u ghi nháº­n tiáº¿n Ä‘á»™.</p>
+                <h2 className="text-2xl font-black text-[#101733]">Chưa có hoạt động</h2>
+                <p className="mt-2 font-bold text-[#69708b]">Hãy học một bài mới để bắt đầu ghi nhận tiến độ.</p>
               </div>
             </div>
           )}
@@ -217,21 +217,21 @@ export default function SkillActivitiesPage() {
               onClick={() => setLimit((value) => value + 8)}
               className="m-5 flex h-12 w-[calc(100%-40px)] items-center justify-center gap-2 rounded-xl border border-[#dfe2f3] bg-white text-sm font-black text-[#27245f] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Xem thÃªm <ChevronDown size={17} />
+              Xem thêm <ChevronDown size={17} />
             </button>
           )}
         </section>
 
         <aside className="space-y-6">
           <section className="rounded-3xl border border-[#ebeaf6] bg-white p-5 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
-            <h2 className="mb-4 text-xl font-black text-[#101733]">TÃ³m táº¯t hoáº¡t Ä‘á»™ng</h2>
-            <SummaryCard icon="sparkles" tone="purple" value={data?.summary.totalActivities || 0} label="Hoáº¡t Ä‘á»™ng" sub={`â–² ${data?.summary.activityGrowth || 0}% so vá»›i tuáº§n trÆ°á»›c`} />
-            <SummaryCard icon="calendar" tone="emerald" value={data?.summary.streakDays || 0} label="NgÃ y há»c liÃªn tiáº¿p" sub="Giá»¯ vá»¯ng phong Ä‘á»™!" />
-            <SummaryCard icon="calendar" tone="orange" value={data?.summary.totalStudyTime || "0h 00m"} label="Tá»•ng thá»i gian há»c" sub="Trong khoáº£ng Ä‘Ã£ chá»n" />
+            <h2 className="mb-4 text-xl font-black text-[#101733]">Tóm tắt hoạt động</h2>
+            <SummaryCard icon="sparkles" tone="purple" value={data?.summary.totalActivities || 0} label="Hoạt động" sub={`▲ ${data?.summary.activityGrowth || 0}% so với tuần trước`} />
+            <SummaryCard icon="calendar" tone="emerald" value={data?.summary.streakDays || 0} label="Ngày học liên tiếp" sub="Giữ vững phong độ!" />
+            <SummaryCard icon="calendar" tone="orange" value={data?.summary.totalStudyTime || "0h 00m"} label="Tổng thời gian học" sub="Trong khoảng đã chọn" />
           </section>
 
           <section className="rounded-3xl border border-[#ebeaf6] bg-white p-5 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
-            <h2 className="mb-5 text-xl font-black text-[#101733]">Ká»¹ nÄƒng ná»•i báº­t</h2>
+            <h2 className="mb-5 text-xl font-black text-[#101733]">Kỹ năng nổi bật</h2>
             <div className="space-y-5">
               {featuredSkills.map((item) => (
                 <div key={item.key} className="grid grid-cols-[88px_1fr_42px] items-center gap-4">
@@ -253,12 +253,12 @@ export default function SkillActivitiesPage() {
 
           <section className="flex min-h-[220px] items-center justify-between rounded-3xl bg-gradient-to-br from-[#f2edff] to-[#fff7ed] p-7">
             <div>
-              <h2 className="text-xl font-black text-[#101733]">Báº¡n Ä‘ang lÃ m ráº¥t tá»‘t!</h2>
+              <h2 className="text-xl font-black text-[#101733]">Bạn đang làm rất tốt!</h2>
               <p className="mt-3 max-w-[230px] text-sm font-bold leading-6 text-[#69708b]">
-                HÃ£y tiáº¿p tá»¥c duy trÃ¬ thÃ³i quen há»c táº­p má»—i ngÃ y Ä‘á»ƒ Ä‘áº¡t má»¥c tiÃªu cá»§a mÃ¬nh.
+                Hãy tiếp tục duy trì thói quen học tập mỗi ngày để đạt mục tiêu của mình.
               </p>
               <Link href="/vocabulary/overview" className="mt-6 inline-flex rounded-xl bg-[#6d35ff] px-6 py-3 text-sm font-black text-white">
-                Äáº·t má»¥c tiÃªu má»›i
+                Đặt mục tiêu mới
               </Link>
             </div>
             <AppIcon name="trophy" bare size={88} className="text-amber-400" />
@@ -285,7 +285,7 @@ function ActivityRow({ item }: { item: SkillActivity }) {
       </div>
       <div className="text-right text-sm font-bold text-[#5d6480]">
         <p className="font-black text-[#101733]">
-          {item.xp > 0 ? `â­ +${item.xp} XP` : item.coins > 0 ? `ðŸª™ +${item.coins} Xu` : `${item.percent}%`}
+          {item.xp > 0 ? `⭐ +${item.xp} XP` : item.coins > 0 ? `🪙 +${item.coins} Xu` : `${item.percent}%`}
         </p>
         <p className="mt-1">{item.time}</p>
       </div>

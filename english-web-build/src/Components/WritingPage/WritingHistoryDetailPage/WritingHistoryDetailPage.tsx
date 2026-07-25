@@ -91,7 +91,7 @@ export default function WritingHistoryDetailPage({sessionId} : {sessionId: strin
       router.push(`/writing/sessions/${res.data.sessionId}`);
     } catch (err) {
       console.error(err);
-      setError('KhÃ´ng táº¡o Ä‘Æ°á»£c bÃ i luyá»‡n láº¡i lÃºc nÃ y.');
+      setError('Không tạo được bài luyện lại lúc này.');
     } finally {
       setRetrying(false);
     }
@@ -103,7 +103,7 @@ export default function WritingHistoryDetailPage({sessionId} : {sessionId: strin
 
   if (loading)
     return (
-      <BeaconVieLoadingState className="m-10" label="Äang táº£i lá»‹ch sá»­ bÃ i viáº¿t..." />
+      <BeaconVieLoadingState className="m-10" label="Đang tải lịch sử bài viết..." />
     );
 
   if (error && !data) {
@@ -120,7 +120,7 @@ export default function WritingHistoryDetailPage({sessionId} : {sessionId: strin
     );
   }
 
-  if (!data) return <div className="p-10">KhÃ´ng cÃ³ dá»¯ liá»‡u lá»‹ch sá»­.</div>;
+  if (!data) return <div className="p-10">Không có dữ liệu lịch sử.</div>;
 
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
@@ -135,7 +135,7 @@ export default function WritingHistoryDetailPage({sessionId} : {sessionId: strin
                     onClick={() => router.push('/writing/history')}
                     className="h-11 rounded-xl border border-violet-500 px-6 font-bold text-violet-600"
                   >
-                    â† Back to History
+                    ← Back to History
                   </button>
 
                   <button
@@ -217,8 +217,8 @@ function TitleBlock({ data }: { data: HistoryDetail }) {
           </div>
 
           <p className="mt-2 text-sm font-semibold text-slate-500">
-            {formatType(data.lesson.type)} â€¢ {data.lesson.level} Level â€¢{' '}
-            {formatDate(data.session.submittedAt)} â€¢ ~{data.lesson.maxWords} từ
+            {formatType(data.lesson.type)} • {data.lesson.level} Level •{' '}
+            {formatDate(data.session.submittedAt)} • ~{data.lesson.maxWords} từ
           </p>
         </div>
       </div>
@@ -280,7 +280,7 @@ function EssayCard({ data }: { data: HistoryDetail }) {
 }
 
 function renderHighlightedEssay(content: string) {
-  return content || 'BÃ i viáº¿t nÃ y chÆ°a cÃ³ ná»™i dung Ä‘Æ°á»£c lÆ°u.';
+  return content || 'Bài viết này chưa có nội dung được lưu.';
 }
 
 function ScoreCard({ data }: { data: HistoryDetail }) {
@@ -362,7 +362,7 @@ function CorrectionsCard({
             <span className="font-semibold text-red-500 line-through">
               {item.wrong}
             </span>
-            <span>â†’</span>
+            <span>→</span>
             <span className="font-bold text-green-600">{item.correct}</span>
             <span className="text-slate-500">{item.explanation}</span>
             <span className="rounded-lg bg-violet-100 px-3 py-1 text-center text-xs font-bold text-violet-600">
@@ -435,7 +435,7 @@ function ProgressChart({ data }: { data: HistoryDetail }) {
       <div className="mt-6 flex h-36 items-end gap-6 border-b border-slate-200">
         {data.progressChart.length === 0 && (
           <div className="flex h-full flex-1 items-center justify-center text-sm font-semibold text-slate-500">
-            ChÆ°a cÃ³ Ä‘á»§ dá»¯ liá»‡u tiáº¿n Ä‘á»™.
+            Chưa có đủ dữ liệu tiến độ.
           </div>
         )}
 

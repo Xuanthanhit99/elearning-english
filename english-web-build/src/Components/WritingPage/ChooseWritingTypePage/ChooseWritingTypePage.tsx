@@ -73,8 +73,8 @@ export default function ChooseWritingTypePage({slug}: {slug: string}) {
   }, [slug]);
 
   if (loading)
-    return <BeaconVieLoadingState className="m-10" label="Äang táº£i bÃ i há»c..." />;
-  if (!data) return <div className="p-10">KhÃ´ng táº£i Ä‘Æ°á»£c dá»¯ liá»‡u.</div>;
+    return <BeaconVieLoadingState className="m-10" label="Đang tải bài học..." />;
+  if (!data) return <div className="p-10">Không tải được dữ liệu.</div>;
 
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
@@ -235,7 +235,7 @@ function TipBox() {
   return (
     <div className="relative mt-6 flex items-center rounded-2xl border border-violet-100 bg-violet-50 px-7 py-5">
       <div className="grid h-14 w-14 place-items-center rounded-full bg-violet-100 text-3xl">
-        ðŸ’¡
+        💡
       </div>
 
       <div className="ml-5">
@@ -247,7 +247,7 @@ function TipBox() {
         </p>
       </div>
 
-      <div className="absolute bottom-0 right-8 text-7xl">ðŸ¦Š</div>
+      <div className="absolute bottom-0 right-8 text-7xl">🦊</div>
     </div>
   );
 }

@@ -125,6 +125,7 @@ export type Dictionary = {
     writing: string;
     groupExplore: string;
     discover: string;
+    Arena: string;
     community: string;
     studyRooms: string;
     missions: string;

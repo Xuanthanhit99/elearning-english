@@ -46,11 +46,11 @@ function ResetPasswordForm() {
     setError("");
 
     if (password.length < 6) {
-      setError("Máº­t kháº©u pháº£i cÃ³ Ã­t nháº¥t 6 kÃ½ tá»±.");
+      setError("Mật khẩu phải có ít nhất 6 ký tự.");
       return;
     }
     if (password !== confirmPassword) {
-      setError("Máº­t kháº©u xÃ¡c nháº­n khÃ´ng khá»›p.");
+      setError("Mật khẩu xác nhận không khớp.");
       return;
     }
 
@@ -63,7 +63,7 @@ function ResetPasswordForm() {
       setError(
         getErrorMessage(
           err,
-          "LiÃªn káº¿t Ä‘áº·t láº¡i máº­t kháº©u khÃ´ng há»£p lá»‡ hoáº·c Ä‘Ã£ háº¿t háº¡n.",
+          "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.",
         ),
       );
     } finally {
@@ -79,43 +79,43 @@ function ResetPasswordForm() {
         </div>
 
         <h1 className="text-3xl font-black text-[var(--BeaconVie-ink)]">
-          Äáº·t láº¡i máº­t kháº©u
+          Đặt lại mật khẩu
         </h1>
 
         {!token ? (
           <>
             <p className="mt-3 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
-              LiÃªn káº¿t Ä‘áº·t láº¡i máº­t kháº©u khÃ´ng há»£p lá»‡. Vui lÃ²ng yÃªu cáº§u má»™t liÃªn káº¿t
-              má»›i.
+              Liên kết đặt lại mật khẩu không hợp lệ. Vui lòng yêu cầu một liên kết
+              mới.
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Link href="/forgot-password" className="BeaconVie-button-primary flex-1 text-center">
-                YÃªu cáº§u liÃªn káº¿t má»›i
+                Yêu cầu liên kết mới
               </Link>
             </div>
           </>
         ) : success ? (
           <>
             <p className="mt-3 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
-              Äáº·t láº¡i máº­t kháº©u thÃ nh cÃ´ng. Má»i phiÃªn Ä‘Äƒng nháº­p trÆ°á»›c Ä‘Ã³ Ä‘Ã£ bá»‹ Ä‘Äƒng
-              xuáº¥t â€” Ä‘ang chuyá»ƒn Ä‘áº¿n trang Ä‘Äƒng nháº­p...
+              Đặt lại mật khẩu thành công. Mọi phiên đăng nhập trước đó đã bị đăng
+              xuất — đang chuyển đến trang đăng nhập...
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Link href="/login" className="BeaconVie-button-primary flex-1 text-center">
-                ÄÄƒng nháº­p ngay
+                ?ăng nhập ngay
               </Link>
             </div>
           </>
         ) : (
           <>
             <p className="mt-3 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
-              Nháº­p máº­t kháº©u má»›i cho tÃ i khoáº£n cá»§a báº¡n.
+              Nhập mật khẩu mới cho tài khoản của bạn.
             </p>
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
               <label className="block">
                 <span className="font-extrabold text-[var(--BeaconVie-muted)]">
-                  Máº­t kháº©u má»›i
+                  Mật khẩu mới
                 </span>
                 <input
                   type="password"
@@ -129,7 +129,7 @@ function ResetPasswordForm() {
 
               <label className="block">
                 <span className="font-extrabold text-[var(--BeaconVie-muted)]">
-                  XÃ¡c nháº­n máº­t kháº©u má»›i
+                  Xác nhận mật khẩu mới
                 </span>
                 <input
                   type="password"
@@ -152,7 +152,7 @@ function ResetPasswordForm() {
                 disabled={submitting}
                 className="w-full rounded-2xl bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] py-4 font-extrabold text-white shadow-xl shadow-blue-200/70 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60 dark:shadow-black/20"
               >
-                {submitting ? "Äang xá»­ lÃ½..." : "Äáº·t láº¡i máº­t kháº©u"}
+                {submitting ? "Đang xử lý..." : "Đặt lại mật khẩu"}
               </button>
             </form>
           </>

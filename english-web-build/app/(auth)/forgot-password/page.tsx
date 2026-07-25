@@ -33,12 +33,12 @@ export default function ForgotPasswordPage() {
     setSubmitting(true);
     try {
       // The backend always returns the same generic message regardless of
-      // whether the email exists â€” this UI shows that exact response as-is
+      // whether the email exists — this UI shows that exact response as-is
       // rather than branching on it, so it can't become an enumeration leak.
       await api.post("/auth/forgot-password", { email });
       setSubmitted(true);
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "KhÃ´ng thá»ƒ gá»­i yÃªu cáº§u. Vui lÃ²ng Thử lại."));
+      setError(getErrorMessage(err, "Không thể gửi yêu cầu. Vui lòng Thử lại."));
     } finally {
       setSubmitting(false);
     }
@@ -52,26 +52,26 @@ export default function ForgotPasswordPage() {
         </div>
 
         <h1 className="text-3xl font-black text-[var(--BeaconVie-ink)]">
-          QuÃªn máº­t kháº©u
+          Quên mật khẩu
         </h1>
 
         {submitted ? (
           <>
             <p className="mt-3 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
-              Náº¿u email tá»“n táº¡i trong há»‡ thá»‘ng, chÃºng tÃ´i Ä‘Ã£ gá»­i hÆ°á»›ng dáº«n Ä‘áº·t láº¡i
-              máº­t kháº©u. Vui lÃ²ng kiá»ƒm tra há»™p thÆ° (vÃ  má»¥c spam).
+              Nếu email tồn tại trong hệ thống, chúng tôi đã gửi hướng dẫn đặt lại
+              mật khẩu. Vui lòng kiểm tra hộp thư (và mục spam).
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Link href="/login" className="BeaconVie-button-primary flex-1 text-center">
-                Quay láº¡i Ä‘Äƒng nháº­p
+                Quay lại đăng nhập
               </Link>
             </div>
           </>
         ) : (
           <>
             <p className="mt-3 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
-              Nháº­p email tÃ i khoáº£n cá»§a báº¡n, chÃºng tÃ´i sáº½ gá»­i liÃªn káº¿t Ä‘áº·t láº¡i máº­t
-              kháº©u náº¿u email nÃ y tá»“n táº¡i trong há»‡ thá»‘ng.
+              Nhập email tài khoản của bạn, chúng tôi sẽ gửi liên kết đặt lại mật
+              khẩu nếu email này tồn tại trong hệ thống.
             </p>
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
@@ -98,13 +98,13 @@ export default function ForgotPasswordPage() {
                 disabled={submitting}
                 className="w-full rounded-2xl bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] py-4 font-extrabold text-white shadow-xl shadow-blue-200/70 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60 dark:shadow-black/20"
               >
-                {submitting ? "Äang gá»­i..." : "Gá»­i liÃªn káº¿t Ä‘áº·t láº¡i máº­t kháº©u"}
+                {submitting ? "Đang gửi..." : "Gửi liên kết đặt lại mật khẩu"}
               </button>
             </form>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Link href="/login" className="BeaconVie-button-soft flex-1 text-center">
-                Quay láº¡i Ä‘Äƒng nháº­p
+                Quay lại đăng nhập
               </Link>
             </div>
           </>

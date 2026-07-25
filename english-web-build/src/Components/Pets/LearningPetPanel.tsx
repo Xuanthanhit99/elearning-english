@@ -35,19 +35,19 @@ type PetKind = {
 };
 
 const PETS: PetKind[] = [
-  { id: "cat", name: "Beacon", icon: "ðŸ±", color: "#ff8a00" },
-  { id: "dog", name: "Bun", icon: "ðŸ¶", color: "#d97706" },
-  { id: "panda", name: "Po", icon: "ðŸ¼", color: "#475569" },
-  { id: "fox", name: "Foxie", icon: "ðŸ¦Š", color: "#ea580c" },
-  { id: "penguin", name: "Pip", icon: "ðŸ§", color: "#0284c7" },
-  { id: "rabbit", name: "Bibi", icon: "ðŸ°", color: "#db2777" },
+  { id: "cat", name: "Beacon", icon: "🐱", color: "#ff8a00" },
+  { id: "dog", name: "Bun", icon: "🐶", color: "#d97706" },
+  { id: "panda", name: "Po", icon: "🐼", color: "#475569" },
+  { id: "fox", name: "Foxie", icon: "🦊", color: "#ea580c" },
+  { id: "penguin", name: "Pip", icon: "🐧", color: "#0284c7" },
+  { id: "rabbit", name: "Bibi", icon: "🐰", color: "#db2777" },
 ];
 
 const ACTIONS = [
-  { key: "feed", label: "Cho Äƒn", cost: "-1 food", help: "No bá»¥ng +25, HP +5" },
-  { key: "play", label: "ChÆ¡i Ä‘Ã¹a", cost: "-10 energy", help: "Happy +18, XP +2" },
-  { key: "rest", label: "Nghá»‰ ngÆ¡i", cost: "Miá»…n phÃ­", help: "Energy +25, HP +10" },
-  { key: "clean", label: "Vá»‡ sinh", cost: "-2 coin", help: "HP +12, Happy +8" },
+  { key: "feed", label: "Cho ăn", cost: "-1 food", help: "No bụng +25, HP +5" },
+  { key: "play", label: "Chơi đùa", cost: "-10 energy", help: "Happy +18, XP +2" },
+  { key: "rest", label: "Nghỉ ngơi", cost: "Miễn phí", help: "Energy +25, HP +10" },
+  { key: "clean", label: "Vệ sinh", cost: "-2 coin", help: "HP +12, Happy +8" },
 ] as const;
 
 export default function LearningPetPanel({ compact = false }: { compact?: boolean }) {
@@ -65,10 +65,10 @@ export default function LearningPetPanel({ compact = false }: { compact?: boolea
 
   const achievements = useMemo(
     () => [
-      { title: "100 XP", done: (pet?.xp || 0) >= 100, desc: "TÃ­ch lÅ©y 100 Ä‘iá»ƒm" },
-      { title: "7 ngÃ y", done: (pet?.bestStreak || 0) >= 7, desc: "Giá»¯ streak 7 ngÃ y" },
-      { title: "30 ngÃ y", done: (pet?.bestStreak || 0) >= 30, desc: "Giá»¯ streak 30 ngÃ y" },
-      { title: "50 bÃ i", done: (pet?.completedLessons || 0) >= 50, desc: "HoÃ n thÃ nh 50 bÃ i" },
+      { title: "100 XP", done: (pet?.xp || 0) >= 100, desc: "Tích lũy 100 điểm" },
+      { title: "7 ngày", done: (pet?.bestStreak || 0) >= 7, desc: "Giữ streak 7 ngày" },
+      { title: "30 ngày", done: (pet?.bestStreak || 0) >= 30, desc: "Giữ streak 30 ngày" },
+      { title: "50 bài", done: (pet?.completedLessons || 0) >= 50, desc: "Hoàn thành 50 bài" },
     ],
     [pet],
   );
@@ -87,7 +87,7 @@ export default function LearningPetPanel({ compact = false }: { compact?: boolea
       syncPetForm(res.data);
     } catch (error) {
       console.error(error);
-      setMessage("Báº¡n cáº§n Ä‘Äƒng nháº­p Ä‘á»ƒ nuÃ´i thÃº cÆ°ng.");
+      setMessage("Bạn cần đăng nhập để nuôi thú cưng.");
     } finally {
       setLoading(false);
     }
@@ -105,10 +105,10 @@ export default function LearningPetPanel({ compact = false }: { compact?: boolea
         petName: petName.trim() || currentPet.name,
       });
       syncPetForm(res.data);
-      setMessage(res.data.randomAssigned ? "Há»‡ thá»‘ng Ä‘Ã£ chá»n ngáº«u nhiÃªn thÃº cÆ°ng cho báº¡n." : "ÄÃ£ lÆ°u báº¡n Ä‘á»“ng hÃ nh há»c tiáº¿ng Anh.");
+      setMessage(res.data.randomAssigned ? "Hệ thống đã chọn ngẫu nhiên thú cưng cho bạn." : "?ã lưu bạn đồng hành học tiếng Anh.");
     } catch (error: any) {
       console.error(error);
-      setMessage(error?.response?.data?.message || "KhÃ´ng lÆ°u Ä‘Æ°á»£c thÃº cÆ°ng. Vui lÃ²ng Thử lại.");
+      setMessage(error?.response?.data?.message || "Không lưu được thú cưng. Vui lòng Thử lại.");
     } finally {
       setSaving(false);
     }
@@ -119,10 +119,10 @@ export default function LearningPetPanel({ compact = false }: { compact?: boolea
       setSaving(true);
       const res = await api.patch("/pets/me/care", { action });
       syncPetForm(res.data);
-      setMessage("ChÄƒm sÃ³c thÃ nh cÃ´ng. Chá»‰ sá»‘ Ä‘Ã£ Ä‘Æ°á»£c cáº­p nháº­t.");
+      setMessage("Chăm sóc thành công. Chỉ số đã được cập nhật.");
     } catch (error: any) {
       console.error(error);
-      setMessage(error?.response?.data?.message || "ChÆ°a thá»ƒ chÄƒm sÃ³c lÃºc nÃ y.");
+      setMessage(error?.response?.data?.message || "Chưa thể chăm sóc lúc này.");
     } finally {
       setSaving(false);
     }
@@ -131,7 +131,7 @@ export default function LearningPetPanel({ compact = false }: { compact?: boolea
   if (loading) {
     return (
       <div className="rounded-[28px] border border-[#ead8c2] bg-white p-6 font-extrabold text-[#5b6b85] shadow-sm">
-        Äang táº£i thÃº cÆ°ng...
+        Đang tải thú cưng...
       </div>
     );
   }
@@ -143,8 +143,8 @@ export default function LearningPetPanel({ compact = false }: { compact?: boolea
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#ff6b00] opacity-70" />
           <span className="relative inline-flex h-3 w-3 rounded-full bg-[#ff6b00]" />
         </span>
-        <span>Chá»n thÃº cÆ°ng</span>
-        <span>{pet.daysLeftToChoose} ngÃ y</span>
+        <span>Chọn thú cưng</span>
+        <span>{pet.daysLeftToChoose} ngày</span>
       </a>
     );
   }
@@ -160,7 +160,7 @@ export default function LearningPetPanel({ compact = false }: { compact?: boolea
           showLevelBadge={false}
         />
         <span className="max-w-[90px] truncate">{pet.petName}</span>
-        <span>ðŸ”¥ {pet.streak}</span>
+        <span>🔥 {pet.streak}</span>
       </a>
     );
   }
@@ -171,7 +171,7 @@ export default function LearningPetPanel({ compact = false }: { compact?: boolea
     <section className="overflow-hidden rounded-[32px] border border-[#ead8c2] bg-white shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
       <div className="grid gap-6 bg-gradient-to-br from-[#fff7ed] via-white to-[#eef6ff] p-6 lg:grid-cols-[340px_1fr]">
         <div className="rounded-[28px] bg-[#1f2a44] p-6 text-white shadow-xl">
-          <p className="text-sm font-extrabold text-[#ffd7ad]">Báº¡n Ä‘á»“ng hÃ nh</p>
+          <p className="text-sm font-extrabold text-[#ffd7ad]">Bạn đồng hành</p>
           <div className="mt-4 flex items-center gap-4">
             <SpiritPetAvatar
               petType={pet?.isChosen ? pet.petType : "pending"}
@@ -180,9 +180,9 @@ export default function LearningPetPanel({ compact = false }: { compact?: boolea
               showLevelBadge={false}
             />
             <div className="min-w-0">
-              <h2 className="truncate text-3xl font-black">{pet?.isChosen ? pet.petName : "ChÆ°a chá»n"}</h2>
+              <h2 className="truncate text-3xl font-black">{pet?.isChosen ? pet.petName : "Chưa chọn"}</h2>
               <p className="mt-2 font-bold text-white/75">
-                {pet?.isChosen ? `Level ${pet?.level || 1} Â· ${pet?.xpToNextLevel ?? 0}/100 XP` : `CÃ²n ${pet?.daysLeftToChoose || 0} ngÃ y Ä‘á»ƒ chá»n`}
+                {pet?.isChosen ? `Level ${pet?.level || 1} · ${pet?.xpToNextLevel ?? 0}/100 XP` : `Còn ${pet?.daysLeftToChoose || 0} ngày để chọn`}
               </p>
             </div>
           </div>
@@ -198,23 +198,23 @@ export default function LearningPetPanel({ compact = false }: { compact?: boolea
         <div className="space-y-5">
           {pet?.mustChoosePet && (
             <div className="rounded-[24px] border border-[#ffb86b] bg-[#fff7ed] p-5">
-              <p className="text-sm font-extrabold uppercase tracking-wide text-[#ff6b00]">ThÃ´ng bÃ¡o chá»n thÃº cÆ°ng</p>
-              <h3 className="mt-2 text-2xl font-black text-[#1f2a44]">Báº¡n chá»‰ Ä‘Æ°á»£c chá»n má»™t loáº¡i thÃº cÆ°ng</h3>
+              <p className="text-sm font-extrabold uppercase tracking-wide text-[#ff6b00]">Thông báo chọn thú cưng</p>
+              <h3 className="mt-2 text-2xl font-black text-[#1f2a44]">Bạn chỉ được chọn một loại thú cưng</h3>
               <p className="mt-2 font-bold leading-7 text-[#5b6b85]">
-                HÃ£y chá»n trong {pet.daysLeftToChoose} ngÃ y. Náº¿u quÃ¡ 7 ngÃ y chÆ°a chá»n, BeaconVie sáº½ chá»n ngáº«u nhiÃªn má»™t thÃº cÆ°ng cho báº¡n vÃ  loáº¡i Ä‘Ã³ sáº½ Ä‘Æ°á»£c khÃ³a.
+                Hãy chọn trong {pet.daysLeftToChoose} ngày. Nếu quá 7 ngày chưa chọn, BeaconVie sẽ chọn ngẫu nhiên một thú cưng cho bạn và loại đó sẽ được khóa.
               </p>
             </div>
           )}
 
           {pet?.randomAssigned && (
             <div className="rounded-[24px] border border-[#ffb86b] bg-[#fff7ed] p-5 font-bold leading-7 text-[#9a4b00]">
-              Báº¡n Ä‘Ã£ quÃ¡ háº¡n 7 ngÃ y nÃªn há»‡ thá»‘ng Ä‘Ã£ chá»n ngáº«u nhiÃªn {lockedPet.name} cho báº¡n. Báº¡n váº«n cÃ³ thá»ƒ Ä‘á»•i tÃªn, nhÆ°ng khÃ´ng thá»ƒ Ä‘á»•i loáº¡i thÃº cÆ°ng.
+              Bạn đã quá hạn 7 ngày nên hệ thống đã chọn ngẫu nhiên {lockedPet.name} cho bạn. Bạn vẫn có thể đổi tên, nhưng không thể đổi loại thú cưng.
             </div>
           )}
 
           <div>
             <p className="text-sm font-extrabold uppercase tracking-wide text-[#ff6b00]">
-              1. Chá»n thÃº cÆ°ng & Ä‘áº·t tÃªn
+              1. Chọn thú cưng & đặt tên
             </p>
             <div className="mt-3 grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
               {PETS.map((item) => {
@@ -246,7 +246,7 @@ export default function LearningPetPanel({ compact = false }: { compact?: boolea
                 value={petName}
                 maxLength={20}
                 onChange={(event) => setPetName(event.target.value)}
-                placeholder="TÃªn thÃº cÆ°ng"
+                placeholder="Tên thú cưng"
                 className="min-h-12 flex-1 rounded-2xl border border-[#ead8c2] px-4 font-extrabold text-[#1f2a44] outline-none focus:border-[#ff6b00]"
               />
               <button
@@ -255,7 +255,7 @@ export default function LearningPetPanel({ compact = false }: { compact?: boolea
                 onClick={savePet}
                 className="rounded-2xl bg-[#ff6b00] px-6 py-3 font-extrabold text-white shadow-lg shadow-orange-200 disabled:opacity-60"
               >
-                {saving ? "Äang lÆ°u..." : pet?.isChosen ? "LÆ°u tÃªn" : "Chá»n thÃº cÆ°ng"}
+                {saving ? "Đang lưu..." : pet?.isChosen ? "Lưu tên" : "Chọn thú cưng"}
               </button>
             </div>
           </div>
@@ -268,19 +268,19 @@ export default function LearningPetPanel({ compact = false }: { compact?: boolea
 
           <div>
             <p className="text-sm font-extrabold uppercase tracking-wide text-[#ff6b00]">
-              2. Tráº¡ng thÃ¡i hiá»‡n táº¡i
+              2. Trạng thái hiện tại
             </p>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <PetStat label="HP" value={pet?.hp || 0} />
               <PetStat label="Energy" value={pet?.energy || 0} />
               <PetStat label="Happy" value={pet?.happiness || 0} />
-              <PetStat label="No bá»¥ng" value={pet?.hunger || 0} />
+              <PetStat label="No bụng" value={pet?.hunger || 0} />
             </div>
           </div>
 
           <div>
             <p className="text-sm font-extrabold uppercase tracking-wide text-[#ff6b00]">
-              3. ChÄƒm sÃ³c thÃº cÆ°ng
+              3. Chăm sóc thú cưng
             </p>
             <div className="mt-3 grid gap-3 md:grid-cols-4">
               {ACTIONS.map((action) => (
@@ -303,9 +303,9 @@ export default function LearningPetPanel({ compact = false }: { compact?: boolea
 
       <div className="grid gap-4 border-t border-[#ead8c2] bg-[#fffaf5] p-6 md:grid-cols-[240px_1fr]">
         <div>
-          <h3 className="text-xl font-black text-[#1f2a44]">Streak & thÃ nh tÃ­ch</h3>
+          <h3 className="text-xl font-black text-[#1f2a44]">Streak & thành tích</h3>
           <p className="mt-2 text-sm font-bold leading-6 text-[#5b6b85]">
-            ÄÃ£ hoÃ n thÃ nh {pet?.completedLessons || 0} bÃ i Â· tá»‘t nháº¥t {pet?.bestStreak || 0} ngÃ y.
+            ?ã hoàn thành {pet?.completedLessons || 0} bài · tốt nhất {pet?.bestStreak || 0} ngày.
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -318,7 +318,7 @@ export default function LearningPetPanel({ compact = false }: { compact?: boolea
                   : "border-[#ead8c2] bg-white/60 text-[#8a94a8]"
               }`}
             >
-              <div className="font-black">{item.done ? "ðŸ†" : "ðŸ”’"} {item.title}</div>
+              <div className="font-black">{item.done ? "🏆" : "🔒"} {item.title}</div>
               <p className="mt-2 text-xs font-bold leading-5">{item.desc}</p>
             </div>
           ))}

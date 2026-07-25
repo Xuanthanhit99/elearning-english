@@ -70,7 +70,7 @@ export default function Header() {
                 : "text-[#5b6b85]"
             }`}
           >
-            Trang chá»§
+            Trang chủ
           </Link>
 
           <Link
@@ -81,7 +81,7 @@ export default function Header() {
                 : "text-[#5b6b85]"
             }`}
           >
-            KhÃ³a há»c
+            Khóa học
           </Link>
 
           <div ref={toolsRef} className="relative pb-2">
@@ -94,33 +94,33 @@ export default function Header() {
                   : "text-[#5b6b85]"
               }`}
             >
-              CÃ´ng cá»¥
+              Công cụ
               <span
                 className={`text-xs transition ${
                   openTools ? "rotate-180" : ""
                 }`}
               >
-                â–¼
+                ▼
               </span>
             </button>
 
             {openTools && (
               <div className="absolute left-1/2 top-10 z-50 w-64 -translate-x-1/2 rounded-[24px] border border-[#ead8c2] bg-white p-3 shadow-[0_24px_70px_rgba(31,42,68,0.14)]">
                 {[
-                  { icon: "ðŸ”¤", label: "Check tá»«", href: "/check-word" },
-                  { icon: "ðŸ“", label: "Check bÃ i", href: "/check-writing" },
-                  { icon: "ðŸ“š", label: "Tá»« Ä‘iá»ƒn AI", href: "/dictionary" },
+                  { icon: "🔤", label: "Check từ", href: "/check-word" },
+                  { icon: "📝", label: "Check bài", href: "/check-writing" },
+                  { icon: "📚", label: "Từ điển AI", href: "/dictionary" },
                   {
-                    icon: "ðŸŽ™ï¸",
-                    label: "Luyá»‡n phÃ¡t Ã¢m",
+                    icon: "🎙️",
+                    label: "Luyện phát âm",
                     href: "/pronunciation",
                   },
                   {
-                    icon: "ðŸ“Š",
-                    label: "Kiá»ƒm tra trÃ¬nh Ä‘á»™",
+                    icon: "📊",
+                    label: "Kiểm tra trình độ",
                     href: "/placement",
                   },
-                  { icon: "ðŸ±", label: "ThÃº cÆ°ng há»c táº­p", href: "/pet" },
+                  { icon: "🐱", label: "Thú cưng học tập", href: "/pet" },
                 ].map((item) => (
                   <Link
                     key={item.href}
@@ -146,7 +146,7 @@ export default function Header() {
                 : "text-[#5b6b85]"
             }`}
           >
-            Lá»™ trÃ¬nh
+            Lộ trình
           </Link>
         </nav>
 
@@ -157,11 +157,11 @@ export default function Header() {
                 type="button"
                 className="flex h-12 w-12 items-center justify-center rounded-full bg-[#fff4e8] text-xl"
               >
-                ðŸ””
+                🔔
               </button>
 
               <div className="hidden items-center gap-2 rounded-full bg-[#fff0dc] px-4 py-3 font-extrabold text-[#ff6b00] sm:flex">
-                ðŸ”¥ <span>12</span>
+                🔥 <span>12</span>
               </div>
 
               <details className="group relative">
@@ -179,7 +179,7 @@ export default function Header() {
                   </span>
 
                   <span className="text-xs transition group-open:rotate-180">
-                    â–¼
+                    ▼
                   </span>
                 </summary>
 
@@ -204,10 +204,10 @@ export default function Header() {
                   </div>
 
                   {[
-                    { icon: "ðŸ‘¤", label: "Há»“ sÆ¡ cÃ¡ nhÃ¢n", href: "/profile" },
-                    { icon: "ðŸ“ˆ", label: "Tiáº¿n Ä‘á»™ há»c", href: "/progress" },
-                    { icon: "ðŸ†", label: "Chá»©ng chá»‰", href: "/certificates" },
-                    { icon: "âš™ï¸", label: "CÃ i Ä‘áº·t", href: "/settings" },
+                    { icon: "👤", label: "Hồ sơ cá nhân", href: "/profile" },
+                    { icon: "📈", label: "Tiến độ học", href: "/progress" },
+                    { icon: "🏆", label: "Chứng chỉ", href: "/certificates" },
+                    { icon: "⚙️", label: "Cài đặt", href: "/settings" },
                   ].map((item) => (
                     <Link
                       key={item.href}
@@ -227,9 +227,9 @@ export default function Header() {
                     className="mt-1 flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left font-extrabold text-red-500 transition hover:bg-red-50"
                   >
                     <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-50 text-lg">
-                      ðŸšª
+                      🚪
                     </span>
-                    ÄÄƒng xuáº¥t
+                    ?ăng xuất
                   </button>
                 </div>
               </details>
@@ -240,14 +240,14 @@ export default function Header() {
                 href="/login"
                 className="inline-flex items-center justify-center rounded-full px-5 py-3 font-extrabold text-[#5b6b85] hover:bg-[#fff4e8] hover:text-[#1f2a44]"
               >
-                ÄÄƒng nháº­p
+                ?ăng nhập
               </Link>
 
               <Link
                 href="/login"
                 className="inline-flex items-center justify-center rounded-full bg-[#ff6b00] px-7 py-3 font-extrabold text-white shadow-lg shadow-orange-200"
               >
-                Báº¯t Ä‘áº§u há»c ngay
+                Bắt đầu học ngay
               </Link>
             </>
           )}

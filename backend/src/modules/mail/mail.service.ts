@@ -10,11 +10,24 @@ function escapeHtml(value: string): string {
     .replace(/'/g, '&#39;');
 }
 
+function renderEmailHtml(content: string): string {
+  return `<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body style="font-family: Arial, 'Helvetica Neue', sans-serif; line-height: 1.6; color: #111827;">
+    ${content}
+  </body>
+</html>`;
+}
+
 /**
  * Reuses the same Gmail-SMTP nodemailer pattern already proven working in
  * `AuthService.sendReportToEmail` (same `MAIL_USER`/`MAIL_PASS` env vars),
  * factored into a small reusable service so account-recovery emails don't
- * duplicate transport setup. `sendReportToEmail` itself is left untouched â€”
+ * duplicate transport setup. `sendReportToEmail` itself is left untouched —
  * this is an additive sibling, not a migration of existing working code.
  */
 @Injectable()
@@ -31,27 +44,27 @@ export class MailService {
   async sendPasswordResetEmail(to: string, fullname: string, resetUrl: string) {
     await this.send(
       to,
-      'Äáº·t láº¡i máº­t kháº©u BeaconVie',
-      `
-        <h2>Xin chÃ o ${escapeHtml(fullname || 'báº¡n')},</h2>
-        <p>ChÃºng tÃ´i nháº­n Ä‘Æ°á»£c yÃªu cáº§u Ä‘áº·t láº¡i máº­t kháº©u cho tÃ i khoáº£n nÃ y.</p>
-        <p><a href="${resetUrl}">Nháº¥n vÃ o Ä‘Ã¢y Ä‘á»ƒ Ä‘áº·t láº¡i máº­t kháº©u</a></p>
-        <p>LiÃªn káº¿t cÃ³ hiá»‡u lá»±c trong 30 phÃºt vÃ  chá»‰ dÃ¹ng Ä‘Æ°á»£c má»™t láº§n.</p>
-        <p>Náº¿u báº¡n khÃ´ng yÃªu cáº§u Ä‘áº·t láº¡i máº­t kháº©u, hÃ£y bá» qua email nÃ y â€” máº­t kháº©u hiá»‡n táº¡i cá»§a báº¡n sáº½ khÃ´ng thay Ä‘á»•i.</p>
-      `,
+      'Đặt lại mật khẩu BeaconVie',
+      renderEmailHtml(`
+        <h2>Xin chào ${escapeHtml(fullname || 'bạn')},</h2>
+        <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản này.</p>
+        <p><a href="${resetUrl}">Nhấn vào đây để đặt lại mật khẩu</a></p>
+        <p>Liên kết có hiệu lực trong 30 phút và chỉ dùng được một lần.</p>
+        <p>Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này — mật khẩu hiện tại của bạn sẽ không thay đổi.</p>
+      `),
     );
   }
 
   async sendVerificationEmail(to: string, fullname: string, verifyUrl: string) {
     await this.send(
       to,
-      'XÃ¡c minh email BeaconVie',
-      `
-        <h2>Xin chÃ o ${escapeHtml(fullname || 'báº¡n')},</h2>
-        <p>Vui lÃ²ng xÃ¡c minh Ä‘á»‹a chá»‰ email cá»§a báº¡n Ä‘á»ƒ hoÃ n táº¥t Ä‘Äƒng kÃ½.</p>
-        <p><a href="${verifyUrl}">Nháº¥n vÃ o Ä‘Ã¢y Ä‘á»ƒ xÃ¡c minh email</a></p>
-        <p>LiÃªn káº¿t cÃ³ hiá»‡u lá»±c trong 24 giá».</p>
-      `,
+      'Xác minh email BeaconVie',
+      renderEmailHtml(`
+        <h2>Xin chào ${escapeHtml(fullname || 'bạn')},</h2>
+        <p>Vui lòng xác minh địa chỉ email của bạn để hoàn tất đăng ký.</p>
+        <p><a href="${verifyUrl}">Nhấn vào đây để xác minh email</a></p>
+        <p>Liên kết có hiệu lực trong 24 giờ.</p>
+      `),
     );
   }
 

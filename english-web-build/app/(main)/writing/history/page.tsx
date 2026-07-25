@@ -122,7 +122,7 @@ export default function WritingHistoryPage() {
     );
   }
 
-  if (!data) return <div className="p-10">KhÃ´ng cÃ³ dá»¯ liá»‡u lá»‹ch sá»­.</div>;
+  if (!data) return <div className="p-10">Không có dữ liệu lịch sử.</div>;
 
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
@@ -249,7 +249,7 @@ export default function WritingHistoryPage() {
               <div className="flex gap-4">
                 <button className="flex h-12 items-center gap-3 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold">
                   <Calendar className="h-5 w-5 text-slate-500" />
-                  Táº¥t cáº£ thá»i gian
+                  Tất cả thời gian
                 </button>
 
                 <button

@@ -34,7 +34,7 @@ export class AuthTwoFactorService {
     });
 
     if (!user) {
-      throw new BadRequestException('KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n');
+      throw new BadRequestException('Không tìm thấy tài khoản');
     }
 
     const secret = generateSecret();
@@ -65,7 +65,7 @@ export class AuthTwoFactorService {
 
     if (!user?.twoFactorTempSecret) {
       throw new BadRequestException(
-        'ChÆ°a khá»Ÿi táº¡o 2FA, vui lÃ²ng gá»i /auth/2fa/setup trÆ°á»›c',
+        'Chưa khởi tạo 2FA, vui lòng gọi /auth/2fa/setup trước',
       );
     }
 
@@ -73,7 +73,7 @@ export class AuthTwoFactorService {
     const isValid = verifySync({ token: otp, secret }).valid;
 
     if (!isValid) {
-      throw new BadRequestException('MÃ£ OTP khÃ´ng Ä‘Ãºng');
+      throw new BadRequestException('Mã OTP không đúng');
     }
 
     const recoveryCodes = generateRecoveryCodes(8);
@@ -123,14 +123,14 @@ export class AuthTwoFactorService {
     });
 
     if (!user?.twoFactorSecret) {
-      throw new BadRequestException('2FA hiá»‡n chÆ°a Ä‘Æ°á»£c báº­t');
+      throw new BadRequestException('2FA hiện chưa được bật');
     }
 
     const verified = await this.verifyAny(user, credentials);
 
     if (!verified) {
       throw new UnauthorizedException(
-        'KhÃ´ng thá»ƒ xÃ¡c minh danh tÃ­nh Ä‘á»ƒ táº¯t 2FA',
+        'Không thể xác minh danh tính để tắt 2FA',
       );
     }
 

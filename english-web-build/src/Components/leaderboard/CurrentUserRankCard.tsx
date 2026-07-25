@@ -21,7 +21,7 @@ export function CurrentUserRankCard({
 
           <div>
             <p className="text-sm font-bold text-violet-700">
-              Vá»‹ trÃ­ cá»§a báº¡n
+              Vị trí của bạn
             </p>
             <p className="text-xl font-black">
               {formatXp(entry.periodXp)} XP

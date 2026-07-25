@@ -142,7 +142,7 @@ export default function ReadingLessonPage({
       setError(
         errorText(
           requestError,
-          "KhÃ´ng táº£i Ä‘Æ°á»£c bÃ i Ä‘á»c.",
+          "Không tải được bài đọc.",
         ),
       );
     } finally {
@@ -235,7 +235,7 @@ export default function ReadingLessonPage({
       setError(
         errorText(
           requestError,
-          "KhÃ´ng lÆ°u Ä‘Æ°á»£c cÃ¢u tráº£ lá»i.",
+          "Không lưu được câu trả lời.",
         ),
       );
     } finally {
@@ -248,7 +248,7 @@ export default function ReadingLessonPage({
 
     if (answeredCount < totalQuestions) {
       setError(
-        `Báº¡n cÃ²n ${totalQuestions - answeredCount} cÃ¢u chÆ°a tráº£ lá»i.`,
+        `Bạn còn ${totalQuestions - answeredCount} câu chưa trả lời.`,
       );
       return;
     }
@@ -271,8 +271,8 @@ export default function ReadingLessonPage({
       );
 
       /*
-       * Cho ngÆ°á»i dÃ¹ng nhÃ¬n tháº¥y popup cáº­p nháº­t Mission/XP
-       * trÆ°á»›c khi chuyá»ƒn trang káº¿t quáº£.
+       * Cho người dùng nhìn thấy popup cập nhật Mission/XP
+       * trước khi chuyển trang kết quả.
        */
       window.setTimeout(() => {
         router.replace(payload.resultUrl);
@@ -281,7 +281,7 @@ export default function ReadingLessonPage({
       setError(
         errorText(
           requestError,
-          "KhÃ´ng thá»ƒ ná»™p bÃ i.",
+          "Không thể nộp bài.",
         ),
       );
     } finally {
@@ -290,7 +290,7 @@ export default function ReadingLessonPage({
   }
 
   if (loading) {
-    return <State text="Äang táº£i bÃ i Ä‘á»c..." />;
+    return <State text="Đang tải bài đọc..." />;
   }
 
   if (error && !data) {
@@ -319,7 +319,7 @@ export default function ReadingLessonPage({
           className="inline-flex items-center gap-2 font-bold text-violet-600"
         >
           <ChevronLeft size={18} />
-          Quay láº¡i chá»§ Ä‘á»
+          Quay lại chủ đề
         </button>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -330,7 +330,7 @@ export default function ReadingLessonPage({
           />
           <Info
             icon={<Target size={16} />}
-            text={`${progressPercent}% cÃ¢u há»i`}
+            text={`${progressPercent}% câu hỏi`}
           />
         </div>
       </header>
@@ -353,7 +353,7 @@ export default function ReadingLessonPage({
                   {data.article.difficultyText}
                 </span>
                 <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-bold text-orange-600">
-                  +{data.article.xpReward} XP tá»‘i Ä‘a
+                  +{data.article.xpReward} XP tối đa
                 </span>
               </div>
 
@@ -378,7 +378,7 @@ export default function ReadingLessonPage({
           {!!data.vocabulary.length && (
             <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
               <h2 className="text-xl font-black">
-                Tá»« vá»±ng trong bÃ i
+                Từ vựng trong bài
               </h2>
 
               <div className="mt-5 grid gap-4 md:grid-cols-2">
@@ -419,7 +419,7 @@ export default function ReadingLessonPage({
           {mission && (
             <section className="rounded-3xl bg-gradient-to-br from-violet-700 to-indigo-600 p-6 text-white shadow-lg">
               <p className="text-xs font-black text-white/70">
-                NHIá»†M Vá»¤ LIÃŠN QUAN
+                NHIỆM VỤ LIÊN QUAN
               </p>
               <h2 className="mt-2 text-xl font-black">
                 {mission.title}
@@ -439,7 +439,7 @@ export default function ReadingLessonPage({
                 />
               </div>
               <p className="mt-2 text-sm font-bold">
-                {mission.progress}/{mission.target} Â· +
+                {mission.progress}/{mission.target} · +
                 {mission.reward.xp} XP
               </p>
             </section>
@@ -448,7 +448,7 @@ export default function ReadingLessonPage({
           <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-black">
-                CÃ¢u há»i Ä‘á»c hiá»ƒu
+                Câu hỏi đọc hiểu
               </h2>
               <span className="text-sm font-bold text-violet-600">
                 {answeredCount}/{totalQuestions}
@@ -524,7 +524,7 @@ export default function ReadingLessonPage({
                     }
                     className="rounded-xl border px-4 py-3 font-bold disabled:opacity-40"
                   >
-                    CÃ¢u trÆ°á»›c
+                    Câu trước
                   </button>
 
                   {activeQuestion < totalQuestions ? (
@@ -537,7 +537,7 @@ export default function ReadingLessonPage({
                       }
                       className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-3 font-bold text-white"
                     >
-                      CÃ¢u tiáº¿p theo
+                      Câu tiếp theo
                       <ChevronRight size={17} />
                     </button>
                   ) : (
@@ -552,15 +552,15 @@ export default function ReadingLessonPage({
                       className="rounded-xl bg-emerald-600 px-5 py-3 font-black text-white disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {submitting
-                        ? "Äang ná»™p..."
-                        : "Ná»™p bÃ i"}
+                        ? "Đang nộp..."
+                        : "Nộp bài"}
                     </button>
                   )}
                 </div>
               </div>
             ) : (
               <p className="mt-5 text-sm text-slate-500">
-                BÃ i Ä‘á»c chÆ°a cÃ³ cÃ¢u há»i.
+                Bài đọc chưa có câu hỏi.
               </p>
             )}
           </section>
@@ -592,19 +592,19 @@ export default function ReadingLessonPage({
             </div>
             <h2 className="mt-4 text-2xl font-black">
               {completion.alreadyCompleted
-                ? "BÃ i Ä‘Ã£ Ä‘Æ°á»£c ná»™p trÆ°á»›c Ä‘Ã³"
-                : "HoÃ n thÃ nh bÃ i Ä‘á»c"}
+                ? "Bài đã được nộp trước đó"
+                : "Hoàn thành bài đọc"}
             </h2>
             <p className="mt-2 text-slate-500">
-              {completion.score}% Â· +{completion.earnedXp} XP
+              {completion.score}% · +{completion.earnedXp} XP
             </p>
             {completion.missionUpdated && (
               <div className="mt-4 rounded-2xl bg-violet-50 p-4 font-bold text-violet-700">
-                ðŸŽ¯ Nhiá»‡m vá»¥ Reading Ä‘Ã£ Ä‘Æ°á»£c cáº­p nháº­t
+                🎯 Nhiệm vụ Reading đã được cập nhật
               </div>
             )}
             <p className="mt-4 text-sm text-slate-400">
-              Äang chuyá»ƒn Ä‘áº¿n trang káº¿t quáº£...
+              Đang chuyển đến trang kết quả...
             </p>
           </div>
         </div>
@@ -653,7 +653,7 @@ function State({
             onClick={action}
             className="mt-4 rounded-xl bg-violet-600 px-5 py-2 font-bold text-white"
           >
-            Táº£i láº¡i
+            Tải lại
           </button>
         )}
       </div>

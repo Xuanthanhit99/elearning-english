@@ -143,7 +143,7 @@ function LeftContent() {
         {benefits.map((item) => (
           <div key={item} className="flex items-center gap-4">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 font-extrabold text-emerald-500 dark:bg-emerald-500/10 dark:text-emerald-300">
-              âœ“
+              ✓
             </span>
             <span className="font-extrabold text-[var(--BeaconVie-ink)]">{item}</span>
           </div>
@@ -552,7 +552,7 @@ function RegisterSuccessModal({
       <div className="w-full max-w-md overflow-hidden rounded-[32px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] shadow-2xl">
         {/* Header */}
         <div className="bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] p-8 text-center text-white">
-          <div className="animate-bounce text-6xl">ðŸŽ‰</div>
+          <div className="animate-bounce text-6xl">🎉</div>
 
           <h2 className="mt-4 text-3xl font-extrabold">{t("auth.successTitle")}</h2>
 
@@ -562,7 +562,7 @@ function RegisterSuccessModal({
         {/* Body */}
         <div className="p-7 text-center">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-green-50 text-4xl dark:bg-emerald-500/10">
-            âœ…
+            ✅
           </div>
 
           <p className="mt-5 leading-7 text-[var(--BeaconVie-muted)]">

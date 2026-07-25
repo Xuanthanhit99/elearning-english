@@ -189,7 +189,7 @@ export default function PlacementSpeakingQuestion({
       <div>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <span className="rounded-full bg-blue-50 px-4 py-2 text-sm font-black text-blue-700">
-            Speaking â€¢ {level}
+            Speaking • {level}
           </span>
           <span className="text-sm font-bold text-slate-500">
             Recommended answer: 30-60 seconds

@@ -30,39 +30,39 @@ export function CommunityClubOverview({
 }) {
   const cards = [
     {
-      label: 'BÃ i viáº¿t',
+      label: 'Bài viết',
       value: club._count.posts,
       icon: Newspaper,
       tab: 'POSTS' as ClubTab,
-      description: 'Chia sáº» kiáº¿n thá»©c vÃ  tháº£o luáº­n',
+      description: 'Chia sẻ kiến thức và thảo luận',
     },
     {
-      label: 'ThÃ nh viÃªn',
+      label: 'Thành viên',
       value: club._count.members,
       icon: Users,
       tab: 'MEMBERS' as ClubTab,
-      description: 'Nhá»¯ng ngÆ°á»i Ä‘ang tham gia',
+      description: 'Những người đang tham gia',
     },
     {
-      label: 'Tin nháº¯n nhÃ³m',
+      label: 'Tin nhắn nhóm',
       value: club._count.messages,
       icon: MessageCircle,
       tab: 'CHAT' as ClubTab,
-      description: 'TrÃ² chuyá»‡n realtime trong Club',
+      description: 'Trò chuyện realtime trong Club',
     },
     {
-      label: 'Sá»± kiá»‡n',
+      label: 'Sự kiện',
       value: club._count.events,
       icon: CalendarDays,
       tab: 'EVENTS' as ClubTab,
-      description: 'Hoáº¡t Ä‘á»™ng vÃ  phÃ²ng há»c sáº¯p tá»›i',
+      description: 'Hoạt động và phòng học sắp tới',
     },
     {
-      label: 'TÃ i liá»‡u',
+      label: 'Tài liệu',
       value: club._count.resources,
       icon: FileText,
       tab: 'RESOURCES' as ClubTab,
-      description: 'PDF, audio, video vÃ  Ä‘Æ°á»ng dáº«n',
+      description: 'PDF, audio, video và đường dẫn',
     },
   ];
 
@@ -106,16 +106,16 @@ export function CommunityClubOverview({
       <section className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
         <div className="rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-sm">
           <h3 className="text-lg font-extrabold text-slate-950">
-            Giá»›i thiá»‡u cÃ¢u láº¡c bá»™
+            Giới thiệu câu lạc bộ
           </h3>
           <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-700">
-            {club.description || 'CÃ¢u láº¡c bá»™ chÆ°a cÃ³ pháº§n giá»›i thiá»‡u.'}
+            {club.description || 'Câu lạc bộ chưa có phần giới thiệu.'}
           </p>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl bg-slate-50 p-4">
               <span className="text-xs font-bold uppercase text-slate-500">
-                Chá»§ cÃ¢u láº¡c bá»™
+                Chủ câu lạc bộ
               </span>
               <div className="mt-3 flex items-center gap-3">
                 <img
@@ -136,17 +136,17 @@ export function CommunityClubOverview({
 
             <div className="rounded-2xl bg-slate-50 p-4">
               <span className="text-xs font-bold uppercase text-slate-500">
-                Loáº¡i cÃ¢u láº¡c bá»™
+                Loại câu lạc bộ
               </span>
               <strong className="mt-3 block text-sm text-slate-950">
                 {club.privacy === 'PUBLIC'
-                  ? 'CÃ´ng khai'
-                  : 'RiÃªng tÆ°'}
+                  ? 'Công khai'
+                  : 'Riêng tư'}
               </strong>
               <p className="mt-1 text-xs leading-5 text-slate-500">
                 {club.privacy === 'PUBLIC'
-                  ? 'Má»i ngÆ°á»i cÃ³ thá»ƒ xem vÃ  tham gia ngay.'
-                  : 'NgÆ°á»i dÃ¹ng cáº§n Ä‘Æ°á»£c quáº£n trá»‹ viÃªn phÃª duyá»‡t.'}
+                  ? 'Mọi người có thể xem và tham gia ngay.'
+                  : 'Người dùng cần được quản trị viên phê duyệt.'}
               </p>
             </div>
           </div>
@@ -156,17 +156,17 @@ export function CommunityClubOverview({
           <div className="flex items-center gap-2">
             <Trophy size={20} className="text-amber-500" />
             <h3 className="font-extrabold text-slate-950">
-              Hoáº¡t Ä‘á»™ng gá»£i Ã½
+              Hoạt động gợi ý
             </h3>
           </div>
 
           <div className="mt-4 space-y-3">
             {[
-              'ÄÄƒng má»™t ná»™i dung há»¯u Ã­ch cho thÃ nh viÃªn.',
-              'Tham gia chat nhÃ³m vÃ  lÃ m quen vá»›i má»i ngÆ°á»i.',
-              'Tham gia thá»­ thÃ¡ch Ä‘ang diá»…n ra.',
-              'ÄÄƒng kÃ½ sá»± kiá»‡n hoáº·c phÃ²ng há»c gáº§n nháº¥t.',
-              'Chia sáº» má»™t tÃ i liá»‡u há»c táº­p.',
+              '?ăng một nội dung hữu ích cho thành viên.',
+              'Tham gia chat nhóm và làm quen với mọi người.',
+              'Tham gia thử thách đang diễn ra.',
+              '?ăng ký sự kiện hoặc phòng học gần nhất.',
+              'Chia sẻ một tài liệu học tập.',
             ].map((item, index) => (
               <div
                 key={item}

@@ -69,7 +69,7 @@ export default function SkillProgressPage() {
         const res = await api.get<SkillData>("/vocabulary/overview/skills");
         if (active) setData(res.data);
       } catch {
-        if (active) setMessage("ChÆ°a táº£i Ä‘Æ°á»£c tiáº¿n Ä‘á»™ ká»¹ nÄƒng.");
+        if (active) setMessage("Chưa tải được tiến độ kỹ năng.");
       } finally {
         if (active) setLoading(false);
       }
@@ -108,7 +108,7 @@ export default function SkillProgressPage() {
     return (
       <div className="px-4 py-7 lg:px-8">
         <section className="rounded-3xl border border-red-100 bg-red-50 p-6 font-bold text-red-600">
-          {message || "KhÃ´ng cÃ³ dá»¯ liá»‡u ká»¹ nÄƒng."}
+          {message || "Không có dữ liệu kỹ năng."}
         </section>
       </div>
     );
@@ -119,15 +119,15 @@ export default function SkillProgressPage() {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-5">
         <div>
           <div className="mb-4 flex items-center gap-2 text-sm font-bold text-[#73799b]">
-            <Link href="/">Trang chá»§</Link>
+            <Link href="/">Trang chủ</Link>
             <ChevronRight size={16} />
-            <Link href="/vocabulary/overview">Tá»•ng quan</Link>
+            <Link href="/vocabulary/overview">Tổng quan</Link>
             <ChevronRight size={16} />
-            <span className="text-[#101733]">Tiáº¿n Ä‘á»™ ká»¹ nÄƒng</span>
+            <span className="text-[#101733]">Tiến độ kỹ năng</span>
           </div>
-          <h1 className="text-3xl font-black text-[#101733]">Tiáº¿n Ä‘á»™ ká»¹ nÄƒng</h1>
+          <h1 className="text-3xl font-black text-[#101733]">Tiến độ kỹ năng</h1>
           <p className="mt-3 text-base font-bold text-[#69708b]">
-            Theo dÃµi sá»± tiáº¿n bá»™ cá»§a báº¡n á»Ÿ 6 ká»¹ nÄƒng cá»‘t lÃµi
+            Theo dõi sự tiến bộ của bạn ở 6 kỹ năng cốt lõi
           </p>
         </div>
         <button className="inline-flex h-12 items-center gap-3 rounded-xl border border-[#dfe2f3] bg-white px-5 text-sm font-black text-[#27245f]">
@@ -146,30 +146,30 @@ export default function SkillProgressPage() {
         <section className="rounded-3xl border border-[#ebeaf6] bg-white p-6 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-black text-[#101733]">Biá»ƒu Ä‘á»“ tiáº¿n Ä‘á»™</h2>
+              <h2 className="text-xl font-black text-[#101733]">Biểu đồ tiến độ</h2>
               <p className="mt-2 text-sm font-bold text-[#69708b]">
-                Sá»± tiáº¿n bá»™ cá»§a 6 ká»¹ nÄƒng trong 7 ngÃ y qua
+                Sự tiến bộ của 6 kỹ năng trong 7 ngày qua
               </p>
             </div>
             <button className="rounded-xl border border-[#dfe2f3] bg-white px-4 py-3 text-sm font-black text-[#27245f]">
-              Táº¥t cáº£ ká»¹ nÄƒng
+              Tất cả kỹ năng
             </button>
           </div>
 
           <SkillChart skills={data.skills} labels={labels} />
 
           <div className="mt-6 grid gap-4 md:grid-cols-4">
-            <SummaryStat icon="sparkles" value="+12%" label="Tiáº¿n bá»™ trung bÃ¬nh" sub="so vá»›i 7 ngÃ y trÆ°á»›c" />
-            <SummaryStat icon="target" value={`${data.summary.improvedSkills}/6`} label="Ká»¹ nÄƒng cáº£i thiá»‡n" sub="so vá»›i tuáº§n trÆ°á»›c" />
-            <SummaryStat icon="calendar" value={data.summary.totalStudyTime} label="Tá»•ng thá»i gian há»c" sub="trong 7 ngÃ y qua" />
-            <SummaryStat icon="star" value={numberText(data.summary.xpEarned)} label="XP nháº­n Ä‘Æ°á»£c" sub="trong 7 ngÃ y qua" />
+            <SummaryStat icon="sparkles" value="+12%" label="Tiến bộ trung bình" sub="so với 7 ngày trước" />
+            <SummaryStat icon="target" value={`${data.summary.improvedSkills}/6`} label="Kỹ năng cải thiện" sub="so với tuần trước" />
+            <SummaryStat icon="calendar" value={data.summary.totalStudyTime} label="Tổng thời gian học" sub="trong 7 ngày qua" />
+            <SummaryStat icon="star" value={numberText(data.summary.xpEarned)} label="XP nhận được" sub="trong 7 ngày qua" />
           </div>
         </section>
 
         <aside className="space-y-5">
           {strongest && (
             <InsightCard
-              title="Ká»¹ nÄƒng máº¡nh nháº¥t"
+              title="Kỹ năng mạnh nhất"
               skill={strongest}
               message={data.strongest.message}
               positive
@@ -177,13 +177,13 @@ export default function SkillProgressPage() {
           )}
           {weakest && (
             <InsightCard
-              title="Ká»¹ nÄƒng cáº§n cáº£i thiá»‡n"
+              title="Kỹ năng cần cải thiện"
               skill={weakest}
               message={data.weakest.message}
             />
           )}
           <section className="rounded-3xl border border-[#ebeaf6] bg-white p-5 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
-            <h3 className="font-black text-[#101733]">Gá»£i Ã½ cho báº¡n</h3>
+            <h3 className="font-black text-[#101733]">Gợi ý cho bạn</h3>
             <div className="mt-4 space-y-3">
               {data.recommendations.map((item) => (
                 <Link
@@ -204,7 +204,7 @@ export default function SkillProgressPage() {
               href="/vocabulary/overview"
               className="mt-5 flex h-12 items-center justify-center gap-2 rounded-xl border border-[#bfaeff] text-sm font-black text-[#6d35ff]"
             >
-              <AppIcon name="calendar" bare size={17} /> Xem káº¿ hoáº¡ch há»c táº­p
+              <AppIcon name="calendar" bare size={17} /> Xem kế hoạch học tập
               <ChevronRight size={17} />
             </Link>
           </section>
@@ -213,9 +213,9 @@ export default function SkillProgressPage() {
 
       <section className="mt-6 rounded-3xl border border-[#ebeaf6] bg-white p-6 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-black text-[#101733]">Hoáº¡t Ä‘á»™ng gáº§n Ä‘Ã¢y theo ká»¹ nÄƒng</h2>
+          <h2 className="text-xl font-black text-[#101733]">Hoạt động gần đây theo kỹ năng</h2>
           <Link href="/vocabulary/skills/detailed" className="text-sm font-black text-[#6d35ff]">
-            Xem táº¥t cáº£ â†’
+            Xem tất cả →
           </Link>
         </div>
         <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">

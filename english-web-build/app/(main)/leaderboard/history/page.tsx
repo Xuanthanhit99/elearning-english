@@ -19,10 +19,10 @@ export default async function LeaderboardHistoryPage() {
           href="/leaderboard"
           className="text-sm font-bold text-violet-600"
         >
-          â† Báº£ng xáº¿p háº¡ng
+          ← Bảng xếp hạng
         </Link>
         <h1 className="mt-2 text-3xl font-black">
-          Lá»‹ch sá»­ mÃ¹a giáº£i
+          Lịch sử mùa giải
         </h1>
       </div>
 

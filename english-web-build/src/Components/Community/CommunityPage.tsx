@@ -44,22 +44,22 @@ const sidebarItems: Array<{
   label: string;
   icon: typeof Home;
 }> = [
-  { key: 'HOME', label: 'Trang chá»§', icon: Home },
-  { key: 'EXPLORE', label: 'KhÃ¡m phÃ¡', icon: Compass },
-  { key: 'MY_POSTS', label: 'BÃ i viáº¿t cá»§a tÃ´i', icon: UserRound },
-  { key: 'FOLLOWING', label: 'Äang theo dÃµi', icon: UsersRound },
-  { key: 'FRIENDS', label: 'Báº¡n bÃ¨', icon: UserRoundSearch },
-  { key: 'CLUBS', label: 'CÃ¢u láº¡c bá»™', icon: Sparkles },
-  { key: 'CHALLENGES', label: 'Thá»­ thÃ¡ch', icon: Trophy },
-  { key: 'LEADERBOARD', label: 'Báº£ng xáº¿p háº¡ng', icon: Medal },
-  { key: 'MESSAGES', label: 'Tin nháº¯n', icon: MessageSquareText },
+  { key: 'HOME', label: 'Trang chủ', icon: Home },
+  { key: 'EXPLORE', label: 'Khám phá', icon: Compass },
+  { key: 'MY_POSTS', label: 'Bài viết của tôi', icon: UserRound },
+  { key: 'FOLLOWING', label: 'Đang theo dõi', icon: UsersRound },
+  { key: 'FRIENDS', label: 'Bạn bè', icon: UserRoundSearch },
+  { key: 'CLUBS', label: 'Câu lạc bộ', icon: Sparkles },
+  { key: 'CHALLENGES', label: 'Thử thách', icon: Trophy },
+  { key: 'LEADERBOARD', label: 'Bảng xếp hạng', icon: Medal },
+  { key: 'MESSAGES', label: 'Tin nhắn', icon: MessageSquareText },
 ];
 
 const feedTabs = [
-  { key: 'FOR_YOU', label: 'DÃ nh cho báº¡n' },
-  { key: 'FOLLOWING', label: 'Äang theo dÃµi' },
-  { key: 'LATEST', label: 'Má»›i nháº¥t' },
-  { key: 'POPULAR', label: 'Phá»• biáº¿n' },
+  { key: 'FOR_YOU', label: 'Dành cho bạn' },
+  { key: 'FOLLOWING', label: 'Đang theo dõi' },
+  { key: 'LATEST', label: 'Mới nhất' },
+  { key: 'POPULAR', label: 'Phổ biến' },
 ];
 
 function EmptyPanel({
@@ -131,7 +131,7 @@ export function CommunityPage() {
         setError(
           e instanceof Error
             ? e.message
-            : 'KhÃ´ng thá»ƒ táº£i báº£ng tin cá»™ng Ä‘á»“ng',
+            : 'Không thể tải bảng tin cộng đồng',
         );
 
         if (reset) {
@@ -240,10 +240,10 @@ export function CommunityPage() {
 
           <span className="min-w-0">
             <strong className="block text-slate-900">
-              Báº¡n muá»‘n chia sáº» Ä‘iá»u gÃ¬?
+              Bạn muốn chia sẻ điều gì?
             </strong>
             <small className="block text-[var(--BeaconVie-muted)]">
-              Chia sáº» kiáº¿n thá»©c, Ä‘áº·t cÃ¢u há»i, bÃ i nÃ³i hoáº·c bÃ i viáº¿t.
+              Chia sẻ kiến thức, đặt câu hỏi, bài nói hoặc bài viết.
             </small>
           </span>
         </button>
@@ -261,7 +261,7 @@ export function CommunityPage() {
                 onKeyDown={(event) => {
                   if (event.key === 'Enter') submitSearch();
                 }}
-                placeholder="TÃ¬m bÃ i viáº¿t, hashtag hoáº·c ná»™i dung..."
+                placeholder="Tìm bài viết, hashtag hoặc nội dung..."
                 className="w-full rounded-xl border border-[var(--BeaconVie-border)] py-2.5 pl-10 pr-3 text-sm outline-none focus:border-[var(--BeaconVie-primary)]"
               />
             </div>
@@ -270,7 +270,7 @@ export function CommunityPage() {
               onClick={submitSearch}
               className="rounded-xl bg-[var(--BeaconVie-primary)] px-4 py-2.5 text-sm font-semibold text-white"
             >
-              TÃ¬m
+              Tìm
             </button>
           </div>
         )}
@@ -314,15 +314,15 @@ export function CommunityPage() {
 
         {loading ? (
           <div className="rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] py-12 text-center text-[var(--BeaconVie-muted)]">
-            Äang táº£i báº£ng tin...
+            Đang tải bảng tin...
           </div>
         ) : posts.length === 0 ? (
           <div className="rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] px-5 py-12 text-center">
             <h3 className="font-bold text-slate-900">
-              ChÆ°a cÃ³ bÃ i viáº¿t nÃ o
+              Chưa có bài viết nào
             </h3>
             <p className="mt-2 text-sm text-[var(--BeaconVie-muted)]">
-              HÃ£y trá»Ÿ thÃ nh ngÆ°á»i Ä‘áº§u tiÃªn chia sáº» vá»›i cá»™ng Ä‘á»“ng.
+              Hãy trở thành người đầu tiên chia sẻ với cộng đồng.
             </p>
           </div>
         ) : (
@@ -338,7 +338,7 @@ export function CommunityPage() {
             disabled={loadingMore}
             className="w-full rounded-2xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] py-3 font-semibold text-[var(--BeaconVie-primary)] transition hover:bg-[var(--BeaconVie-hover-tint)] disabled:opacity-50"
           >
-            {loadingMore ? 'Äang táº£i...' : 'Xem thÃªm'}
+            {loadingMore ? 'Đang tải...' : 'Xem thêm'}
           </button>
         )}
       </>
@@ -350,7 +350,7 @@ export function CommunityPage() {
       <aside className="hidden lg:block">
         <div className="sticky top-6 rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-4 shadow-sm">
           <h2 className="mb-4 px-3 text-lg font-bold text-slate-900">
-            Cá»™ng Ä‘á»“ng
+            Cộng đồng
           </h2>
 
           <nav className="space-y-1">
@@ -397,7 +397,7 @@ export function CommunityPage() {
           <div className="rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-5 shadow-sm">
             <div className="flex items-center gap-2">
               <Flame size={18} className="text-orange-500" />
-              <h3 className="font-bold text-slate-900">Chá»§ Ä‘á» ná»•i báº­t</h3>
+              <h3 className="font-bold text-slate-900">Chủ đề nổi bật</h3>
             </div>
 
             <div className="mt-4 space-y-3 text-sm text-[var(--BeaconVie-primary)]">
@@ -427,11 +427,11 @@ export function CommunityPage() {
 
           <div className="rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-5 shadow-sm">
             <h3 className="font-bold text-slate-900">
-              NguyÃªn táº¯c cá»™ng Ä‘á»“ng
+              Nguyên tắc cộng đồng
             </h3>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              TÃ´n trá»ng, khÃ´ng spam, khÃ´ng cÃ´ng kÃ­ch cÃ¡ nhÃ¢n vÃ  Æ°u tiÃªn
-              ná»™i dung há»¯u Ã­ch cho viá»‡c há»c tiáº¿ng Anh.
+              Tôn trọng, không spam, không công kích cá nhân và ưu tiên
+              nội dung hữu ích cho việc học tiếng Anh.
             </p>
           </div>
         </div>

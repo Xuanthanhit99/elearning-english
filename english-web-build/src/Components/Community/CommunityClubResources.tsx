@@ -111,10 +111,10 @@ export function CommunityClubResources({
       <div className="flex items-center justify-between rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
         <div>
           <h3 className="text-lg font-extrabold text-slate-950">
-            TÃ i liá»‡u cÃ¢u láº¡c bá»™
+            Tài liệu câu lạc bộ
           </h3>
           <p className="mt-1 text-sm text-slate-500">
-            Chia sáº» PDF, Word, áº£nh, audio, video hoáº·c liÃªn káº¿t.
+            Chia sẻ PDF, Word, ảnh, audio, video hoặc liên kết.
           </p>
         </div>
 
@@ -125,7 +125,7 @@ export function CommunityClubResources({
             className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 font-bold text-white"
           >
             <Plus size={17} />
-            ThÃªm tÃ i liá»‡u
+            Thêm tài liệu
           </button>
         )}
       </div>
@@ -141,7 +141,7 @@ export function CommunityClubResources({
                   title: event.target.value,
                 }))
               }
-              placeholder="TÃªn tÃ i liá»‡u"
+              placeholder="Tên tài liệu"
               className="rounded-xl border-2 px-4 py-3"
             />
 
@@ -155,13 +155,13 @@ export function CommunityClubResources({
               }
               className="rounded-xl border-2 px-4 py-3"
             >
-              <option value="LINK">LiÃªn káº¿t</option>
+              <option value="LINK">Liên kết</option>
               <option value="PDF">PDF</option>
-              <option value="DOCUMENT">TÃ i liá»‡u</option>
+              <option value="DOCUMENT">Tài liệu</option>
               <option value="AUDIO">Audio</option>
               <option value="VIDEO">Video</option>
-              <option value="IMAGE">áº¢nh</option>
-              <option value="OTHER">KhÃ¡c</option>
+              <option value="IMAGE">Ảnh</option>
+              <option value="OTHER">Khác</option>
             </select>
 
             <textarea
@@ -173,7 +173,7 @@ export function CommunityClubResources({
                 }))
               }
               rows={3}
-              placeholder="MÃ´ táº£"
+              placeholder="Mô tả"
               className="rounded-xl border-2 px-4 py-3 sm:col-span-2"
             />
 
@@ -185,12 +185,12 @@ export function CommunityClubResources({
                   url: event.target.value,
                 }))
               }
-              placeholder="URL tÃ i liá»‡u"
+              placeholder="URL tài liệu"
               className="rounded-xl border-2 px-4 py-3"
             />
 
             <label className="flex cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-slate-300 px-4 py-3 font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50">
-              {uploading ? 'Äang táº£i...' : 'Chá»n file tá»« mÃ¡y'}
+              {uploading ? 'Đang tải...' : 'Chọn file từ máy'}
               <input
                 type="file"
                 hidden
@@ -209,7 +209,7 @@ export function CommunityClubResources({
               disabled={!form.title.trim() || !form.url.trim()}
               className="rounded-xl bg-indigo-600 px-5 py-2.5 font-bold text-white disabled:opacity-50"
             >
-              LÆ°u tÃ i liá»‡u
+              Lưu tài liệu
             </button>
           </div>
         </div>
@@ -219,7 +219,7 @@ export function CommunityClubResources({
         <div className="rounded-3xl border-2 border-dashed border-slate-300 bg-white py-12 text-center">
           <FileText size={30} className="mx-auto text-slate-400" />
           <p className="mt-3 font-bold text-slate-800">
-            ChÆ°a cÃ³ tÃ i liá»‡u
+            Chưa có tài liệu
           </p>
         </div>
       ) : (
@@ -242,7 +242,7 @@ export function CommunityClubResources({
                       {item.title}
                     </h4>
                     <p className="mt-1 text-xs text-slate-500">
-                      {item.uploader.fullname} Â·{' '}
+                      {item.uploader.fullname} ·{' '}
                       {new Date(item.createdAt).toLocaleDateString(
                         'vi-VN',
                       )}
@@ -251,7 +251,7 @@ export function CommunityClubResources({
                 </div>
 
                 <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">
-                  {item.description || 'KhÃ´ng cÃ³ mÃ´ táº£.'}
+                  {item.description || 'Không có mô tả.'}
                 </p>
 
                 <a
@@ -261,7 +261,7 @@ export function CommunityClubResources({
                   className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white"
                 >
                   <Download size={16} />
-                  Má»Ÿ tÃ i liá»‡u
+                  Mở tài liệu
                 </a>
               </article>
             );

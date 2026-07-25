@@ -139,7 +139,7 @@ function toAuthUser(user: ProfileUser) {
 }
 
 // Fields the backend allows to be explicitly cleared (no MinLength on the
-// DTO) â€” an empty string here must still reach the server so "delete my
+// DTO) — an empty string here must still reach the server so "delete my
 // bio" actually persists, instead of being silently dropped and leaving the
 // old value in place. `fullname`/`username` intentionally keep the
 // omit-when-empty behavior (they're required-ish fields with a MinLength on
@@ -173,7 +173,7 @@ type FieldErrors = Partial<Record<keyof UpdateProfilePayload, string>>;
 const USERNAME_PATTERN = /^[a-zA-Z0-9_]+$/;
 const VN_PHONE_PATTERN = /^(\+84|0)[0-9]{9,10}$/;
 
-/** Validate phÃ­a client khá»›p vá»›i `UpdateProfileDto` (backend) â€” chá»‰ bÃ¡o lá»—i khi field cÃ³ giÃ¡ trá»‹, vÃ¬ má»i field ngoÃ i `fullname` Ä‘á»u optional. */
+/** Validate phía client khớp với `UpdateProfileDto` (backend) — chỉ báo lỗi khi field có giá trị, vì mọi field ngoài `fullname` đều optional. */
 function validateProfilePayload(payload: Partial<UpdateProfilePayload>, t: (key: string) => string): FieldErrors {
   const errors: FieldErrors = {};
 
@@ -206,7 +206,7 @@ function validateProfilePayload(payload: Partial<UpdateProfilePayload>, t: (key:
   return errors;
 }
 
-/** Map message lá»—i tá»« ValidationPipe backend (vd. "phone must be a valid phone number", "Username Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng") vá» Ä‘Ãºng field trong form. */
+/** Map message lỗi từ ValidationPipe backend (vd. "phone must be a valid phone number", "Username đã được sử dụng") về đúng field trong form. */
 function mapBackendErrorsToFields(messages: string[]): FieldErrors {
   const fieldKeys: (keyof UpdateProfilePayload)[] = [
     "fullname",
@@ -407,7 +407,7 @@ export default function ProfilePage() {
   }
 
   async function saveProfile() {
-    if (saving) return; // cháº·n spam click submit
+    if (saving) return; // chặn spam click submit
 
     const payload = cleanProfilePayload(form);
     const validationErrors = validateProfilePayload(payload, t);

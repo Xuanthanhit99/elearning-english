@@ -45,8 +45,8 @@ export function useCountdown(endAt?: string) {
       expired: remaining === 0,
       label:
         days > 0
-          ? `${days} ngÃ y ${hours} giá»`
-          : `${hours} giá» ${minutes} phÃºt`,
+          ? `${days} ngày ${hours} giờ`
+          : `${hours} giờ ${minutes} phút`,
     };
   }, [endAt, now]);
 }

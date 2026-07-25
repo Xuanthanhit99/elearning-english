@@ -13,7 +13,7 @@ export type ApiErrorLike = Error & {
   response?: AxiosError["response"];
 };
 
-const DEFAULT_MESSAGE = "CÃ³ lá»—i xáº£y ra. Vui lÃ²ng Thử lại.";
+const DEFAULT_MESSAGE = "Có lỗi xảy ra. Vui lòng Thử lại.";
 
 function normalizeMessage(value: unknown, fallback = DEFAULT_MESSAGE) {
   if (Array.isArray(value)) {

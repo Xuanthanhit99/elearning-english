@@ -198,7 +198,7 @@ function CategoryHero({ detail }: { detail: any }) {
             />
           ) : (
             <div className="flex h-full items-center justify-center text-6xl">
-              {category.icon || 'ðŸŽ™ï¸'}
+              {category.icon || '🎙️'}
             </div>
           )}
         </div>
@@ -228,7 +228,7 @@ function CategoryHero({ detail }: { detail: any }) {
         </div>
       </div>
 
-      <div className="col-span-3 hidden text-8xl lg:block">ðŸ’¬ðŸ‘©â€ðŸ¦°â˜•</div>
+      <div className="col-span-3 hidden text-8xl lg:block">💬👩‍🦰☕</div>
     </div>
   );
 }
@@ -279,7 +279,7 @@ function LessonRow({
       <div className="col-span-2 flex justify-end">
         {lesson.status === 'COMPLETED' && (
           <button className="flex items-center gap-2 text-sm font-bold text-green-600">
-            â— Completed
+            ● Completed
             <ChevronRight size={16} className="text-indigo-400" />
           </button>
         )}
@@ -289,7 +289,7 @@ function LessonRow({
             onClick={onStart}
             className="flex items-center gap-2 text-sm font-bold text-orange-500"
           >
-            â— In Progress
+            ● In Progress
             <ChevronRight size={16} className="text-indigo-400" />
           </button>
         )}

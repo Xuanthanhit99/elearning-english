@@ -80,7 +80,7 @@ export default function ConversationHubPage() {
       <BeaconVieSectionHeader
         eyebrow="AI Conversation Partner"
         title="Practice speaking English with an AI partner"
-        description="Pick a scenario, roleplay, interview, or just chat freely â€” every conversation is scored and counts toward your Speaking skill, XP, and achievements."
+        description="Pick a scenario, roleplay, interview, or just chat freely — every conversation is scored and counts toward your Speaking skill, XP, and achievements."
         action={
           <BeaconVieButton onClick={() => handleStart(undefined, "FREE")} loading={startingCode === "free"}>
             <Sparkles aria-hidden className="h-4 w-4" />
@@ -159,7 +159,7 @@ export default function ConversationHubPage() {
                 <ul className="mt-3 space-y-1 text-xs font-bold text-[var(--BeaconVie-muted)]">
                   {scenario.goals.slice(0, 2).map((goal) => (
                     <li key={goal} className="flex items-start gap-1.5">
-                      <span aria-hidden>â€¢</span>
+                      <span aria-hidden>•</span>
                       {goal}
                     </li>
                   ))}

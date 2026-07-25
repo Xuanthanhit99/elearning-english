@@ -43,7 +43,7 @@ export function CommunityFollowButton({
       }`}
     >
       {following ? <UserCheck size={17} /> : <UserPlus size={17} />}
-      {following ? 'Äang theo dÃµi' : 'Theo dÃµi'}
+      {following ? 'Đang theo dõi' : 'Theo dõi'}
     </button>
   );
 }

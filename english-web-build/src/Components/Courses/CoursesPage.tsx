@@ -7,106 +7,106 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 const categories = [
-  { label: "Táº¥t cáº£", value: "all", count: 12 },
-  { label: "Há»c miá»…n phÃ­", value: "free", count: 4 },
-  { label: "Tiáº¿ng Anh cÆ¡ báº£n", value: "basic", count: 3 },
-  { label: "Luyá»‡n nÃ³i", value: "speaking", count: 3 },
-  { label: "Ngá»¯ phÃ¡p", value: "grammar", count: 2 },
-  { label: "CÃ´ng viá»‡c", value: "work", count: 2 },
+  { label: "Tất cả", value: "all", count: 12 },
+  { label: "Học miễn phí", value: "free", count: 4 },
+  { label: "Tiếng Anh cơ bản", value: "basic", count: 3 },
+  { label: "Luyện nói", value: "speaking", count: 3 },
+  { label: "Ngữ pháp", value: "grammar", count: 2 },
+  { label: "Công việc", value: "work", count: 2 },
 ];
 
-const filters = ["Táº¥t cáº£", "Miá»…n phÃ­", "Beginner", "Luyện nói"];
+const filters = ["Tất cả", "Miễn phí", "Beginner", "Luyện nói"];
 
 const courses = [
   {
     title: "English Starter",
-    subtitle: "Tiáº¿ng Anh cho ngÆ°á»i má»›i",
-    desc: "Há»c phÃ¡t Ã¢m, tá»« vá»±ng vÃ  máº«u cÃ¢u cÆ¡ báº£n má»—i ngÃ y.",
-    tag: "Beginner â€¢ Free",
+    subtitle: "Tiếng Anh cho người mới",
+    desc: "Học phát âm, từ vựng và mẫu câu cơ bản mỗi ngày.",
+    tag: "Beginner • Free",
     level: "A0-A1",
     rating: "4.9",
     lessons: 32,
     students: "1.240",
-    price: "Miá»…n phÃ­",
+    price: "Miễn phí",
     category: "free",
     icon: "GB",
     bg: "bg-[#fff4e8]",
   },
   {
     title: "Speaking Daily",
-    subtitle: "Luyá»‡n nÃ³i giao tiáº¿p",
-    desc: "Shadowing, tÃ¬nh huá»‘ng giao tiáº¿p vÃ  pháº£n xáº¡ nÃ³i háº±ng ngÃ y.",
-    tag: "Speaking â€¢ Practice",
+    subtitle: "Luyện nói giao tiếp",
+    desc: "Shadowing, tình huống giao tiếp và phản xạ nói hằng ngày.",
+    tag: "Speaking • Practice",
     level: "A1-A2",
     rating: "4.8",
     lessons: 28,
     students: "980",
     price: "599K",
     category: "speaking",
-    icon: "ðŸ—£ï¸",
+    icon: "🗣️",
     bg: "bg-[#eef8f2]",
   },
   {
     title: "Grammar Clear",
-    subtitle: "Ngá»¯ phÃ¡p á»©ng dá»¥ng",
-    desc: "Há»c ngá»¯ phÃ¡p qua cÃ¢u tháº­t, lá»—i thÆ°á»ng gáº·p vÃ  bÃ i táº­p.",
-    tag: "Grammar â€¢ Check bÃ i",
+    subtitle: "Ngữ pháp ứng dụng",
+    desc: "Học ngữ pháp qua câu thật, lỗi thường gặp và bài tập.",
+    tag: "Grammar • Check bài",
     level: "A1-B1",
     rating: "4.8",
     lessons: 24,
     students: "820",
     price: "499K",
     category: "grammar",
-    icon: "ðŸ“",
+    icon: "📝",
     bg: "bg-[#fff7ed]",
   },
   {
     title: "Work English",
-    subtitle: "Tiáº¿ng Anh cÃ´ng viá»‡c",
-    desc: "Email, há»p, phá»ng váº¥n vÃ  giao tiáº¿p nÆ¡i lÃ m viá»‡c.",
-    tag: "Business â€¢ Work",
+    subtitle: "Tiếng Anh công việc",
+    desc: "Email, họp, phỏng vấn và giao tiếp nơi làm việc.",
+    tag: "Business • Work",
     level: "A2-B1",
     rating: "4.9",
     lessons: 30,
     students: "740",
     price: "799K",
     category: "work",
-    icon: "ðŸ’¼",
+    icon: "💼",
     bg: "bg-[#f4f2fb]",
   },
   {
     title: "Vocabulary Boost",
-    subtitle: "TÄƒng vá»‘n tá»« vá»±ng",
-    desc: "Há»c tá»« theo chá»§ Ä‘á», vÃ­ dá»¥, IPA vÃ  cá»¥m tá»« thÆ°á»ng dÃ¹ng.",
-    tag: "Vocabulary â€¢ IPA",
+    subtitle: "Tăng vốn từ vựng",
+    desc: "Học từ theo chủ đề, ví dụ, IPA và cụm từ thường dùng.",
+    tag: "Vocabulary • IPA",
     level: "A1-B1",
     rating: "4.7",
     lessons: 26,
     students: "1.050",
     price: "399K",
     category: "basic",
-    icon: "ðŸ”¤",
+    icon: "🔤",
     bg: "bg-[#eef6ff]",
   },
   {
     title: "Pronunciation Lab",
-    subtitle: "Luyá»‡n phÃ¡t Ã¢m",
-    desc: "Luyá»‡n Ã¢m khÃ³, trá»ng Ã¢m, ngá»¯ Ä‘iá»‡u vÃ  nÃ³i theo máº«u.",
-    tag: "Pronunciation â€¢ AI",
+    subtitle: "Luyện phát âm",
+    desc: "Luyện âm khó, trọng âm, ngữ điệu và nói theo mẫu.",
+    tag: "Pronunciation • AI",
     level: "A1-B1",
     rating: "4.8",
     lessons: 22,
     students: "690",
     price: "499K",
     category: "speaking",
-    icon: "ðŸŽ™ï¸",
+    icon: "🎙️",
     bg: "bg-[#f0fdf4]",
   },
 ];
 
 export default function CoursesPage() {
   const [activeCategory, setActiveCategory] = useState("all");
-  const [activeFilter, setActiveFilter] = useState("Táº¥t cáº£");
+  const [activeFilter, setActiveFilter] = useState("Tất cả");
   const [keyword, setKeyword] = useState("");
   const user = useAuthStore((state) => state.user);
   const filteredCourses = useMemo(() => {
@@ -120,7 +120,7 @@ export default function CoursesPage() {
         course.desc.toLowerCase().includes(keyword.toLowerCase());
 
       const matchFilter =
-        activeFilter === "Táº¥t cáº£" ||
+        activeFilter === "Tất cả" ||
         course.tag.toLowerCase().includes(activeFilter.toLowerCase()) ||
         course.price.toLowerCase().includes(activeFilter.toLowerCase());
 
@@ -134,17 +134,17 @@ export default function CoursesPage() {
 <div className="grid items-center gap-10 lg:grid-cols-[1.25fr_0.75fr]">
   <div>
     <div className="mb-5 inline-flex rounded-full border border-[#ffd4ad] bg-white px-4 py-2 text-sm font-extrabold text-[#ff6b00] shadow-sm">
-      ðŸŽ“ KhÃ³a há»c BeaconVie
+      🎓 Khóa học BeaconVie
     </div>
 
     <h1 className="max-w-4xl text-5xl font-extrabold leading-tight text-[#1f2a44] lg:text-6xl">
-      Chá»n khÃ³a há»c theo{" "}
-      <span className="text-[#ff6b00]">má»¥c tiÃªu há»c táº­p</span>
+      Chọn khóa học theo{" "}
+      <span className="text-[#ff6b00]">mục tiêu học tập</span>
     </h1>
 
     <p className="mt-5 max-w-3xl text-lg leading-8 text-[#5b6b85]">
-      KhÃ¡m phÃ¡ cÃ¡c khÃ³a há»c Ä‘Æ°á»£c thiáº¿t káº¿ theo lá»™ trÃ¬nh rÃµ rÃ ng, bÃ i há»c ngáº¯n,
-      dá»… theo dÃµi vÃ  phÃ¹ há»£p cho ngÆ°á»i má»›i báº¯t Ä‘áº§u Ä‘áº¿n ngÆ°á»i Ä‘i lÃ m.
+      Khám phá các khóa học được thiết kế theo lộ trình rõ ràng, bài học ngắn,
+      dễ theo dõi và phù hợp cho người mới bắt đầu đến người đi làm.
     </p>
   </div>
 
@@ -154,24 +154,24 @@ export default function CoursesPage() {
 
     <div className="relative z-10">
       <div className="mb-5 inline-flex rounded-full bg-[#fff0dc] px-4 py-2 text-sm font-extrabold text-[#ff6b00]">
-        ðŸŽ Æ¯u Ä‘Ã£i thÃ¡ng nÃ y
+        🎁 Ưu đãi tháng này
       </div>
 
       <h2 className="max-w-sm text-3xl font-extrabold leading-tight">
-        Giáº£m 35% cho khÃ³a Speaking
+        Giảm 35% cho khóa Speaking
       </h2>
 
       <p className="mt-4 max-w-md text-sm font-medium leading-7 text-white/85">
-        ÄÄƒng kÃ½ trong tuáº§n nÃ y Ä‘á»ƒ nháº­n Æ°u Ä‘Ã£i cho cÃ¡c khÃ³a luyá»‡n nÃ³i vÃ  phÃ¡t Ã¢m.
+        ?ăng ký trong tuần này để nhận ưu đãi cho các khóa luyện nói và phát âm.
       </p>
 
       <div className="mt-6 flex items-center gap-3">
-        <CountBox value="02" label="ngÃ y" />
-        <CountBox value="14" label="giá»" />
-        <CountBox value="30" label="phÃºt" />
+        <CountBox value="02" label="ngày" />
+        <CountBox value="14" label="giờ" />
+        <CountBox value="30" label="phút" />
 
         <button className="ml-auto rounded-full bg-[#ff6b00] px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-orange-950/20 transition hover:bg-[#e85f00]">
-          Xem Æ°u Ä‘Ã£i
+          Xem ưu đãi
         </button>
       </div>
     </div>
@@ -179,18 +179,18 @@ export default function CoursesPage() {
 </div>
 
 <div className="mt-8 grid gap-4 md:grid-cols-3">
-  <HeroStat value="12+" label="khÃ³a há»c Ä‘ang má»Ÿ" />
-  <HeroStat value="4.9/5" label="Ä‘Ã¡nh giÃ¡ trung bÃ¬nh" />
-  <HeroStat value="3.200+" label="há»c viÃªn Ä‘Ã£ tham gia" />
+  <HeroStat value="12+" label="khóa học đang mở" />
+  <HeroStat value="4.9/5" label="đánh giá trung bình" />
+  <HeroStat value="3.200+" label="học viên đã tham gia" />
 </div>
 
         <div className="mt-12 flex flex-col gap-4 lg:flex-row">
           <div className="relative flex-1">
-            <span className="absolute left-5 top-1/2 -translate-y-1/2">ðŸ”Ž</span>
+            <span className="absolute left-5 top-1/2 -translate-y-1/2">🔎</span>
             <input
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              placeholder="TÃ¬m khÃ³a há»c: giao tiáº¿p, phÃ¡t Ã¢m, ngá»¯ phÃ¡p, business..."
+              placeholder="Tìm khóa học: giao tiếp, phát âm, ngữ pháp, business..."
               className="w-full rounded-2xl border border-[#ead8c2] bg-white py-4 pl-12 pr-5 font-bold text-[#1f2a44] outline-none focus:border-[#ff6b00]"
             />
           </div>
@@ -215,7 +215,7 @@ export default function CoursesPage() {
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[220px_1fr]">
           <aside className="h-fit rounded-[24px] border border-[#ead8c2] bg-white p-4 shadow-[0_24px_70px_rgba(31,42,68,0.06)]">
-            <h3 className="mb-3 font-extrabold text-[#1f2a44]">Danh má»¥c</h3>
+            <h3 className="mb-3 font-extrabold text-[#1f2a44]">Danh mục</h3>
 
             <div className="space-y-2">
               {categories.map((item) => (
@@ -270,7 +270,7 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
 
       <div className="p-5">
         <div className="font-extrabold text-[#ff9900]">
-          â˜…â˜…â˜…â˜…â˜… {course.rating}
+          ★★★★★ {course.rating}
         </div>
 
         <div className="mt-3 flex items-start justify-between gap-3">
@@ -288,13 +288,13 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
         </p>
 
         <div className="mt-4 text-sm font-extrabold text-[#5b6b85]">
-          {course.lessons} bÃ i Â· {course.students} há»c viÃªn Â· Quiz
+          {course.lessons} bài · {course.students} học viên · Quiz
         </div>
 
         <div className="mt-5 flex items-center justify-between">
           <span
             className={`text-2xl font-black ${
-              course.price === "Miá»…n phÃ­"
+              course.price === "Miễn phí"
                 ? "text-emerald-500"
                 : "text-[#ff6b00]"
             }`}
@@ -306,7 +306,7 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
             href="/courses/english-starter"
             className="rounded-full bg-[#1f2a44] px-5 py-3 font-extrabold text-white transition hover:bg-[#ff6b00]"
           >
-            Chi tiáº¿t
+            Chi tiết
           </Link>
         </div>
       </div>

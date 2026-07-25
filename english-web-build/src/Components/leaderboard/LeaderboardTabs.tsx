@@ -9,18 +9,18 @@ const tabs: Array<{
 }> = [
   {
     value: 'GLOBAL',
-    label: 'ToÃ n cáº§u',
-    icon: 'ðŸŒ',
+    label: 'Toàn cầu',
+    icon: '🌍',
   },
   {
     value: 'FRIENDS',
-    label: 'Báº¡n bÃ¨',
-    icon: 'ðŸ‘¥',
+    label: 'Bạn bè',
+    icon: '👥',
   },
   {
     value: 'CLUB',
-    label: 'CÃ¢u láº¡c bá»™',
-    icon: 'ðŸ«',
+    label: 'Câu lạc bộ',
+    icon: '🏫',
   },
 ];
 

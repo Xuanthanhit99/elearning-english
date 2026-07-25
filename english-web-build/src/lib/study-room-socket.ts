@@ -10,7 +10,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002";
 
 export type StudyRoomUnauthorizedCode = "TOKEN_EXPIRED" | "INVALID_SESSION";
 
-// Mirrors arena-socket.ts's connection/reconnect/token-refresh handling â€”
+// Mirrors arena-socket.ts's connection/reconnect/token-refresh handling —
 // deliberately not community-socket.ts's bare `io()` call (flagged in the
 // Step 0 audit as the weakest of the 4 existing socket clients: no
 // reconnection options, no unauthorized handling at all).

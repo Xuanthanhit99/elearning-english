@@ -32,9 +32,9 @@ import {
 } from "@/src/lib/study-room-socket";
 
 const STATUS_LABEL: Record<string, string> = {
-  WAITING: "Äang chá»",
-  IN_SESSION: "Äang há»c",
-  ENDED: "ÄÃ£ káº¿t thÃºc",
+  WAITING: "Đang chờ",
+  IN_SESSION: "Đang học",
+  ENDED: "?ã kết thúc",
 };
 
 export default function StudyRoomDetailPage() {
@@ -59,7 +59,7 @@ export default function StudyRoomDetailPage() {
         setRoom(data);
         setState({ status: "ready" });
       })
-      .catch(() => setState({ status: "error", message: "KhÃ´ng thá»ƒ táº£i phÃ²ng há»c nÃ y." }));
+      .catch(() => setState({ status: "error", message: "Không thể tải phòng học này." }));
   }, [roomId]);
 
   useEffect(() => {
@@ -126,11 +126,11 @@ export default function StudyRoomDetailPage() {
       socket.off("study-room:removed", onRemoved);
     };
     // Deliberately not disconnecting the shared socket singleton on
-    // unmount (mirrors arena-socket.ts's lifecycle) â€” only this room's
+    // unmount (mirrors arena-socket.ts's lifecycle) — only this room's
     // listeners and socket-room membership are torn down.
   }, [roomId, loadRoom, router, currentUserId]);
 
-  // 1s tick just for the countdown display â€” no network calls.
+  // 1s tick just for the countdown display — no network calls.
   useEffect(() => {
     if (!room?.activeSession) return;
     const interval = setInterval(() => setNowTick(Date.now()), 1000);
@@ -140,7 +140,7 @@ export default function StudyRoomDetailPage() {
   if (state.status === "loading") {
     return (
       <div className="px-4 py-10">
-        <BeaconVieLoadingState label="Äang táº£i phÃ²ng há»c..." />
+        <BeaconVieLoadingState label="Đang tải phòng học..." />
       </div>
     );
   }
@@ -148,9 +148,9 @@ export default function StudyRoomDetailPage() {
     return (
       <div className="px-4 py-10">
         <BeaconVieState
-          title="KhÃ´ng tÃ¬m tháº¥y phÃ²ng há»c"
+          title="Không tìm thấy phòng học"
           description={state.status === "error" ? state.message : undefined}
-          actionLabel="Vá» danh sÃ¡ch phÃ²ng"
+          actionLabel="Về danh sách phòng"
           onAction={() => router.push("/study-rooms")}
           tone="error"
         />
@@ -206,7 +206,7 @@ function RoomBody({
       await fn();
       reload();
     } catch {
-      setActionError("Thao tÃ¡c tháº¥t báº¡i. Vui lÃ²ng Thử lại.");
+      setActionError("Thao tác thất bại. Vui lòng Thử lại.");
     } finally {
       setBusy(false);
     }
@@ -228,7 +228,7 @@ function RoomBody({
           </div>
           {room.topic && <p className="mt-1 text-sm font-semibold text-[var(--BeaconVie-muted)]">{room.topic}</p>}
           {room.inviteCode && (
-            <p className="mt-1 text-xs font-bold text-[var(--BeaconVie-muted)]">MÃ£ má»i: {room.inviteCode}</p>
+            <p className="mt-1 text-xs font-bold text-[var(--BeaconVie-muted)]">Mã mời: {room.inviteCode}</p>
           )}
         </div>
         <BeaconVieButton
@@ -241,7 +241,7 @@ function RoomBody({
           }
         >
           <LogOut aria-hidden className="h-4 w-4" />
-          Rá»i phÃ²ng
+          Rời phòng
         </BeaconVieButton>
       </div>
 
@@ -255,7 +255,7 @@ function RoomBody({
         <BeaconVieCard className="p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-wide text-[var(--BeaconVie-muted)]">Buá»•i há»c Ä‘ang diá»…n ra</p>
+              <p className="text-xs font-black uppercase tracking-wide text-[var(--BeaconVie-muted)]">Buổi học đang diễn ra</p>
               <p className="mt-1 text-3xl font-black tabular-nums text-[var(--BeaconVie-primary)]">
                 {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, "0")}
               </p>
@@ -267,7 +267,7 @@ function RoomBody({
                 onClick={() => withBusy(async () => { await endStudySession(room.id); })}
               >
                 <Square aria-hidden className="h-4 w-4" />
-                Káº¿t thÃºc buá»•i há»c
+                Kết thúc buổi học
               </BeaconVieButton>
             )}
           </div>
@@ -277,9 +277,9 @@ function RoomBody({
       {!room.activeSession && room.status === "WAITING" && myMembership && (
         <BeaconVieCard className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="font-black text-[var(--BeaconVie-ink)]">Sáºµn sÃ ng báº¯t Ä‘áº§u?</p>
+            <p className="font-black text-[var(--BeaconVie-ink)]">Sẵn sàng bắt đầu?</p>
             <p className="text-sm font-semibold text-[var(--BeaconVie-muted)]">
-              Má»i thÃ nh viÃªn cáº§n báº¥m &quot;Sáºµn sÃ ng&quot; trÆ°á»›c khi chá»§ phÃ²ng cÃ³ thá»ƒ báº¯t Ä‘áº§u buá»•i há»c {room.goalMinutes} phÃºt.
+              Mọi thành viên cần bấm &quot;Sẵn sàng&quot; trước khi chủ phòng có thể bắt đầu buổi học {room.goalMinutes} phút.
             </p>
           </div>
           <div className="flex gap-2">
@@ -291,7 +291,7 @@ function RoomBody({
                 onClick={() => withBusy(async () => { await startStudySession(room.id); })}
               >
                 <Play aria-hidden className="h-4 w-4" />
-                Báº¯t Ä‘áº§u
+                Bắt đầu
               </BeaconVieButton>
             )}
           </div>
@@ -301,7 +301,7 @@ function RoomBody({
       <BeaconVieCard className="p-5">
         <div className="mb-3 flex items-center gap-2 text-sm font-black text-[var(--BeaconVie-ink)]">
           <Users aria-hidden className="h-4 w-4" />
-          ThÃ nh viÃªn ({activeMembers.length}/{room.maxMembers})
+          Thành viên ({activeMembers.length}/{room.maxMembers})
         </div>
         <ul className="space-y-2">
           {room.members
@@ -323,13 +323,13 @@ function RoomBody({
         <BeaconVieCard className="p-5">
           <div className="mb-3 flex items-center gap-2 text-sm font-black text-[var(--BeaconVie-ink)]">
             <History aria-hidden className="h-4 w-4" />
-            Lá»‹ch sá»­ buá»•i há»c
+            Lịch sử buổi học
           </div>
           <ul className="space-y-2 text-sm font-semibold text-[var(--BeaconVie-muted)]">
             {history.map((session) => (
               <li key={session.id} className="flex items-center justify-between border-b border-[var(--BeaconVie-border)] py-2 last:border-0">
                 <span>{new Date(session.startedAt).toLocaleString()}</span>
-                <span>{session.summary ?? `${session.participantCount} thÃ nh viÃªn`}</span>
+                <span>{session.summary ?? `${session.participantCount} thành viên`}</span>
               </li>
             ))}
           </ul>
@@ -357,16 +357,16 @@ function MemberRow({
       <div className="flex items-center gap-2">
         <span
           className={`h-2.5 w-2.5 rounded-full ${online ? "bg-emerald-500" : "bg-[var(--BeaconVie-border)]"}`}
-          aria-label={online ? "Äang online" : "Ngoáº¡i tuyáº¿n"}
+          aria-label={online ? "Đang online" : "Ngoại tuyến"}
         />
         <span className="font-bold text-[var(--BeaconVie-ink)]">
-          {member.user?.fullname || member.user?.username || "Há»c viÃªn"}
+          {member.user?.fullname || member.user?.username || "Học viên"}
         </span>
         {member.role === "HOST" && <Crown aria-hidden className="h-4 w-4 text-amber-500" />}
         {member.ready && member.status === "ACTIVE" && (
-          <BeaconVieBadge className="text-[10px]">Sáºµn sÃ ng</BeaconVieBadge>
+          <BeaconVieBadge className="text-[10px]">Sẵn sàng</BeaconVieBadge>
         )}
-        {member.status === "MUTED" && <BeaconVieBadge className="text-[10px]">ÄÃ£ táº¯t tiáº¿ng</BeaconVieBadge>}
+        {member.status === "MUTED" && <BeaconVieBadge className="text-[10px]">?ã tắt tiếng</BeaconVieBadge>}
       </div>
       {showModeration && (
         <div className="flex gap-2">
@@ -375,10 +375,10 @@ function MemberRow({
             className="text-xs font-black text-[var(--BeaconVie-muted)] hover:text-[var(--BeaconVie-danger)]"
             onClick={onKick}
           >
-            Äuá»•i
+            Đuổi
           </button>
           <button type="button" className="text-xs font-black text-[var(--BeaconVie-danger)]" onClick={onBan}>
-            Cáº¥m
+            Cấm
           </button>
         </div>
       )}
@@ -418,7 +418,7 @@ function ReadyToggle({
         setPending(false);
       }}
     >
-      {ready ? "ÄÃ£ sáºµn sÃ ng" : "Sáºµn sÃ ng"}
+      {ready ? "?ã sẵn sàng" : "Sẵn sàng"}
     </BeaconVieButton>
   );
 }

@@ -10,7 +10,7 @@
  *
  * Usage: node scripts/responsive-regression-check.mjs
  *
- * Not wired into `npm run build` or CI â€” run manually against a live dev
+ * Not wired into `npm run build` or CI — run manually against a live dev
  * server when touching AppShell, AppSidebar, AppHeader, MobileNavigation,
  * or any page-level layout shell.
  */

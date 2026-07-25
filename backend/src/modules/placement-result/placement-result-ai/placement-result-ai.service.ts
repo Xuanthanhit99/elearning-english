@@ -16,7 +16,7 @@ export class PlacementResultAiService {
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      throw new Error('Thiáº¿u GEMINI_API_KEY');
+      throw new Error('Thiếu GEMINI_API_KEY');
     }
 
     this.ai = new GoogleGenAI({ apiKey });
@@ -37,31 +37,31 @@ export class PlacementResultAiService {
     }>;
   }): Promise<AiPlacementResult> {
     const prompt = `
-Báº¡n lÃ  AI Coach cá»§a ná»n táº£ng há»c tiáº¿ng Anh BeaconVie.
+Bạn là AI Coach của nền tảng học tiếng Anh BeaconVie.
 
-HÃ£y táº¡o bÃ¡o cÃ¡o káº¿t quáº£ Placement Test báº±ng tiáº¿ng Viá»‡t.
+Hãy tạo báo cáo kết quả Placement Test bằng tiếng Việt.
 
-NgÆ°á»i há»c: ${input.userName}
-Äiá»ƒm tá»•ng local: ${input.overallScore}
+Người học: ${input.userName}
+Điểm tổng local: ${input.overallScore}
 CEFR local: ${input.overallLevel}
-Thá»i gian xá»­ lÃ½: ${input.processedSeconds} giÃ¢y
+Thời gian xử lý: ${input.processedSeconds} giây
 
-Káº¿t quáº£ ká»¹ nÄƒng:
+Kết quả kỹ năng:
 ${JSON.stringify(input.skills, null, 2)}
 
-Quy táº¯c:
-- Ká»¹ nÄƒng SKIPPED pháº£i ghi lÃ  chÆ°a Ä‘Ã¡nh giÃ¡.
-- KhÃ´ng Ä‘Æ°á»£c Ä‘Æ°a ká»¹ nÄƒng SKIPPED vÃ o Ä‘iá»ƒm tá»•ng.
-- KhÃ´ng phÃ³ng Ä‘áº¡i Ä‘á»™ chÃ­nh xÃ¡c.
-- confidence tá»« 70 Ä‘áº¿n 99.
-- percentile tá»« 1 Ä‘áº¿n 99.
-- rating tá»« 1 Ä‘áº¿n 5.
-- priorities tá»‘i Ä‘a 3 má»¥c.
-- phases Ä‘Ãºng 3 giai Ä‘oáº¡n.
-- recommendedCourses Ä‘Ãºng 3 má»¥c.
-- projectedLevel pháº£i há»£p lÃ½, thÆ°á»ng cao hÆ¡n overallLevel tá»‘i Ä‘a 1 báº­c.
-- Má»—i skill cÃ³ tá»‘i Ä‘a 2 strengths vÃ  2 improvements.
-- Chá»‰ tráº£ JSON há»£p lá»‡, khÃ´ng markdown.
+Quy tắc:
+- Kỹ năng SKIPPED phải ghi là chưa đánh giá.
+- Không được đưa kỹ năng SKIPPED vào điểm tổng.
+- Không phóng đại độ chính xác.
+- confidence từ 70 đến 99.
+- percentile từ 1 đến 99.
+- rating từ 1 đến 5.
+- priorities tối đa 3 mục.
+- phases đúng 3 giai đoạn.
+- recommendedCourses đúng 3 mục.
+- projectedLevel phải hợp lý, thường cao hơn overallLevel tối đa 1 bậc.
+- Mỗi skill có tối đa 2 strengths và 2 improvements.
+- Chỉ trả JSON hợp lệ, không markdown.
 
 Schema:
 
@@ -70,7 +70,7 @@ Schema:
   "overallScore": 70,
   "percentile": 68,
   "confidence": 94,
-  "summary": "Nháº­n xÃ©t tá»•ng quan",
+  "summary": "Nhận xét tổng quan",
   "strengths": ["...", "..."],
   "improvements": ["...", "..."],
   "projectedLevel": "B2",
@@ -82,9 +82,9 @@ Schema:
       "score": 72,
       "level": "B1",
       "status": "COMPLETED",
-      "label": "KhÃ¡ tá»‘t",
+      "label": "Khá tốt",
       "rating": 4,
-      "feedback": "Nháº­n xÃ©t ngáº¯n",
+      "feedback": "Nhận xét ngắn",
       "strengths": ["..."],
       "improvements": ["..."]
     }
@@ -99,7 +99,7 @@ Schema:
   "phases": [
     {
       "phase": 1,
-      "title": "Cá»§ng cá»‘ ná»n táº£ng",
+      "title": "Củng cố nền tảng",
       "targetLevel": "B1",
       "weeksMin": 4,
       "weeksMax": 6,
@@ -134,7 +134,7 @@ Schema:
     const rawText = response.text?.trim();
 
     if (!rawText) {
-      throw new Error('Gemini khÃ´ng tráº£ káº¿t quáº£ Placement Result');
+      throw new Error('Gemini không trả kết quả Placement Result');
     }
 
     const parsed = JSON.parse(
@@ -198,7 +198,7 @@ Schema:
         feedback:
           typeof ai.feedback === 'string'
             ? ai.feedback
-            : (item.message ?? 'ÄÃ£ hoÃ n táº¥t Ä‘Ã¡nh giÃ¡.'),
+            : (item.message ?? '?ã hoàn tất đánh giá.'),
         strengths: this.toStringArray(ai.strengths).slice(0, 2),
         improvements: this.toStringArray(ai.improvements).slice(0, 2),
       };
@@ -217,7 +217,7 @@ Schema:
       summary:
         typeof data.summary === 'string'
           ? data.summary
-          : 'Báº¡n Ä‘Ã£ hoÃ n thÃ nh bÃ i kiá»ƒm tra xáº¿p trÃ¬nh Ä‘á»™.',
+          : 'Bạn đã hoàn thành bài kiểm tra xếp trình độ.',
       strengths: this.toStringArray(data.strengths).slice(0, 5),
       improvements: this.toStringArray(data.improvements).slice(0, 5),
       projectedLevel: this.toNullableLevel(data.projectedLevel),
@@ -254,7 +254,7 @@ Schema:
           reason:
             typeof data.reason === 'string'
               ? data.reason
-              : 'NÃªn Æ°u tiÃªn trong lá»™ trÃ¬nh.',
+              : 'Nên ưu tiên trong lộ trình.',
         };
       })
       .filter((item): item is NonNullable<typeof item> => item !== null)
@@ -277,14 +277,14 @@ Schema:
           title:
             typeof data.title === 'string'
               ? data.title
-              : `Giai Ä‘oáº¡n ${index + 1}`,
+              : `Giai đoạn ${index + 1}`,
           targetLevel: this.toNullableLevel(data.targetLevel),
           weeksMin: Math.round(this.clampNumber(data.weeksMin, 1, 52, 4)),
           weeksMax: Math.round(this.clampNumber(data.weeksMax, 1, 52, 6)),
           description:
             typeof data.description === 'string'
               ? data.description
-              : 'Lá»™ trÃ¬nh há»c cÃ¡ nhÃ¢n hÃ³a.',
+              : 'Lộ trình học cá nhân hóa.',
           objectives: this.toStringArray(data.objectives).slice(0, 5),
         };
       })
@@ -307,7 +307,7 @@ Schema:
           title:
             typeof data.title === 'string'
               ? data.title
-              : `KhÃ³a há»c Ä‘á» xuáº¥t ${index + 1}`,
+              : `Khóa học đề xuất ${index + 1}`,
           slug: typeof data.slug === 'string' ? data.slug : null,
           thumbnail: typeof data.thumbnail === 'string' ? data.thumbnail : null,
           rating:
@@ -325,7 +325,7 @@ Schema:
           reason:
             typeof data.reason === 'string'
               ? data.reason
-              : 'PhÃ¹ há»£p vá»›i káº¿t quáº£ Ä‘Ã¡nh giÃ¡ cá»§a báº¡n.',
+              : 'Phù hợp với kết quả đánh giá của bạn.',
           order: index + 1,
         };
       })
@@ -335,13 +335,13 @@ Schema:
 
   private scoreLabel(score: number, status: PlacementProcessingItemStatus) {
     if (status === PlacementProcessingItemStatus.SKIPPED) {
-      return 'ChÆ°a Ä‘Ã¡nh giÃ¡';
+      return 'Chưa đánh giá';
     }
 
-    if (score >= 80) return 'Ráº¥t tá»‘t';
-    if (score >= 60) return 'KhÃ¡ tá»‘t';
-    if (score >= 40) return 'Trung bÃ¬nh';
-    return 'Cáº§n cáº£i thiá»‡n';
+    if (score >= 80) return 'Rất tốt';
+    if (score >= 60) return 'Khá tốt';
+    if (score >= 40) return 'Trung bình';
+    return 'Cần cải thiện';
   }
 
   private toStringArray(value: unknown): string[] {

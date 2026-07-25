@@ -1,18 +1,18 @@
 ﻿const roadmapSteps = [
   {
     number: "1",
-    title: "LÃ m quen",
-    desc: "Há»c tá»« vá»±ng, phÃ¡t Ã¢m vÃ  máº«u cÃ¢u cÆ¡ báº£n.",
+    title: "Làm quen",
+    desc: "Học từ vựng, phát âm và mẫu câu cơ bản.",
   },
   {
     number: "2",
-    title: "Thá»±c hÃ nh",
-    desc: "Luyá»‡n nghe, check tá»«, lÃ m quiz vÃ  nÃ³i láº¡i máº«u cÃ¢u.",
+    title: "Thực hành",
+    desc: "Luyện nghe, check từ, làm quiz và nói lại mẫu câu.",
   },
   {
     number: "3",
-    title: "Tiáº¿n bá»™",
-    desc: "Theo dÃµi XP, level, bÃ i Ä‘Ã£ há»c vÃ  khÃ³a há»c phÃ¹ há»£p tiáº¿p theo.",
+    title: "Tiến bộ",
+    desc: "Theo dõi XP, level, bài đã học và khóa học phù hợp tiếp theo.",
   },
 ];
 
@@ -22,15 +22,15 @@ export function RoadmapSection() {
       <div className="mx-auto max-w-6xl px-4">
         <div className="mx-auto mb-12 max-w-3xl text-center">
           <p className="mb-4 text-sm font-extrabold uppercase tracking-[0.25em] text-[#ff6b00]">
-            Lá»™ trÃ¬nh há»c
+            Lộ trình học
           </p>
 
           <h2 className="text-4xl font-extrabold tracking-tight text-[#1f2a44] sm:text-5xl">
-            Há»c Ä‘Æ¡n giáº£n theo tá»«ng bÆ°á»›c
+            Học đơn giản theo từng bước
           </h2>
 
           <p className="mt-5 text-lg leading-8 text-[#5b6b85]">
-            KhÃ´ng lÃ m ngÆ°á»i dÃ¹ng bá»‹ ngá»£p. Má»—i ngÃ y chá»‰ cáº§n há»c má»™t nhiá»‡m vá»¥ nhá».
+            Không làm người dùng bị ngợp. Mỗi ngày chỉ cần học một nhiệm vụ nhỏ.
           </p>
         </div>
 

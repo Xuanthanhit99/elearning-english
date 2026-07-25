@@ -92,7 +92,7 @@ export default function WritingResultPage() {
       setData(res.data);
     } catch (err) {
       console.error(err);
-      setError("KhÃ´ng táº£i Ä‘Æ°á»£c káº¿t quáº£ bÃ i viáº¿t.");
+      setError("Không tải được kết quả bài viết.");
     } finally {
       setLoading(false);
     }
@@ -107,7 +107,7 @@ export default function WritingResultPage() {
       router.push(`/writing/sessions/${res.data.sessionId}`);
     } catch (err) {
       console.error(err);
-      setError("KhÃ´ng táº¡o Ä‘Æ°á»£c bÃ i luyá»‡n láº¡i lÃºc nÃ y.");
+      setError("Không tạo được bài luyện lại lúc này.");
     } finally {
       setRetrying(false);
     }
@@ -119,7 +119,7 @@ export default function WritingResultPage() {
 
   if (loading)
     return (
-      <BeaconVieLoadingState className="m-10" label="Äang táº£i káº¿t quáº£ bÃ i viáº¿t..." />
+      <BeaconVieLoadingState className="m-10" label="Đang tải kết quả bài viết..." />
     );
 
   if (error) {
@@ -136,7 +136,7 @@ export default function WritingResultPage() {
     );
   }
 
-  if (!data) return <div className="p-10">KhÃ´ng cÃ³ dá»¯ liá»‡u.</div>;
+  if (!data) return <div className="p-10">Không có dữ liệu.</div>;
 
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
@@ -221,7 +221,7 @@ export default function WritingResultPage() {
                   }
                   className="flex h-12 items-center gap-2 rounded-xl border border-violet-500 px-7 font-bold text-violet-600"
                 >
-                  â† Back to Bài học
+                  ← Back to Bài học
                 </button>
 
                 <button
@@ -283,8 +283,8 @@ function ResultTitle({ data }: { data: ResultData }) {
         </div>
 
         <p className="mt-2 text-sm font-semibold text-slate-500">
-          {formatType(data.lesson.type)} â€¢ {data.lesson.level} Level â€¢{" "}
-          {formatDate(data.session.submittedAt)} â€¢ ~{data.lesson.maxWords} từ
+          {formatType(data.lesson.type)} • {data.lesson.level} Level •{" "}
+          {formatDate(data.session.submittedAt)} • ~{data.lesson.maxWords} từ
         </p>
       </div>
     </div>
@@ -330,7 +330,7 @@ function ScoreOverview({ data }: { data: ResultData }) {
             </div>
           </div>
 
-          <p className="mt-4 font-extrabold">Tốt Job! ðŸŽ‰</p>
+          <p className="mt-4 font-extrabold">Tốt Job! 🎉</p>
           <p className="mt-2 text-sm leading-6 text-slate-500">
             Bạn làm tốt hơn {data.result.overallScore}% người học ở cùng trình độ.
           </p>
@@ -453,9 +453,9 @@ function ResultSummary({
       </div>
 
       <div className="mt-6 space-y-5 border-t border-slate-100 pt-5 text-sm">
-        <p>â± Thời gian: {formatTime(data.session.timeSpentSeconds)}</p>
-        <p>ðŸ“ Số từ: {data.session.wordCount}</p>
-        <p>ðŸ“… Ngày: {formatDate(data.session.submittedAt)}</p>
+        <p>⏱ Thời gian: {formatTime(data.session.timeSpentSeconds)}</p>
+        <p>📝 Số từ: {data.session.wordCount}</p>
+        <p>📅 Ngày: {formatDate(data.session.submittedAt)}</p>
       </div>
 
       <button
@@ -522,7 +522,7 @@ function VocabularyCard({
       </div>
 
       {items.length === 0 && (
-        <p className="mt-5 text-sm text-slate-500">ChÆ°a cÃ³ gá»£i Ã½ tá»« vá»±ng.</p>
+        <p className="mt-5 text-sm text-slate-500">Chưa có gợi ý từ vựng.</p>
       )}
 
       <div className="mt-5 divide-y divide-slate-100">
@@ -532,7 +532,7 @@ function VocabularyCard({
             className="grid grid-cols-[1fr_30px_1fr] py-3 text-sm"
           >
             <span>{item.original}</span>
-            <span className="text-slate-400">â†’</span>
+            <span className="text-slate-400">→</span>
             <span className="font-bold text-green-600">{item.suggestion}</span>
           </div>
         ))}
@@ -609,7 +609,7 @@ function CorrectionsCard({
       <h3 className="font-extrabold">Corrections</h3>
 
       {corrections.length === 0 && (
-        <p className="mt-5 text-sm text-slate-500">KhÃ´ng cÃ³ lá»—i cáº§n sá»­a.</p>
+        <p className="mt-5 text-sm text-slate-500">Không có lỗi cần sửa.</p>
       )}
 
       <div className="mt-5 divide-y divide-slate-100">
@@ -622,7 +622,7 @@ function CorrectionsCard({
               {item.wrong}
             </span>
 
-            <span className="text-slate-400">â†’</span>
+            <span className="text-slate-400">→</span>
 
             <span className="font-bold text-green-600">{item.correct}</span>
 
@@ -649,7 +649,7 @@ function SampleEssayCard({ suggestedVersion }: { suggestedVersion: string }) {
         </p>
       ) : (
         <p className="mt-5 text-sm text-slate-500">
-          ChÆ°a cÃ³ báº£n viáº¿t cáº£i thiá»‡n tá»« AI.
+          Chưa có bản viết cải thiện từ AI.
         </p>
       )}
     </div>
@@ -662,7 +662,7 @@ function AICoachCard({ data }: { data: ResultData }) {
       <h3 className="font-extrabold text-violet-700">AI Coach</h3>
 
       <p className="mt-4 text-sm leading-6 text-slate-600">
-        {data.aiCoachTask || "AI chÆ°a cÃ³ nhiá»‡m vá»¥ luyá»‡n láº¡i cho bÃ i nÃ y."}
+        {data.aiCoachTask || "AI chưa có nhiệm vụ luyện lại cho bài này."}
       </p>
 
       {data.nextPracticeSuggestion && (
@@ -680,7 +680,7 @@ function AICoachCard({ data }: { data: ResultData }) {
         <div className="mt-5 space-y-3">
           {data.learningTips.map((tip, index) => (
             <p key={index} className="text-sm text-slate-600">
-              â€¢ {tip}
+              • {tip}
             </p>
           ))}
         </div>

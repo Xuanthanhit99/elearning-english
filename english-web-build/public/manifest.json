@@ -1,7 +1,7 @@
 ﻿{
   "name": "BeaconVie",
   "short_name": "BeaconVie",
-  "description": "BeaconVie - há»c tiáº¿ng Anh cÃ¡ nhÃ¢n hÃ³a cÃ¹ng AI.",
+  "description": "BeaconVie - học tiếng Anh cá nhân hóa cùng AI.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#01031c",

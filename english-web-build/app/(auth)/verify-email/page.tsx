@@ -51,7 +51,7 @@ function VerifyEmailContent() {
           setMessage(
             getErrorMessage(
               error,
-              "LiÃªn káº¿t xÃ¡c minh email khÃ´ng há»£p lá»‡ hoáº·c Ä‘Ã£ háº¿t háº¡n.",
+              "Liên kết xác minh email không hợp lệ hoặc đã hết hạn.",
             ),
           );
         }
@@ -69,30 +69,30 @@ function VerifyEmailContent() {
         </div>
 
         <h1 className="text-3xl font-black text-[var(--BeaconVie-ink)]">
-          XÃ¡c minh email
+          Xác minh email
         </h1>
 
         {status === "loading" && (
           <p className="mt-3 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
-            Äang xÃ¡c minh email cá»§a báº¡n...
+            Đang xác minh email của bạn...
           </p>
         )}
 
         {status === "success" && (
           <p className="mt-3 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
-            XÃ¡c minh email thÃ nh cÃ´ng. Cáº£m Æ¡n báº¡n!
+            Xác minh email thành công. Cảm ơn bạn!
           </p>
         )}
 
         {status === "error" && (
           <p className="mt-3 text-sm font-semibold leading-6 text-rose-600">
-            {message || "LiÃªn káº¿t xÃ¡c minh email khÃ´ng há»£p lá»‡ hoáº·c Ä‘Ã£ háº¿t háº¡n."}
+            {message || "Liên kết xác minh email không hợp lệ hoặc đã hết hạn."}
           </p>
         )}
 
         <div className="mt-7 flex flex-col gap-3 sm:flex-row">
           <Link href="/dashboard" className="BeaconVie-button-primary flex-1 text-center">
-            Äáº¿n trang chá»§
+            Đến trang chủ
           </Link>
         </div>
       </section>

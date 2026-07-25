@@ -30,11 +30,11 @@ import {
 } from "@/src/lib/leaderboard-api";
 
 const tabs: Array<{ key: LeaderboardTab; label: string; icon: any }> = [
-  { key: "weekly", label: "Tuáº§n", icon: Trophy },
-  { key: "monthly", label: "ThÃ¡ng", icon: CalendarDays },
-  { key: "friends", label: "Báº¡n bÃ¨", icon: Users },
+  { key: "weekly", label: "Tuần", icon: Trophy },
+  { key: "monthly", label: "Tháng", icon: CalendarDays },
+  { key: "friends", label: "Bạn bè", icon: Users },
   { key: "club", label: "Club", icon: Shield },
-  { key: "skill", label: "Ká»¹ nÄƒng", icon: Sparkles },
+  { key: "skill", label: "Kỹ năng", icon: Sparkles },
 ];
 
 const skills = [
@@ -47,7 +47,7 @@ const skills = [
 ];
 
 function nameOf(entry: LeaderboardEntry) {
-  return entry.user?.displayName ?? entry.user?.fullname ?? "NgÆ°á»i há»c";
+  return entry.user?.displayName ?? entry.user?.fullname ?? "Người học";
 }
 
 function avatarOf(entry: LeaderboardEntry) {
@@ -55,11 +55,11 @@ function avatarOf(entry: LeaderboardEntry) {
 }
 
 function timeRemaining(end?: string | null) {
-  if (!end) return "ChÆ°a cÃ³ mÃ¹a Ä‘ang hoáº¡t Ä‘á»™ng";
+  if (!end) return "Chưa có mùa đang hoạt động";
   const ms = Math.max(0, new Date(end).getTime() - Date.now());
   const days = Math.floor(ms / 86400000);
   const hours = Math.floor((ms % 86400000) / 3600000);
-  return `${days} ngÃ y ${hours} giá»`;
+  return `${days} ngày ${hours} giờ`;
 }
 
 export default function LeaderboardPage({
@@ -114,13 +114,13 @@ export default function LeaderboardPage({
                       period: null,
                       currentUser: null,
                       entries: [],
-                      message: "Chá»n má»™t Club Ä‘á»ƒ xem báº£ng xáº¿p háº¡ng.",
+                      message: "Chọn một Club để xem bảng xếp hạng.",
                     }
                 : await getSkillLeaderboard(skill);
       setData(result as LeaderboardResponse);
     } catch (e: any) {
       console.log("e", e);
-      setError(e?.response?.data?.message ?? "KhÃ´ng thá»ƒ táº£i báº£ng xáº¿p háº¡ng.");
+      setError(e?.response?.data?.message ?? "Không thể tải bảng xếp hạng.");
     } finally {
       setLoading(false);
     }
@@ -162,13 +162,13 @@ export default function LeaderboardPage({
                   BeaconVie League
                 </span>
               </div>
-              <h1 className="text-3xl font-black sm:text-4xl">Báº£ng xáº¿p háº¡ng</h1>
+              <h1 className="text-3xl font-black sm:text-4xl">Bảng xếp hạng</h1>
               <p className="mt-2 max-w-2xl text-sm text-violet-100 sm:text-base">
-                Thi Ä‘ua lÃ nh máº¡nh, duy trÃ¬ thÃ³i quen vÃ  tiáº¿n bá»™ tá»«ng ngÃ y.
+                Thi đua lành mạnh, duy trì thói quen và tiến bộ từng ngày.
               </p>
             </div>
             <div className="rounded-2xl bg-white/15 px-5 py-4 backdrop-blur">
-              <p className="text-sm text-violet-100">Káº¿t thÃºc sau</p>
+              <p className="text-sm text-violet-100">Kết thúc sau</p>
               <p className="mt-1 text-xl font-bold">
                 {timeRemaining(data?.period?.endsAt)}
               </p>
@@ -220,13 +220,13 @@ export default function LeaderboardPage({
               >
                 {clubs.map((club) => (
                   <option key={club.id} value={club.id}>
-                    {club.name} Â· {club.memberCount} thÃ nh viÃªn
+                    {club.name} · {club.memberCount} thành viên
                   </option>
                 ))}
               </select>
             ) : (
               <div className="rounded-2xl border bg-white p-5 text-center">
-                Báº¡n chÆ°a tham gia cÃ¢u láº¡c bá»™ nÃ o.
+                Bạn chưa tham gia câu lạc bộ nào.
               </div>
             )}
           </div>
@@ -257,7 +257,7 @@ export default function LeaderboardPage({
               <div className="overflow-hidden rounded-3xl border bg-white shadow-sm">
                 <div className="border-b px-4 py-4 sm:px-6">
                   <h2 className="font-extrabold text-slate-900">
-                    Thá»© háº¡ng hiá»‡n táº¡i
+                    Thứ hạng hiện tại
                   </h2>
                 </div>
                 <div>
@@ -269,7 +269,7 @@ export default function LeaderboardPage({
                   ))}
                   {!data?.entries.length && (
                     <div className="p-10 text-center text-slate-500">
-                      ChÆ°a cÃ³ dá»¯ liá»‡u xáº¿p háº¡ng.
+                      Chưa có dữ liệu xếp hạng.
                     </div>
                   )}
                 </div>
@@ -290,14 +290,14 @@ export default function LeaderboardPage({
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold text-slate-500">
-                Vá»‹ trÃ­ cá»§a báº¡n
+                Vị trí của bạn
               </p>
               <p className="font-black text-slate-900">
                 #
                 {"rank" in data.currentUser
-                  ? (data.currentUser.rank ?? "â€”")
-                  : "â€”"}{" "}
-                Â·{" "}
+                  ? (data.currentUser.rank ?? "—")
+                  : "—"}{" "}
+                ·{" "}
                 {"periodXp" in data.currentUser ? data.currentUser.periodXp : 0}{" "}
                 XP
               </p>
@@ -306,7 +306,7 @@ export default function LeaderboardPage({
               href="/learn"
               className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-bold text-white"
             >
-              Há»c tiáº¿p
+              Học tiếp
             </a>
           </div>
         </div>
@@ -366,7 +366,7 @@ function RankRow({ entry }: { entry: LeaderboardEntry }) {
         <p className="truncate font-bold text-slate-900">{nameOf(entry)}</p>
         <p className="text-xs text-slate-500">
           Level {entry.user?.level ?? 1}
-          {entry.user?.streak ? ` Â· ðŸ”¥ ${entry.user.streak}` : ""}
+          {entry.user?.streak ? ` · 🔥 ${entry.user.streak}` : ""}
         </p>
       </div>
       <div className="text-right">
@@ -383,10 +383,10 @@ function RankRow({ entry }: { entry: LeaderboardEntry }) {
           }`}
         >
           {entry.zone === "PROMOTION"
-            ? "ThÄƒng háº¡ng"
+            ? "Thăng hạng"
             : entry.zone === "RELEGATION"
-              ? "Nguy hiá»ƒm"
-              : "An toÃ n"}
+              ? "Nguy hiểm"
+              : "An toàn"}
         </p>
       </div>
     </div>
@@ -415,25 +415,25 @@ function MyRankCard({ data }: { data: LeaderboardResponse | null }) {
   const me: any = data?.currentUser;
   return (
     <div className="rounded-3xl bg-slate-900 p-5 text-white shadow-xl">
-      <p className="text-sm font-semibold text-slate-300">Vá»‹ trÃ­ cá»§a báº¡n</p>
+      <p className="text-sm font-semibold text-slate-300">Vị trí của bạn</p>
       <div className="mt-3 flex items-end justify-between">
         <div>
-          <p className="text-4xl font-black">#{me?.rank ?? "â€”"}</p>
+          <p className="text-4xl font-black">#{me?.rank ?? "—"}</p>
           <p className="mt-1 text-sm text-slate-300">
-            {me?.periodXp?.toLocaleString?.() ?? 0} XP tuáº§n nÃ y
+            {me?.periodXp?.toLocaleString?.() ?? 0} XP tuần này
           </p>
         </div>
         <Trophy className="h-10 w-10 text-amber-400" />
       </div>
       <div className="mt-5 rounded-2xl bg-white/10 p-3">
-        <p className="text-xs text-slate-300">Cáº§n Ä‘á»ƒ vÆ°á»£t ngÆ°á»i phÃ­a trÃªn</p>
+        <p className="text-xs text-slate-300">Cần để vượt người phía trên</p>
         <p className="mt-1 font-bold">{me?.xpToNextRank ?? 0} XP</p>
       </div>
       <a
         href="/learn"
         className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-violet-500 px-4 py-3 font-bold"
       >
-        Tiáº¿p tá»¥c há»c <ChevronRight className="h-4 w-4" />
+        Tiếp tục học <ChevronRight className="h-4 w-4" />
       </a>
     </div>
   );
@@ -448,10 +448,10 @@ function LeagueInfo({ data }: { data: LeaderboardResponse | null }) {
         </div>
         <div>
           <p className="text-xs font-semibold uppercase text-slate-500">
-            League hiá»‡n táº¡i
+            League hiện tại
           </p>
           <p className="text-xl font-black text-slate-900">
-            {data?.league ?? "ChÆ°a xáº¿p háº¡ng"}
+            {data?.league ?? "Chưa xếp hạng"}
           </p>
         </div>
       </div>
@@ -460,15 +460,15 @@ function LeagueInfo({ data }: { data: LeaderboardResponse | null }) {
           <span className="text-emerald-600">
             Top {data?.config?.promotionCount ?? 5}
           </span>
-          <span>ThÄƒng háº¡ng</span>
+          <span>Thăng hạng</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-slate-500">Khu vá»±c giá»¯a</span>
-          <span>Giá»¯ háº¡ng</span>
+          <span className="text-slate-500">Khu vực giữa</span>
+          <span>Giữ hạng</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-red-500">NhÃ³m cuá»‘i</span>
-          <span>Xuá»‘ng háº¡ng</span>
+          <span className="text-red-500">Nhóm cuối</span>
+          <span>Xuống hạng</span>
         </div>
       </div>
     </div>
@@ -479,16 +479,16 @@ function RewardPreview() {
   return (
     <div className="rounded-3xl border border-violet-200 bg-violet-50 p-5">
       <div className="flex items-center gap-2 font-black text-violet-900">
-        <Award className="h-5 w-5" /> Pháº§n thÆ°á»Ÿng tuáº§n
+        <Award className="h-5 w-5" /> Phần thưởng tuần
       </div>
       <p className="mt-2 text-sm text-violet-700">
-        Top 10 nháº­n XP, xu vÃ  huy hiá»‡u theo thá»© háº¡ng.
+        Top 10 nhận XP, xu và huy hiệu theo thứ hạng.
       </p>
       <a
         href="/leaderboard/rewards"
         className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-violet-700"
       >
-        Xem pháº§n thÆ°á»Ÿng <ChevronRight className="h-4 w-4" />
+        Xem phần thưởng <ChevronRight className="h-4 w-4" />
       </a>
     </div>
   );

@@ -14,9 +14,9 @@ import {
 } from "@/src/lib/analytics-api";
 
 const ranges: Array<{ label: string; value: AnalyticsRange }> = [
-  { label: "7 ngÃ y", value: "7d" },
-  { label: "30 ngÃ y", value: "30d" },
-  { label: "90 ngÃ y", value: "90d" },
+  { label: "7 ngày", value: "7d" },
+  { label: "30 ngày", value: "30d" },
+  { label: "90 ngày", value: "90d" },
 ];
 
 export default function AnalyticsPage() {
@@ -31,7 +31,7 @@ export default function AnalyticsPage() {
     try {
       setData(await getAnalyticsOverview(range));
     } catch {
-      setError("KhÃ´ng táº£i Ä‘Æ°á»£c dá»¯ liá»‡u phÃ¢n tÃ­ch. Vui lÃ²ng Thử lại.");
+      setError("Không tải được dữ liệu phân tích. Vui lòng Thử lại.");
     } finally {
       setLoading(false);
     }
@@ -44,7 +44,7 @@ export default function AnalyticsPage() {
         if (active) setData(result);
       })
       .catch(() => {
-        if (active) setError("KhÃ´ng táº£i Ä‘Æ°á»£c dá»¯ liá»‡u phÃ¢n tÃ­ch. Vui lÃ²ng Thử lại.");
+        if (active) setError("Không tải được dữ liệu phân tích. Vui lòng Thử lại.");
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -76,7 +76,7 @@ export default function AnalyticsPage() {
   if (error || !data) {
     return (
       <section className="rounded-3xl border border-rose-200 bg-rose-50 p-6">
-        <p className="font-black text-rose-700">{error ?? "KhÃ´ng cÃ³ dá»¯ liá»‡u."}</p>
+        <p className="font-black text-rose-700">{error ?? "Không có dữ liệu."}</p>
         <button
           type="button"
           onClick={load}
@@ -98,9 +98,9 @@ export default function AnalyticsPage() {
               <BarChart3 size={16} />
               Learning analytics
             </div>
-            <h1 className="text-3xl font-black sm:text-4xl">PhÃ¢n tÃ­ch há»c táº­p</h1>
+            <h1 className="text-3xl font-black sm:text-4xl">Phân tích học tập</h1>
             <p className="mt-2 max-w-2xl text-sm font-semibold text-white/85">
-              Theo dÃµi XP, thá»i gian há»c, ká»¹ nÄƒng vÃ  cÃ¡c hoáº¡t Ä‘á»™ng gáº§n Ä‘Ã¢y cá»§a báº¡n.
+              Theo dõi XP, thời gian học, kỹ năng và các hoạt động gần đây của bạn.
             </p>
           </div>
           <div className="flex gap-2 rounded-2xl bg-white/15 p-1">
@@ -127,9 +127,9 @@ export default function AnalyticsPage() {
       <section className="grid gap-4 md:grid-cols-4">
         {[
           ["XP", data.summary.xp],
-          ["PhÃºt há»c", data.summary.studyMinutes],
-          ["Hoáº¡t Ä‘á»™ng", data.summary.completedActivities],
-          ["NgÃ y há»c", data.summary.activeDays],
+          ["Phút học", data.summary.studyMinutes],
+          ["Hoạt động", data.summary.completedActivities],
+          ["Ngày học", data.summary.activeDays],
         ].map(([label, value]) => (
           <div key={label} className="rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-5 shadow-sm">
             <p className="text-3xl font-black text-[var(--BeaconVie-ink)]">{value}</p>
@@ -142,7 +142,7 @@ export default function AnalyticsPage() {
         <div className="rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-5 shadow-sm">
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">Xu hÆ°á»›ng XP</h2>
+              <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">Xu hướng XP</h2>
               <p className="text-sm font-bold text-[var(--BeaconVie-muted)]">
                 {data.range.from} - {data.range.to}
               </p>
@@ -171,7 +171,7 @@ export default function AnalyticsPage() {
           <section className="rounded-3xl border border-violet-100 bg-violet-50 p-5">
             <div className="flex items-center gap-2 text-sm font-black text-violet-700">
               <Sparkles size={17} />
-              BÃ¡o cÃ¡o thÃ´ng minh
+              Báo cáo thông minh
             </div>
             <h2 className="mt-3 text-2xl font-black text-[var(--BeaconVie-ink)]">{data.aiReport.title}</h2>
             <div className="mt-4 space-y-2">
@@ -186,7 +186,7 @@ export default function AnalyticsPage() {
               className="mt-4 flex items-center justify-between rounded-2xl bg-violet-600 px-4 py-3 font-black text-white"
             >
               {data.aiReport.nextAction.title}
-              <span>â†’</span>
+              <span>→</span>
             </Link>
           </section>
         </aside>
@@ -194,13 +194,13 @@ export default function AnalyticsPage() {
 
       <section className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-5 shadow-sm">
-          <h2 className="mb-4 text-xl font-black text-[var(--BeaconVie-ink)]">Tiáº¿n Ä‘á»™ ká»¹ nÄƒng</h2>
+          <h2 className="mb-4 text-xl font-black text-[var(--BeaconVie-ink)]">Tiến độ kỹ năng</h2>
           <div className="space-y-3">
             {data.skills.map((skill) => (
               <Link key={skill.key} href={skill.href} className="block rounded-2xl border border-[var(--BeaconVie-border)] p-4 hover:bg-[var(--BeaconVie-card-soft)]">
                 <div className="mb-2 flex items-center justify-between font-black">
                   <span>{skill.label}</span>
-                  <span>{skill.sampleStatus === "READY" ? `${skill.percent}%` : "ChÆ°a Ä‘á»§ dá»¯ liá»‡u"}</span>
+                  <span>{skill.sampleStatus === "READY" ? `${skill.percent}%` : "Chưa đủ dữ liệu"}</span>
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-[var(--BeaconVie-card-soft)]">
                   <div className="h-full rounded-full bg-violet-600" style={{ width: `${Math.min(skill.percent, 100)}%` }} />
@@ -211,7 +211,7 @@ export default function AnalyticsPage() {
         </div>
 
         <div className="rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-5 shadow-sm">
-          <h2 className="mb-4 text-xl font-black text-[var(--BeaconVie-ink)]">Hoáº¡t Ä‘á»™ng gáº§n Ä‘Ã¢y</h2>
+          <h2 className="mb-4 text-xl font-black text-[var(--BeaconVie-ink)]">Hoạt động gần đây</h2>
           {data.recentActivities.length ? (
             <div className="divide-y divide-[var(--BeaconVie-border)]">
               {data.recentActivities.map((activity) => (
@@ -231,7 +231,7 @@ export default function AnalyticsPage() {
             </div>
           ) : (
             <div className="rounded-2xl border border-dashed border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-5 text-sm font-bold text-[var(--BeaconVie-muted)]">
-              ChÆ°a cÃ³ hoáº¡t Ä‘á»™ng trong khoáº£ng thá»i gian nÃ y.
+              Chưa có hoạt động trong khoảng thời gian này.
             </div>
           )}
         </div>
@@ -273,11 +273,11 @@ function WeaknessAndCoachSection() {
     <section className="grid gap-6 lg:grid-cols-2">
       <div className="rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-5 shadow-sm">
         <h2 className="mb-4 text-xl font-black text-[var(--BeaconVie-ink)]">
-          Äiá»ƒm cáº§n cáº£i thiá»‡n nháº¥t
+          Điểm cần cải thiện nhất
         </h2>
         {weaknessError ? (
           <p className="text-sm font-bold text-[var(--BeaconVie-muted)]">
-            KhÃ´ng táº£i Ä‘Æ°á»£c dá»¯ liá»‡u Ä‘iá»ƒm yáº¿u.
+            Không tải được dữ liệu điểm yếu.
           </p>
         ) : !weaknesses ? (
           <div className="space-y-3">
@@ -287,7 +287,7 @@ function WeaknessAndCoachSection() {
           </div>
         ) : weaknesses.overallWeakest.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-5 text-sm font-bold text-[var(--BeaconVie-muted)]">
-            ChÆ°a Ä‘á»§ dá»¯ liá»‡u Ä‘á»ƒ xÃ¡c Ä‘á»‹nh Ä‘iá»ƒm yáº¿u â€” hÃ£y há»c thÃªm vÃ i bÃ i ná»¯a.
+            Chưa đủ dữ liệu để xác định điểm yếu — hãy học thêm vài bài nữa.
           </div>
         ) : (
           <div className="space-y-3">
@@ -299,7 +299,7 @@ function WeaknessAndCoachSection() {
               >
                 <div className="flex items-center justify-between font-black text-[var(--BeaconVie-ink)]">
                   <span>
-                    {item.skillLabel} Â· {item.topic}
+                    {item.skillLabel} · {item.topic}
                   </span>
                   <span className="text-rose-600">{item.accuracy}%</span>
                 </div>
@@ -319,7 +319,7 @@ function WeaknessAndCoachSection() {
         </div>
         {coachError ? (
           <p className="mt-3 text-sm font-bold text-[var(--BeaconVie-muted)]">
-            AI Coach hiá»‡n khÃ´ng kháº£ dá»¥ng.
+            AI Coach hiện không khả dụng.
           </p>
         ) : !coach ? (
           <div className="mt-3 space-y-2">

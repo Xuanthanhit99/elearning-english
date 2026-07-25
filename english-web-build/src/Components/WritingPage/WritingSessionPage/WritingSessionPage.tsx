@@ -92,7 +92,7 @@ export default function WritingSessionPage() {
       setTimeSpent(res.data.session.timeSpentSeconds || 0);
     } catch (err) {
       console.error(err);
-      setError("KhÃ´ng táº£i Ä‘Æ°á»£c phiÃªn luyá»‡n viáº¿t.");
+      setError("Không tải được phiên luyện viết.");
     }
   }
 
@@ -109,7 +109,7 @@ export default function WritingSessionPage() {
       });
     } catch (err) {
       console.error(err);
-      setError("KhÃ´ng lÆ°u Ä‘Æ°á»£c bÃ i viáº¿t.");
+      setError("Không lưu được bài viết.");
     } finally {
       setSaving(false);
     }
@@ -119,12 +119,12 @@ export default function WritingSessionPage() {
     if (submitting || saving) return;
 
     if (!content.trim()) {
-      setError("Báº¡n cáº§n nháº­p bÃ i viáº¿t trÆ°á»›c khi ná»™p.");
+      setError("Bạn cần nhập bài viết trước khi nộp.");
       return;
     }
 
     if (data && wordCount < data.lesson.minWords) {
-      setError(`BÃ i viáº¿t cáº§n tá»‘i thiá»ƒu ${data.lesson.minWords} tá»«.`);
+      setError(`Bài viết cần tối thiểu ${data.lesson.minWords} từ.`);
       return;
     }
 
@@ -147,7 +147,7 @@ export default function WritingSessionPage() {
       );
     } catch (err) {
       console.error(err);
-      setError("KhÃ´ng thá»ƒ ná»™p bÃ i viáº¿t lÃºc nÃ y.");
+      setError("Không thể nộp bài viết lúc này.");
     } finally {
       setSubmitting(false);
     }
@@ -184,7 +184,7 @@ export default function WritingSessionPage() {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 p-10 text-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-violet-100 border-t-violet-600" />
-        <p className="font-semibold text-[#09083f]">Äang táº£i bÃ i viáº¿t cá»§a báº¡n...</p>
+        <p className="font-semibold text-[#09083f]">Đang tải bài viết của bạn...</p>
       </div>
     );
   }
@@ -203,7 +203,7 @@ export default function WritingSessionPage() {
     );
   }
 
-  if (!data) return <div className="p-10">KhÃ´ng cÃ³ dá»¯ liá»‡u phiÃªn viáº¿t.</div>;
+  if (!data) return <div className="p-10">Không có dữ liệu phiên viết.</div>;
 
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
@@ -344,13 +344,13 @@ function LessonTitle({ data }: { data: SessionData }) {
             {formatType(data.lesson.type)}
           </span>
 
-          <span>â€¢</span>
+          <span>•</span>
           <span>{data.lesson.level} Level</span>
 
-          <span>â€¢</span>
-          <span>{data.lesson.duration}â€“25 min</span>
+          <span>•</span>
+          <span>{data.lesson.duration}–25 min</span>
 
-          <span>â€¢</span>
+          <span>•</span>
           <span>~{data.lesson.maxWords} từ</span>
         </div>
       </div>
@@ -412,7 +412,7 @@ function PromptBox({
     <div className="mt-6 rounded-xl border border-violet-100 bg-violet-50 p-7">
       <div className="flex gap-5">
         <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-violet-100 text-3xl">
-          ðŸ’¡
+          💡
         </div>
 
         <div className="flex-1">
@@ -462,8 +462,8 @@ function EditorBox({
     <div className="mt-6 overflow-hidden rounded-xl border border-slate-200 bg-white">
       <div className="flex h-14 items-center justify-between border-b border-slate-200 px-5">
         <div className="flex items-center gap-5 text-slate-600">
-          <span className="text-xl">â†¶</span>
-          <span className="text-xl">â†·</span>
+          <span className="text-xl">↶</span>
+          <span className="text-xl">↷</span>
 
           <select className="rounded-lg border-none bg-transparent text-sm font-semibold outline-none">
             <option>Đoạn văn</option>
@@ -474,9 +474,9 @@ function EditorBox({
           <span className="text-xl italic text-[#09083f]">I</span>
           <span className="text-xl underline text-[#09083f]">U</span>
 
-          <span className="text-xl">â‰¡</span>
-          <span className="text-xl">â˜·</span>
-          <span className="text-xl">ðŸ”—</span>
+          <span className="text-xl">≡</span>
+          <span className="text-xl">☷</span>
+          <span className="text-xl">🔗</span>
         </div>
 
         <div className="flex items-center gap-4">

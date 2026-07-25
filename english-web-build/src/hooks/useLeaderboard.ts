@@ -52,7 +52,7 @@ export function useLeaderboard(input: {
       setError(
         cause instanceof Error
           ? cause.message
-          : 'KhÃ´ng thá»ƒ táº£i báº£ng xáº¿p háº¡ng.',
+          : 'Không thể tải bảng xếp hạng.',
       );
     } finally {
       setLoading(false);

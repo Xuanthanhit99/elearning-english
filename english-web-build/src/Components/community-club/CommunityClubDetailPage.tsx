@@ -46,37 +46,37 @@ const baseTabs: Array<{
 }> = [
   {
     key: "OVERVIEW",
-    label: "Tá»•ng quan",
+    label: "Tổng quan",
     icon: LayoutDashboard,
   },
   {
     key: "POSTS",
-    label: "BÃ i viáº¿t",
+    label: "Bài viết",
     icon: Newspaper,
   },
   {
     key: "CHAT",
-    label: "Chat nhÃ³m",
+    label: "Chat nhóm",
     icon: MessageCircle,
   },
   {
     key: "MEMBERS",
-    label: "ThÃ nh viÃªn",
+    label: "Thành viên",
     icon: Users,
   },
   {
     key: "CHALLENGES",
-    label: "Thá»­ thÃ¡ch",
+    label: "Thử thách",
     icon: Trophy,
   },
   {
     key: "EVENTS",
-    label: "Sá»± kiá»‡n",
+    label: "Sự kiện",
     icon: CalendarDays,
   },
   {
     key: "RESOURCES",
-    label: "TÃ i liá»‡u",
+    label: "Tài liệu",
     icon: FileText,
   },
 ];
@@ -130,7 +130,7 @@ const canManageClub =
       ...baseTabs,
       {
         key: "MANAGEMENT" as ClubTab,
-        label: "Quáº£n lÃ½",
+        label: "Quản lý",
         icon: Settings,
       },
     ];
@@ -142,7 +142,7 @@ const canManageClub =
       setError("");
       setClub(await getCommunityClub(clubId));
     } catch (e) {
-      setError(e instanceof Error ? e.message : "KhÃ´ng thá»ƒ táº£i cÃ¢u láº¡c bá»™");
+      setError(e instanceof Error ? e.message : "Không thể tải câu lạc bộ");
     } finally {
       setLoading(false);
     }
@@ -192,14 +192,14 @@ const canManageClub =
         );
       } else {
         setError(
-          "YÃªu cáº§u tham gia Ä‘Ã£ Ä‘Æ°á»£c gá»­i vÃ  Ä‘ang chá» quáº£n trá»‹ viÃªn duyá»‡t.",
+          "Yêu cầu tham gia đã được gửi và đang chờ quản trị viên duyệt.",
         );
       }
     } catch (e) {
       setError(
         e instanceof Error
           ? e.message
-          : "KhÃ´ng thá»ƒ cáº­p nháº­t tráº¡ng thÃ¡i tham gia",
+          : "Không thể cập nhật trạng thái tham gia",
       );
     } finally {
       setJoinLoading(false);
@@ -209,7 +209,7 @@ const canManageClub =
   if (loading) {
     return (
       <div className="rounded-3xl border-2 border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-12 text-center font-semibold text-slate-600 shadow-sm">
-        Äang táº£i cÃ¢u láº¡c bá»™...
+        Đang tải câu lạc bộ...
       </div>
     );
   }
@@ -217,7 +217,7 @@ const canManageClub =
   if (!club) {
     return (
       <div className="rounded-3xl border-2 border-[var(--BeaconVie-danger)]/30 bg-[var(--BeaconVie-danger-soft)] p-12 text-center">
-        <h2 className="font-extrabold text-[var(--BeaconVie-danger)]">KhÃ´ng thá»ƒ má»Ÿ cÃ¢u láº¡c bá»™</h2>
+        <h2 className="font-extrabold text-[var(--BeaconVie-danger)]">Không thể mở câu lạc bộ</h2>
         <p className="mt-2 text-sm text-[var(--BeaconVie-danger)]">{error}</p>
       </div>
     );
@@ -243,8 +243,8 @@ const canManageClub =
           <CommunityClubChat clubId={activeClub.id} />
         ) : (
           <JoinRequiredPanel
-            title="Chat nhÃ³m chá»‰ dÃ nh cho thÃ nh viÃªn"
-            description="Tham gia cÃ¢u láº¡c bá»™ Ä‘á»ƒ trÃ² chuyá»‡n realtime vá»›i cÃ¡c thÃ nh viÃªn khÃ¡c."
+            title="Chat nhóm chỉ dành cho thành viên"
+            description="Tham gia câu lạc bộ để trò chuyện realtime với các thành viên khác."
             onJoin={toggleJoin}
           />
         );
@@ -296,7 +296,7 @@ const canManageClub =
         ) : (
           <div className="rounded-3xl border-2 border-[var(--BeaconVie-danger)]/30 bg-[var(--BeaconVie-danger-soft)] px-6 py-12 text-center">
             <h3 className="font-extrabold text-[var(--BeaconVie-danger)]">
-              Báº¡n khÃ´ng cÃ³ quyá»n quáº£n lÃ½ cÃ¢u láº¡c bá»™
+              Bạn không có quyền quản lý câu lạc bộ
             </h3>
           </div>
         );
@@ -310,7 +310,7 @@ const canManageClub =
           {club.coverUrl && (
             <img
               src={resolveMediaUrl(club.coverUrl)}
-              alt={`áº¢nh bÃ¬a ${club.name}`}
+              alt={`Ảnh bìa ${club.name}`}
               onError={(event) => {
                 event.currentTarget.style.display = "none";
               }}
@@ -327,7 +327,7 @@ const canManageClub =
               {club.iconUrl ? (
                 <img
                   src={resolveMediaUrl(club.iconUrl)}
-                  alt={`Biá»ƒu tÆ°á»£ng ${club.name}`}
+                  alt={`Biểu tượng ${club.name}`}
                   onError={(event) => {
                     event.currentTarget.style.display = "none";
                   }}
@@ -344,12 +344,12 @@ const canManageClub =
               </h1>
 
               <div className="mt-1 flex flex-wrap items-center gap-3 text-sm font-semibold text-slate-600">
-                <span>{club.memberCount} thÃ nh viÃªn</span>
-                <span>{club.postCount} bÃ i viáº¿t</span>
+                <span>{club.memberCount} thành viên</span>
+                <span>{club.postCount} bài viết</span>
                 <span>
                   {club.privacy === "PUBLIC"
-                    ? "CÃ¢u láº¡c bá»™ cÃ´ng khai"
-                    : "CÃ¢u láº¡c bá»™ riÃªng tÆ°"}
+                    ? "Câu lạc bộ công khai"
+                    : "Câu lạc bộ riêng tư"}
                 </span>
 
                 {club.myRole && (
@@ -379,19 +379,19 @@ const canManageClub =
               }`}
             >
               {joinLoading
-                ? "Äang xá»­ lÃ½..."
+                ? "Đang xử lý..."
                 : club.myRole === "OWNER"
-                  ? "Quáº£n lÃ½ cÃ¢u láº¡c bá»™"
+                  ? "Quản lý câu lạc bộ"
                   : club.joined
-                    ? "Rá»i cÃ¢u láº¡c bá»™"
+                    ? "Rời câu lạc bộ"
                     : club.privacy === "PRIVATE"
-                      ? "Xin gia nháº­p"
-                      : "Tham gia cÃ¢u láº¡c bá»™"}
+                      ? "Xin gia nhập"
+                      : "Tham gia câu lạc bộ"}
             </button>
           </div>
 
           <p className="mt-5 max-w-4xl text-sm leading-7 text-slate-700">
-            {club.description || "CÃ¢u láº¡c bá»™ chÆ°a cÃ³ mÃ´ táº£."}
+            {club.description || "Câu lạc bộ chưa có mô tả."}
           </p>
 
           {club.tags.length > 0 && (
@@ -463,7 +463,7 @@ function JoinRequiredPanel({
         onClick={() => void onJoin()}
         className="mt-5 rounded-xl bg-[var(--BeaconVie-primary)] px-5 py-3 font-bold text-white"
       >
-        Tham gia cÃ¢u láº¡c bá»™
+        Tham gia câu lạc bộ
       </button>
     </div>
   );

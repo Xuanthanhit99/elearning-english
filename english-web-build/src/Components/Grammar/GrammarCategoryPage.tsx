@@ -83,9 +83,9 @@ const topicTones = [
 ];
 
 function formatMinutes(minutes: number) {
-  if (!minutes) return "0 phÃºt";
-  if (minutes < 60) return `${minutes} phÃºt`;
-  return `${Math.round(minutes / 60)} giá»`;
+  if (!minutes) return "0 phút";
+  if (minutes < 60) return `${minutes} phút`;
+  return `${Math.round(minutes / 60)} giờ`;
 }
 
 export default function GrammarCategoryPage({ categorySlug }: { categorySlug: string }) {
@@ -104,7 +104,7 @@ export default function GrammarCategoryPage({ categorySlug }: { categorySlug: st
         const res = await api.get<CategoryDetail>(`/grammar/categories/${categorySlug}/detail`);
         if (active) setData(res.data);
       } catch {
-        if (active) setMessage("ChÆ°a táº£i Ä‘Æ°á»£c nhÃ³m ngá»¯ phÃ¡p nÃ y.");
+        if (active) setMessage("Chưa tải được nhóm ngữ pháp này.");
       } finally {
         if (active) setLoading(false);
       }
@@ -137,10 +137,10 @@ export default function GrammarCategoryPage({ categorySlug }: { categorySlug: st
     return (
       <div className="grid min-h-screen place-items-center bg-[#fbfbff] p-8 text-center text-[#10164f]">
         <div className="rounded-3xl border bg-white p-10 shadow-sm">
-          <h1 className="text-2xl font-black">KhÃ´ng tÃ¬m tháº¥y nhÃ³m ngá»¯ phÃ¡p</h1>
+          <h1 className="text-2xl font-black">Không tìm thấy nhóm ngữ pháp</h1>
           <p className="mt-2 text-slate-500">{message}</p>
           <Link href="/grammar" className="mt-6 inline-flex rounded-xl bg-violet-600 px-6 py-3 font-black text-white">
-            Quay láº¡i Ngá»¯ phÃ¡p
+            Quay lại Ngữ pháp
           </Link>
         </div>
       </div>
@@ -152,17 +152,17 @@ export default function GrammarCategoryPage({ categorySlug }: { categorySlug: st
       <header className="sticky top-0 z-10 border-b bg-white/85 px-8 py-4 backdrop-blur">
         <div className="flex h-12 max-w-2xl items-center gap-3 rounded-2xl border border-violet-100 bg-white px-4">
           <Search size={19} className="text-slate-400" />
-          <input className="w-full bg-transparent text-sm font-medium outline-none" placeholder="TÃ¬m bÃ i há»c, tá»« vá»±ng, ngá»¯ phÃ¡p..." />
+          <input className="w-full bg-transparent text-sm font-medium outline-none" placeholder="Tìm bài học, từ vựng, ngữ pháp..." />
         </div>
       </header>
 
       <div className="grid grid-cols-[1fr_420px] gap-7 p-8">
         <main>
           <div className="mb-6 text-sm font-medium text-slate-500">
-            <Link href="/" className="hover:text-violet-600">Trang chá»§</Link>
-            <span className="mx-3">â€º</span>
-            <Link href="/grammar" className="hover:text-violet-600">Ngá»¯ phÃ¡p</Link>
-            <span className="mx-3">â€º</span>
+            <Link href="/" className="hover:text-violet-600">Trang chủ</Link>
+            <span className="mx-3">›</span>
+            <Link href="/grammar" className="hover:text-violet-600">Ngữ pháp</Link>
+            <span className="mx-3">›</span>
             <b className="text-[#10164f]">{data.title}</b>
           </div>
 
@@ -174,7 +174,7 @@ export default function GrammarCategoryPage({ categorySlug }: { categorySlug: st
               <div>
                 <h1 className="text-4xl font-black">{data.title}</h1>
                 <p className="mt-3 max-w-2xl text-sm font-medium leading-6 text-slate-600">
-                  {data.description || "Náº¯m vá»¯ng nhÃ³m ngá»¯ phÃ¡p nÃ y Ä‘á»ƒ diá»…n Ä‘áº¡t tá»± nhiÃªn vÃ  chÃ­nh xÃ¡c hÆ¡n."}
+                  {data.description || "Nắm vững nhóm ngữ pháp này để diễn đạt tự nhiên và chính xác hơn."}
                 </p>
               </div>
             </div>
@@ -184,14 +184,14 @@ export default function GrammarCategoryPage({ categorySlug }: { categorySlug: st
           </section>
 
           <section className="mb-6 flex flex-wrap gap-4">
-            <MetaPill icon={<Lightbulb size={17} />} text={data.level ? `TrÃ¬nh Ä‘á»™ ${data.level}` : "Theo lá»™ trÃ¬nh"} />
-            <MetaPill icon={<Calendar size={17} />} text={`${data.totalLessons} bÃ i há»c`} />
+            <MetaPill icon={<Lightbulb size={17} />} text={data.level ? `Trình độ ${data.level}` : "Theo lộ trình"} />
+            <MetaPill icon={<Calendar size={17} />} text={`${data.totalLessons} bài học`} />
             <MetaPill icon={<Timer size={17} />} text={`~ ${formatMinutes(data.estimatedMinutes)}`} />
-            <MetaPill icon={<Star size={17} />} text={`+${data.rewardXp} XP khi hoÃ n thÃ nh`} />
+            <MetaPill icon={<Star size={17} />} text={`+${data.rewardXp} XP khi hoàn thành`} />
           </section>
 
           <nav className="mb-5 flex gap-9 border-b border-violet-100">
-            {["Tá»•ng quan", `Chá»§ Ä‘á» (${data.topics.length})`, "Tiáº¿n Ä‘á»™ cá»§a báº¡n", "Máº¹o ghi nhá»›"].map((item, index) => (
+            {["Tổng quan", `Chủ đề (${data.topics.length})`, "Tiến độ của bạn", "Mẹo ghi nhớ"].map((item, index) => (
               <button key={item} className={`pb-4 text-sm font-black ${index === 0 ? "border-b-2 border-violet-600 text-violet-600" : "text-slate-500"}`}>
                 {item}
               </button>
@@ -199,13 +199,13 @@ export default function GrammarCategoryPage({ categorySlug }: { categorySlug: st
           </nav>
 
           <section className="mb-6 rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
-            <h2 className="mb-5 text-xl font-black">Chá»§ Ä‘á» trong nhÃ³m {data.title}</h2>
+            <h2 className="mb-5 text-xl font-black">Chủ đề trong nhóm {data.title}</h2>
             <div className="space-y-4">
               {data.topics.map((topic, index) => (
                 <TopicCard key={topic.id} topic={topic} index={index} />
               ))}
               {!data.topics.length && (
-                <p className="py-8 text-center font-bold text-slate-500">NhÃ³m nÃ y chÆ°a cÃ³ chá»§ Ä‘á».</p>
+                <p className="py-8 text-center font-bold text-slate-500">Nhóm này chưa có chủ đề.</p>
               )}
             </div>
           </section>
@@ -216,19 +216,19 @@ export default function GrammarCategoryPage({ categorySlug }: { categorySlug: st
                 <Lightbulb size={24} />
               </div>
               <div>
-                <h3 className="font-black">Gá»£i Ã½ há»c táº­p</h3>
+                <h3 className="font-black">Gợi ý học tập</h3>
                 <p className="mt-1 text-sm font-medium text-slate-600">
-                  {currentTopic ? `HÃ£y hoÃ n thÃ nh chá»§ Ä‘á» ${currentTopic.title} Ä‘á»ƒ má»Ÿ khÃ³a ná»™i dung tiáº¿p theo.` : "Há»c Ä‘á»u má»—i ngÃ y Ä‘á»ƒ giá»¯ tiáº¿n Ä‘á»™ tá»‘t hÆ¡n."}
+                  {currentTopic ? `Hãy hoàn thành chủ đề ${currentTopic.title} để mở khóa nội dung tiếp theo.` : "Học đều mỗi ngày để giữ tiến độ tốt hơn."}
                 </p>
               </div>
             </div>
             <Link href="/grammar" className="rounded-xl border border-violet-300 bg-white px-6 py-3 font-black text-violet-600">
-              Xem lá»™ trÃ¬nh
+              Xem lộ trình
             </Link>
           </section>
 
           <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
-            <h2 className="mb-5 text-xl font-black">Máº¹o ghi nhá»› nhÃ³m {data.title}</h2>
+            <h2 className="mb-5 text-xl font-black">Mẹo ghi nhớ nhóm {data.title}</h2>
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               {data.tips.map((tip, index) => (
                 <div key={tip.title} className="rounded-2xl border border-violet-100 p-5">
@@ -271,9 +271,9 @@ function TopicCard({ topic, index }: { topic: CategoryTopic; index: number }) {
       </div>
       <div>
         <h3 className="font-black">{topic.title}</h3>
-        <p className="mt-1 text-sm font-medium text-slate-500">{topic.description || "Ná»™i dung Ä‘ang Ä‘Æ°á»£c cáº­p nháº­t."}</p>
+        <p className="mt-1 text-sm font-medium text-slate-500">{topic.description || "Nội dung đang được cập nhật."}</p>
         <div className="mt-3 flex flex-wrap gap-3 text-xs font-black">
-          <span className="rounded-full bg-violet-50 px-3 py-1 text-violet-600">{topic.totalLessons} bÃ i há»c</span>
+          <span className="rounded-full bg-violet-50 px-3 py-1 text-violet-600">{topic.totalLessons} bài học</span>
           <span className="rounded-full bg-slate-50 px-3 py-1 text-slate-500">{formatMinutes(topic.estimatedMinutes)}</span>
           <span className="rounded-full bg-orange-50 px-3 py-1 text-orange-500">+{topic.rewardXp} XP</span>
         </div>
@@ -282,7 +282,7 @@ function TopicCard({ topic, index }: { topic: CategoryTopic; index: number }) {
         <div className="grid h-16 w-16 place-items-center rounded-full" style={{ background: `conic-gradient(#7c3aed ${Math.max(0, Math.min(100, topic.progress)) * 3.6}deg, #ede9fe 0deg)` }}>
           <div className="grid h-12 w-12 place-items-center rounded-full bg-white text-sm font-black">{topic.locked ? <Lock size={18} /> : `${topic.progress}%`}</div>
         </div>
-        <span className="text-sm font-black text-slate-500">{topic.locked ? "ChÆ°a má»Ÿ khÃ³a" : "Tiáº¿n Ä‘á»™"}</span>
+        <span className="text-sm font-black text-slate-500">{topic.locked ? "Chưa mở khóa" : "Tiến độ"}</span>
       </div>
       <ChevronRight className="text-slate-400" />
     </div>
@@ -299,21 +299,21 @@ function TopicCard({ topic, index }: { topic: CategoryTopic; index: number }) {
 function ProgressPanel({ data }: { data: CategoryDetail }) {
   return (
     <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
-      <h2 className="mb-6 text-xl font-black">Tiáº¿n Ä‘á»™ nhÃ³m {data.title}</h2>
+      <h2 className="mb-6 text-xl font-black">Tiến độ nhóm {data.title}</h2>
       <div className="flex items-center gap-7">
         <div className="grid h-36 w-36 place-items-center rounded-full" style={{ background: `conic-gradient(#7c3aed ${data.progress * 3.6}deg, #ede9fe 0deg)` }}>
           <div className="grid h-28 w-28 place-items-center rounded-full bg-white text-center">
             <div>
               <p className="text-3xl font-black">{data.progress}%</p>
-              <p className="text-xs text-slate-500">HoÃ n thÃ nh</p>
+              <p className="text-xs text-slate-500">Hoàn thành</p>
             </div>
           </div>
         </div>
         <div className="space-y-4 text-sm">
-          <ProgressLine icon={<CheckCircle2 size={18} />} value={`${data.completedTopics}/${data.totalTopics} chá»§ Ä‘á»`} label="ÄÃ£ hoÃ n thÃ nh" color="text-emerald-500" />
-          <ProgressLine icon={<BookOpen size={18} />} value={`${data.completedLessons}/${data.totalLessons} bÃ i há»c`} label="BÃ i há»c Ä‘Ã£ lÃ m" color="text-sky-500" />
-          <ProgressLine icon={<Timer size={18} />} value={formatMinutes(data.estimatedMinutes)} label="Thá»i gian há»c" color="text-pink-500" />
-          <ProgressLine icon={<Star size={18} />} value={`+${data.earnedXp} XP`} label="XP Ä‘Ã£ nháº­n" color="text-orange-500" />
+          <ProgressLine icon={<CheckCircle2 size={18} />} value={`${data.completedTopics}/${data.totalTopics} chủ đề`} label="?ã hoàn thành" color="text-emerald-500" />
+          <ProgressLine icon={<BookOpen size={18} />} value={`${data.completedLessons}/${data.totalLessons} bài học`} label="Bài học đã làm" color="text-sky-500" />
+          <ProgressLine icon={<Timer size={18} />} value={formatMinutes(data.estimatedMinutes)} label="Thời gian học" color="text-pink-500" />
+          <ProgressLine icon={<Star size={18} />} value={`+${data.earnedXp} XP`} label="XP đã nhận" color="text-orange-500" />
         </div>
       </div>
     </section>
@@ -336,8 +336,8 @@ function RoadmapPanel({ items }: { items: CategoryRoadmap[] }) {
   return (
     <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-xl font-black">Lá»™ trÃ¬nh cÃ¡c nhÃ³m</h2>
-        <Link href="/grammar" className="text-sm font-black text-violet-600">Xem táº¥t cáº£</Link>
+        <h2 className="text-xl font-black">Lộ trình các nhóm</h2>
+        <Link href="/grammar" className="text-sm font-black text-violet-600">Xem tất cả</Link>
       </div>
       <div className="space-y-4">
         {items.map((item) => (
@@ -351,7 +351,7 @@ function RoadmapPanel({ items }: { items: CategoryRoadmap[] }) {
             </div>
             <div className="flex-1">
               <p className="font-black">{item.title}</p>
-              <p className="text-sm font-medium text-slate-500">{item.completed ? "HoÃ n thÃ nh" : item.current ? "Äang há»c" : item.locked ? "ChÆ°a má»Ÿ khÃ³a" : `${item.progress}% hoÃ n thÃ nh`}</p>
+              <p className="text-sm font-medium text-slate-500">{item.completed ? "Hoàn thành" : item.current ? "Đang học" : item.locked ? "Chưa mở khóa" : `${item.progress}% hoàn thành`}</p>
             </div>
           </Link>
         ))}
@@ -364,8 +364,8 @@ function RelatedPanel({ items }: { items: RelatedCategory[] }) {
   return (
     <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-xl font-black">NhÃ³m khÃ¡c báº¡n cÃ³ thá»ƒ thÃ­ch</h2>
-        <Link href="/grammar" className="text-sm font-black text-violet-600">Xem táº¥t cáº£</Link>
+        <h2 className="text-xl font-black">Nhóm khác bạn có thể thích</h2>
+        <Link href="/grammar" className="text-sm font-black text-violet-600">Xem tất cả</Link>
       </div>
       <div className="space-y-4">
         {items.map((item, index) => (
@@ -375,10 +375,10 @@ function RelatedPanel({ items }: { items: RelatedCategory[] }) {
             </div>
             <div className="flex-1">
               <h3 className="font-black">{item.title}</h3>
-              <p className="text-sm font-medium text-slate-500">{item.totalLessons} bÃ i há»c</p>
+              <p className="text-sm font-medium text-slate-500">{item.totalLessons} bài học</p>
             </div>
             <Link href={`/grammar/${item.slug || item.id}`} className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-black text-white">
-              Há»c ngay
+              Học ngay
             </Link>
           </div>
         ))}

@@ -33,16 +33,16 @@ type ActivityDetail = {
 };
 
 const skillLabels: Record<string, string> = {
-  VOCABULARY: "Tá»« vá»±ng",
-  GRAMMAR: "Ngá»¯ phÃ¡p",
-  READING: "Äá»c",
+  VOCABULARY: "Từ vựng",
+  GRAMMAR: "Ngữ pháp",
+  READING: "Đọc",
   LISTENING: "Nghe",
-  SPEAKING: "NÃ³i",
-  WRITING: "Viáº¿t",
+  SPEAKING: "Nói",
+  WRITING: "Viết",
 };
 
 function formatDate(value?: string | null) {
-  if (!value) return "ChÆ°a cÃ³";
+  if (!value) return "Chưa có";
   return new Intl.DateTimeFormat("vi-VN", {
     day: "2-digit",
     month: "2-digit",
@@ -53,8 +53,8 @@ function formatDate(value?: string | null) {
 }
 
 function durationLabel(seconds?: number | null) {
-  if (!seconds) return "ChÆ°a ghi nháº­n";
-  return `${Math.max(1, Math.round(seconds / 60))} phÃºt`;
+  if (!seconds) return "Chưa ghi nhận";
+  return `${Math.max(1, Math.round(seconds / 60))} phút`;
 }
 
 function MetricCard({
@@ -90,7 +90,7 @@ export default function HistoryDetailPage() {
     try {
       setData(await getProgressActivityDetail(params.activityId));
     } catch {
-      setError("KhÃ´ng táº£i Ä‘Æ°á»£c chi tiáº¿t hoáº¡t Ä‘á»™ng. Vui lÃ²ng Thử lại.");
+      setError("Không tải được chi tiết hoạt động. Vui lòng Thử lại.");
     } finally {
       setLoading(false);
     }
@@ -103,7 +103,7 @@ export default function HistoryDetailPage() {
         if (active) setData(result);
       })
       .catch(() => {
-        if (active) setError("KhÃ´ng táº£i Ä‘Æ°á»£c chi tiáº¿t hoáº¡t Ä‘á»™ng. Vui lÃ²ng Thử lại.");
+        if (active) setError("Không tải được chi tiết hoạt động. Vui lòng Thử lại.");
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -130,7 +130,7 @@ export default function HistoryDetailPage() {
   if (error || !data) {
     return (
       <section className="rounded-3xl border border-rose-200 bg-rose-50 p-6">
-        <p className="font-black text-rose-700">{error ?? "KhÃ´ng cÃ³ dá»¯ liá»‡u."}</p>
+        <p className="font-black text-rose-700">{error ?? "Không có dữ liệu."}</p>
         <button
           type="button"
           onClick={load}
@@ -156,7 +156,7 @@ export default function HistoryDetailPage() {
         className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 font-black text-slate-700"
       >
         <ArrowLeft size={18} />
-        Quay láº¡i
+        Quay lại
       </button>
 
       <section className="rounded-[2rem] bg-gradient-to-br from-violet-600 to-sky-500 p-6 text-white shadow-lg shadow-violet-100">
@@ -164,11 +164,11 @@ export default function HistoryDetailPage() {
           <div>
             <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-black">
               <Sparkles size={16} />
-              Chi tiáº¿t hoáº¡t Ä‘á»™ng
+              Chi tiết hoạt động
             </div>
             <h1 className="text-3xl font-black sm:text-4xl">{activity.title}</h1>
             <p className="mt-2 max-w-2xl text-sm font-semibold text-white/85">
-              {activity.description ?? "Káº¿t quáº£ há»c táº­p Ä‘Æ°á»£c láº¥y tá»« dá»¯ liá»‡u tháº­t cá»§a phiÃªn há»c."}
+              {activity.description ?? "Kết quả học tập được lấy từ dữ liệu thật của phiên học."}
             </p>
           </div>
           {data.action.href && (
@@ -186,53 +186,53 @@ export default function HistoryDetailPage() {
       <section className="grid gap-4 md:grid-cols-4">
         <MetricCard
           icon={<Target size={20} />}
-          label="Ká»¹ nÄƒng"
-          value={activity.skill ? skillLabels[activity.skill] ?? activity.skill : "Lá»™ trÃ¬nh"}
+          label="Kỹ năng"
+          value={activity.skill ? skillLabels[activity.skill] ?? activity.skill : "Lộ trình"}
         />
         <MetricCard
           icon={<Star size={20} />}
-          label="Äiá»ƒm"
-          value={typeof data.result.score === "number" ? data.result.score : "ChÆ°a cÃ³"}
+          label="Điểm"
+          value={typeof data.result.score === "number" ? data.result.score : "Chưa có"}
         />
         <MetricCard
           icon={<BookOpen size={20} />}
-          label="Äá»™ chÃ­nh xÃ¡c"
-          value={typeof data.result.accuracy === "number" ? `${data.result.accuracy}%` : "KhÃ´ng Ã¡p dá»¥ng"}
+          label="Độ chính xác"
+          value={typeof data.result.accuracy === "number" ? `${data.result.accuracy}%` : "Không áp dụng"}
         />
         <MetricCard
           icon={<Clock size={20} />}
-          label="Thá»i gian"
+          label="Thời gian"
           value={durationLabel(data.result.durationSeconds)}
         />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-xl font-black text-slate-950">TÃ³m táº¯t</h2>
+          <h2 className="text-xl font-black text-slate-950">Tóm tắt</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl bg-slate-50 p-4">
-              <p className="text-sm font-bold text-slate-500">Tráº¡ng thÃ¡i</p>
+              <p className="text-sm font-bold text-slate-500">Trạng thái</p>
               <p className="mt-1 font-black text-slate-950">{activity.status}</p>
             </div>
             <div className="rounded-2xl bg-slate-50 p-4">
               <p className="text-sm font-bold text-slate-500">XP</p>
               <p className="mt-1 font-black text-slate-950">
-                {typeof data.result.xpEarned === "number" ? `+${data.result.xpEarned} XP` : "ChÆ°a ghi nháº­n"}
+                {typeof data.result.xpEarned === "number" ? `+${data.result.xpEarned} XP` : "Chưa ghi nhận"}
               </p>
             </div>
             <div className="rounded-2xl bg-slate-50 p-4">
-              <p className="text-sm font-bold text-slate-500">Báº¯t Ä‘áº§u</p>
+              <p className="text-sm font-bold text-slate-500">Bắt đầu</p>
               <p className="mt-1 font-black text-slate-950">{formatDate(data.result.startedAt)}</p>
             </div>
             <div className="rounded-2xl bg-slate-50 p-4">
-              <p className="text-sm font-bold text-slate-500">HoÃ n thÃ nh</p>
+              <p className="text-sm font-bold text-slate-500">Hoàn thành</p>
               <p className="mt-1 font-black text-slate-950">{formatDate(data.result.completedAt)}</p>
             </div>
           </div>
         </div>
 
         <aside className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-xl font-black text-slate-950">ThÃ´ng tin chi tiáº¿t</h2>
+          <h2 className="text-xl font-black text-slate-950">Thông tin chi tiết</h2>
           {metadataEntries.length ? (
             <div className="mt-4 space-y-3">
               {metadataEntries.map(([key, value]) => (
@@ -244,7 +244,7 @@ export default function HistoryDetailPage() {
             </div>
           ) : (
             <p className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm font-bold text-slate-500">
-              Hoáº¡t Ä‘á»™ng nÃ y chÆ°a cÃ³ dá»¯ liá»‡u chi tiáº¿t bá»• sung.
+              Hoạt động này chưa có dữ liệu chi tiết bổ sung.
             </p>
           )}
         </aside>

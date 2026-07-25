@@ -47,10 +47,10 @@ export default function SpeakingCategoriesPage() {
 
   if (loading && !data)
     return (
-      <BeaconVieLoadingState className="m-10" label="Äang táº£i danh má»¥c luyá»‡n nÃ³i..." />
+      <BeaconVieLoadingState className="m-10" label="Đang tải danh mục luyện nói..." />
     );
   if (!data)
-    return <div className="p-10 text-red-500">KhÃ´ng táº£i Ä‘Æ°á»£c categories.</div>;
+    return <div className="p-10 text-red-500">Không tải được categories.</div>;
 
   return (
     <div className="min-h-screen bg-[#fbfbff] text-[#08083d]">
@@ -69,7 +69,7 @@ export default function SpeakingCategoriesPage() {
                     that interest you.
                   </p>
                 </div>
-                <div className="hidden text-8xl lg:block">ðŸŽ™ï¸ðŸ’¬ðŸŒ¿</div>
+                <div className="hidden text-8xl lg:block">🎙️💬🌿</div>
               </div>
               <div className="flex flex-wrap gap-5">
                 {data.filters.map((f) => (
@@ -169,7 +169,7 @@ function CategoryCard({
           />
         ) : (
           <div className="flex h-full items-center justify-center text-7xl">
-            {item.icon || "ðŸŽ™ï¸"}
+            {item.icon || "🎙️"}
           </div>
         )}
       </div>
@@ -214,19 +214,19 @@ function Breadcrumb() {
 }
 function Sidebar({ onGoPremium }: { onGoPremium: () => void }) {
   const menus = [
-    ["Home", "ðŸ ", "/"],
-    ["Từ vựng", "âœš", "/vocabulary"],
-    ["Ngữ pháp", "âœš", "/grammar"],
-    ["Luyện nghe", "ðŸŽ§", "/listening"],
-    ["Luyện nói", "ðŸŽ™ï¸", "/speaking"],
-    ["Luyện đọc", "ðŸ“–", "/reading"],
-    ["Luyện viết", "âœï¸", "/writing"],
-    ["Flashcards", "ðŸ§©", "/vocabulary/flashcards"],
+    ["Home", "🏠", "/"],
+    ["Từ vựng", "✚", "/vocabulary"],
+    ["Ngữ pháp", "✚", "/grammar"],
+    ["Luyện nghe", "🎧", "/listening"],
+    ["Luyện nói", "🎙️", "/speaking"],
+    ["Luyện đọc", "📖", "/reading"],
+    ["Luyện viết", "✏️", "/writing"],
+    ["Flashcards", "🧩", "/vocabulary/flashcards"],
   ];
   return (
     <aside className="min-h-screen w-[270px] border-r border-indigo-50 bg-white px-5 py-7">
       <div className="mb-10 flex items-center gap-3">
-        <div className="text-3xl">ðŸ¦Š</div>
+        <div className="text-3xl">🦊</div>
         <h1 className="text-2xl font-extrabold">
           Speak<span className="text-purple-600">Arena</span>
         </h1>
@@ -244,7 +244,7 @@ function Sidebar({ onGoPremium }: { onGoPremium: () => void }) {
         ))}
       </nav>
       <div className="mt-10 rounded-2xl bg-purple-50 p-5">
-        <p className="mb-2 text-sm font-bold text-purple-700">ðŸ‘‘ Go Premium</p>
+        <p className="mb-2 text-sm font-bold text-purple-700">👑 Go Premium</p>
         <p className="text-xs leading-5 text-indigo-400">
           Unlock all features and learn without limits.
         </p>
@@ -276,7 +276,7 @@ function Topbar({
           placeholder="Search topics, lessons or skills..."
         />
         <div className="rounded-lg bg-white px-3 py-1 text-xs font-semibold text-indigo-500">
-          âŒ˜ K
+          ⌘ K
         </div>
       </div>
       <div className="flex items-center gap-8">
@@ -365,13 +365,13 @@ function ProgressCard({
         </div>
         <div className="space-y-5 text-sm">
           <p>
-            âœ… Completed <b>{progress.completed}</b>
+            ✅ Completed <b>{progress.completed}</b>
           </p>
           <p>
-            ðŸŸ  In Progress <b>{progress.inProgress}</b>
+            🟠 In Progress <b>{progress.inProgress}</b>
           </p>
           <p>
-            âšª Not Started <b>{progress.notStarted}</b>
+            ⚪ Not Started <b>{progress.notStarted}</b>
           </p>
         </div>
       </div>

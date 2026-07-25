@@ -54,7 +54,7 @@ export function CommunityClubMembers({
     return (
       <div className="rounded-3xl border-2 border-slate-200 bg-white p-10 text-center font-semibold text-slate-600">
         <Loader2 className="mx-auto mb-3 animate-spin text-indigo-600" />
-        Äang táº£i thÃ nh viÃªn...
+        Đang tải thành viên...
       </div>
     );
   }
@@ -63,9 +63,9 @@ export function CommunityClubMembers({
     <section className="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
       <div className="mb-5 flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-extrabold text-slate-950">ThÃ nh viÃªn</h2>
+          <h2 className="text-xl font-extrabold text-slate-950">Thành viên</h2>
           <p className="text-sm font-semibold text-slate-500">
-            {members.length} ngÆ°á»i Ä‘ang tham gia cÃ¢u láº¡c bá»™
+            {members.length} người đang tham gia câu lạc bộ
           </p>
         </div>
         <Users className="text-indigo-600" />
@@ -114,7 +114,7 @@ export function CommunityClubMembers({
                     type="button"
                     onClick={() => void removeMember(member.id)}
                     className="inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-red-100 text-red-600 hover:bg-red-50"
-                    aria-label="XÃ³a thÃ nh viÃªn"
+                    aria-label="Xóa thành viên"
                   >
                     <UserMinus size={18} />
                   </button>
@@ -125,7 +125,7 @@ export function CommunityClubMembers({
         </div>
       ) : (
         <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-8 text-center font-semibold text-slate-500">
-          ChÆ°a cÃ³ thÃ nh viÃªn nÃ o.
+          Chưa có thành viên nào.
         </div>
       )}
     </section>

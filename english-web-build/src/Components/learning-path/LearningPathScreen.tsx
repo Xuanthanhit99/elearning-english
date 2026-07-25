@@ -64,7 +64,7 @@ export default function LearningPathScreen() {
       setData(await getLearningPath());
     } catch (err) {
       // The backend no longer 404s for a user without a completed
-      // Placement test â€” GET /learning-path always resolves to either a
+      // Placement test — GET /learning-path always resolves to either a
       // PLACEMENT-sourced path or a DEFAULT_FOUNDATION per-skill starter
       // path (see LearningPathService.buildDefaultFoundationPath). A
       // request can still fail for genuine errors (network, 5xx), which
@@ -132,7 +132,7 @@ export default function LearningPathScreen() {
                   </>
                 ) : (
                   <>
-                    You haven&apos;t completed a placement test yet â€” here&apos;s a
+                    You haven&apos;t completed a placement test yet — here&apos;s a
                     foundation starting point for every skill. Take the placement
                     test any time for personalized recommendations.
                   </>
@@ -140,7 +140,7 @@ export default function LearningPathScreen() {
               </p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-4">
-                <HeroMetric icon={GraduationCap} label="Level" value={data.overallLevel ?? "â€”"} />
+                <HeroMetric icon={GraduationCap} label="Level" value={data.overallLevel ?? "—"} />
                 <HeroMetric icon={Target} label="Progress" value={`${data.progressPercent}%`} />
                 <HeroMetric icon={CheckCircle2} label="Completed" value={`${data.completedLessons}`} />
                 <HeroMetric icon={BookOpen} label="Lessons" value={`${data.totalLessons}`} />
@@ -179,7 +179,7 @@ export default function LearningPathScreen() {
               />
             ) : data.source === "DEFAULT_FOUNDATION" ? (
               <BeaconVieState
-                title="Foundation path â€” see your skill breakdown"
+                title="Foundation path — see your skill breakdown"
                 description="Take the placement test to unlock a personalized milestone map. Each skill's starting lesson is listed in the panel to the right."
                 tone="soft"
               />
@@ -251,7 +251,7 @@ function NextLessonCard({
       </h2>
       <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
         {lesson.sectionTitle}
-        {lesson.duration ? ` â€¢ ${lesson.duration} min` : ""}
+        {lesson.duration ? ` • ${lesson.duration} min` : ""}
       </p>
       <BeaconVieButton
         className="mt-6 w-full"
@@ -447,7 +447,7 @@ function PhasePanel({ phases }: { phases: LearningPathData["phases"] }) {
           <div key={phase.id} className="rounded-2xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-4">
             <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-primary)]">
               Phase {phase.phase}
-              {phase.targetLevel ? ` â€¢ ${phase.targetLevel}` : ""}
+              {phase.targetLevel ? ` • ${phase.targetLevel}` : ""}
             </p>
             <h3 className="mt-2 font-black text-[var(--BeaconVie-ink)]">
               {phase.title}
@@ -504,7 +504,7 @@ function SkillPanel({ skills }: { skills: LearningPathData["skills"] }) {
                 {item.skill}
               </p>
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
-                {item.level ?? item.status ?? "â€”"}
+                {item.level ?? item.status ?? "—"}
               </span>
             </div>
             {typeof item.score === "number" ? (

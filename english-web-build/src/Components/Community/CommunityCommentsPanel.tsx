@@ -51,7 +51,7 @@ export function CommunityCommentsPanel({
       setError(
         e instanceof Error
           ? e.message
-          : 'KhÃ´ng thá»ƒ táº£i cÃ¡c bÃ¬nh luáº­n trÆ°á»›c Ä‘Ã³',
+          : 'Không thể tải các bình luận trước đó',
       );
     } finally {
       setLoading(false);
@@ -85,7 +85,7 @@ export function CommunityCommentsPanel({
       onCountChange?.(1);
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : 'KhÃ´ng thá»ƒ gá»­i bÃ¬nh luáº­n',
+        e instanceof Error ? e.message : 'Không thể gửi bình luận',
       );
     } finally {
       setSubmitting(false);
@@ -130,7 +130,7 @@ export function CommunityCommentsPanel({
       onCountChange?.(1);
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : 'KhÃ´ng thá»ƒ tráº£ lá»i bÃ¬nh luáº­n',
+        e instanceof Error ? e.message : 'Không thể trả lời bình luận',
       );
     } finally {
       setSubmitting(false);
@@ -141,7 +141,7 @@ export function CommunityCommentsPanel({
     return (
       <div className="flex items-center justify-center gap-2 py-8 text-slate-600">
         <Loader2 className="animate-spin text-indigo-600" size={20} />
-        Äang táº£i bÃ¬nh luáº­n...
+        Đang tải bình luận...
       </div>
     );
   }
@@ -172,7 +172,7 @@ export function CommunityCommentsPanel({
             }
           }}
           rows={2}
-          placeholder="Viáº¿t bÃ¬nh luáº­n..."
+          placeholder="Viết bình luận..."
           className="min-h-[52px] flex-1 resize-none rounded-2xl border-2 border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500"
         />
 
@@ -197,10 +197,10 @@ export function CommunityCommentsPanel({
             className="mx-auto text-slate-400"
           />
           <p className="mt-2 text-sm font-semibold text-slate-700">
-            ChÆ°a cÃ³ bÃ¬nh luáº­n
+            Chưa có bình luận
           </p>
           <p className="mt-1 text-xs text-slate-500">
-            HÃ£y báº¯t Ä‘áº§u cuá»™c trÃ² chuyá»‡n.
+            Hãy bắt đầu cuộc trò chuyện.
           </p>
         </div>
       ) : (
@@ -256,7 +256,7 @@ export function CommunityCommentsPanel({
                         className="flex items-center gap-1.5 text-xs font-bold text-slate-600 transition hover:text-indigo-700"
                       >
                         <Reply size={14} />
-                        Tráº£ lá»i
+                        Trả lời
                       </button>
 
                       {replyCount > 0 && (
@@ -276,8 +276,8 @@ export function CommunityCommentsPanel({
                             <ChevronDown size={14} />
                           )}
                           {isExpanded
-                            ? 'áº¨n cÃ¢u tráº£ lá»i'
-                            : `Xem ${replyCount} cÃ¢u tráº£ lá»i`}
+                            ? 'Ẩn câu trả lời'
+                            : `Xem ${replyCount} câu trả lời`}
                         </button>
                       )}
                     </div>
@@ -323,7 +323,7 @@ export function CommunityCommentsPanel({
                                 className="mt-2 flex items-center gap-1 text-xs font-bold text-slate-600 hover:text-indigo-700"
                               >
                                 <Reply size={12} />
-                                Tráº£ lá»i
+                                Trả lời
                               </button>
                             </div>
                           </div>
@@ -342,7 +342,7 @@ export function CommunityCommentsPanel({
         <div className="rounded-2xl border-2 border-indigo-200 bg-indigo-50 p-4">
           <div className="mb-2 flex items-center justify-between">
             <p className="text-sm font-semibold text-indigo-800">
-              Tráº£ lá»i <strong>{replyTo.author.fullname}</strong>
+              Trả lời <strong>{replyTo.author.fullname}</strong>
             </p>
 
             <button
