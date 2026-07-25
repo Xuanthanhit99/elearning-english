@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
       await api.post("/auth/forgot-password", { email });
       setSubmitted(true);
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "KhÃ´ng thá»ƒ gá»­i yÃªu cáº§u. Vui lÃ²ng thá»­ láº¡i."));
+      setError(getErrorMessage(err, "KhÃ´ng thá»ƒ gá»­i yÃªu cáº§u. Vui lÃ²ng Thử lại."));
     } finally {
       setSubmitting(false);
     }

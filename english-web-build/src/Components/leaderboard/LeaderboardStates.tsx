@@ -30,7 +30,7 @@ export function LeaderboardError({
         onClick={onRetry}
         className="mt-5 rounded-xl bg-rose-600 px-4 py-2 font-black text-white"
       >
-        Thá»­ láº¡i
+        Thử lại
       </button>
     </div>
   );

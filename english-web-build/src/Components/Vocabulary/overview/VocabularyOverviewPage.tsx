@@ -217,7 +217,7 @@ export default function VocabularyOverviewPage() {
         const res = await api.get<OverviewData>("/vocabulary/overview");
         if (active) setData(res.data);
       } catch {
-        if (active) setMessage("ChÆ°a táº£i Ä‘Æ°á»£c tá»•ng quan há»c táº­p. HÃ£y thá»­ láº¡i sau.");
+        if (active) setMessage("ChÆ°a táº£i Ä‘Æ°á»£c tá»•ng quan há»c táº­p. HÃ£y Thử lại sau.");
       } finally {
         if (active) setLoading(false);
       }

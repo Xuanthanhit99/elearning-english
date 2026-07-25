@@ -156,8 +156,8 @@ export default function PlacementDashboardScreen() {
       <main className="mx-auto flex min-h-[70vh] max-w-2xl items-center justify-center px-4 py-10">
         <BeaconVieState
           title="KhÃ´ng thá»ƒ táº£i dá»¯ liá»‡u"
-          description={error || 'Vui lÃ²ng thá»­ láº¡i.'}
-          actionLabel="Thá»­ láº¡i"
+          description={error || 'Vui lÃ²ng Thử lại.'}
+          actionLabel="Thử lại"
           tone="error"
           onAction={() => void load()}
         />

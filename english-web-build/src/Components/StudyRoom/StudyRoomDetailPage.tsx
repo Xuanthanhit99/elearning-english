@@ -206,7 +206,7 @@ function RoomBody({
       await fn();
       reload();
     } catch {
-      setActionError("Thao tÃ¡c tháº¥t báº¡i. Vui lÃ²ng thá»­ láº¡i.");
+      setActionError("Thao tÃ¡c tháº¥t báº¡i. Vui lÃ²ng Thử lại.");
     } finally {
       setBusy(false);
     }

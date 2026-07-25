@@ -326,7 +326,7 @@ export default function GrammarLessonLearningPage() {
 
       setLesson(reload.data);
     } catch {
-      setMessage("KhÃ´ng thá»ƒ ná»™p bÃ i táº­p. Vui lÃ²ng thá»­ láº¡i.");
+      setMessage("KhÃ´ng thá»ƒ ná»™p bÃ i táº­p. Vui lÃ²ng Thử lại.");
     } finally {
       setSubmittingQuiz(false);
     }

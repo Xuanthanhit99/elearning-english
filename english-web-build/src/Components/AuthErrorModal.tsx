@@ -17,7 +17,7 @@
         </div>
 
         <h2 className="mt-5 text-2xl font-extrabold text-[var(--BeaconVie-ink)]">
-          ÄÄƒng nháº­p khÃ´ng thÃ nh cÃ´ng
+          Đăng nhập không thành công
         </h2>
 
         <p className="mt-3 leading-7 text-[var(--BeaconVie-muted)]">
@@ -29,7 +29,7 @@
           onClick={onClose}
           className="mt-6 w-full rounded-2xl bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] py-4 font-extrabold text-white shadow-lg shadow-blue-200/40 transition hover:opacity-95 dark:shadow-black/20"
         >
-          Thá»­ láº¡i
+          Thử lại
         </button>
       </div>
     </div>

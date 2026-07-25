@@ -233,7 +233,7 @@ export default function GrammarPage() {
                 onClick={() => setReloadToken((token) => token + 1)}
                 className="rounded-xl bg-red-600 px-4 py-2 text-sm font-black text-white"
               >
-                Thá»­ láº¡i
+                Thử lại
               </button>
             </div>
           )}

@@ -361,7 +361,7 @@ function WordNotFound() {
 }
 
 function ServerError({ onRetry }: { onRetry: () => void }) {
-  return <div className="rounded-[28px] border border-red-200 bg-white p-10 text-center"><div className="text-7xl">ðŸ˜µ</div><h3 className="mt-4 text-3xl font-black">Beacon gáº·p sá»± cá»‘</h3><p className="mt-3 text-slate-500">MÃ¡y chá»§ Ä‘ang báº­n hoáº·c káº¿t ná»‘i máº¡ng cÃ³ váº¥n Ä‘á».</p><button onClick={onRetry} className="mt-6 rounded-2xl bg-violet-600 px-8 py-4 font-black text-white">Thá»­ láº¡i</button></div>;
+  return <div className="rounded-[28px] border border-red-200 bg-white p-10 text-center"><div className="text-7xl">ðŸ˜µ</div><h3 className="mt-4 text-3xl font-black">Beacon gáº·p sá»± cá»‘</h3><p className="mt-3 text-slate-500">MÃ¡y chá»§ Ä‘ang báº­n hoáº·c káº¿t ná»‘i máº¡ng cÃ³ váº¥n Ä‘á».</p><button onClick={onRetry} className="mt-6 rounded-2xl bg-violet-600 px-8 py-4 font-black text-white">Thử lại</button></div>;
 }
 
 function highlightWord(text: string, word: string) {

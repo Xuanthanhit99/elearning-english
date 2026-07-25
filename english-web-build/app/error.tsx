@@ -29,7 +29,7 @@ export default function GlobalError({
               className="BeaconVie-button-primary mt-6"
             >
               <RefreshCcw size={18} />
-              Thá»­ láº¡i
+              Thử lại
             </button>
           </section>
         </main>

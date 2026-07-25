@@ -160,7 +160,7 @@ export default function MissionsPage() {
     } catch (error: unknown) {
       setLoadFailed(true);
       setMessage(
-        getApiErrorMessage(error, "ChÆ°a táº£i Ä‘Æ°á»£c nhiá»‡m vá»¥. Vui lÃ²ng thá»­ láº¡i."),
+        getApiErrorMessage(error, "ChÆ°a táº£i Ä‘Æ°á»£c nhiá»‡m vá»¥. Vui lÃ²ng Thử lại."),
       );
     } finally {
       setLoading(false);
@@ -903,14 +903,14 @@ function MissionLoadError({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="flex flex-col items-center gap-3 rounded-2xl border border-red-100 bg-red-50 p-8 text-center">
       <p className="font-bold text-red-600">
-        KhÃ´ng táº£i Ä‘Æ°á»£c nhiá»‡m vá»¥. Vui lÃ²ng thá»­ láº¡i.
+        KhÃ´ng táº£i Ä‘Æ°á»£c nhiá»‡m vá»¥. Vui lÃ²ng Thử lại.
       </p>
       <button
         type="button"
         onClick={onRetry}
         className="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-black text-white"
       >
-        Thá»­ láº¡i
+        Thử lại
       </button>
     </div>
   );

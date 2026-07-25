@@ -130,7 +130,7 @@ export default function ArenaPage() {
         setMessage(
           error?.response?.status === 401
             ? "Báº¡n cáº§n Ä‘Äƒng nháº­p Ä‘á»ƒ vÃ o Arena."
-            : "KhÃ´ng táº£i Ä‘Æ°á»£c Arena. Vui lÃ²ng thá»­ láº¡i.",
+            : "KhÃ´ng táº£i Ä‘Æ°á»£c Arena. Vui lÃ²ng Thử lại.",
         );
       }
     } finally {
@@ -258,7 +258,7 @@ export default function ArenaPage() {
                 onClick={() => fetchLobby()}
                 className="rounded-xl bg-[var(--BeaconVie-primary)] px-4 py-2 text-sm font-black text-white"
               >
-                Thá»­ láº¡i
+                Thử lại
               </button>
             )}
           </div>

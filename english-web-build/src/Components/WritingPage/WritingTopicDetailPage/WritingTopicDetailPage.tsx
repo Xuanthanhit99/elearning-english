@@ -152,7 +152,7 @@ export default function WritingTopicDetailPage() {
           onClick={loadDetail}
           className="mt-4 rounded-xl bg-violet-600 px-5 py-3 font-bold text-white"
         >
-          Thá»­ láº¡i
+          Thử lại
         </button>
       </div>
     );

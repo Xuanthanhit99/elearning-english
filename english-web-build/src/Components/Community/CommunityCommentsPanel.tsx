@@ -156,7 +156,7 @@ export function CommunityCommentsPanel({
             onClick={() => void loadComments()}
             className="ml-3 font-bold underline"
           >
-            Thá»­ láº¡i
+            Thử lại
           </button>
         </div>
       )}

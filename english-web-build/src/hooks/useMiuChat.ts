@@ -39,7 +39,7 @@ export function useMiuChat(initialPet: PetStatus) {
         setError(message);
         setMessages((prev) => [
           ...prev,
-          { role: "ASSISTANT", content: "Beacon Ä‘ang hÆ¡i lag ðŸ±ðŸ’¤ Thá»­ láº¡i nhÃ©!" },
+          { role: "ASSISTANT", content: "Beacon Ä‘ang hÆ¡i lag ðŸ±ðŸ’¤ Thử lại nhÃ©!" },
         ]);
       } finally {
         setLoading(false);

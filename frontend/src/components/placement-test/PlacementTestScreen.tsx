@@ -269,7 +269,7 @@ export default function PlacementTestScreen({
             onClick={() => void loadTest()}
             className="mt-6 rounded-xl bg-violet-600 px-5 py-3 font-bold text-white"
           >
-            Thá»­ láº¡i
+            Thử lại
           </button>
         </div>
       </main>

@@ -106,8 +106,8 @@ export default function SettingsPage() {
       <div className="grid min-h-[60vh] place-items-center px-4">
         <BeaconVieState
           title="KhÃ´ng táº£i Ä‘Æ°á»£c cÃ i Ä‘áº·t"
-          description="ÄÃ£ xáº£y ra lá»—i khi táº£i cÃ i Ä‘áº·t tÃ i khoáº£n. Vui lÃ²ng thá»­ láº¡i."
-          actionLabel="Thá»­ láº¡i"
+          description="ÄÃ£ xáº£y ra lá»—i khi táº£i cÃ i Ä‘áº·t tÃ i khoáº£n. Vui lÃ²ng Thử lại."
+          actionLabel="Thử lại"
           onAction={loadSettings}
           tone="error"
         />
@@ -722,7 +722,7 @@ export default function SettingsPage() {
                               current.filter((item) => item.id !== device.id),
                             );
                           } catch {
-                            setMessage('KhÃ´ng Ä‘Äƒng xuáº¥t Ä‘Æ°á»£c thiáº¿t bá»‹ nÃ y. Vui lÃ²ng thá»­ láº¡i.');
+                            setMessage('KhÃ´ng Ä‘Äƒng xuáº¥t Ä‘Æ°á»£c thiáº¿t bá»‹ nÃ y. Vui lÃ²ng Thử lại.');
                           }
                         }}
                       >
@@ -997,7 +997,7 @@ function ChangePasswordCard() {
       setDone(true);
       setTimeout(() => router.replace('/login'), 2000);
     } catch (err) {
-      setError(getRequestErrorMessage(err, 'KhÃ´ng Ä‘á»•i Ä‘Æ°á»£c máº­t kháº©u. Vui lÃ²ng thá»­ láº¡i.'));
+      setError(getRequestErrorMessage(err, 'KhÃ´ng Ä‘á»•i Ä‘Æ°á»£c máº­t kháº©u. Vui lÃ²ng Thử lại.'));
     } finally {
       setSubmitting(false);
     }

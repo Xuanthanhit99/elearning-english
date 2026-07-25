@@ -41,8 +41,23 @@ async function bootstrap() {
   app.enableShutdownHooks();
 
   const redisIoAdapter = new RedisIoAdapter(app);
-  redisIoAdapter.connectToRedis();
-  app.useWebSocketAdapter(redisIoAdapter);
+
+  try {
+    await redisIoAdapter.connectToRedis();
+    app.useWebSocketAdapter(redisIoAdapter);
+    bootstrapLogger.log('Redis Socket.IO adapter connected');
+  } catch (error) {
+    bootstrapLogger.error(
+      `Redis Socket.IO adapter failed: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+
+    // Tạm thời vẫn cho HTTP API khởi động để tránh Railway trả 502.
+    bootstrapLogger.warn(
+      'HTTP API will continue without the Redis Socket.IO adapter.',
+    );
+  }
 
   app.use(
     helmet({

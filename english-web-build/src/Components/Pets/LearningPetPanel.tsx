@@ -108,7 +108,7 @@ export default function LearningPetPanel({ compact = false }: { compact?: boolea
       setMessage(res.data.randomAssigned ? "Há»‡ thá»‘ng Ä‘Ã£ chá»n ngáº«u nhiÃªn thÃº cÆ°ng cho báº¡n." : "ÄÃ£ lÆ°u báº¡n Ä‘á»“ng hÃ nh há»c tiáº¿ng Anh.");
     } catch (error: any) {
       console.error(error);
-      setMessage(error?.response?.data?.message || "KhÃ´ng lÆ°u Ä‘Æ°á»£c thÃº cÆ°ng. Vui lÃ²ng thá»­ láº¡i.");
+      setMessage(error?.response?.data?.message || "KhÃ´ng lÆ°u Ä‘Æ°á»£c thÃº cÆ°ng. Vui lÃ²ng Thử lại.");
     } finally {
       setSaving(false);
     }

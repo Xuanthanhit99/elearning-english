@@ -385,13 +385,13 @@ function ReviewTable({
     return (
       <div className="flex flex-col items-center gap-3 py-14 text-center">
         <p className="font-bold text-[#d92d20]">
-          KhÃ´ng táº£i Ä‘Æ°á»£c danh sÃ¡ch Ã´n táº­p. Vui lÃ²ng thá»­ láº¡i.
+          KhÃ´ng táº£i Ä‘Æ°á»£c danh sÃ¡ch Ã´n táº­p. Vui lÃ²ng Thử lại.
         </p>
         <button
           onClick={onRetry}
           className="rounded-xl bg-[#6d35ff] px-5 py-2.5 text-sm font-black text-white"
         >
-          Thá»­ láº¡i
+          Thử lại
         </button>
       </div>
     );

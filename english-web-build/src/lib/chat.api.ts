@@ -16,7 +16,7 @@ export async function sendChatMessage(
     return (data?.data ?? data) as SendMessageResponse;
   } catch (error) {
     throw new Error(
-      getApiErrorMessage(error, "Beacon Ä‘ang lag xÃ­u, thá»­ láº¡i sau nhÃ©"),
+      getApiErrorMessage(error, "Beacon Ä‘ang lag xÃ­u, Thử lại sau nhÃ©"),
     );
   }
 }

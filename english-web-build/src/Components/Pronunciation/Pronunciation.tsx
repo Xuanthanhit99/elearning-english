@@ -123,7 +123,7 @@ export default function PronunciationPage() {
       setSelectedWord(analyzed.feedback?.wordFeedback?.[0] ?? null);
       void loadHistory();
     } catch (err) {
-      setError(getApiErrorMessage(err, "KhÃ´ng phÃ¢n tÃ­ch Ä‘Æ°á»£c phÃ¡t Ã¢m. Thá»­ láº¡i nhÃ©."));
+      setError(getApiErrorMessage(err, "KhÃ´ng phÃ¢n tÃ­ch Ä‘Æ°á»£c phÃ¡t Ã¢m. Thử lại nhÃ©."));
     } finally {
       setAnalyzing(false);
     }

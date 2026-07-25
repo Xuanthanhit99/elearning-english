@@ -158,7 +158,7 @@ export default function PlacementLanding() {
             onClick={() => void loadData()}
             className="mt-6 rounded-xl bg-violet-600 px-5 py-3 font-semibold text-white transition hover:bg-violet-700"
           >
-            Thá»­ láº¡i
+            Thử lại
           </button>
         </div>
       </main>

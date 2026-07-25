@@ -18,7 +18,7 @@ All production modules listed as complete (Auth, Cookie Sessions, Redis Content 
 
 - `NotificationDrawer`: close button now has `aria-label`; the panel gets `inert` + `aria-hidden` while closed, so a keyboard user tabbing through the page can no longer land on off-screen, invisible controls (previously only hidden via `translate-x-full`, still in the Tab order).
 - Icon-only close buttons without any accessible name â€” `CreatePostModal`, `WelcomeLoginModal` (was a bare `Ã—` glyph), `MiuChatModal` â€” now have `aria-label="ÄÃ³ng"`.
-- `LeaderboardPage`'s icon-only retry button now has `aria-label="Thá»­ láº¡i"`.
+- `LeaderboardPage`'s icon-only retry button now has `aria-label="Thử lại"`.
 - `CommunityClubsView`'s card `role="button"` only handled Enter in `onKeyDown`; Space now also activates it (with `preventDefault` to stop page scroll), matching the native `<button>` keyboard contract.
 - `MiuChatModal`'s close button was 32px (`h-8 w-8`), under the 44px touch-target guideline inside a modal meant for mobile use; bumped to 44px (`h-11 w-11`), matching the size already used by `AppHeader`'s icon buttons elsewhere.
 

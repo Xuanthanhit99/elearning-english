@@ -62,7 +62,7 @@ export default function StudyRoomHubPage() {
       await joinStudyRoom(roomId);
       router.push(`/study-rooms/${roomId}`);
     } catch {
-      setError("KhÃ´ng thá»ƒ tham gia phÃ²ng nÃ y. Vui lÃ²ng thá»­ láº¡i.");
+      setError("KhÃ´ng thá»ƒ tham gia phÃ²ng nÃ y. Vui lÃ²ng Thử lại.");
       setJoiningId(null);
     }
   }
@@ -122,7 +122,7 @@ export default function StudyRoomHubPage() {
         <BeaconVieState
           title="KhÃ´ng thá»ƒ táº£i danh sÃ¡ch phÃ²ng há»c"
           description="ÄÃ£ cÃ³ lá»—i xáº£y ra khi táº£i danh sÃ¡ch."
-          actionLabel="Thá»­ láº¡i"
+          actionLabel="Thử lại"
           onAction={load}
           tone="error"
         />
@@ -206,7 +206,7 @@ function CreateRoomDialog({
       const room = await createStudyRoom({ name, topic: topic || undefined, goalMinutes, maxMembers, visibility });
       onCreated(room.id);
     } catch {
-      setError("KhÃ´ng thá»ƒ táº¡o phÃ²ng há»c. Vui lÃ²ng thá»­ láº¡i.");
+      setError("KhÃ´ng thá»ƒ táº¡o phÃ²ng há»c. Vui lÃ²ng Thử lại.");
     } finally {
       setSubmitting(false);
     }

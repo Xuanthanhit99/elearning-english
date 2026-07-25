@@ -75,7 +75,7 @@ export default function ProgressPage() {
     try {
       setData(await getProgressOverview());
     } catch {
-      setError("KhÃ´ng táº£i Ä‘Æ°á»£c tiáº¿n Ä‘á»™ há»c táº­p. Vui lÃ²ng thá»­ láº¡i.");
+      setError("KhÃ´ng táº£i Ä‘Æ°á»£c tiáº¿n Ä‘á»™ há»c táº­p. Vui lÃ²ng Thử lại.");
     } finally {
       setLoading(false);
     }
@@ -88,7 +88,7 @@ export default function ProgressPage() {
         if (active) setData(result);
       })
       .catch(() => {
-        if (active) setError("KhÃ´ng táº£i Ä‘Æ°á»£c tiáº¿n Ä‘á»™ há»c táº­p. Vui lÃ²ng thá»­ láº¡i.");
+        if (active) setError("KhÃ´ng táº£i Ä‘Æ°á»£c tiáº¿n Ä‘á»™ há»c táº­p. Vui lÃ²ng Thử lại.");
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -127,7 +127,7 @@ export default function ProgressPage() {
           className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-5 py-3 font-black text-white"
         >
           <RefreshCcw size={18} />
-          Thá»­ láº¡i
+          Thử lại
         </button>
       </section>
     );

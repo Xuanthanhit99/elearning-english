@@ -129,7 +129,7 @@ const vi: VocabContent = {
   },
   messages: {
     loadWordsError: "KhÃ´ng táº£i Ä‘Æ°á»£c danh sÃ¡ch tá»« hÃ´m nay. HÃ£y Ä‘Äƒng nháº­p láº¡i hoáº·c táº£i láº¡i trang.",
-    loadTodayError: "ChÆ°a táº£i Ä‘Æ°á»£c bÃ i há»c tá»« vá»±ng. HÃ£y kiá»ƒm tra Ä‘Äƒng nháº­p rá»“i thá»­ láº¡i.",
+    loadTodayError: "ChÆ°a táº£i Ä‘Æ°á»£c bÃ i há»c tá»« vá»±ng. HÃ£y kiá»ƒm tra Ä‘Äƒng nháº­p rá»“i Thử lại.",
     loadingToday: "Äang chuáº©n bá»‹ bÃ i tá»« vá»±ng hÃ´m nay cá»§a báº¡n...",
     alreadyCompleted: "Báº¡n Ä‘Ã£ hoÃ n thÃ nh bÃ i há»c hÃ´m nay. NgÃ y mai sáº½ cÃ³ chá»§ Ä‘á» má»›i.",
     noValidWord: "ChÆ°a cÃ³ tá»« vá»±ng há»£p lá»‡ Ä‘á»ƒ lÆ°u tiáº¿n Ä‘á»™. HÃ£y Ä‘Äƒng nháº­p vÃ  táº£i láº¡i bÃ i há»c.",

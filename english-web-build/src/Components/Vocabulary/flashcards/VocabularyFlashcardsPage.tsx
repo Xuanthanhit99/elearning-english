@@ -142,7 +142,7 @@ export default function VocabularyFlashcardsPage() {
       setActiveIndex(0);
       setFlipped(false);
     } catch {
-      setMessage("KhÃ´ng táº£i Ä‘Æ°á»£c flashcard hÃ´m nay. HÃ£y Ä‘Äƒng nháº­p láº¡i rá»“i thá»­ láº¡i.");
+      setMessage("KhÃ´ng táº£i Ä‘Æ°á»£c flashcard hÃ´m nay. HÃ£y Ä‘Äƒng nháº­p láº¡i rá»“i Thử lại.");
     } finally {
       setLoading(false);
     }

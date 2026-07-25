@@ -307,7 +307,7 @@ export function CommunityPage() {
               onClick={() => void loadFeed(true)}
               className="mt-3 rounded-xl bg-[var(--BeaconVie-card)] px-4 py-2 text-sm font-semibold text-[var(--BeaconVie-danger)] shadow-sm"
             >
-              Thá»­ láº¡i
+              Thử lại
             </button>
           </div>
         )}
