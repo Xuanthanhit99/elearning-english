@@ -1,4 +1,4 @@
-import {
+﻿import {
   formatXp,
   zoneLabel,
 } from '@/src/lib/leaderboard';
@@ -21,7 +21,7 @@ export function CurrentUserRankCard({
 
           <div>
             <p className="text-sm font-bold text-violet-700">
-              Vị trí của bạn
+              Vá»‹ trÃ­ cá»§a báº¡n
             </p>
             <p className="text-xl font-black">
               {formatXp(entry.periodXp)} XP

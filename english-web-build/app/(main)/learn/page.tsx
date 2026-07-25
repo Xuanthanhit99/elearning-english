@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import {
   BookOpen,
   Headphones,
@@ -9,36 +9,36 @@ import {
 
 const todayItems = [
   {
-    title: "Học từ vựng hôm nay",
-    desc: "Hoàn thành Daily Goal và ôn tập SRS.",
+    title: "Há»c tá»« vá»±ng hÃ´m nay",
+    desc: "HoÃ n thÃ nh Daily Goal vÃ  Ã´n táº­p SRS.",
     href: "/vocabulary",
     icon: BookOpen,
     tone: "bg-violet-50 text-violet-700",
   },
   {
-    title: "Luyện nghe",
-    desc: "Làm 10 câu nghe theo chủ đề hôm nay.",
+    title: "Luyá»‡n nghe",
+    desc: "LÃ m 10 cÃ¢u nghe theo chá»§ Ä‘á» hÃ´m nay.",
     href: "/listening",
     icon: Headphones,
     tone: "bg-blue-50 text-blue-700",
   },
   {
-    title: "Luyện nói",
-    desc: "Tập phát âm và phản xạ nói ngắn.",
+    title: "Luyá»‡n nÃ³i",
+    desc: "Táº­p phÃ¡t Ã¢m vÃ  pháº£n xáº¡ nÃ³i ngáº¯n.",
     href: "/speaking",
     icon: Mic2,
     tone: "bg-emerald-50 text-emerald-700",
   },
   {
-    title: "AI tạo bài học",
-    desc: "Tạo lộ trình cá nhân hóa theo mục tiêu riêng.",
+    title: "AI táº¡o bÃ i há»c",
+    desc: "Táº¡o lá»™ trÃ¬nh cÃ¡ nhÃ¢n hÃ³a theo má»¥c tiÃªu riÃªng.",
     href: "/lesson-builder",
     icon: Sparkles,
     tone: "bg-amber-50 text-amber-700",
   },
   {
-    title: "Luyện viết",
-    desc: "Viết đoạn ngắn và nhận nhận xét từ AI.",
+    title: "Luyá»‡n viáº¿t",
+    desc: "Viáº¿t Ä‘oáº¡n ngáº¯n vÃ  nháº­n nháº­n xÃ©t tá»« AI.",
     href: "/writing",
     icon: NotebookPen,
     tone: "bg-pink-50 text-pink-700",
@@ -51,14 +51,14 @@ export default function LearnTodayPage() {
       <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
         <div className="max-w-3xl">
           <p className="text-sm font-black uppercase tracking-wider text-violet-600">
-            Học hôm nay
+            Há»c hÃ´m nay
           </p>
           <h1 className="mt-3 text-4xl font-black text-slate-950">
-            Chọn hoạt động học phù hợp
+            Chá»n hoáº¡t Ä‘á»™ng há»c phÃ¹ há»£p
           </h1>
           <p className="mt-3 font-semibold leading-7 text-slate-600">
-            Đây là trung tâm nhanh để bạn tiếp tục các hoạt động quan trọng
-            trong ngày mà không phải tìm từng module.
+            ÄÃ¢y lÃ  trung tÃ¢m nhanh Ä‘á»ƒ báº¡n tiáº¿p tá»¥c cÃ¡c hoáº¡t Ä‘á»™ng quan trá»ng
+            trong ngÃ y mÃ  khÃ´ng pháº£i tÃ¬m tá»«ng module.
           </p>
         </div>
       </section>

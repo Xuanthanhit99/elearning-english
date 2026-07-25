@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   BookOpen,
@@ -36,54 +36,54 @@ export default function CreateFlashcardPage() {
           <div className="grid grid-cols-[1fr_430px] gap-9 px-9 py-8">
             <section>
               <p className="mb-5 text-sm font-bold text-purple-500">
-                ← Trang chủ › Flashcards › Tạo bộ thẻ
+                â† Trang chá»§ â€º Flashcards â€º Táº¡o bá»™ tháº»
               </p>
 
               <div className="mb-8 flex items-center justify-between">
                 <div>
                   <h1 className="mb-3 text-4xl font-black">
-                    Tạo bộ thẻ Flashcard <span className="text-purple-600">♟</span>
+                    Táº¡o bá»™ tháº» Flashcard <span className="text-purple-600">â™Ÿ</span>
                   </h1>
                   <p className="text-lg font-medium text-purple-500">
-                    Tạo bộ thẻ của riêng bạn để học và ôn tập hiệu quả hơn
+                    Táº¡o bá»™ tháº» cá»§a riÃªng báº¡n Ä‘á»ƒ há»c vÃ  Ã´n táº­p hiá»‡u quáº£ hÆ¡n
                   </p>
                 </div>
 
                 <div className="flex items-center gap-5">
                   <div className="rounded-2xl border border-purple-200 bg-purple-50 px-6 py-5 text-sm font-bold leading-6">
-                    Tạo bộ thẻ theo chủ đề bạn thích <br />
-                    để ghi nhớ từ vựng dễ dàng hơn nhé!
+                    Táº¡o bá»™ tháº» theo chá»§ Ä‘á» báº¡n thÃ­ch <br />
+                    Ä‘á»ƒ ghi nhá»› tá»« vá»±ng dá»… dÃ ng hÆ¡n nhÃ©!
                   </div>
-                  <div className="text-7xl">🦊</div>
+                  <div className="text-7xl">ðŸ¦Š</div>
                 </div>
               </div>
 
               <Card>
-                <StepTitle number="1" title="Thông tin bộ thẻ" />
+                <StepTitle number="1" title="ThÃ´ng tin bá»™ tháº»" />
 
                 <div className="grid grid-cols-2 gap-5">
-                  <Field label="Tên bộ thẻ *">
+                  <Field label="TÃªn bá»™ tháº» *">
                     <input
                       className="input"
-                      placeholder="Ví dụ: 100 từ vựng IELTS phổ biến"
+                      placeholder="VÃ­ dá»¥: 100 tá»« vá»±ng IELTS phá»• biáº¿n"
                     />
                   </Field>
 
-                  <Field label="Chủ đề">
+                  <Field label="Chá»§ Ä‘á»">
                     <button className="input flex items-center justify-between text-purple-400">
-                      Chọn chủ đề <ChevronDown size={18} />
+                      Chá»n chá»§ Ä‘á» <ChevronDown size={18} />
                     </button>
                   </Field>
 
-                  <Field label="Mô tả (không bắt buộc)">
+                  <Field label="MÃ´ táº£ (khÃ´ng báº¯t buá»™c)">
                     <textarea
                       className="input h-28 resize-none pt-4"
-                      placeholder="Mô tả ngắn gọn về bộ thẻ của bạn..."
+                      placeholder="MÃ´ táº£ ngáº¯n gá»n vá» bá»™ tháº» cá»§a báº¡n..."
                     />
                   </Field>
 
                   <div className="space-y-5">
-                    <Field label="Cấp độ">
+                    <Field label="Cáº¥p Ä‘á»™">
                       <div className="grid grid-cols-6 gap-3">
                         {["A1", "A2", "B1", "B2", "C1", "C2"].map((lv) => (
                           <button
@@ -100,20 +100,20 @@ export default function CreateFlashcardPage() {
                       </div>
                     </Field>
 
-                    <Field label="Gắn thẻ">
+                    <Field label="Gáº¯n tháº»">
                       <div className="flex overflow-hidden rounded-xl border border-purple-200 bg-white">
                         <div className="flex flex-1 items-center gap-2 px-3">
-                          {["IELTS", "Travel", "Vocabulary"].map((tag) => (
+                          {["IELTS", "Travel", "Từ vựng"].map((tag) => (
                             <span
                               key={tag}
                               className="rounded-full bg-purple-100 px-3 py-1 font-bold text-purple-600"
                             >
-                              {tag} ×
+                              {tag} Ã—
                             </span>
                           ))}
                         </div>
                         <button className="border-l border-purple-200 px-5 font-bold text-purple-500">
-                          + Thêm thẻ
+                          + ThÃªm tháº»
                         </button>
                       </div>
                     </Field>
@@ -121,19 +121,19 @@ export default function CreateFlashcardPage() {
                 </div>
 
                 <div className="mt-6">
-                  <p className="mb-3 font-black">Chế độ riêng tư</p>
+                  <p className="mb-3 font-black">Cháº¿ Ä‘á»™ riÃªng tÆ°</p>
                   <div className="grid grid-cols-2 gap-5">
-                    <Privacy active icon="🌐" title="Công khai" desc="Mọi người có thể xem và học bộ thẻ này" />
-                    <Privacy icon={<Lock size={22} />} title="Riêng tư" desc="Chỉ bạn có thể xem và học" />
+                    <Privacy active icon="ðŸŒ" title="CÃ´ng khai" desc="Má»i ngÆ°á»i cÃ³ thá»ƒ xem vÃ  há»c bá»™ tháº» nÃ y" />
+                    <Privacy icon={<Lock size={22} />} title="RiÃªng tÆ°" desc="Chá»‰ báº¡n cÃ³ thá»ƒ xem vÃ  há»c" />
                   </div>
                 </div>
               </Card>
 
               <Card className="mt-7">
-                <StepTitle number="2" title="Thêm thẻ vào bộ" />
+                <StepTitle number="2" title="ThÃªm tháº» vÃ o bá»™" />
 
                 <div className="mb-5 flex gap-2">
-                  {["Nhập thủ công", "Nhập từ file", "Từ danh sách có sẵn", "Tạo bằng AI ✨"].map(
+                  {["Nháº­p thá»§ cÃ´ng", "Nháº­p tá»« file", "Tá»« danh sÃ¡ch cÃ³ sáºµn", "Táº¡o báº±ng AI âœ¨"].map(
                     (tab, i) => (
                       <button
                         key={tab}
@@ -150,13 +150,13 @@ export default function CreateFlashcardPage() {
                 </div>
 
                 <div className="grid grid-cols-[1fr_1fr_1fr_180px] gap-4">
-                  <Field label="Từ / Cụm từ (Tiếng Anh)">
-                    <input className="input" placeholder="Nhập từ hoặc cụm từ..." />
+                  <Field label="Tá»« / Cá»¥m tá»« (Tiáº¿ng Anh)">
+                    <input className="input" placeholder="Nháº­p tá»« hoáº·c cá»¥m tá»«..." />
                   </Field>
 
-                  <Field label="Phiên âm">
+                  <Field label="PhiÃªn Ã¢m">
                     <div className="relative">
-                      <input className="input pr-10" placeholder="/prəˈnʌnsiːeɪʃn/" />
+                      <input className="input pr-10" placeholder="/prÉ™ËˆnÊŒnsiËeÉªÊƒn/" />
                       <Mic
                         size={18}
                         className="absolute right-4 top-1/2 -translate-y-1/2 text-purple-500"
@@ -164,49 +164,49 @@ export default function CreateFlashcardPage() {
                     </div>
                   </Field>
 
-                  <Field label="Nghĩa (Tiếng Việt)">
-                    <input className="input" placeholder="Nhập nghĩa..." />
+                  <Field label="NghÄ©a (Tiáº¿ng Viá»‡t)">
+                    <input className="input" placeholder="Nháº­p nghÄ©a..." />
                   </Field>
 
                   <div className="pt-7">
                     <button className="h-12 w-full rounded-xl border border-purple-300 bg-purple-50 font-black text-purple-700">
                       <Plus className="mr-2 inline" size={18} />
-                      Thêm thẻ
+                      ThÃªm tháº»
                     </button>
                   </div>
                 </div>
 
                 <div className="mt-7 flex items-center justify-between">
-                  <h3 className="font-black">Danh sách thẻ (0)</h3>
+                  <h3 className="font-black">Danh sÃ¡ch tháº» (0)</h3>
                   <button className="rounded-lg bg-red-50 px-4 py-2 font-bold text-red-500">
-                    Xóa tất cả
+                    XÃ³a táº¥t cáº£
                   </button>
                 </div>
 
                 <div className="mt-3 grid h-32 place-items-center rounded-xl bg-purple-50/50 text-center">
                   <div>
-                    <div className="mb-3 text-4xl">▣</div>
-                    <p className="font-black">Chưa có thẻ nào trong bộ</p>
+                    <div className="mb-3 text-4xl">â–£</div>
+                    <p className="font-black">ChÆ°a cÃ³ tháº» nÃ o trong bá»™</p>
                     <p className="text-purple-400">
-                      Hãy thêm thẻ đầu tiên để bắt đầu nhé!
+                      HÃ£y thÃªm tháº» Ä‘áº§u tiÃªn Ä‘á»ƒ báº¯t Ä‘áº§u nhÃ©!
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-8 flex justify-between">
                   <button className="rounded-xl border border-purple-200 px-8 py-4 font-black">
-                    Hủy
+                    Há»§y
                   </button>
 
                   <div className="flex gap-4">
                     <button className="rounded-xl border border-purple-200 px-10 py-4 font-black text-purple-600">
                       <Bookmark className="mr-2 inline" />
-                      Lưu nháp
+                      LÆ°u nhÃ¡p
                     </button>
 
                     <button className="rounded-xl bg-purple-600 px-12 py-4 font-black text-white shadow-lg shadow-purple-200">
                       <Check className="mr-2 inline" />
-                      Tạo bộ thẻ
+                      Táº¡o bá»™ tháº»
                     </button>
                   </div>
                 </div>
@@ -217,23 +217,23 @@ export default function CreateFlashcardPage() {
               <Card className="bg-purple-50/70">
                 <h3 className="mb-5 flex items-center gap-3 text-xl font-black">
                   <Lightbulb className="text-purple-600" />
-                  Mẹo tạo bộ thẻ hiệu quả
+                  Máº¹o táº¡o bá»™ tháº» hiá»‡u quáº£
                 </h3>
 
                 <ul className="space-y-4 pl-5 font-medium leading-7 text-purple-500">
-                  <li>• Mỗi thẻ chỉ nên có 1 ý nghĩa chính</li>
-                  <li>• Sử dụng hình ảnh để ghi nhớ tốt hơn</li>
-                  <li>• Ôn tập đều đặn mỗi ngày</li>
-                  <li>• Chia nhỏ bộ thẻ theo chủ đề cụ thể</li>
+                  <li>â€¢ Má»—i tháº» chá»‰ nÃªn cÃ³ 1 Ã½ nghÄ©a chÃ­nh</li>
+                  <li>â€¢ Sá»­ dá»¥ng hÃ¬nh áº£nh Ä‘á»ƒ ghi nhá»› tá»‘t hÆ¡n</li>
+                  <li>â€¢ Ã”n táº­p Ä‘á»u Ä‘áº·n má»—i ngÃ y</li>
+                  <li>â€¢ Chia nhá» bá»™ tháº» theo chá»§ Ä‘á» cá»¥ thá»ƒ</li>
                 </ul>
 
                 <button className="mt-6 font-black text-purple-700">
-                  Xem hướng dẫn chi tiết →
+                  Xem hÆ°á»›ng dáº«n chi tiáº¿t â†’
                 </button>
               </Card>
 
               <Card>
-                <h3 className="mb-8 text-xl font-black">Xem trước bộ thẻ</h3>
+                <h3 className="mb-8 text-xl font-black">Xem trÆ°á»›c bá»™ tháº»</h3>
 
                 <div className="mx-auto mb-7 grid h-[290px] w-[280px] place-items-center rounded-2xl bg-white p-8 text-center shadow-xl shadow-purple-100">
                   <div>
@@ -248,10 +248,10 @@ export default function CreateFlashcardPage() {
                       </button>
                     </h4>
                     <p className="mb-8 text-xl font-black text-purple-600">
-                      /ɪɡˈzæmpəl/
+                      /ÉªÉ¡ËˆzÃ¦mpÉ™l/
                     </p>
                     <p className="text-2xl font-bold text-purple-700">
-                      (n) ví dụ, thí dụ
+                      (n) vÃ­ dá»¥, thÃ­ dá»¥
                     </p>
                   </div>
                 </div>
@@ -262,16 +262,16 @@ export default function CreateFlashcardPage() {
                 </div>
 
                 <button className="mx-auto flex w-[200px] items-center justify-center rounded-xl border border-purple-200 py-4 font-black text-purple-600">
-                  ⟳ Lật thẻ
+                  âŸ³ Láº­t tháº»
                 </button>
               </Card>
 
               <Card className="flex items-center justify-between bg-purple-50/60">
                 <p className="max-w-[250px] font-medium leading-7 text-purple-500">
-                  Sau khi tạo xong, bạn có thể bắt đầu ôn tập ngay hoặc chia sẻ
-                  cho bạn bè cùng học nhé! 💜
+                  Sau khi táº¡o xong, báº¡n cÃ³ thá»ƒ báº¯t Ä‘áº§u Ã´n táº­p ngay hoáº·c chia sáº»
+                  cho báº¡n bÃ¨ cÃ¹ng há»c nhÃ©! ðŸ’œ
                 </p>
-                <div className="text-6xl">🦊</div>
+                <div className="text-6xl">ðŸ¦Š</div>
               </Card>
             </aside>
           </div>
@@ -283,21 +283,21 @@ export default function CreateFlashcardPage() {
 
 function Sidebar() {
   const menu = [
-    ["Trang chủ", Home],
-    ["Tổng quan", BookOpen],
-    ["Từ vựng", BookOpen],
-    ["Ngữ pháp", BookOpen],
+    ["Trang chá»§", Home],
+    ["Tá»•ng quan", BookOpen],
+    ["Tá»« vá»±ng", BookOpen],
+    ["Ngá»¯ phÃ¡p", BookOpen],
     ["Nghe", Volume2],
-    ["Nói", Mic],
-    ["Đọc hiểu", BookOpen],
-    ["Viết", X],
+    ["NÃ³i", Mic],
+    ["Äá»c hiá»ƒu", BookOpen],
+    ["Viáº¿t", X],
     ["Flashcards", Star],
   ];
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-[280px] border-r border-purple-100 bg-white px-5 py-6">
       <div className="mb-10 flex items-center gap-3">
-        <div className="text-3xl">🦊</div>
+        <div className="text-3xl">ðŸ¦Š</div>
         <h1 className="text-3xl font-black">
           Study<span className="text-purple-600">Arena</span>
         </h1>
@@ -305,7 +305,7 @@ function Sidebar() {
 
       <nav className="space-y-2">
         <p className="px-3 text-xs font-bold uppercase tracking-widest text-purple-400">
-          Học tập
+          Há»c táº­p
         </p>
 
         {menu.map(([label, Icon]: any) => (
@@ -324,21 +324,21 @@ function Sidebar() {
 
         <div className="ml-7 border-l border-purple-200 pl-4">
           <button className="w-full px-4 py-2 text-left text-sm font-bold">
-            Ôn tập hôm nay
+            Ã”n táº­p hÃ´m nay
           </button>
           <button className="w-full px-4 py-2 text-left text-sm font-bold">
-            Tất cả thẻ
+            Táº¥t cáº£ tháº»
           </button>
           <button className="mb-2 w-full rounded-xl bg-purple-100 px-4 py-3 text-left text-sm font-black text-purple-700">
-            Tạo bộ thẻ
+            Táº¡o bá»™ tháº»
           </button>
         </div>
 
         <p className="px-3 pt-6 text-xs font-bold uppercase tracking-widest text-purple-400">
-          Cộng đồng
+          Cá»™ng Ä‘á»“ng
         </p>
 
-        {["Cộng đồng", "Hỏi đáp", "Thành tích"].map((item) => (
+        {["Cá»™ng Ä‘á»“ng", "Há»i Ä‘Ã¡p", "ThÃ nh tÃ­ch"].map((item) => (
           <button
             key={item}
             className="flex w-full items-center gap-4 rounded-xl px-4 py-3 text-sm font-black hover:bg-purple-50"
@@ -349,13 +349,13 @@ function Sidebar() {
         ))}
 
         <p className="px-3 pt-6 text-xs font-bold uppercase tracking-widest text-purple-400">
-          Khác
+          KhÃ¡c
         </p>
 
         {[
-          ["Khoá học", BookOpen],
+          ["KhoÃ¡ há»c", BookOpen],
           ["Shop", ShoppingBag],
-          ["Cài đặt", Settings],
+          ["CÃ i Ä‘áº·t", Settings],
         ].map(([label, Icon]: any) => (
           <button
             key={label}
@@ -368,12 +368,12 @@ function Sidebar() {
       </nav>
 
       <div className="absolute bottom-6 left-5 right-5 rounded-2xl bg-purple-50 p-5">
-        <p className="mb-3 font-black text-purple-700">👑 Nâng cấp Premium</p>
+        <p className="mb-3 font-black text-purple-700">ðŸ‘‘ NÃ¢ng cáº¥p Premium</p>
         <p className="mb-4 text-sm leading-6 text-purple-500">
-          Học không giới hạn, nhận nhiều đặc quyền hấp dẫn!
+          Há»c khÃ´ng giá»›i háº¡n, nháº­n nhiá»u Ä‘áº·c quyá»n háº¥p dáº«n!
         </p>
         <button className="rounded-xl bg-purple-600 px-5 py-3 text-sm font-black text-white">
-          Nâng cấp ngay
+          NÃ¢ng cáº¥p ngay
         </button>
       </div>
     </aside>
@@ -387,20 +387,20 @@ function Header() {
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-400" />
         <input
           className="h-14 w-full rounded-xl border border-purple-200 pl-12 outline-none"
-          placeholder="Tìm bài học, từ vựng, ngữ pháp..."
+          placeholder="TÃ¬m bÃ i há»c, tá»« vá»±ng, ngá»¯ phÃ¡p..."
         />
       </div>
 
       <div className="flex items-center gap-8">
         <Top icon={<Flame className="text-red-500" />} value="18" label="Streak" />
-        <Top icon={<Star className="text-yellow-400" />} value="2,450" label="XP hôm nay" />
+        <Top icon={<Star className="text-yellow-400" />} value="2,450" label="XP hÃ´m nay" />
         <Top icon={<Diamond className="text-sky-400" />} value="5,230" label="Xu" />
         <Gift className="text-purple-600" />
-        <span>🔔</span>
+        <span>ðŸ””</span>
 
         <div className="flex items-center gap-3">
           <div className="grid h-11 w-11 place-items-center rounded-full bg-cyan-100 text-xl">
-            👦
+            ðŸ‘¦
           </div>
           <div>
             <p className="text-sm font-black">Minh Anh</p>

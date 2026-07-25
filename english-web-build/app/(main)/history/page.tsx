@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -11,20 +11,20 @@ import {
 } from "@/src/lib/progress-api";
 
 const skillOptions: Array<{ label: string; value: ProgressSkill | "ALL" }> = [
-  { label: "Tất cả", value: "ALL" },
-  { label: "Từ vựng", value: "VOCABULARY" },
-  { label: "Ngữ pháp", value: "GRAMMAR" },
-  { label: "Đọc", value: "READING" },
+  { label: "Táº¥t cáº£", value: "ALL" },
+  { label: "Tá»« vá»±ng", value: "VOCABULARY" },
+  { label: "Ngá»¯ phÃ¡p", value: "GRAMMAR" },
+  { label: "Äá»c", value: "READING" },
   { label: "Nghe", value: "LISTENING" },
-  { label: "Nói", value: "SPEAKING" },
-  { label: "Viết", value: "WRITING" },
+  { label: "NÃ³i", value: "SPEAKING" },
+  { label: "Viáº¿t", value: "WRITING" },
 ];
 
 const statusOptions: Array<{ label: string; value: ProgressStatus | "ALL" }> = [
-  { label: "Tất cả", value: "ALL" },
-  { label: "Đang học", value: "IN_PROGRESS" },
-  { label: "Hoàn thành", value: "COMPLETED" },
-  { label: "Bắt đầu", value: "STARTED" },
+  { label: "Táº¥t cáº£", value: "ALL" },
+  { label: "Äang há»c", value: "IN_PROGRESS" },
+  { label: "HoÃ n thÃ nh", value: "COMPLETED" },
+  { label: "Báº¯t Ä‘áº§u", value: "STARTED" },
 ];
 
 function formatDate(value: string) {
@@ -40,7 +40,7 @@ function formatDate(value: string) {
 function durationLabel(seconds?: number | null) {
   if (!seconds) return null;
   const minutes = Math.max(1, Math.round(seconds / 60));
-  return `${minutes} phút`;
+  return `${minutes} phÃºt`;
 }
 
 function ActivityItem({ item }: { item: LearningActivity }) {
@@ -65,12 +65,12 @@ function ActivityItem({ item }: { item: LearningActivity }) {
         <div className="mt-2 flex flex-wrap gap-2 text-xs font-black">
           {typeof item.score === "number" && (
             <span className="rounded-full bg-emerald-50 px-2 py-1 text-emerald-700">
-              Điểm {item.score}
+              Äiá»ƒm {item.score}
             </span>
           )}
           {typeof item.accuracy === "number" && (
             <span className="rounded-full bg-sky-50 px-2 py-1 text-sky-700">
-              Chính xác {item.accuracy}%
+              ChÃ­nh xÃ¡c {item.accuracy}%
             </span>
           )}
           {typeof item.xpEarned === "number" && (
@@ -126,7 +126,7 @@ export default function HistoryPage() {
       setCursor(result.pagination.nextCursor);
       setHasMore(result.pagination.hasMore);
     } catch {
-      setError("Không tải được lịch sử học tập. Vui lòng thử lại.");
+      setError("KhÃ´ng táº£i Ä‘Æ°á»£c lá»‹ch sá»­ há»c táº­p. Vui lÃ²ng thá»­ láº¡i.");
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -143,7 +143,7 @@ export default function HistoryPage() {
         setHasMore(result.pagination.hasMore);
       })
       .catch(() => {
-        if (active) setError("Không tải được lịch sử học tập. Vui lòng thử lại.");
+        if (active) setError("KhÃ´ng táº£i Ä‘Æ°á»£c lá»‹ch sá»­ há»c táº­p. Vui lÃ²ng thá»­ láº¡i.");
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -162,13 +162,13 @@ export default function HistoryPage() {
               <Filter size={16} />
               Unified history
             </div>
-            <h1 className="text-3xl font-black text-slate-950 sm:text-4xl">Lịch sử học tập</h1>
+            <h1 className="text-3xl font-black text-slate-950 sm:text-4xl">Lá»‹ch sá»­ há»c táº­p</h1>
             <p className="mt-2 text-sm font-bold text-slate-500">
-              Tất cả hoạt động học của bạn được gom về một timeline thống nhất.
+              Táº¥t cáº£ hoáº¡t Ä‘á»™ng há»c cá»§a báº¡n Ä‘Æ°á»£c gom vá» má»™t timeline thá»‘ng nháº¥t.
             </p>
           </div>
           <Link href="/progress" className="rounded-2xl bg-violet-600 px-5 py-3 font-black text-white">
-            Xem tiến độ
+            Xem tiáº¿n Ä‘á»™
           </Link>
         </div>
       </section>
@@ -181,7 +181,7 @@ export default function HistoryPage() {
             setSkill(event.target.value as ProgressSkill | "ALL");
           }}
           className="rounded-2xl border border-slate-200 bg-white px-4 py-3 font-bold text-slate-700"
-          aria-label="Lọc kỹ năng"
+          aria-label="Lá»c ká»¹ nÄƒng"
         >
           {skillOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -196,7 +196,7 @@ export default function HistoryPage() {
             setStatus(event.target.value as ProgressStatus | "ALL");
           }}
           className="rounded-2xl border border-slate-200 bg-white px-4 py-3 font-bold text-slate-700"
-          aria-label="Lọc trạng thái"
+          aria-label="Lá»c tráº¡ng thÃ¡i"
         >
           {statusOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -211,11 +211,11 @@ export default function HistoryPage() {
             setRange(event.target.value as "7d" | "30d" | "90d");
           }}
           className="rounded-2xl border border-slate-200 bg-white px-4 py-3 font-bold text-slate-700"
-          aria-label="Khoảng thời gian"
+          aria-label="Khoáº£ng thá»i gian"
         >
-          <option value="7d">7 ngày</option>
-          <option value="30d">30 ngày</option>
-          <option value="90d">90 ngày</option>
+          <option value="7d">7 ngÃ y</option>
+          <option value="30d">30 ngÃ y</option>
+          <option value="90d">90 ngÃ y</option>
         </select>
       </section>
 
@@ -234,7 +234,7 @@ export default function HistoryPage() {
             className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-5 py-3 font-black text-white"
           >
             <RefreshCcw size={18} />
-            Thử lại
+            Thá»­ láº¡i
           </button>
         </section>
       ) : items.length ? (
@@ -249,14 +249,14 @@ export default function HistoryPage() {
               disabled={loadingMore}
               className="w-full rounded-2xl border border-violet-200 bg-white px-5 py-3 font-black text-violet-700 disabled:opacity-60"
             >
-              {loadingMore ? "Đang tải..." : "Xem thêm"}
+              {loadingMore ? "Äang táº£i..." : "Xem thÃªm"}
             </button>
           )}
         </section>
       ) : (
         <section className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center">
-          <p className="font-black text-slate-700">Chưa có hoạt động trong bộ lọc này.</p>
-          <p className="mt-2 text-sm font-bold text-slate-500">Hãy học thêm một bài rồi quay lại nhé.</p>
+          <p className="font-black text-slate-700">ChÆ°a cÃ³ hoáº¡t Ä‘á»™ng trong bá»™ lá»c nÃ y.</p>
+          <p className="mt-2 text-sm font-bold text-slate-500">HÃ£y há»c thÃªm má»™t bÃ i rá»“i quay láº¡i nhÃ©.</p>
         </section>
       )}
     </div>

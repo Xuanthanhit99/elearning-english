@@ -1,4 +1,4 @@
-export type WritingProcessingStatus = {
+﻿export type WritingProcessingStatus = {
   id: string | null;
   sessionId: string;
   status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | string;

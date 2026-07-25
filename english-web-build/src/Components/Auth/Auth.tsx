@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -54,16 +54,16 @@ export default function Auth({ mode = "login" }: { mode?: Mode }) {
                   ease: "easeOut",
                 },
               }}
-              className="mx-auto w-full max-w-xl rounded-[28px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-5 shadow-[0_30px_90px_rgba(31,42,68,0.12)] sm:rounded-[32px] sm:p-7 dark:shadow-black/30"
+              className="mx-auto w-full max-w-xl rounded-[28px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-5 shadow-[0_30px_90px_rgba(31,42,68,0.12)] sm:rounded-[32px] sm:p-7 dark:shadow-black/30"
             >
-              <div className="mb-8 grid grid-cols-2 rounded-full bg-[var(--lumiverse-card-soft)] p-1.5">
+              <div className="mb-8 grid grid-cols-2 rounded-full bg-[var(--BeaconVie-card-soft)] p-1.5">
                 <button
                   type="button"
                   onClick={() => setCurrentMode("login")}
                   className={`rounded-full py-3 text-center font-extrabold transition-all duration-300 ${
                     currentMode === "login"
-                      ? "bg-[var(--lumiverse-card)] text-[var(--lumiverse-ink)] shadow"
-                      : "text-[var(--lumiverse-muted)]"
+                      ? "bg-[var(--BeaconVie-card)] text-[var(--BeaconVie-ink)] shadow"
+                      : "text-[var(--BeaconVie-muted)]"
                   }`}
                 >
                   {t("auth.loginTab")}
@@ -74,8 +74,8 @@ export default function Auth({ mode = "login" }: { mode?: Mode }) {
                   onClick={() => setCurrentMode("register")}
                   className={`rounded-full py-3 text-center font-extrabold transition-all duration-300 ${
                     currentMode === "register"
-                      ? "bg-[var(--lumiverse-card)] text-[var(--lumiverse-ink)] shadow"
-                      : "text-[var(--lumiverse-muted)]"
+                      ? "bg-[var(--BeaconVie-card)] text-[var(--BeaconVie-ink)] shadow"
+                      : "text-[var(--BeaconVie-muted)]"
                   }`}
                 >
                   {t("auth.registerTab")}
@@ -127,15 +127,15 @@ function LeftContent() {
         <AppLogo href="/" />
       </div>
 
-      <div className="mb-8 inline-flex rounded-full border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] px-5 py-3 font-extrabold text-[var(--lumiverse-primary)] shadow-sm">
+      <div className="mb-8 inline-flex rounded-full border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] px-5 py-3 font-extrabold text-[var(--BeaconVie-primary)] shadow-sm">
         {t("auth.companionBadge")}
       </div>
 
-      <h2 className="max-w-2xl text-5xl font-extrabold leading-tight text-[var(--lumiverse-ink)] lg:text-6xl">
+      <h2 className="max-w-2xl text-5xl font-extrabold leading-tight text-[var(--BeaconVie-ink)] lg:text-6xl">
         {t("auth.headline")}
       </h2>
 
-      <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--lumiverse-muted)]">
+      <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--BeaconVie-muted)]">
         {t("auth.description")}
       </p>
 
@@ -143,27 +143,27 @@ function LeftContent() {
         {benefits.map((item) => (
           <div key={item} className="flex items-center gap-4">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 font-extrabold text-emerald-500 dark:bg-emerald-500/10 dark:text-emerald-300">
-              ✓
+              âœ“
             </span>
-            <span className="font-extrabold text-[var(--lumiverse-ink)]">{item}</span>
+            <span className="font-extrabold text-[var(--BeaconVie-ink)]">{item}</span>
           </div>
         ))}
       </div>
 
-      <div className="mt-10 flex max-w-md items-center gap-5 rounded-[26px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.06)] dark:shadow-black/20">
+      <div className="mt-10 flex max-w-md items-center gap-5 rounded-[26px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.06)] dark:shadow-black/20">
         <Image
-          src="/cat-home.jpg"
-          alt="Lumi Mentor"
+          src="/brand/beaconvie-ai-mascot.png"
+          alt="Beacon Mentor"
           width={90}
           height={90}
           className="rounded-2xl object-cover"
         />
 
         <div>
-          <h3 className="text-xl font-extrabold text-[var(--lumiverse-ink)]">
+          <h3 className="text-xl font-extrabold text-[var(--BeaconVie-ink)]">
             {t("auth.mentorTitle")}
           </h3>
-          <p className="mt-2 leading-7 text-[var(--lumiverse-muted)]">
+          <p className="mt-2 leading-7 text-[var(--BeaconVie-muted)]">
             {t("auth.mentorDescription")}
           </p>
         </div>
@@ -237,11 +237,11 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
   };
   return (
     <div>
-      <h2 className="text-3xl font-extrabold text-[var(--lumiverse-ink)]">
+      <h2 className="text-3xl font-extrabold text-[var(--BeaconVie-ink)]">
         {t("auth.loginTitle")}
       </h2>
 
-      <p className="mt-3 text-[var(--lumiverse-muted)]">
+      <p className="mt-3 text-[var(--BeaconVie-muted)]">
         {t("auth.loginDescription")}
       </p>
 
@@ -277,14 +277,14 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
               value={recoveryCode}
               onChange={setRecoveryCode}
             />
-            <p className="text-xs font-bold text-[var(--lumiverse-ink)]">
+            <p className="text-xs font-bold text-[var(--BeaconVie-ink)]">
               {t("auth.twoFactorHint")}
             </p>
           </div>
         )}
 
         <div className="flex items-center justify-between gap-3 text-sm">
-          <label className="flex items-center gap-2 font-bold text-[var(--lumiverse-muted)]">
+          <label className="flex items-center gap-2 font-bold text-[var(--BeaconVie-muted)]">
             <input
               type="checkbox"
               onChange={(e) => setRememberMe(e.target.checked)}
@@ -295,7 +295,7 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
 
           <Link
             href="/forgot-password"
-            className="font-extrabold text-[var(--lumiverse-primary)]"
+            className="font-extrabold text-[var(--BeaconVie-primary)]"
           >
             {t("auth.forgotPassword")}
           </Link>
@@ -304,18 +304,18 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-2xl bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] py-4 font-extrabold text-white shadow-xl shadow-blue-200/70 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60 dark:shadow-black/20"
+          className="w-full rounded-2xl bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] py-4 font-extrabold text-white shadow-xl shadow-blue-200/70 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60 dark:shadow-black/20"
         >
           {isSubmitting ? t("auth.loggingIn") : t("auth.loginButton")}
         </button>
       </form>
 
-      <p className="mt-6 text-center font-bold text-[var(--lumiverse-muted)]">
+      <p className="mt-6 text-center font-bold text-[var(--BeaconVie-muted)]">
         {t("auth.noAccount")}{" "}
         <button
           type="button"
           onClick={onSwitch}
-          className="font-extrabold text-[var(--lumiverse-primary)]"
+          className="font-extrabold text-[var(--BeaconVie-primary)]"
         >
           {t("auth.registerButton")}
         </button>
@@ -387,11 +387,11 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
 
   return (
     <div>
-      <h2 className="text-3xl font-extrabold text-[var(--lumiverse-ink)]">
+      <h2 className="text-3xl font-extrabold text-[var(--BeaconVie-ink)]">
         {t("auth.registerTitle")}
       </h2>
 
-      <p className="mt-3 text-[var(--lumiverse-muted)]">
+      <p className="mt-3 text-[var(--BeaconVie-muted)]">
         {t("auth.registerDescription")}
       </p>
 
@@ -421,25 +421,25 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
           onChange={setPassword}
         />
 
-        <label className="flex items-center gap-2 text-sm font-bold text-[var(--lumiverse-muted)]">
+        <label className="flex items-center gap-2 text-sm font-bold text-[var(--BeaconVie-muted)]">
           <input type="checkbox" />
           {t("auth.termsAgree")}
         </label>
 
         <button
           type="submit"
-          className="w-full rounded-2xl bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] py-4 font-extrabold text-white shadow-xl shadow-blue-200/70 transition hover:opacity-95 dark:shadow-black/20"
+          className="w-full rounded-2xl bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] py-4 font-extrabold text-white shadow-xl shadow-blue-200/70 transition hover:opacity-95 dark:shadow-black/20"
         >
           {t("auth.registerButton")}
         </button>
       </form>
 
-      <p className="mt-6 text-center font-bold text-[var(--lumiverse-muted)]">
+      <p className="mt-6 text-center font-bold text-[var(--BeaconVie-muted)]">
         {t("auth.haveAccount")}{" "}
         <button
           type="button"
           onClick={onSwitch}
-          className="font-extrabold text-[var(--lumiverse-primary)]"
+          className="font-extrabold text-[var(--BeaconVie-primary)]"
         >
           {t("auth.loginButton")}
         </button>
@@ -476,7 +476,7 @@ function SocialButtons({ label }: { label: string }) {
             rememberRedirect();
             window.location.href = `${API_BASE_URL}/auth/google`;
           }}
-          className="rounded-2xl border border-[var(--lumiverse-border)] py-3 font-extrabold text-[var(--lumiverse-ink)] transition hover:bg-[var(--lumiverse-card)]"
+          className="rounded-2xl border border-[var(--BeaconVie-border)] py-3 font-extrabold text-[var(--BeaconVie-ink)] transition hover:bg-[var(--BeaconVie-card)]"
         >
           Google
         </button>
@@ -487,16 +487,16 @@ function SocialButtons({ label }: { label: string }) {
             rememberRedirect();
             window.location.href = `${API_BASE_URL}/auth/facebook`;
           }}
-          className="rounded-2xl border border-[var(--lumiverse-border)] py-3 font-extrabold text-[var(--lumiverse-ink)] transition hover:bg-[var(--lumiverse-card)]"
+          className="rounded-2xl border border-[var(--BeaconVie-border)] py-3 font-extrabold text-[var(--BeaconVie-ink)] transition hover:bg-[var(--BeaconVie-card)]"
         >
           Facebook
         </button>
       </div>
 
       <div className="mt-7 flex items-center gap-3">
-        <div className="h-px flex-1 bg-[var(--lumiverse-border)]" />
-        <span className="text-sm font-extrabold text-[var(--lumiverse-muted)]">{label}</span>
-        <div className="h-px flex-1 bg-[var(--lumiverse-border)]" />
+        <div className="h-px flex-1 bg-[var(--BeaconVie-border)]" />
+        <span className="text-sm font-extrabold text-[var(--BeaconVie-muted)]">{label}</span>
+        <div className="h-px flex-1 bg-[var(--BeaconVie-border)]" />
       </div>
     </>
   );
@@ -517,19 +517,19 @@ function Input({
 }) {
   return (
     <label className="block">
-      <span className="font-extrabold text-[var(--lumiverse-muted)]">{label}</span>
+      <span className="font-extrabold text-[var(--BeaconVie-muted)]">{label}</span>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className="
-          mt-2 w-full rounded-2xl border border-[var(--lumiverse-border)]
-          bg-[var(--lumiverse-card-soft)] px-5 py-4
-          font-bold text-[var(--lumiverse-ink)]
+          mt-2 w-full rounded-2xl border border-[var(--BeaconVie-border)]
+          bg-[var(--BeaconVie-card-soft)] px-5 py-4
+          font-bold text-[var(--BeaconVie-ink)]
           outline-none transition
-          placeholder:text-[var(--lumiverse-muted)]
-          focus:border-[var(--lumiverse-primary)] focus:bg-[var(--lumiverse-card)]
+          placeholder:text-[var(--BeaconVie-muted)]
+          focus:border-[var(--BeaconVie-primary)] focus:bg-[var(--BeaconVie-card)]
         "
       />
     </label>
@@ -549,10 +549,10 @@ function RegisterSuccessModal({
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="w-full max-w-md overflow-hidden rounded-[32px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] shadow-2xl">
+      <div className="w-full max-w-md overflow-hidden rounded-[32px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] shadow-2xl">
         {/* Header */}
-        <div className="bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] p-8 text-center text-white">
-          <div className="animate-bounce text-6xl">🎉</div>
+        <div className="bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] p-8 text-center text-white">
+          <div className="animate-bounce text-6xl">ðŸŽ‰</div>
 
           <h2 className="mt-4 text-3xl font-extrabold">{t("auth.successTitle")}</h2>
 
@@ -562,16 +562,16 @@ function RegisterSuccessModal({
         {/* Body */}
         <div className="p-7 text-center">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-green-50 text-4xl dark:bg-emerald-500/10">
-            ✅
+            âœ…
           </div>
 
-          <p className="mt-5 leading-7 text-[var(--lumiverse-muted)]">
+          <p className="mt-5 leading-7 text-[var(--BeaconVie-muted)]">
             {t("auth.successDescription")}
           </p>
 
           <button
             onClick={onClose}
-            className="mt-6 w-full rounded-2xl bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] py-4 font-extrabold text-white transition hover:opacity-95"
+            className="mt-6 w-full rounded-2xl bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] py-4 font-extrabold text-white transition hover:opacity-95"
           >
             {t("auth.successLoginNow")}
           </button>

@@ -1,4 +1,4 @@
-export function safeNotificationHref(href?: string | null) {
+﻿export function safeNotificationHref(href?: string | null) {
   if (!href) return "/notifications";
   const value = href.trim();
 

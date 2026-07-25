@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   CommunityPost,
   CommunityReactionType,
   CreateCommunityPostInput,
@@ -48,7 +48,7 @@ export async function getCommunityFeed(
     return (data?.data ?? data) as CommunityFeedResponse;
   } catch (error) {
     throw new Error(
-      getApiErrorMessage(error, 'Không thể tải bảng tin cộng đồng'),
+      getApiErrorMessage(error, 'KhÃ´ng thá»ƒ táº£i báº£ng tin cá»™ng Ä‘á»“ng'),
     );
   }
 }
@@ -60,7 +60,7 @@ export async function createCommunityPost(
     const { data } = await api.post('/community/posts', payload);
     return (data?.data ?? data) as CommunityPost;
   } catch (error) {
-    throw new Error(getApiErrorMessage(error, 'Không thể tạo bài viết'));
+    throw new Error(getApiErrorMessage(error, 'KhÃ´ng thá»ƒ táº¡o bÃ i viáº¿t'));
   }
 }
 
@@ -76,7 +76,7 @@ export async function reactCommunityPost(
     return data?.data ?? data;
   } catch (error) {
     throw new Error(
-      getApiErrorMessage(error, 'Không thể cập nhật cảm xúc'),
+      getApiErrorMessage(error, 'KhÃ´ng thá»ƒ cáº­p nháº­t cáº£m xÃºc'),
     );
   }
 }
@@ -88,7 +88,7 @@ export async function removeCommunityReaction(postId: string) {
     );
     return data?.data ?? data;
   } catch (error) {
-    throw new Error(getApiErrorMessage(error, 'Không thể xóa cảm xúc'));
+    throw new Error(getApiErrorMessage(error, 'KhÃ´ng thá»ƒ xÃ³a cáº£m xÃºc'));
   }
 }
 
@@ -104,7 +104,7 @@ export async function toggleCommunityBookmark(
     return data?.data ?? data;
   } catch (error) {
     throw new Error(
-      getApiErrorMessage(error, 'Không thể cập nhật bài viết đã lưu'),
+      getApiErrorMessage(error, 'KhÃ´ng thá»ƒ cáº­p nháº­t bÃ i viáº¿t Ä‘Ã£ lÆ°u'),
     );
   }
 }
@@ -133,8 +133,8 @@ export async function createCommunityComment(
       getApiErrorMessage(
         error,
         parentId
-          ? 'Không thể trả lời bình luận'
-          : 'Không thể gửi bình luận',
+          ? 'KhÃ´ng thá»ƒ tráº£ lá»i bÃ¬nh luáº­n'
+          : 'KhÃ´ng thá»ƒ gá»­i bÃ¬nh luáº­n',
       ),
     );
   }

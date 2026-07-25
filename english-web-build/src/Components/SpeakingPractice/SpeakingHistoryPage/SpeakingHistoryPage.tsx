@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -65,7 +65,7 @@ export default function SpeakingHistoryPage() {
   }
 
   if (!data) {
-    return <div className="p-10 text-red-500">Không tải được history.</div>;
+    return <div className="p-10 text-red-500">KhÃ´ng táº£i Ä‘Æ°á»£c history.</div>;
   }
 
   return (
@@ -340,7 +340,7 @@ function ProgressCard({
 
         <div className="space-y-5 text-sm">
           <Legend title="Completed" value={progress.completed} />
-          <Legend title="In Progress" value={progress.inProgress} />
+          <Legend title="Đang học" value={progress.inProgress} />
           <Legend title="Not Started" value={progress.notStarted} />
         </div>
       </div>
@@ -369,16 +369,16 @@ function SummaryCard({
       </h2>
 
       <div className="grid grid-cols-2 gap-4">
-        <SummaryBox icon="🎙️" value={summary.sessions} label="Sessions" />
-        <SummaryBox icon="🎯" value={`${summary.avgScore}%`} label="Avg. Score" />
+        <SummaryBox icon="ðŸŽ™ï¸" value={summary.sessions} label="Sessions" />
+        <SummaryBox icon="ðŸŽ¯" value={`${summary.avgScore}%`} label="Avg. Score" />
         <SummaryBox
-          icon="🔊"
+          icon="ðŸ”Š"
           value={summary.avgDurationText}
           label="Avg. Duration"
         />
         <SummaryBox
-          icon="📈"
-          value={`↑ ${summary.improvementPercent}%`}
+          icon="ðŸ“ˆ"
+          value={`â†‘ ${summary.improvementPercent}%`}
           label="Improvement"
         />
       </div>
@@ -469,7 +469,7 @@ function Pagination({
         onClick={() => onPageChange(page - 1)}
         className="h-11 w-11 rounded-lg border border-indigo-100 bg-white disabled:opacity-40"
       >
-        ‹
+        â€¹
       </button>
 
       {Array.from({ length: Math.min(totalPages, 5) }).map((_, index) => {
@@ -510,7 +510,7 @@ function Pagination({
         onClick={() => onPageChange(page + 1)}
         className="h-11 w-11 rounded-lg border border-indigo-100 bg-white disabled:opacity-40"
       >
-        ›
+        â€º
       </button>
     </div>
   );

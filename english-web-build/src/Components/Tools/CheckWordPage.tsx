@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { api } from "@/src/lib/axios";
 import { useState } from "react";
@@ -27,11 +27,11 @@ const histories = ["sustainable", "environment", "renewable", "carbon footprint"
 const savedWords = ["biodiversity", "conservation", "ecosystem", "sustainable", "pollution"];
 
 const languages = [
-  { label: "Tiếng Anh", value: "en" },
-  { label: "Tiếng Việt", value: "vi" },
-  { label: "Tiếng Nhật", value: "ja" },
-  { label: "Tiếng Hàn", value: "ko" },
-  { label: "Tiếng Trung", value: "zh" },
+  { label: "Tiáº¿ng Anh", value: "en" },
+  { label: "Tiáº¿ng Viá»‡t", value: "vi" },
+  { label: "Tiáº¿ng Nháº­t", value: "ja" },
+  { label: "Tiáº¿ng HÃ n", value: "ko" },
+  { label: "Tiáº¿ng Trung", value: "zh" },
 ];
 
 const levels = ["Beginner", "Intermediate", "Advanced"];
@@ -80,25 +80,25 @@ export default function CheckWordPage() {
       <section className="mx-auto max-w-7xl">
         {/* <div className="mb-8 flex flex-col gap-4 rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-orange-100 text-2xl">🦊</div>
+            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-orange-100 text-2xl">ðŸ¦Š</div>
             <div>
-              <h1 className="text-2xl font-black">Lumi<span className="text-violet-600">Lingo</span></h1>
-              <p className="text-sm font-semibold text-slate-500">Check từ nhanh</p>
+              <h1 className="text-2xl font-black">Beacon<span className="text-violet-600">Lingo</span></h1>
+              <p className="text-sm font-semibold text-slate-500">Check tá»« nhanh</p>
             </div>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 lg:w-[560px]">
-            <TopBadge icon="🔥" value="18" label="Streak" />
-            <TopBadge icon="⭐" value="2,450" label="XP hôm nay" />
-            <TopBadge icon="💎" value="5,230" label="Xu" />
+            <TopBadge icon="ðŸ”¥" value="18" label="Streak" />
+            <TopBadge icon="â­" value="2,450" label="XP hÃ´m nay" />
+            <TopBadge icon="ðŸ’Ž" value="5,230" label="Xu" />
           </div>
         </div> */}
 
         <div className="mb-6">
-          <div className="inline-flex rounded-full bg-violet-100 px-4 py-2 text-sm font-extrabold text-violet-700">🔤 Công cụ miễn phí</div>
-          <h2 className="mt-4 text-4xl font-black tracking-tight lg:text-5xl">Check từ nhanh ⚡</h2>
+          <div className="inline-flex rounded-full bg-violet-100 px-4 py-2 text-sm font-extrabold text-violet-700">ðŸ”¤ CÃ´ng cá»¥ miá»…n phÃ­</div>
+          <h2 className="mt-4 text-4xl font-black tracking-tight lg:text-5xl">Check tá»« nhanh âš¡</h2>
           <p className="mt-3 max-w-3xl text-base leading-7 text-slate-500">
-            Tra nghĩa, IPA, phát âm, ví dụ, loại từ, từ đồng nghĩa và cụm từ thường dùng theo ngữ cảnh.
+            Tra nghÄ©a, IPA, phÃ¡t Ã¢m, vÃ­ dá»¥, loáº¡i tá»«, tá»« Ä‘á»“ng nghÄ©a vÃ  cá»¥m tá»« thÆ°á»ng dÃ¹ng theo ngá»¯ cáº£nh.
           </p>
         </div>
 
@@ -106,16 +106,16 @@ export default function CheckWordPage() {
           <section className="rounded-[30px] border border-slate-200 bg-white p-4 shadow-[0_24px_70px_rgba(31,42,68,0.06)] lg:p-6">
             <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
               <div className="flex h-14 items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 focus-within:border-violet-500">
-                <span className="text-xl">🔎</span>
+                <span className="text-xl">ðŸ”Ž</span>
                 <input
                   value={word}
                   onChange={(e) => setWord(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && onClickCheckWork()}
                   className="w-full bg-transparent font-extrabold outline-none"
-                  placeholder="Nhập từ cần check..."
+                  placeholder="Nháº­p tá»« cáº§n check..."
                 />
                 {word && (
-                  <button type="button" onClick={() => setWord("")} className="text-xl text-slate-400">×</button>
+                  <button type="button" onClick={() => setWord("")} className="text-xl text-slate-400">Ã—</button>
                 )}
               </div>
 
@@ -125,15 +125,15 @@ export default function CheckWordPage() {
                 disabled={loading}
                 className="h-14 rounded-2xl bg-violet-600 px-8 font-black text-white shadow-lg shadow-violet-200 transition hover:bg-violet-700 disabled:opacity-60"
               >
-                {loading ? "Đang tra cứu..." : "↻ Tra cứu"}
+                {loading ? "Äang tra cá»©u..." : "â†» Tra cá»©u"}
               </button>
             </div>
 
             <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_1fr_180px]">
-              <SelectBox label="Dịch từ" value={fromLang} onChange={setFromLang} options={languages} />
+              <SelectBox label="Dá»‹ch tá»«" value={fromLang} onChange={setFromLang} options={languages} />
               <SelectBox label="Sang" value={toLang} onChange={setToLang} options={languages} />
               <label className="block">
-                <span className="mb-2 block text-xs font-black text-slate-500">Trình độ</span>
+                <span className="mb-2 block text-xs font-black text-slate-500">TrÃ¬nh Ä‘á»™</span>
                 <select value={level} onChange={(e) => setLevel(e.target.value)} className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold outline-none focus:border-violet-500">
                   {levels.map((item) => <option key={item}>{item}</option>)}
                 </select>
@@ -177,33 +177,33 @@ export default function CheckWordPage() {
           </section>
 
           <aside className="space-y-5">
-            <RightCard title="Lịch sử tra cứu" action="Xóa tất cả">
+            <RightCard title="Lá»‹ch sá»­ tra cá»©u" action="XÃ³a táº¥t cáº£">
               {histories.map((item, index) => (
                 <button key={item} type="button" onClick={() => setWord(item)} className="flex w-full items-center justify-between rounded-2xl px-2 py-3 text-left transition hover:bg-slate-50">
-                  <span className="flex items-center gap-3 font-bold text-slate-600"><span>🕘</span>{item}</span>
-                  <span className={`rounded-lg px-3 py-1 text-xs font-black ${index > 2 ? "bg-emerald-100 text-emerald-600" : "bg-violet-100 text-violet-600"}`}>{index > 2 ? "Cụm từ" : "Từ vựng"}</span>
+                  <span className="flex items-center gap-3 font-bold text-slate-600"><span>ðŸ•˜</span>{item}</span>
+                  <span className={`rounded-lg px-3 py-1 text-xs font-black ${index > 2 ? "bg-emerald-100 text-emerald-600" : "bg-violet-100 text-violet-600"}`}>{index > 2 ? "Cá»¥m tá»«" : "Tá»« vá»±ng"}</span>
                 </button>
               ))}
-              <button className="mt-3 w-full font-black text-violet-600">Xem tất cả lịch sử →</button>
+              <button className="mt-3 w-full font-black text-violet-600">Xem táº¥t cáº£ lá»‹ch sá»­ â†’</button>
             </RightCard>
 
-            <RightCard title="Từ đã lưu" action="Xem tất cả">
+            <RightCard title="Tá»« Ä‘Ã£ lÆ°u" action="Xem táº¥t cáº£">
               {savedWords.map((item, index) => (
                 <div key={item} className="flex items-center justify-between py-3">
                   <div className="flex items-center gap-3">
                     <span className="font-bold text-slate-600">{item}</span>
                     <span className="rounded-lg bg-emerald-100 px-2 py-1 text-xs font-black text-emerald-600">{index > 1 ? "B2" : "B1"}</span>
                   </div>
-                  <span className="text-violet-600">🔖</span>
+                  <span className="text-violet-600">ðŸ”–</span>
                 </div>
               ))}
             </RightCard>
 
             <div className="relative overflow-hidden rounded-[28px] border border-violet-100 bg-violet-50 p-6">
-              <h3 className="text-xl font-black">💡 Mẹo học từ vựng</h3>
-              <p className="mt-3 max-w-[230px] text-sm leading-6 text-slate-600">Tra cứu từ mới mỗi ngày giúp bạn mở rộng vốn từ và cải thiện kỹ năng giao tiếp hiệu quả.</p>
-              <button className="mt-5 rounded-2xl border border-violet-200 bg-white px-5 py-3 font-black text-violet-600">Khám phá ngay →</button>
-              <div className="absolute bottom-5 right-5 text-6xl">🦊</div>
+              <h3 className="text-xl font-black">ðŸ’¡ Máº¹o há»c tá»« vá»±ng</h3>
+              <p className="mt-3 max-w-[230px] text-sm leading-6 text-slate-600">Tra cá»©u tá»« má»›i má»—i ngÃ y giÃºp báº¡n má»Ÿ rá»™ng vá»‘n tá»« vÃ  cáº£i thiá»‡n ká»¹ nÄƒng giao tiáº¿p hiá»‡u quáº£.</p>
+              <button className="mt-5 rounded-2xl border border-violet-200 bg-white px-5 py-3 font-black text-violet-600">KhÃ¡m phÃ¡ ngay â†’</button>
+              <div className="absolute bottom-5 right-5 text-6xl">ðŸ¦Š</div>
             </div>
           </aside>
         </div>
@@ -224,13 +224,13 @@ function WordResultCard({
   onSpeak: (text: string, audioUrl?: string | null) => void;
 }) {
   if (!word) {
-    return <div className="rounded-[26px] border border-slate-200 bg-slate-50 p-8 text-center font-bold text-slate-500">Nhập từ và bấm Tra cứu để xem kết quả.</div>;
+    return <div className="rounded-[26px] border border-slate-200 bg-slate-50 p-8 text-center font-bold text-slate-500">Nháº­p tá»« vÃ  báº¥m Tra cá»©u Ä‘á»ƒ xem káº¿t quáº£.</div>;
   }
 
   const displayWord = word.word || fallbackWord;
   const ipa = word.ipa || word.phonetic || "";
-  const meaning = word.mainMeaning || word.meaning || word.definition || "Chưa có nghĩa chính.";
-  const tags = word.tags?.length ? word.tags : [word.level || "B1", word.partOfSpeech || "Từ vựng"];
+  const meaning = word.mainMeaning || word.meaning || word.definition || "ChÆ°a cÃ³ nghÄ©a chÃ­nh.";
+  const tags = word.tags?.length ? word.tags : [word.level || "B1", word.partOfSpeech || "Tá»« vá»±ng"];
 
   return (
     <div className="rounded-[28px] border border-slate-200 bg-white p-6">
@@ -244,7 +244,7 @@ function WordResultCard({
               disabled={speaking || !displayWord}
               className={`grid h-10 w-10 place-items-center rounded-xl bg-violet-100 text-violet-600 transition disabled:cursor-not-allowed ${speaking ? "animate-pulse opacity-70" : "hover:bg-violet-200"}`}
             >
-              🔊
+              ðŸ”Š
             </button>
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -252,28 +252,28 @@ function WordResultCard({
             {tags.map((tag) => <span key={tag} className="rounded-lg bg-emerald-100 px-2 py-1 text-xs font-black text-emerald-600">{tag}</span>)}
           </div>
 
-          <Info title="Loại từ" text={word.partOfSpeech || "Chưa có loại từ."} />
-          <Info title="Nghĩa" text={meaning} />
+          <Info title="Loáº¡i tá»«" text={word.partOfSpeech || "ChÆ°a cÃ³ loáº¡i tá»«."} />
+          <Info title="NghÄ©a" text={meaning} />
 
           <div className="mt-5 rounded-2xl bg-emerald-50 p-4">
-            <p className="font-black text-emerald-700">Cụm từ hay dùng</p>
-            <p className="mt-1 text-sm font-semibold text-slate-600">{word.phrases?.[0]?.phrase || "Chưa có cụm từ."} {word.phrases?.[0]?.meaning ? `- ${word.phrases[0].meaning}` : ""}</p>
+            <p className="font-black text-emerald-700">Cá»¥m tá»« hay dÃ¹ng</p>
+            <p className="mt-1 text-sm font-semibold text-slate-600">{word.phrases?.[0]?.phrase || "ChÆ°a cÃ³ cá»¥m tá»«."} {word.phrases?.[0]?.meaning ? `- ${word.phrases[0].meaning}` : ""}</p>
           </div>
         </div>
 
         <div>
-          <div className="grid h-56 place-items-center rounded-[26px] bg-gradient-to-br from-sky-100 via-emerald-100 to-violet-100 text-7xl">🌳</div>
+          <div className="grid h-56 place-items-center rounded-[26px] bg-gradient-to-br from-sky-100 via-emerald-100 to-violet-100 text-7xl">ðŸŒ³</div>
           <div className="mt-4 grid grid-cols-3 gap-3">
-            <ActionButton text="Lưu từ" icon="🔖" />
-            <ActionButton text="Ôn tập" icon="▦" />
-            <ActionButton text="Chia sẻ" icon="↗" />
+            <ActionButton text="LÆ°u tá»«" icon="ðŸ”–" />
+            <ActionButton text="Ã”n táº­p" icon="â–¦" />
+            <ActionButton text="Chia sáº»" icon="â†—" />
           </div>
         </div>
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">
-        <MiniList title="Từ đồng nghĩa" items={word.synonyms?.map((x) => [x.word, x.meaning]) || []} />
-        <MiniList title="Cụm từ liên quan" items={word.phrases?.map((x) => [x.phrase, x.meaning]) || []} />
+        <MiniList title="Tá»« Ä‘á»“ng nghÄ©a" items={word.synonyms?.map((x) => [x.word, x.meaning]) || []} />
+        <MiniList title="Cá»¥m tá»« liÃªn quan" items={word.phrases?.map((x) => [x.phrase, x.meaning]) || []} />
       </div>
     </div>
   );
@@ -296,7 +296,7 @@ function ExampleCard({
 
   return (
     <div className="mt-6 rounded-[28px] border border-slate-200 bg-white p-6">
-      <h3 className="text-xl font-black">Ví dụ</h3>
+      <h3 className="text-xl font-black">VÃ­ dá»¥</h3>
       <div className="mt-4 space-y-3">
         {list.length ? list.map((item, index) => {
           const key = `example-${index}`;
@@ -309,23 +309,23 @@ function ExampleCard({
                 disabled={speaking || !item.source}
                 className={`grid h-10 w-10 place-items-center rounded-full bg-violet-100 text-violet-600 transition disabled:cursor-not-allowed ${speaking ? "animate-pulse opacity-70" : "hover:bg-violet-200"}`}
               >
-                🔊
+                ðŸ”Š
               </button>
               <div className="flex-1">
                 <p className="font-bold text-[#0f1744]">{highlightWord(item.source, word)}</p>
                 <p className="mt-1 text-sm text-slate-500">{item.target}</p>
               </div>
-              <span className="text-slate-400">☆</span>
+              <span className="text-slate-400">â˜†</span>
             </div>
           );
-        }) : <div className="rounded-2xl bg-slate-50 p-4 font-bold text-slate-500">Sau khi check từ, ví dụ sẽ hiển thị ở đây.</div>}
+        }) : <div className="rounded-2xl bg-slate-50 p-4 font-bold text-slate-500">Sau khi check tá»«, vÃ­ dá»¥ sáº½ hiá»ƒn thá»‹ á»Ÿ Ä‘Ã¢y.</div>}
       </div>
     </div>
   );
 }
 
 function StudySuggestion({ suggestion, word }: { suggestion?: string; word: string }) {
-  return <div className="mt-6 rounded-[26px] bg-gradient-to-r from-violet-600 to-indigo-600 p-6 text-white"><h3 className="text-2xl font-black">Gợi ý học từ này</h3><p className="mt-3 leading-7 text-white/90">{suggestion || `Hãy tự đặt 3 câu với từ “${word}”, sau đó dùng tính năng Check bài để Lumi sửa giúp bạn.`}</p></div>;
+  return <div className="mt-6 rounded-[26px] bg-gradient-to-r from-violet-600 to-indigo-600 p-6 text-white"><h3 className="text-2xl font-black">Gá»£i Ã½ há»c tá»« nÃ y</h3><p className="mt-3 leading-7 text-white/90">{suggestion || `HÃ£y tá»± Ä‘áº·t 3 cÃ¢u vá»›i tá»« â€œ${word}â€, sau Ä‘Ã³ dÃ¹ng tÃ­nh nÄƒng Check bÃ i Ä‘á»ƒ Beacon sá»­a giÃºp báº¡n.`}</p></div>;
 }
 
 function SelectBox({ label, value, onChange, options }: { label: string; value: string; onChange: (value: string) => void; options: { label: string; value: string }[] }) {
@@ -349,19 +349,19 @@ function ActionButton({ icon, text }: { icon: string; text: string }) {
 }
 
 function MiniList({ title, items }: { title: string; items: string[][] }) {
-  return <div className="rounded-2xl border border-slate-200 p-5"><h3 className="font-black">{title}</h3><div className="mt-3 space-y-2">{items.length ? items.slice(0, 4).map(([a, b]) => <div key={`${a}-${b}`} className="flex justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3 text-sm font-bold"><span>{a}</span><span className="text-right text-violet-600">{b}</span></div>) : <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm font-bold text-slate-500">Chưa có dữ liệu.</div>}</div></div>;
+  return <div className="rounded-2xl border border-slate-200 p-5"><h3 className="font-black">{title}</h3><div className="mt-3 space-y-2">{items.length ? items.slice(0, 4).map(([a, b]) => <div key={`${a}-${b}`} className="flex justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3 text-sm font-bold"><span>{a}</span><span className="text-right text-violet-600">{b}</span></div>) : <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm font-bold text-slate-500">ChÆ°a cÃ³ dá»¯ liá»‡u.</div>}</div></div>;
 }
 
 function WordLoading() {
-  return <div className="relative overflow-hidden rounded-[28px] border border-slate-200 bg-white p-10 text-center"><div className="absolute inset-0 bg-gradient-to-r from-transparent via-violet-50 to-transparent" /><div className="relative z-10"><div className="mx-auto grid h-24 w-24 animate-bounce place-items-center rounded-full bg-violet-100 text-5xl">🦊</div><h3 className="mt-5 text-3xl font-black">Lumi đang tìm từ...</h3><p className="mt-3 text-slate-500">Đang tra nghĩa, IPA, ví dụ và cách dùng phù hợp với trình độ của bạn.</p></div></div>;
+  return <div className="relative overflow-hidden rounded-[28px] border border-slate-200 bg-white p-10 text-center"><div className="absolute inset-0 bg-gradient-to-r from-transparent via-violet-50 to-transparent" /><div className="relative z-10"><div className="mx-auto grid h-24 w-24 animate-bounce place-items-center rounded-full bg-violet-100 text-5xl">ðŸ¦Š</div><h3 className="mt-5 text-3xl font-black">Beacon Ä‘ang tÃ¬m tá»«...</h3><p className="mt-3 text-slate-500">Äang tra nghÄ©a, IPA, vÃ­ dá»¥ vÃ  cÃ¡ch dÃ¹ng phÃ¹ há»£p vá»›i trÃ¬nh Ä‘á»™ cá»§a báº¡n.</p></div></div>;
 }
 
 function WordNotFound() {
-  return <div className="rounded-[28px] border border-slate-200 bg-white p-10 text-center"><div className="text-7xl">😿</div><h3 className="mt-4 text-3xl font-black">Lumi chưa tìm thấy từ này</h3><p className="mt-3 text-slate-500">Có thể từ chưa tồn tại hoặc bạn nhập sai chính tả.</p></div>;
+  return <div className="rounded-[28px] border border-slate-200 bg-white p-10 text-center"><div className="text-7xl">ðŸ˜¿</div><h3 className="mt-4 text-3xl font-black">Beacon chÆ°a tÃ¬m tháº¥y tá»« nÃ y</h3><p className="mt-3 text-slate-500">CÃ³ thá»ƒ tá»« chÆ°a tá»“n táº¡i hoáº·c báº¡n nháº­p sai chÃ­nh táº£.</p></div>;
 }
 
 function ServerError({ onRetry }: { onRetry: () => void }) {
-  return <div className="rounded-[28px] border border-red-200 bg-white p-10 text-center"><div className="text-7xl">😵</div><h3 className="mt-4 text-3xl font-black">Lumi gặp sự cố</h3><p className="mt-3 text-slate-500">Máy chủ đang bận hoặc kết nối mạng có vấn đề.</p><button onClick={onRetry} className="mt-6 rounded-2xl bg-violet-600 px-8 py-4 font-black text-white">Thử lại</button></div>;
+  return <div className="rounded-[28px] border border-red-200 bg-white p-10 text-center"><div className="text-7xl">ðŸ˜µ</div><h3 className="mt-4 text-3xl font-black">Beacon gáº·p sá»± cá»‘</h3><p className="mt-3 text-slate-500">MÃ¡y chá»§ Ä‘ang báº­n hoáº·c káº¿t ná»‘i máº¡ng cÃ³ váº¥n Ä‘á».</p><button onClick={onRetry} className="mt-6 rounded-2xl bg-violet-600 px-8 py-4 font-black text-white">Thá»­ láº¡i</button></div>;
 }
 
 function highlightWord(text: string, word: string) {

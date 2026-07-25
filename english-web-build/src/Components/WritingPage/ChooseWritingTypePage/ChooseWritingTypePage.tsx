@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { api } from '@/src/lib/axios';
 import {
@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { LumiverseLoadingState } from '@/src/Components/UI/Lumiverse';
+import { BeaconVieLoadingState } from '@/src/Components/UI/BeaconVie';
 
 type WritingTypeItem = {
   key: string;
@@ -73,8 +73,8 @@ export default function ChooseWritingTypePage({slug}: {slug: string}) {
   }, [slug]);
 
   if (loading)
-    return <LumiverseLoadingState className="m-10" label="Đang tải bài học..." />;
-  if (!data) return <div className="p-10">Không tải được dữ liệu.</div>;
+    return <BeaconVieLoadingState className="m-10" label="Äang táº£i bÃ i há»c..." />;
+  if (!data) return <div className="p-10">KhÃ´ng táº£i Ä‘Æ°á»£c dá»¯ liá»‡u.</div>;
 
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
@@ -98,7 +98,7 @@ export default function ChooseWritingTypePage({slug}: {slug: string}) {
             <TopicHeader topic={data.topic} />
 
             <section className="mt-8 border-t border-slate-200 pt-8">
-              <h2 className="text-2xl font-extrabold">Choose a Writing Type</h2>
+              <h2 className="text-2xl font-extrabold">Chọn dạng bài luyện viết</h2>
               <p className="mt-2 text-sm font-medium text-slate-500">
                 Select a writing type to practice and improve your skills in this topic.
               </p>
@@ -126,9 +126,9 @@ function Breadcrumb({ title }: { title: string }) {
   return (
     <div className="flex items-center gap-3 text-sm font-bold text-slate-400">
       <Home className="h-4 w-4" />
-      <span>Writing</span>
+      <span>Luyện viết</span>
       <ChevronRight className="h-4 w-4" />
-      <span>All Topics</span>
+      <span>Tất cả chủ đề</span>
       <ChevronRight className="h-4 w-4" />
       <span className="text-[#09083f]">{title}</span>
     </div>
@@ -157,7 +157,7 @@ function TopicHeader({ topic }: { topic: ResponseData['topic'] }) {
             <div className="grid h-7 w-7 place-items-center rounded-lg bg-violet-600 text-white">
               <BarChart3 className="h-4 w-4" />
             </div>
-            Overall Progress
+            Tiến độ tổng thể
           </div>
 
           <div className="h-2 w-[250px] rounded-full bg-slate-200">
@@ -173,7 +173,7 @@ function TopicHeader({ topic }: { topic: ResponseData['topic'] }) {
         <div className="mt-7 flex items-center gap-10 text-sm font-bold text-slate-500">
           <span className="flex items-center gap-2">
             <BookOpen className="h-5 w-5" />
-            {topic.lessonCount} Lessons
+            {topic.lessonCount} Bài học
           </span>
 
           <span className="flex items-center gap-2">
@@ -219,7 +219,7 @@ function WritingTypeCard({
 
       <div className="absolute bottom-6 left-6 flex items-center gap-2 text-sm font-bold text-slate-500">
         <BookOpen className={`h-4 w-4 ${theme.text}`} />
-        {item.lessonCount} Lessons
+        {item.lessonCount} Bài học
       </div>
 
       <div
@@ -235,7 +235,7 @@ function TipBox() {
   return (
     <div className="relative mt-6 flex items-center rounded-2xl border border-violet-100 bg-violet-50 px-7 py-5">
       <div className="grid h-14 w-14 place-items-center rounded-full bg-violet-100 text-3xl">
-        💡
+        ðŸ’¡
       </div>
 
       <div className="ml-5">
@@ -247,7 +247,7 @@ function TipBox() {
         </p>
       </div>
 
-      <div className="absolute bottom-0 right-8 text-7xl">🦊</div>
+      <div className="absolute bottom-0 right-8 text-7xl">ðŸ¦Š</div>
     </div>
   );
 }
@@ -296,10 +296,11 @@ function getTypeTheme(color: string) {
 
 function formatDifficulty(value: string) {
   const map: Record<string, string> = {
-    BEGINNER: 'Beginner',
-    INTERMEDIATE: 'Intermediate',
-    ADVANCED: 'Advanced',
+    BEGINNER: 'Cơ bản',
+    INTERMEDIATE: 'Trung cấp',
+    ADVANCED: 'Nâng cao',
   };
 
   return map[value] ?? value;
 }
+

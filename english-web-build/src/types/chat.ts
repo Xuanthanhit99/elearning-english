@@ -1,4 +1,4 @@
-// types/chat.ts
+﻿// types/chat.ts
 export type ChatRole = "USER" | "ASSISTANT";
 export type QuickActionKey = "CHEER_UP" | "BANTER" | "QUICK_TIP";
 

@@ -1,4 +1,4 @@
-import ReadingTopicDetailPage from "@/src/Components/reading/ReadingTopicDetailPage";
+﻿import ReadingTopicDetailPage from "@/src/Components/reading/ReadingTopicDetailPage";
 
 export default async function ReadingTopicDetailHome({
   params,

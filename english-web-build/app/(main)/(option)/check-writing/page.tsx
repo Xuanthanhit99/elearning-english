@@ -1,4 +1,4 @@
-// app/check-word/page.tsx
+﻿// app/check-word/page.tsx
 
 import CheckWritngPage from "@/src/Components/Tools/CheckWritngPage";
 

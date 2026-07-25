@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -70,7 +70,7 @@ export default function Header() {
                 : "text-[#5b6b85]"
             }`}
           >
-            Trang chủ
+            Trang chá»§
           </Link>
 
           <Link
@@ -81,7 +81,7 @@ export default function Header() {
                 : "text-[#5b6b85]"
             }`}
           >
-            Khóa học
+            KhÃ³a há»c
           </Link>
 
           <div ref={toolsRef} className="relative pb-2">
@@ -94,33 +94,33 @@ export default function Header() {
                   : "text-[#5b6b85]"
               }`}
             >
-              Công cụ
+              CÃ´ng cá»¥
               <span
                 className={`text-xs transition ${
                   openTools ? "rotate-180" : ""
                 }`}
               >
-                ▼
+                â–¼
               </span>
             </button>
 
             {openTools && (
               <div className="absolute left-1/2 top-10 z-50 w-64 -translate-x-1/2 rounded-[24px] border border-[#ead8c2] bg-white p-3 shadow-[0_24px_70px_rgba(31,42,68,0.14)]">
                 {[
-                  { icon: "🔤", label: "Check từ", href: "/check-word" },
-                  { icon: "📝", label: "Check bài", href: "/check-writing" },
-                  { icon: "📚", label: "Từ điển AI", href: "/dictionary" },
+                  { icon: "ðŸ”¤", label: "Check tá»«", href: "/check-word" },
+                  { icon: "ðŸ“", label: "Check bÃ i", href: "/check-writing" },
+                  { icon: "ðŸ“š", label: "Tá»« Ä‘iá»ƒn AI", href: "/dictionary" },
                   {
-                    icon: "🎙️",
-                    label: "Luyện phát âm",
+                    icon: "ðŸŽ™ï¸",
+                    label: "Luyá»‡n phÃ¡t Ã¢m",
                     href: "/pronunciation",
                   },
                   {
-                    icon: "📊",
-                    label: "Kiểm tra trình độ",
+                    icon: "ðŸ“Š",
+                    label: "Kiá»ƒm tra trÃ¬nh Ä‘á»™",
                     href: "/placement",
                   },
-                  { icon: "🐱", label: "Thú cưng học tập", href: "/pet" },
+                  { icon: "ðŸ±", label: "ThÃº cÆ°ng há»c táº­p", href: "/pet" },
                 ].map((item) => (
                   <Link
                     key={item.href}
@@ -146,7 +146,7 @@ export default function Header() {
                 : "text-[#5b6b85]"
             }`}
           >
-            Lộ trình
+            Lá»™ trÃ¬nh
           </Link>
         </nav>
 
@@ -157,17 +157,17 @@ export default function Header() {
                 type="button"
                 className="flex h-12 w-12 items-center justify-center rounded-full bg-[#fff4e8] text-xl"
               >
-                🔔
+                ðŸ””
               </button>
 
               <div className="hidden items-center gap-2 rounded-full bg-[#fff0dc] px-4 py-3 font-extrabold text-[#ff6b00] sm:flex">
-                🔥 <span>12</span>
+                ðŸ”¥ <span>12</span>
               </div>
 
               <details className="group relative">
                 <summary className="flex cursor-pointer list-none items-center gap-2 rounded-full bg-[#1f2a44] px-3 py-2 text-white">
                   <Image
-                    src={user.avatar || "/cat-home.jpg"}
+                    src={user.avatar || "/brand/beaconvie-ai-mascot.png"}
                     alt={user.fullname || "User"}
                     width={38}
                     height={38}
@@ -179,14 +179,14 @@ export default function Header() {
                   </span>
 
                   <span className="text-xs transition group-open:rotate-180">
-                    ▼
+                    â–¼
                   </span>
                 </summary>
 
                 <div className="absolute right-0 top-14 z-50 w-72 rounded-[24px] border border-[#ead8c2] bg-white p-3 shadow-[0_24px_70px_rgba(31,42,68,0.14)]">
                   <div className="mb-2 flex items-center gap-3 rounded-2xl bg-[#fff4e8] p-3">
                     <Image
-                      src={user.avatar || "/cat-home.jpg"}
+                      src={user.avatar || "/brand/beaconvie-ai-mascot.png"}
                       alt={user.fullname || "User"}
                       width={44}
                       height={44}
@@ -204,10 +204,10 @@ export default function Header() {
                   </div>
 
                   {[
-                    { icon: "👤", label: "Hồ sơ cá nhân", href: "/profile" },
-                    { icon: "📈", label: "Tiến độ học", href: "/progress" },
-                    { icon: "🏆", label: "Chứng chỉ", href: "/certificates" },
-                    { icon: "⚙️", label: "Cài đặt", href: "/settings" },
+                    { icon: "ðŸ‘¤", label: "Há»“ sÆ¡ cÃ¡ nhÃ¢n", href: "/profile" },
+                    { icon: "ðŸ“ˆ", label: "Tiáº¿n Ä‘á»™ há»c", href: "/progress" },
+                    { icon: "ðŸ†", label: "Chá»©ng chá»‰", href: "/certificates" },
+                    { icon: "âš™ï¸", label: "CÃ i Ä‘áº·t", href: "/settings" },
                   ].map((item) => (
                     <Link
                       key={item.href}
@@ -227,9 +227,9 @@ export default function Header() {
                     className="mt-1 flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left font-extrabold text-red-500 transition hover:bg-red-50"
                   >
                     <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-50 text-lg">
-                      🚪
+                      ðŸšª
                     </span>
-                    Đăng xuất
+                    ÄÄƒng xuáº¥t
                   </button>
                 </div>
               </details>
@@ -240,14 +240,14 @@ export default function Header() {
                 href="/login"
                 className="inline-flex items-center justify-center rounded-full px-5 py-3 font-extrabold text-[#5b6b85] hover:bg-[#fff4e8] hover:text-[#1f2a44]"
               >
-                Đăng nhập
+                ÄÄƒng nháº­p
               </Link>
 
               <Link
                 href="/login"
                 className="inline-flex items-center justify-center rounded-full bg-[#ff6b00] px-7 py-3 font-extrabold text-white shadow-lg shadow-orange-200"
               >
-                Bắt đầu học ngay
+                Báº¯t Ä‘áº§u há»c ngay
               </Link>
             </>
           )}

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Crown, Shield, UserMinus } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -13,10 +13,10 @@ import type {
 } from '@/src/types/community-club';
 
 const CLUB_ROLE_LABEL = {
-  OWNER: 'Chủ câu lạc bộ',
-  ADMIN: 'Quản trị viên',
-  MODERATOR: 'Điều hành viên',
-  MEMBER: 'Thành viên',
+  OWNER: 'Chá»§ cÃ¢u láº¡c bá»™',
+  ADMIN: 'Quáº£n trá»‹ viÃªn',
+  MODERATOR: 'Äiá»u hÃ nh viÃªn',
+  MEMBER: 'ThÃ nh viÃªn',
 };
 
 export function CommunityClubMembers({
@@ -60,9 +60,9 @@ export function CommunityClubMembers({
   }
 
   return (
-    <div className="rounded-3xl border-2 border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-5 shadow-sm">
+    <div className="rounded-3xl border-2 border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-5 shadow-sm">
       <h3 className="text-lg font-extrabold text-slate-950">
-        Thành viên
+        ThÃ nh viÃªn
       </h3>
 
       <div className="mt-4 divide-y divide-slate-100">
@@ -74,7 +74,7 @@ export function CommunityClubMembers({
             <img
               src={
                 member.user.avatar ||
-                '/cat-home.jpg'
+                '/brand/beaconvie-ai-mascot.png'
               }
               alt={member.user.fullname}
               className="h-11 w-11 rounded-full object-cover"
@@ -89,7 +89,7 @@ export function CommunityClubMembers({
                   <Crown size={13} className="text-amber-500" />
                 )}
                 {member.role === 'ADMIN' && (
-                  <Shield size={13} className="text-[var(--lumiverse-primary)]" />
+                  <Shield size={13} className="text-[var(--BeaconVie-primary)]" />
                 )}
                 {member.role}
               </div>
@@ -120,7 +120,7 @@ export function CommunityClubMembers({
               <button
                 type="button"
                 onClick={() => void remove(member)}
-                className="rounded-xl bg-[var(--lumiverse-danger-soft)] p-2 text-[var(--lumiverse-danger)]"
+                className="rounded-xl bg-[var(--BeaconVie-danger-soft)] p-2 text-[var(--BeaconVie-danger)]"
               >
                 <UserMinus size={17} />
               </button>

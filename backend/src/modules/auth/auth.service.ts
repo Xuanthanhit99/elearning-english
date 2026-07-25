@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   Injectable,
   Logger,
@@ -31,7 +31,7 @@ import {
 } from './auth-cookie.util';
 import { getJwtAccessSecret, getJwtRefreshSecret } from './auth-secrets.util';
 
-/** Temporary (not permanent) brute-force lockout — see AuthService.login(). */
+/** Temporary (not permanent) brute-force lockout â€” see AuthService.login(). */
 const MAX_FAILED_LOGIN_ATTEMPTS = 5;
 const LOGIN_LOCKOUT_DURATION_MS = 15 * 60 * 1000;
 
@@ -57,7 +57,7 @@ export class AuthService {
     });
 
     if (existUser) {
-      throw new BadRequestException('Email đã tồn tại');
+      throw new BadRequestException('Email Ä‘Ã£ tá»“n táº¡i');
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
@@ -81,7 +81,7 @@ export class AuthService {
       },
     });
 
-    // Verification is informational only — it does not gate login/access (see
+    // Verification is informational only â€” it does not gate login/access (see
     // `resendVerificationEmail`/`verifyEmail`), so a failure here must never
     // fail registration itself.
     this.sendVerificationEmailInternal(user).catch((error) => {
@@ -93,7 +93,7 @@ export class AuthService {
     });
 
     return {
-      message: 'Đăng ký thành công',
+      message: 'ÄÄƒng kÃ½ thÃ nh cÃ´ng',
       user,
     };
   }
@@ -104,11 +104,11 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new BadRequestException('Email hoặc mật khẩu không đúng');
+      throw new BadRequestException('Email hoáº·c máº­t kháº©u khÃ´ng Ä‘Ãºng');
     }
 
     // Temporary (not permanent) account-level lockout, independent of the
-    // generic per-IP Throttler on this route — that alone lets a distributed
+    // generic per-IP Throttler on this route â€” that alone lets a distributed
     // attacker rotating IPs guess a single account's password with no
     // effective limit. Checked before the password comparison so a locked
     // account never leaks a "valid password" timing signal either.
@@ -122,7 +122,7 @@ export class AuthService {
         userAgent: req.headers?.['user-agent'],
       });
       throw new UnauthorizedException(
-        'Tài khoản tạm thời bị khóa do đăng nhập sai nhiều lần. Vui lòng thử lại sau.',
+        'TÃ i khoáº£n táº¡m thá»i bá»‹ khÃ³a do Ä‘Äƒng nháº­p sai nhiá»u láº§n. Vui lÃ²ng thá»­ láº¡i sau.',
       );
     }
 
@@ -130,12 +130,12 @@ export class AuthService {
 
     if (!isValidPassword) {
       await this.recordFailedLogin(user, req);
-      throw new BadRequestException('Email hoặc mật khẩu không đúng');
+      throw new BadRequestException('Email hoáº·c máº­t kháº©u khÃ´ng Ä‘Ãºng');
     }
 
     if (user.status !== UserStatus.ACTIVE) {
       throw new UnauthorizedException(
-        'Tài khoản hiện không được phép đăng nhập',
+        'TÃ i khoáº£n hiá»‡n khÃ´ng Ä‘Æ°á»£c phÃ©p Ä‘Äƒng nháº­p',
       );
     }
 
@@ -144,7 +144,7 @@ export class AuthService {
         return {
           success: false,
           twoFactorRequired: true,
-          message: 'Vui lòng nhập mã xác thực hai bước',
+          message: 'Vui lÃ²ng nháº­p mÃ£ xÃ¡c thá»±c hai bÆ°á»›c',
         };
       }
 
@@ -161,7 +161,7 @@ export class AuthService {
           ipAddress: req.ip ?? req.socket?.remoteAddress ?? null,
           userAgent: req.headers?.['user-agent'],
         });
-        throw new UnauthorizedException('Mã xác thực hai bước không đúng');
+        throw new UnauthorizedException('MÃ£ xÃ¡c thá»±c hai bÆ°á»›c khÃ´ng Ä‘Ãºng');
       }
     }
 
@@ -230,7 +230,7 @@ export class AuthService {
 
     return {
       success: true,
-      message: 'Đăng nhập thành công',
+      message: 'ÄÄƒng nháº­p thÃ nh cÃ´ng',
       user: {
         id: user.id,
         fullname: user.fullname,
@@ -243,9 +243,9 @@ export class AuthService {
 
   /**
    * Always returns the same generic message regardless of whether `email`
-   * matches an account — never reveal account existence via response
+   * matches an account â€” never reveal account existence via response
    * content, status code, or a materially different code path (the one
-   * real-world timing difference — whether an email actually gets sent — is
+   * real-world timing difference â€” whether an email actually gets sent â€” is
    * inherent to any such flow and not practically closable without a fake
    * SMTP round-trip; kept the response shape and status code identical,
    * which is the part actually observable by a scripted enumeration probe).
@@ -284,7 +284,7 @@ export class AuthService {
           resetUrl,
         );
       } catch (error) {
-        // Never let a mail-provider failure leak to the client — that would
+        // Never let a mail-provider failure leak to the client â€” that would
         // itself be an enumeration signal (silent success vs. visible error).
         this.logger.warn(
           `Failed to send password reset email to userId=${user.id}: ${
@@ -296,7 +296,7 @@ export class AuthService {
 
     return {
       message:
-        'Nếu email tồn tại trong hệ thống, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu.',
+        'Náº¿u email tá»“n táº¡i trong há»‡ thá»‘ng, chÃºng tÃ´i Ä‘Ã£ gá»­i hÆ°á»›ng dáº«n Ä‘áº·t láº¡i máº­t kháº©u.',
     };
   }
 
@@ -308,7 +308,7 @@ export class AuthService {
 
     if (!record || record.usedAt || record.expiresAt < new Date()) {
       throw new BadRequestException(
-        'Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.',
+        'LiÃªn káº¿t Ä‘áº·t láº¡i máº­t kháº©u khÃ´ng há»£p lá»‡ hoáº·c Ä‘Ã£ háº¿t háº¡n.',
       );
     }
 
@@ -329,7 +329,7 @@ export class AuthService {
       }),
     ]);
 
-    // No "current" session to preserve in this unauthenticated flow — every
+    // No "current" session to preserve in this unauthenticated flow â€” every
     // session, on every device, must die so a stolen password can't keep a
     // live session going after the legitimate owner resets it.
     await this.revokeAllSessions(record.userId);
@@ -341,7 +341,7 @@ export class AuthService {
     });
 
     return {
-      message: 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.',
+      message: 'Äáº·t láº¡i máº­t kháº©u thÃ nh cÃ´ng. Vui lÃ²ng Ä‘Äƒng nháº­p láº¡i.',
     };
   }
 
@@ -353,7 +353,7 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
 
     if (!user) {
-      throw new UnauthorizedException('Không tìm thấy tài khoản.');
+      throw new UnauthorizedException('KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n.');
     }
 
     const isValidPassword = await bcrypt.compare(
@@ -362,7 +362,7 @@ export class AuthService {
     );
 
     if (!isValidPassword) {
-      throw new BadRequestException('Mật khẩu hiện tại không đúng.');
+      throw new BadRequestException('Máº­t kháº©u hiá»‡n táº¡i khÃ´ng Ä‘Ãºng.');
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -378,7 +378,7 @@ export class AuthService {
 
     // The access-token payload carries no session/jti identifier (only
     // sub/role/email), so there is no reliable way to tell "this request's
-    // own session" apart from any other live session for this user — revoke
+    // own session" apart from any other live session for this user â€” revoke
     // everything, including the caller's own session, and require a fresh
     // login. Safer than guessing, and matches the same "never leave old
     // sessions active after a password event" rule applied to reset.
@@ -391,7 +391,7 @@ export class AuthService {
     });
 
     return {
-      message: 'Đổi mật khẩu thành công. Vui lòng đăng nhập lại.',
+      message: 'Äá»•i máº­t kháº©u thÃ nh cÃ´ng. Vui lÃ²ng Ä‘Äƒng nháº­p láº¡i.',
     };
   }
 
@@ -403,7 +403,7 @@ export class AuthService {
 
     if (!record || record.usedAt || record.expiresAt < new Date()) {
       throw new BadRequestException(
-        'Liên kết xác minh email không hợp lệ hoặc đã hết hạn.',
+        'LiÃªn káº¿t xÃ¡c minh email khÃ´ng há»£p lá»‡ hoáº·c Ä‘Ã£ háº¿t háº¡n.',
       );
     }
 
@@ -424,28 +424,28 @@ export class AuthService {
       changedFields: ['isEmailVerified'],
     });
 
-    return { message: 'Xác minh email thành công.' };
+    return { message: 'XÃ¡c minh email thÃ nh cÃ´ng.' };
   }
 
   async resendVerificationEmail(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
 
     if (!user) {
-      throw new UnauthorizedException('Không tìm thấy tài khoản.');
+      throw new UnauthorizedException('KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n.');
     }
 
     if (user.isEmailVerified) {
-      return { message: 'Email của bạn đã được xác minh.' };
+      return { message: 'Email cá»§a báº¡n Ä‘Ã£ Ä‘Æ°á»£c xÃ¡c minh.' };
     }
 
     await this.sendVerificationEmailInternal(user);
 
-    return { message: 'Đã gửi lại email xác minh.' };
+    return { message: 'ÄÃ£ gá»­i láº¡i email xÃ¡c minh.' };
   }
 
   async refreshToken(refreshToken: string, res: Response) {
     if (!refreshToken) {
-      throw new UnauthorizedException('Không có refresh token');
+      throw new UnauthorizedException('KhÃ´ng cÃ³ refresh token');
     }
 
     let payload: { sub: string; role: string; jti?: string };
@@ -454,13 +454,13 @@ export class AuthService {
         secret: getJwtRefreshSecret(),
       });
     } catch {
-      throw new UnauthorizedException('Refresh token không hợp lệ');
+      throw new UnauthorizedException('Refresh token khÃ´ng há»£p lá»‡');
     }
 
     if (!payload.jti) {
-      // Legacy token issued before session tracking existed — reject so the
+      // Legacy token issued before session tracking existed â€” reject so the
       // user has to log in again and get a properly tracked session.
-      throw new UnauthorizedException('Refresh token không hợp lệ');
+      throw new UnauthorizedException('Refresh token khÃ´ng há»£p lá»‡');
     }
 
     const dbUser = await this.prisma.user.findUnique({
@@ -476,12 +476,12 @@ export class AuthService {
     });
 
     if (!dbUser) {
-      throw new UnauthorizedException('Người dùng không tồn tại');
+      throw new UnauthorizedException('NgÆ°á»i dÃ¹ng khÃ´ng tá»“n táº¡i');
     }
 
     if (dbUser.status !== UserStatus.ACTIVE) {
       throw new UnauthorizedException(
-        'Tài khoản hiện không được phép làm mới phiên',
+        'TÃ i khoáº£n hiá»‡n khÃ´ng Ä‘Æ°á»£c phÃ©p lÃ m má»›i phiÃªn',
       );
     }
 
@@ -491,7 +491,7 @@ export class AuthService {
     if (!rotated) {
       // A valid, correctly-signed refresh token whose jti is no longer live
       // means either it already rotated once (a legitimate client retrying
-      // a stale token) or — more concerning — someone is replaying a token
+      // a stale token) or â€” more concerning â€” someone is replaying a token
       // that was already used elsewhere. Rotation itself already prevents
       // the replay from succeeding; this audit event is what gives that
       // scenario a forensic trail instead of vanishing as a silent 401.
@@ -502,7 +502,7 @@ export class AuthService {
         metadata: { jti: payload.jti },
       });
       throw new UnauthorizedException(
-        'Phiên đăng nhập đã bị thu hồi, vui lòng đăng nhập lại',
+        'PhiÃªn Ä‘Äƒng nháº­p Ä‘Ã£ bá»‹ thu há»“i, vui lÃ²ng Ä‘Äƒng nháº­p láº¡i',
       );
     }
 
@@ -557,7 +557,7 @@ export class AuthService {
 
     return {
       success: true,
-      message: 'Refresh token thành công',
+      message: 'Refresh token thÃ nh cÃ´ng',
       data: {
         user: {
           id: dbUser.id,
@@ -593,13 +593,13 @@ export class AuthService {
           });
         }
       } catch {
-        // Token already invalid/expired — nothing left to revoke.
+        // Token already invalid/expired â€” nothing left to revoke.
       }
     }
 
     clearAllAuthCookies(res);
     return {
-      message: 'Đăng xuất thành công',
+      message: 'ÄÄƒng xuáº¥t thÃ nh cÃ´ng',
     };
   }
 
@@ -614,7 +614,7 @@ export class AuthService {
     req?: Request,
   ) {
     if (!profile.email) {
-      throw new BadRequestException('Không lấy được email từ tài khoản');
+      throw new BadRequestException('KhÃ´ng láº¥y Ä‘Æ°á»£c email tá»« tÃ i khoáº£n');
     }
 
     let dbUser = await this.prisma.user.findUnique({
@@ -650,7 +650,7 @@ export class AuthService {
 
     if (dbUser.status !== UserStatus.ACTIVE) {
       throw new UnauthorizedException(
-        'Tài khoản hiện không được phép đăng nhập',
+        'TÃ i khoáº£n hiá»‡n khÃ´ng Ä‘Æ°á»£c phÃ©p Ä‘Äƒng nháº­p',
       );
     }
 
@@ -727,7 +727,7 @@ export class AuthService {
 
     if (!getUser) {
       throw new BadRequestException(
-        'Không tìm thấy tài khoản email đã đăng ký',
+        'KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n email Ä‘Ã£ Ä‘Äƒng kÃ½',
       );
     }
 
@@ -761,14 +761,14 @@ export class AuthService {
 
     const workbook = new ExcelJS.Workbook();
 
-    const wordSheet = workbook.addWorksheet('Lịch sử check từ');
+    const wordSheet = workbook.addWorksheet('Lá»‹ch sá»­ check tá»«');
 
     wordSheet.columns = [
-      { header: 'Từ', key: 'word', width: 25 },
-      { header: 'Nghĩa', key: 'meaning', width: 35 },
+      { header: 'Tá»«', key: 'word', width: 25 },
+      { header: 'NghÄ©a', key: 'meaning', width: 35 },
       { header: 'Level', key: 'level', width: 15 },
-      { header: 'Loại từ', key: 'partOfSpeech', width: 15 },
-      { header: 'Ngày check', key: 'createdAt', width: 25 },
+      { header: 'Loáº¡i tá»«', key: 'partOfSpeech', width: 15 },
+      { header: 'NgÃ y check', key: 'createdAt', width: 25 },
     ];
 
     wordHistory.forEach((item) => {
@@ -781,16 +781,16 @@ export class AuthService {
       });
     });
 
-    const writingSheet = workbook.addWorksheet('Lịch sử check bài');
+    const writingSheet = workbook.addWorksheet('Lá»‹ch sá»­ check bÃ i');
     writingSheet.columns = [
-      { header: 'Bài gốc', key: 'originalText', width: 50 },
-      { header: 'Điểm', key: 'score', width: 10 },
+      { header: 'BÃ i gá»‘c', key: 'originalText', width: 50 },
+      { header: 'Äiá»ƒm', key: 'score', width: 10 },
       { header: 'Grammar', key: 'grammarScore', width: 10 },
       { header: 'Vocabulary', key: 'vocabularyScore', width: 12 },
       { header: 'Clarity', key: 'clarityScore', width: 10 },
       { header: 'Meaning', key: 'meaningScore', width: 10 },
-      { header: 'Phiên bản gợi ý', key: 'suggestedVersion', width: 50 },
-      { header: 'Ngày check', key: 'createdAt', width: 25 },
+      { header: 'PhiÃªn báº£n gá»£i Ã½', key: 'suggestedVersion', width: 50 },
+      { header: 'NgÃ y check', key: 'createdAt', width: 25 },
     ];
 
     writingHistory.forEach((item) => {
@@ -817,13 +817,13 @@ export class AuthService {
     });
 
     await transporter.sendMail({
-      from: `"PoppyLingo" <${process.env.MAIL_USER}>`,
+      from: `"BeaconVie" <${process.env.MAIL_USER}>`,
       to: user.email,
-      subject: 'Báo cáo học tập PoppyLingo',
+      subject: 'BÃ¡o cÃ¡o há»c táº­p BeaconVie',
       html: `
-        <h2>Xin chào ${user.fullname || 'bạn'},</h2>
-        <p>Miu gửi bạn file Excel báo cáo lịch sử học tập.</p>
-        <p>File bao gồm lịch sử check từ và check bài.</p>
+        <h2>Xin chÃ o ${user.fullname || 'báº¡n'},</h2>
+        <p>Miu gá»­i báº¡n file Excel bÃ¡o cÃ¡o lá»‹ch sá»­ há»c táº­p.</p>
+        <p>File bao gá»“m lá»‹ch sá»­ check tá»« vÃ  check bÃ i.</p>
       `,
       attachments: [
         {
@@ -853,7 +853,7 @@ export class AuthService {
       });
 
       if (existed) {
-        throw new BadRequestException('Username đã được sử dụng');
+        throw new BadRequestException('Username Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng');
       }
     }
 
@@ -972,7 +972,7 @@ export class AuthService {
     return process.env.FRONTEND_URL || 'http://localhost:3000';
   }
 
-  /** Revokes every live session/refresh-token for a user — used by both
+  /** Revokes every live session/refresh-token for a user â€” used by both
    * password reset (unauthenticated, no session to preserve) and password
    * change (see changePassword's comment on why "keep current session" isn't
    * safely possible today). Mirrors SettingsService.revokeOtherDevices'

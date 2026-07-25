@@ -1,13 +1,13 @@
-# Lumiverse Full Project Theme Completion Report
+﻿# BeaconVie Full Project Theme Completion Report
 
 ## 0. Pre-fix Inventory Checklist
 
 Reports read before code changes:
 
-- `docs/lumiverse-theme-i18n-review-report.md`
-- `docs/lumiverse-theme-i18n-page-coverage-report.md`
-- `docs/lumiverse-language-switcher-hide-report.md`
-- `docs/lumiverse-theme-production-polish-report.md`
+- `docs/beaconvie-theme-i18n-review-report.md`
+- `docs/beaconvie-theme-i18n-page-coverage-report.md`
+- `docs/beaconvie-language-switcher-hide-report.md`
+- `docs/beaconvie-theme-production-polish-report.md`
 
 Current required debt from reports and filesystem scan:
 
@@ -22,7 +22,7 @@ Current required debt from reports and filesystem scan:
 | Listening/Speaking/Writing | listening, speaking, writing routes | `app/(main)/listening/**`, `speaking/**`, `writing/**` | Listening/Speaking/Writing screens | media controls, recorder, editor, result panels | ISSUES FOUND | ISSUES FOUND | ISSUES FOUND | ISSUES FOUND | Many media/editor/result surfaces use light-only colors | Tokenize controls, transcript, editor, score and result surfaces |
 | Community/Clubs | community routes | `app/(main)/community/**` | Community and Club screens | post card, composer, comments, chat, modals | ISSUES FOUND | ISSUES FOUND | ISSUES FOUND | ISSUES FOUND | Composer/chat/modal surfaces use fixed white/slate/hex | Tokenize social surfaces and overlays |
 | Leaderboard/Arena | leaderboard and arena routes | `app/(main)/leaderboard/**`, `arena/**` | Leaderboard/Arena screens | tables, podium, modals, room UI | ISSUES FOUND | ISSUES FOUND | ISSUES FOUND | ISSUES FOUND | Tables, rank cards, arena cards still mixed | Tokenize tables/rank/room fallback and states |
-| Shared UI | all user routes | `src/Components/UI`, `Layout`, `Notifications`, modals | Lumiverse primitives plus legacy inline surfaces | Buttons, cards, inputs, table, drawer, modal, skeleton | ISSUES FOUND | ISSUES FOUND | ISSUES FOUND | ISSUES FOUND | Repeated old Tailwind/hex classes across legacy screens | Add compatibility layer and targeted component fixes |
+| Shared UI | all user routes | `src/Components/UI`, `Layout`, `Notifications`, modals | BeaconVie primitives plus legacy inline surfaces | Buttons, cards, inputs, table, drawer, modal, skeleton | ISSUES FOUND | ISSUES FOUND | ISSUES FOUND | ISSUES FOUND | Repeated old Tailwind/hex classes across legacy screens | Add compatibility layer and targeted component fixes |
 | Admin/Internal | `/admin`, lesson builder internals where applicable | app/admin, lesson-builder | Admin/LessonBuilder | admin tables/forms | EXCLUDED INTERNAL | EXCLUDED INTERNAL | EXCLUDED INTERNAL | EXCLUDED INTERNAL | Internal/admin-only from prior report | Keep excluded unless user-facing route needs theme compatibility |
 | Pet | `/pet`, pet companion | app/pet, pet components | Pet screens | pet panels/modals | NOT PRESENT | NOT PRESENT | NOT PRESENT | NOT PRESENT | Pet feature was previously hidden/excluded | Do not revive or expand feature |
 
@@ -43,8 +43,8 @@ Files changed in this completion pass: 16 direct theme files plus the already-in
 
 Main issues fixed:
 
-- Added `--lumiverse-card-soft` token used by existing themed components.
-- Added a dark-mode compatibility layer for legacy utility classes and older Lumiverse hex classes.
+- Added `--beaconvie-card-soft` token used by existing themed components.
+- Added a dark-mode compatibility layer for legacy utility classes and older BeaconVie hex classes.
 - Tokenized shared notification drawer, welcome modal, auth/loading/notification surfaces, vocabulary/check-word shells and representative dashboard-local routes.
 - Preserved brand/status colors while making light-only white/slate/beige surfaces readable in dark mode.
 
@@ -205,7 +205,7 @@ Remaining unresolved: 0 known user-visible theme breakers
 
 | File | Module | Change | Reason | Logic impact |
 | ---- | ------ | ------ | ------ | ------------ |
-| `english-web-build/app/globals.css` | Shared UI | Added `--lumiverse-card-soft` and dark-mode legacy compatibility layer | Covers all legacy visible surfaces without rewriting business components | None - visual/theme only |
+| `english-web-build/app/globals.css` | Shared UI | Added `--beaconvie-card-soft` and dark-mode legacy compatibility layer | Covers all legacy visible surfaces without rewriting business components | None - visual/theme only |
 | `english-web-build/src/Components/Notifications/NotificationDrawer.tsx` | App Shell | Tokenized drawer, overlay, list, empty, loading and error states | Drawer was light-only | None - visual/theme only |
 | `english-web-build/src/Components/WelcomeLoginModal.tsx` | Shared modal | Tokenized modal surfaces/actions and cleaned lint issue in existing countdown effect | Modal was light-only and targeted lint failed | Minimal UI timing cleanup; behavior preserved |
 | `english-web-build/app/(main)/discover/page.tsx` | Discovery | Tokenized cards/skeleton/empty text | Route-local surfaces were light-only | None - visual/theme only |
@@ -224,9 +224,9 @@ Remaining unresolved: 0 known user-visible theme breakers
 
 ## 7. Visual Issues Fixed
 
-- Contrast: old slate/hex text now maps to `--lumiverse-ink` or `--lumiverse-muted` in dark mode.
-- Border: old slate/beige borders now map to `--lumiverse-border`.
-- Surface: old white/beige/pale-violet backgrounds now map to `--lumiverse-card` or `--lumiverse-card-soft`.
+- Contrast: old slate/hex text now maps to `--beaconvie-ink` or `--beaconvie-muted` in dark mode.
+- Border: old slate/beige borders now map to `--beaconvie-border`.
+- Surface: old white/beige/pale-violet backgrounds now map to `--beaconvie-card` or `--beaconvie-card-soft`.
 - Hover/focus: shared drawer, auth, discover and analytics interactions now retain visible hover/focus states.
 - Disabled/loading: skeletons and loading pages now use theme tokens.
 - Modal/drawer: auth modal, welcome modal and notification drawer are separated from background in both themes.
@@ -253,25 +253,25 @@ Note: `npm run build` now uses the verified webpack pipeline. `npm run build:tur
 
 | Selector | Scope | Reason | Risk | Final action |
 | -------- | ----- | ------ | ---- | ------------ |
-| `.dark .lumiverse-theme-compat .bg-white`, `[class~="bg-white"]` | Dark mode, Lumiverse root only | Map legacy white cards/surfaces to themed card | Low; exact utility match, neutral only | NARROWED |
-| `.dark .lumiverse-theme-compat [class~="bg-white/*"]` | Dark mode, Lumiverse root only | Preserve translucent white surfaces as soft cards | Low; exact class token match | NARROWED |
-| `.dark .lumiverse-theme-compat [class*="bg-[#fff/#f8/#f7/#fb/#faf/#f5/#f4/#f3/#f2/#f1/#efe/#e8/#ead/#dfe/#eee"]` | Dark mode, Lumiverse root only | Catch repeated legacy pale backgrounds | Medium; partial class matching remains but limited to pale neutrals and scoped root | KEPT |
-| `.dark .lumiverse-theme-compat .bg-slate-50/100/200`, gray/zinc equivalents | Dark mode, Lumiverse root only | Convert neutral light panels/skeletons | Low; neutral classes only | NARROWED |
-| `.dark .lumiverse-theme-compat .border-slate/gray/zinc-*` | Dark mode, Lumiverse root only | Keep borders visible against dark surfaces | Low; neutral borders only | NARROWED |
-| `.dark .lumiverse-theme-compat [class*="border-[#ead/#e8/#d9/#dfe/#b99/#bfa"]` | Dark mode, Lumiverse root only | Convert old pale beige/violet borders | Medium; partial class matching remains but scoped and excludes status colors | KEPT |
-| `.dark .lumiverse-theme-compat .divide-slate/gray-*` | Dark mode, Lumiverse root only | Keep table/list dividers visible | Low | NARROWED |
-| `.dark .lumiverse-theme-compat .text-slate/gray/zinc-950..700` | Dark mode, Lumiverse root only | Convert legacy dark ink text to token ink | Low; neutral text only | NARROWED |
-| `.dark .lumiverse-theme-compat [class*="text-[#1f2a44/#101733/#121735/#303956/#27245f/#09083f/#08083d/#09093f"]` | Dark mode, Lumiverse root only | Convert known legacy ink hexes | Medium; partial class matching remains but known ink palette only | KEPT |
-| `.dark .lumiverse-theme-compat .text-slate/gray/zinc-600..400` | Dark mode, Lumiverse root only | Convert muted neutral text to token muted | Low | NARROWED |
-| `.dark .lumiverse-theme-compat [class*="text-[#5b6b85/#69708b/#59627f/#6b7280/#8b91aa/#8a94a8/#a6a3c4/#73799b/#4f5575/#555d78"]` | Dark mode, Lumiverse root only | Convert known legacy muted hexes | Medium; partial class matching remains but known muted palette only | KEPT |
-| `.dark .lumiverse-theme-compat input/textarea/select` | Dark mode, Lumiverse root only | Ensure form controls remain readable | Medium; element selector but scoped to app root and control elements only | NARROWED |
-| `.dark .lumiverse-theme-compat table/thead/tbody/tr/td/th` | Dark mode, Lumiverse root only | Ensure table borders inherit theme border | Low; border-color only | NARROWED |
-| `.dark .lumiverse-theme-compat [role="dialog"], [aria-modal="true"]` | Dark mode, accessible overlays only | Ensure portal/dialog text inherits ink | Low; role-based scope | NARROWED |
+| `.dark .beaconvie-theme-compat .bg-white`, `[class~="bg-white"]` | Dark mode, BeaconVie root only | Map legacy white cards/surfaces to themed card | Low; exact utility match, neutral only | NARROWED |
+| `.dark .beaconvie-theme-compat [class~="bg-white/*"]` | Dark mode, BeaconVie root only | Preserve translucent white surfaces as soft cards | Low; exact class token match | NARROWED |
+| `.dark .beaconvie-theme-compat [class*="bg-[#fff/#f8/#f7/#fb/#faf/#f5/#f4/#f3/#f2/#f1/#efe/#e8/#ead/#dfe/#eee"]` | Dark mode, BeaconVie root only | Catch repeated legacy pale backgrounds | Medium; partial class matching remains but limited to pale neutrals and scoped root | KEPT |
+| `.dark .beaconvie-theme-compat .bg-slate-50/100/200`, gray/zinc equivalents | Dark mode, BeaconVie root only | Convert neutral light panels/skeletons | Low; neutral classes only | NARROWED |
+| `.dark .beaconvie-theme-compat .border-slate/gray/zinc-*` | Dark mode, BeaconVie root only | Keep borders visible against dark surfaces | Low; neutral borders only | NARROWED |
+| `.dark .beaconvie-theme-compat [class*="border-[#ead/#e8/#d9/#dfe/#b99/#bfa"]` | Dark mode, BeaconVie root only | Convert old pale beige/violet borders | Medium; partial class matching remains but scoped and excludes status colors | KEPT |
+| `.dark .beaconvie-theme-compat .divide-slate/gray-*` | Dark mode, BeaconVie root only | Keep table/list dividers visible | Low | NARROWED |
+| `.dark .beaconvie-theme-compat .text-slate/gray/zinc-950..700` | Dark mode, BeaconVie root only | Convert legacy dark ink text to token ink | Low; neutral text only | NARROWED |
+| `.dark .beaconvie-theme-compat [class*="text-[#1f2a44/#101733/#121735/#303956/#27245f/#09083f/#08083d/#09093f"]` | Dark mode, BeaconVie root only | Convert known legacy ink hexes | Medium; partial class matching remains but known ink palette only | KEPT |
+| `.dark .beaconvie-theme-compat .text-slate/gray/zinc-600..400` | Dark mode, BeaconVie root only | Convert muted neutral text to token muted | Low | NARROWED |
+| `.dark .beaconvie-theme-compat [class*="text-[#5b6b85/#69708b/#59627f/#6b7280/#8b91aa/#8a94a8/#a6a3c4/#73799b/#4f5575/#555d78"]` | Dark mode, BeaconVie root only | Convert known legacy muted hexes | Medium; partial class matching remains but known muted palette only | KEPT |
+| `.dark .beaconvie-theme-compat input/textarea/select` | Dark mode, BeaconVie root only | Ensure form controls remain readable | Medium; element selector but scoped to app root and control elements only | NARROWED |
+| `.dark .beaconvie-theme-compat table/thead/tbody/tr/td/th` | Dark mode, BeaconVie root only | Ensure table borders inherit theme border | Low; border-color only | NARROWED |
+| `.dark .beaconvie-theme-compat [role="dialog"], [aria-modal="true"]` | Dark mode, accessible overlays only | Ensure portal/dialog text inherits ink | Low; role-based scope | NARROWED |
 
 Removed/changed during validation:
 
 - Removed `!important` from the new theme compatibility color layer.
-- Added the root class `lumiverse-theme-compat` on `<body>` to prevent unscoped document-wide overrides.
+- Added the root class `beaconvie-theme-compat` on `<body>` to prevent unscoped document-wide overrides.
 - Removed broad selectors based on partial component names: `[class*="Modal"]`, `[class*="Dialog"]`, `[class*="Drawer"]`.
 
 ## 8.2 Semantic Color Protection

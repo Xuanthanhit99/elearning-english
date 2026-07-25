@@ -1,4 +1,4 @@
-import { api } from "./axios";
+﻿import { api } from "./axios";
 
 export type CefrLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
 export type PlacementMethod = 'TEST' | 'CERTIFICATE' | 'MANUAL';
@@ -229,7 +229,7 @@ export type PlacementTestScreenData = {
 
   nextUrl?: string;
 
-  // các field còn lại...
+  // cÃ¡c field cÃ²n láº¡i...
 };
 type ApiResponse<T> = {
   success: boolean;

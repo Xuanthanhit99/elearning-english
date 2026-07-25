@@ -1,11 +1,11 @@
-import assert from "node:assert/strict";
+﻿import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import ts from "typescript";
 
-const tempDir = mkdtempSync(join(tmpdir(), "lumiverse-auth-redirect-"));
+const tempDir = mkdtempSync(join(tmpdir(), "beaconvie-auth-redirect-"));
 
 function compileFixture(sourceFile, outputFile) {
   const sourcePath = new URL(sourceFile, import.meta.url);
@@ -131,7 +131,7 @@ try {
   );
 
   // The app runs with `trailingSlash: true`, so middleware actually sees
-  // "/login/"/"/dashboard/", not "/login"/"/dashboard" — these must behave
+  // "/login/"/"/dashboard/", not "/login"/"/dashboard" â€” these must behave
   // identically to the no-trailing-slash cases above.
   assert.deepEqual(
     getAuthRouteDecision({

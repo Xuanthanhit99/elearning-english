@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   useCallback,
@@ -30,7 +30,7 @@ export function LeaderboardRewardsPanel() {
       setError(
         cause instanceof Error
           ? cause.message
-          : 'Không thể tải phần thưởng.',
+          : 'KhÃ´ng thá»ƒ táº£i pháº§n thÆ°á»Ÿng.',
       );
     } finally {
       setLoading(false);
@@ -54,7 +54,7 @@ export function LeaderboardRewardsPanel() {
   if (loading) {
     return (
       <div className="rounded-3xl bg-white p-8">
-        Đang tải phần thưởng...
+        Äang táº£i pháº§n thÆ°á»Ÿng...
       </div>
     );
   }
@@ -70,12 +70,12 @@ export function LeaderboardRewardsPanel() {
   if (!items.length) {
     return (
       <div className="rounded-3xl bg-white p-10 text-center">
-        <div className="text-5xl">🎁</div>
+        <div className="text-5xl">ðŸŽ</div>
         <p className="mt-4 font-black">
-          Chưa có phần thưởng
+          ChÆ°a cÃ³ pháº§n thÆ°á»Ÿng
         </p>
         <p className="mt-2 text-sm text-slate-500">
-          Hãy đạt thứ hạng cao trong tuần để nhận thưởng.
+          HÃ£y Ä‘áº¡t thá»© háº¡ng cao trong tuáº§n Ä‘á»ƒ nháº­n thÆ°á»Ÿng.
         </p>
       </div>
     );
@@ -104,7 +104,7 @@ export function LeaderboardRewardsPanel() {
                   {item.description}
                 </p>
               </div>
-              <div className="text-3xl">🎁</div>
+              <div className="text-3xl">ðŸŽ</div>
             </div>
 
             <div className="mt-5 flex flex-wrap gap-2">
@@ -122,7 +122,7 @@ export function LeaderboardRewardsPanel() {
               className="mt-5 w-full rounded-xl bg-violet-600 px-4 py-3 font-black text-white disabled:bg-slate-300"
             >
               {claiming === item.id
-                ? 'Đang nhận...'
+                ? 'Äang nháº­n...'
                 : statusLabel(item.status)}
             </button>
           </article>
@@ -151,8 +151,8 @@ function Reward({
 function statusLabel(
   status: LeaderboardReward['status'],
 ) {
-  if (status === 'AVAILABLE') return 'Nhận thưởng';
-  if (status === 'CLAIMED') return 'Đã nhận';
-  if (status === 'EXPIRED') return 'Đã hết hạn';
-  return 'Đã thu hồi';
+  if (status === 'AVAILABLE') return 'Nháº­n thÆ°á»Ÿng';
+  if (status === 'CLAIMED') return 'ÄÃ£ nháº­n';
+  if (status === 'EXPIRED') return 'ÄÃ£ háº¿t háº¡n';
+  return 'ÄÃ£ thu há»“i';
 }

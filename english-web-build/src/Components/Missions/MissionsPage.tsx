@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /* eslint-disable @typescript-eslint/no-unused-vars, @next/next/no-img-element */
 
@@ -11,24 +11,24 @@ import AppLogo from "@/src/Components/UI/AppLogo";
 import { api } from "@/src/lib/axios";
 
 const mainMenu = [
-  { icon: "⌂", label: "Tổng quan", href: "/" },
-  { icon: "▰", label: "Học tập", href: "/courses" },
-  { icon: "⚔", label: "Đấu trường", href: "/arena" },
-  { icon: "🤖", label: "AI Tutor", href: "/check-writing", badge: "AI" },
-  { icon: "▣", label: "Kiểm tra miễn phí", href: "/check-word", badge: "FREE" },
-  { icon: "◇", label: "Thư viện", href: "/courses" },
-  { icon: "●", label: "Cộng đồng", href: "/community" },
-  { icon: "▣", label: "Khóa học", href: "/courses" },
-  { icon: "◈", label: "Shop", href: "/pet" },
+  { icon: "âŒ‚", label: "Tá»•ng quan", href: "/" },
+  { icon: "â–°", label: "Há»c táº­p", href: "/courses" },
+  { icon: "âš”", label: "Äáº¥u trÆ°á»ng", href: "/arena" },
+  { icon: "ðŸ¤–", label: "Gia sư AI", href: "/check-writing", badge: "AI" },
+  { icon: "â–£", label: "Kiá»ƒm tra miá»…n phÃ­", href: "/check-word", badge: "FREE" },
+  { icon: "â—‡", label: "ThÆ° viá»‡n", href: "/courses" },
+  { icon: "â—", label: "Cá»™ng Ä‘á»“ng", href: "/community" },
+  { icon: "â–£", label: "KhÃ³a há»c", href: "/courses" },
+  { icon: "â—ˆ", label: "Shop", href: "/pet" },
 ];
 
 const personalMenu = [
-  { icon: "●", label: "Hồ sơ của tôi", href: "/profile" },
-  { icon: "🐾", label: "Linh thú của tôi", href: "/pet" },
-  { icon: "🏆", label: "Thành tích", href: "/profile" },
-  { icon: "✣", label: "Nhiệm vụ", href: "/missions", active: true },
-  { icon: "👥", label: "Bạn bè", href: "/community" },
-  { icon: "⚙", label: "Cài đặt", href: "/profile" },
+  { icon: "â—", label: "Há»“ sÆ¡ cá»§a tÃ´i", href: "/profile" },
+  { icon: "ðŸ¾", label: "Linh thÃº cá»§a tÃ´i", href: "/pet" },
+  { icon: "ðŸ†", label: "ThÃ nh tÃ­ch", href: "/profile" },
+  { icon: "âœ£", label: "Nhiá»‡m vá»¥", href: "/missions", active: true },
+  { icon: "ðŸ‘¥", label: "Báº¡n bÃ¨", href: "/community" },
+  { icon: "âš™", label: "CÃ i Ä‘áº·t", href: "/profile" },
 ];
 
 type MissionType = "DAILY" | "WEEKLY" | "ACHIEVEMENT" | "EVENT";
@@ -116,26 +116,26 @@ type ApiError = {
 };
 
 const tabMap = [
-  { key: "all", label: "Tất cả nhiệm vụ" },
-  { key: "DAILY", label: "Hằng ngày" },
-  { key: "WEEKLY", label: "Hằng tuần" },
-  // { key: "ACHIEVEMENT", label: "Thành tựu" },
-  // { key: "EVENT", label: "Sự kiện" },
+  { key: "all", label: "Táº¥t cáº£ nhiá»‡m vá»¥" },
+  { key: "DAILY", label: "Háº±ng ngÃ y" },
+  { key: "WEEKLY", label: "Háº±ng tuáº§n" },
+  // { key: "ACHIEVEMENT", label: "ThÃ nh tá»±u" },
+  // { key: "EVENT", label: "Sá»± kiá»‡n" },
 ] as const;
 
 const missionIcons: Record<MissionAction, string> = {
-  STUDY_LESSON: "📘",
-  COMPLETE_LESSON: "✅",
-  COMPLETE_QUIZ: "☑️",
-  LEARN_WORD: "🟩",
-  REVIEW_WORD: "🔁",
-  READ_ARTICLE: "📖",
-  LISTEN_AUDIO: "🎧",
-  COMPLETE_SPEAKING: "🎙️",
-  CHECK_WRITING: "📝",
-  LOGIN: "🏆",
-  EARN_XP: "⭐",
-  STUDY_MINUTES: "⏱️",
+  STUDY_LESSON: "ðŸ“˜",
+  COMPLETE_LESSON: "âœ…",
+  COMPLETE_QUIZ: "â˜‘ï¸",
+  LEARN_WORD: "ðŸŸ©",
+  REVIEW_WORD: "ðŸ”",
+  READ_ARTICLE: "ðŸ“–",
+  LISTEN_AUDIO: "ðŸŽ§",
+  COMPLETE_SPEAKING: "ðŸŽ™ï¸",
+  CHECK_WRITING: "ðŸ“",
+  LOGIN: "ðŸ†",
+  EARN_XP: "â­",
+  STUDY_MINUTES: "â±ï¸",
 };
 
 export default function MissionsPage() {
@@ -160,7 +160,7 @@ export default function MissionsPage() {
     } catch (error: unknown) {
       setLoadFailed(true);
       setMessage(
-        getApiErrorMessage(error, "Chưa tải được nhiệm vụ. Vui lòng thử lại."),
+        getApiErrorMessage(error, "ChÆ°a táº£i Ä‘Æ°á»£c nhiá»‡m vá»¥. Vui lÃ²ng thá»­ láº¡i."),
       );
     } finally {
       setLoading(false);
@@ -213,11 +213,11 @@ export default function MissionsPage() {
 
         const reward = res.data.data.reward;
 
-        notify(`Đã nhận thưởng: +${reward.xp} XP, +${reward.coins} xu`);
+        notify(`ÄÃ£ nháº­n thÆ°á»Ÿng: +${reward.xp} XP, +${reward.coins} xu`);
 
         await loadMissions();
       } catch (error: unknown) {
-        notify(getApiErrorMessage(error, "Chưa nhận được thưởng."));
+        notify(getApiErrorMessage(error, "ChÆ°a nháº­n Ä‘Æ°á»£c thÆ°á»Ÿng."));
       } finally {
         setClaimingId("");
       }
@@ -226,17 +226,17 @@ export default function MissionsPage() {
     }
 
     if (mission.status === "CLAIMED") {
-      notify("Bạn đã nhận phần thưởng này.");
+      notify("Báº¡n Ä‘Ã£ nháº­n pháº§n thÆ°á»Ÿng nÃ y.");
       return;
     }
 
     if (mission.status === "EXPIRED") {
-      notify("Nhiệm vụ này đã hết hạn.");
+      notify("Nhiá»‡m vá»¥ nÃ y Ä‘Ã£ háº¿t háº¡n.");
       return;
     }
 
     if (mission.status === "CANCELLED") {
-      notify("Nhiệm vụ này không còn khả dụng.");
+      notify("Nhiá»‡m vá»¥ nÃ y khÃ´ng cÃ²n kháº£ dá»¥ng.");
       return;
     }
 
@@ -256,17 +256,17 @@ export default function MissionsPage() {
     <main className="min-h-screen overflow-x-hidden bg-[#f8f7ff] text-[#121735]">
       <div className="mx-auto max-w-[1920px]">
         {/* legacy page chrome removed
-          onAction={() => notify("Gói Premium sẽ được mở ở bước thanh toán.")}
+          onAction={() => notify("GÃ³i Premium sáº½ Ä‘Æ°á»£c má»Ÿ á»Ÿ bÆ°á»›c thanh toÃ¡n.")}
         */}
         <section className="min-w-0">
           <div className="grid gap-5 p-4 lg:p-5 2xl:grid-cols-[minmax(0,1fr)_420px]">
             <div className="min-w-0 space-y-5">
               <header>
                 <h1 className="flex items-center gap-2 text-3xl font-black">
-                  Nhiệm vụ <span className="text-base text-[#6d35ff]">?</span>
+                  Nhiá»‡m vá»¥ <span className="text-base text-[#6d35ff]">?</span>
                 </h1>
                 <p className="mt-2 font-bold text-[#69708b]">
-                  Hoàn thành nhiệm vụ để nhận XP, Xu và phần thưởng cho Foxy!
+                  HoÃ n thÃ nh nhiá»‡m vá»¥ Ä‘á»ƒ nháº­n XP, Xu vÃ  pháº§n thÆ°á»Ÿng cho Beacon!
                 </p>
               </header>
               <MissionTabs activeTab={activeTab} onChange={setActiveTab} />
@@ -278,7 +278,7 @@ export default function MissionsPage() {
               ) : // ) : activeTab === "EVENT" ? (
               // <EventDetail
               //   event={dashboard?.specialEvent}
-              //   onAction={() => notify("Bạn đã tham gia sự kiện.")}
+              //   onAction={() => notify("Báº¡n Ä‘Ã£ tham gia sá»± kiá»‡n.")}
               // />
               activeTab === "all" ? (
                 <>
@@ -338,7 +338,7 @@ function Sidebar({ onAction }: { onAction: () => void }) {
       </nav>
       <nav className="mt-6 space-y-1">
         <p className="px-3 text-[10px] font-black uppercase tracking-wide text-[#8b91aa]">
-          Cá nhân
+          CÃ¡ nhÃ¢n
         </p>
         {personalMenu.map((item) => (
           <SideItem key={item.label} item={item} />
@@ -347,23 +347,23 @@ function Sidebar({ onAction }: { onAction: () => void }) {
       <section className="mt-5 rounded-2xl bg-[#f4f0ff] p-3.5">
         <AppIcon name="crown" tone="yellow" size={18} />
         <h3 className="mt-1.5 text-sm font-black text-[#652cff]">
-          Nâng cấp Premium
+          NÃ¢ng cáº¥p Premium
         </h3>
         {[
-          "Học không giới hạn",
-          "AI Tutor nâng cao",
-          "Ưu đãi độc quyền",
-          "Trang bị đặc biệt",
+          "Há»c khÃ´ng giá»›i háº¡n",
+          "AI Tutor nÃ¢ng cao",
+          "Æ¯u Ä‘Ã£i Ä‘á»™c quyá»n",
+          "Trang bá»‹ Ä‘áº·c biá»‡t",
         ].map((item) => (
           <p key={item} className="mt-2 text-[11px] font-bold text-[#555d78]">
-            ✓ {item}
+            âœ“ {item}
           </p>
         ))}
         <button
           onClick={onAction}
           className="mt-3 w-full rounded-xl bg-[#6d35ff] px-3 py-2.5 text-xs font-black text-white"
         >
-          Nâng cấp ngay
+          NÃ¢ng cáº¥p ngay
         </button>
       </section>
       <section className="mt-4 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#ececf7]">
@@ -375,9 +375,9 @@ function Sidebar({ onAction }: { onAction: () => void }) {
             showLevelBadge={false}
           />
           <div className="min-w-0">
-            <h3 className="text-xs font-black">Foxy đang chờ bạn!</h3>
+            <h3 className="text-xs font-black">Beacon Ä‘ang chá» báº¡n!</h3>
             <p className="mt-0.5 text-[10px] font-bold leading-4 text-[#69708b]">
-              Cùng học để nhận thưởng nhé!
+              CÃ¹ng há»c Ä‘á»ƒ nháº­n thÆ°á»Ÿng nhÃ©!
             </p>
             <div className="mt-2 h-1.5 rounded-full bg-[#e4e6f2]">
               <div className="h-1.5 w-2/3 rounded-full bg-[#6d35ff]" />
@@ -437,22 +437,22 @@ function TopBar({
         <AppLogo compact className="2xl:hidden" />
         <nav className="hidden flex-1 items-center justify-center gap-1.5 xl:flex">
           {[
-            "Trang chủ",
-            "Học tập",
-            "Đấu trường",
-            "AI Tutor",
-            "Thư viện",
-            "Cộng đồng",
+            "Trang chá»§",
+            "Há»c táº­p",
+            "Äáº¥u trÆ°á»ng",
+            "Gia sư AI",
+            "ThÆ° viá»‡n",
+            "Cá»™ng Ä‘á»“ng",
             "Shop",
           ].map((label) => (
             <Link
               key={label}
               href={
-                label === "Trang chủ"
+                label === "Trang chá»§"
                   ? "/"
-                  : label === "Đấu trường"
+                  : label === "Äáº¥u trÆ°á»ng"
                     ? "/arena"
-                    : label === "Cộng đồng"
+                    : label === "Cá»™ng Ä‘á»“ng"
                       ? "/community"
                       : label === "Shop"
                         ? "/pet"
@@ -465,9 +465,9 @@ function TopBar({
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-2">
-          <TopPill icon="🔥" value={18} label="Streak" />
-          <TopPill icon="💎" value="5.230" label="Xu" />
-          <TopPill icon="🪙" value="2.450" label="Coins" />
+          <TopPill icon="ðŸ”¥" value={18} label="Streak" />
+          <TopPill icon="ðŸ’Ž" value="5.230" label="Xu" />
+          <TopPill icon="ðŸª™" value="2.450" label="Coins" />
           <button className="hidden rounded-xl border border-[#e5e7f2] bg-white px-3 py-2 text-xs font-black sm:block">
             <AppIcon name="gift" tone="purple" size={16} bare />
           </button>
@@ -561,17 +561,17 @@ function MissionScoreBanner({ points }: { points: number }) {
     <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#4f20dc] via-[#6d35ff] to-[#9b5cff] p-6 text-white shadow-sm">
       <div className="relative z-10 grid items-center gap-5 lg:grid-cols-[190px_minmax(0,1fr)_220px]">
         <div>
-          <p className="font-black">Điểm nhiệm vụ</p>
-          <div className="mt-3 text-4xl font-black">{points} ⭐</div>
+          <p className="font-black">Äiá»ƒm nhiá»‡m vá»¥</p>
+          <div className="mt-3 text-4xl font-black">{points} â­</div>
           <p className="mt-4 text-sm font-bold text-white/85">
-            Còn {chest.remaining} điểm để đạt mốc {chest.next}
+            CÃ²n {chest.remaining} Ä‘iá»ƒm Ä‘á»ƒ Ä‘áº¡t má»‘c {chest.next}
           </p>
         </div>
         <div className="flex items-center justify-between gap-3 text-center text-sm font-black">
           <Reward done={points >= 20} label="20" />
-          <Reward icon="🧰" done={points >= 200} label="200" />
-          <Reward icon="🧰" done={points >= 400} label="400" />
-          <Reward icon="🎁" done={points >= 800} label="800" />
+          <Reward icon="ðŸ§°" done={points >= 200} label="200" />
+          <Reward icon="ðŸ§°" done={points >= 400} label="400" />
+          <Reward icon="ðŸŽ" done={points >= 800} label="800" />
         </div>
         <div className="hidden justify-end lg:flex">
           <SpiritPetAvatar
@@ -587,7 +587,7 @@ function MissionScoreBanner({ points }: { points: number }) {
 }
 
 function Reward({
-  icon = "✓",
+  icon = "âœ“",
   label,
   done = false,
 }: {
@@ -629,15 +629,15 @@ function DailyTaskGrid({
     <section>
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-xl font-black">
-          Nhiệm vụ hằng ngày{" "}
-          <span className="text-xs text-[#69708b]">⏱ Cập nhật theo ngày</span>
+          Nhiá»‡m vá»¥ háº±ng ngÃ y{" "}
+          <span className="text-xs text-[#69708b]">â± Cáº­p nháº­t theo ngÃ y</span>
         </h2>
         <button
           type="button"
           onClick={onViewAll}
           className="text-sm font-black text-[#6d35ff]"
         >
-          Xem tất cả →
+          Xem táº¥t cáº£ â†’
         </button>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
@@ -669,9 +669,9 @@ function WeeklyTasks({
   return (
     <section className="rounded-2xl border border-[#e8e9f5] bg-white p-5 shadow-sm">
       <div className="mb-3 flex items-center gap-2">
-        <h2 className="text-xl font-black">Nhiệm vụ hằng tuần</h2>
+        <h2 className="text-xl font-black">Nhiá»‡m vá»¥ háº±ng tuáº§n</h2>
         <span className="text-xs font-bold text-[#69708b]">
-          ⏱ Cập nhật theo tuần
+          â± Cáº­p nháº­t theo tuáº§n
         </span>
       </div>
       {missions.map((mission) => (
@@ -688,7 +688,7 @@ function WeeklyTasks({
         onClick={onViewAll}
         className="mt-4 w-full text-center font-black text-[#6d35ff]"
       >
-        Xem tất cả nhiệm vụ →
+        Xem táº¥t cáº£ nhiá»‡m vá»¥ â†’
       </button>
     </section>
   );
@@ -722,7 +722,7 @@ function MissionCard({
       }`}
     >
       <LegacyIcon
-        icon={missionIcons[mission.action] || "✣"}
+        icon={missionIcons[mission.action] || "âœ£"}
         label={mission.title}
         tone={done ? "emerald" : "purple"}
         className="mx-auto h-16 w-16"
@@ -761,15 +761,15 @@ function MissionCard({
         }`}
       >
         {claiming
-          ? "Đang nhận..."
+          ? "Äang nháº­n..."
           : claimed
-            ? "Đã nhận"
+            ? "ÄÃ£ nháº­n"
             : expired
-              ? "Đã hết hạn"
+              ? "ÄÃ£ háº¿t háº¡n"
               : mission.status === "CANCELLED"
-                ? "Đã hủy"
+                ? "ÄÃ£ há»§y"
                 : claimable
-                  ? "Nhận thưởng"
+                  ? "Nháº­n thÆ°á»Ÿng"
                   : actionLabel(mission.action)}
       </button>
     </article>
@@ -796,7 +796,7 @@ function MissionRow({
   return (
     <div className="grid gap-4 border-b border-[#eef0f6] py-4 last:border-b-0 md:grid-cols-[70px_minmax(0,1fr)_180px_90px_90px_120px] md:items-center">
       <LegacyIcon
-        icon={missionIcons[mission.action] || "✣"}
+        icon={missionIcons[mission.action] || "âœ£"}
         label={mission.title}
         tone={done ? "emerald" : "yellow"}
         className="h-14 w-14"
@@ -805,7 +805,7 @@ function MissionRow({
       <div>
         <h3 className="font-black">{mission.title}</h3>
         <p className="mt-1 text-xs font-bold text-[#69708b]">
-          {mission.description || "Hoàn thành nhiệm vụ để nhận thưởng."}
+          {mission.description || "HoÃ n thÃ nh nhiá»‡m vá»¥ Ä‘á»ƒ nháº­n thÆ°á»Ÿng."}
         </p>
       </div>
       <div>
@@ -842,15 +842,15 @@ function MissionRow({
         }`}
       >
         {claiming
-          ? "Đang nhận..."
+          ? "Äang nháº­n..."
           : claimed
-            ? "Đã nhận"
+            ? "ÄÃ£ nháº­n"
             : expired
-              ? "Đã hết hạn"
+              ? "ÄÃ£ háº¿t háº¡n"
               : mission.status === "CANCELLED"
-                ? "Đã hủy"
+                ? "ÄÃ£ há»§y"
                 : claimable
-                  ? "Nhận thưởng"
+                  ? "Nháº­n thÆ°á»Ÿng"
                   : actionLabel(mission.action)}
       </button>
     </div>
@@ -894,7 +894,7 @@ function MissionLoading() {
 function EmptyMissions() {
   return (
     <div className="rounded-2xl border border-dashed border-[#dfe2f3] bg-white p-8 text-center font-bold text-[#69708b]">
-      Chưa có nhiệm vụ trong mục này.
+      ChÆ°a cÃ³ nhiá»‡m vá»¥ trong má»¥c nÃ y.
     </div>
   );
 }
@@ -903,14 +903,14 @@ function MissionLoadError({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="flex flex-col items-center gap-3 rounded-2xl border border-red-100 bg-red-50 p-8 text-center">
       <p className="font-bold text-red-600">
-        Không tải được nhiệm vụ. Vui lòng thử lại.
+        KhÃ´ng táº£i Ä‘Æ°á»£c nhiá»‡m vá»¥. Vui lÃ²ng thá»­ láº¡i.
       </p>
       <button
         type="button"
         onClick={onRetry}
         className="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-black text-white"
       >
-        Thử lại
+        Thá»­ láº¡i
       </button>
     </div>
   );
@@ -919,7 +919,7 @@ function MissionLoadError({ onRetry }: { onRetry: () => void }) {
 function PetCard() {
   return (
     <section className="relative overflow-hidden rounded-2xl border border-[#e8e9f5] bg-gradient-to-br from-[#f6f0ff] to-[#ffe9d5] p-5 shadow-sm">
-      <h2 className="font-black">Linh thú của bạn</h2>
+      <h2 className="font-black">Linh thÃº cá»§a báº¡n</h2>
       <div className="mt-4 flex justify-center">
         <SpiritPetAvatar
           petType="fox"
@@ -929,7 +929,7 @@ function PetCard() {
         />
       </div>
       <div className="mt-4 rounded-2xl bg-white/90 p-4 text-sm font-bold text-[#303956] shadow-sm">
-        Cùng hoàn thành nhiệm vụ để mình mau lớn nhé! 🏆
+        CÃ¹ng hoÃ n thÃ nh nhiá»‡m vá»¥ Ä‘á»ƒ mÃ¬nh mau lá»›n nhÃ©! ðŸ†
       </div>
     </section>
   );
@@ -946,25 +946,25 @@ function TodayProgress({
   const total = summary?.dailyTotal || 0;
   return (
     <section className="rounded-2xl border border-[#e8e9f5] bg-white p-5 shadow-sm">
-      <h2 className="font-black">Nhiệm vụ ngày hôm nay</h2>
+      <h2 className="font-black">Nhiá»‡m vá»¥ ngÃ y hÃ´m nay</h2>
       <div className="mt-5 grid grid-cols-2 items-center gap-5">
         <div className="flex h-32 w-32 items-center justify-center rounded-full border-[12px] border-[#6d35ff] border-b-emerald-500">
           <div className="text-center">
             <div className="text-2xl font-black">
               {done}/{total || 0}
             </div>
-            <p className="text-xs font-bold text-[#69708b]">Đã hoàn thành</p>
+            <p className="text-xs font-bold text-[#69708b]">ÄÃ£ hoÃ n thÃ nh</p>
           </div>
         </div>
         <div className="text-center">
-          <div className="text-6xl">🧰</div>
+          <div className="text-6xl">ðŸ§°</div>
           <p className="mt-2 text-sm font-bold text-[#69708b]">
-            {/* {summary?.nextReward.title || "Rương đồng"} */}
-            Thưởng hoàn thành ngày
+            {/* {summary?.nextReward.title || "RÆ°Æ¡ng Ä‘á»“ng"} */}
+            ThÆ°á»Ÿng hoÃ n thÃ nh ngÃ y
           </p>
           <p className="font-black text-emerald-600">
             {/* +{summary?.nextReward.xp || 50} XP */}
-            Nhận thưởng từ từng nhiệm vụ
+            Nháº­n thÆ°á»Ÿng tá»« tá»«ng nhiá»‡m vá»¥
           </p>
         </div>
       </div>
@@ -972,7 +972,7 @@ function TodayProgress({
         onClick={onAction}
         className="mt-5 w-full rounded-xl bg-[#6d35ff] px-4 py-3 font-black text-white"
       >
-        Xem chi tiết
+        Xem chi tiáº¿t
       </button>
     </section>
   );
@@ -991,18 +991,18 @@ function progressPercent(mission: MissionItem) {
 
 function actionLabel(action: MissionAction) {
   const labels: Record<MissionAction, string> = {
-    STUDY_LESSON: "Đến học",
-    COMPLETE_LESSON: "Đến bài học",
-    COMPLETE_QUIZ: "Làm quiz",
-    LEARN_WORD: "Học từ",
-    REVIEW_WORD: "Ôn tập",
-    READ_ARTICLE: "Đọc ngay",
+    STUDY_LESSON: "Äáº¿n há»c",
+    COMPLETE_LESSON: "Äáº¿n bÃ i há»c",
+    COMPLETE_QUIZ: "LÃ m quiz",
+    LEARN_WORD: "Há»c tá»«",
+    REVIEW_WORD: "Ã”n táº­p",
+    READ_ARTICLE: "Äá»c ngay",
     LISTEN_AUDIO: "Nghe ngay",
-    COMPLETE_SPEAKING: "Luyện nói",
-    CHECK_WRITING: "Luyện viết",
-    LOGIN: "Tiếp tục",
-    EARN_XP: "Kiếm XP",
-    STUDY_MINUTES: "Bắt đầu học",
+    COMPLETE_SPEAKING: "Luyá»‡n nÃ³i",
+    CHECK_WRITING: "Luyá»‡n viáº¿t",
+    LOGIN: "Tiáº¿p tá»¥c",
+    EARN_XP: "Kiáº¿m XP",
+    STUDY_MINUTES: "Báº¯t Ä‘áº§u há»c",
   };
 
   return labels[action];

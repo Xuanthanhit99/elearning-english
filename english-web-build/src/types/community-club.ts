@@ -1,4 +1,4 @@
-export type ClubUser = {
+﻿export type ClubUser = {
   id: string;
   fullname: string;
   username?: string | null;

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import WelcomeLoginModal from "@/src/Components/WelcomeLoginModal";
 import { redirectToLogin } from "@/src/lib/axios";
@@ -15,7 +15,7 @@ import MiuChatWidget from "@/src/Components/MiuChatModal/MiuChatWidget";
 
 function AppShellLoading() {
   return (
-    <div className="min-h-screen bg-[var(--lumiverse-bg)] p-4 lg:p-6">
+    <div className="min-h-screen bg-[var(--BeaconVie-bg)] p-4 lg:p-6">
       <div className="mx-auto max-w-6xl space-y-5 pt-20 lg:pl-[280px]">
         <div className="h-28 animate-pulse rounded-[2rem] bg-white/70 dark:bg-white/8" />
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -39,18 +39,18 @@ function AppShellAuthError({ onRetry }: { onRetry: () => void }) {
   const { t } = useTranslation();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--lumiverse-bg)] p-4">
-      <div className="max-w-md rounded-3xl border border-[var(--lumiverse-border)] bg-white p-6 text-center shadow-sm dark:bg-white/8">
-        <h1 className="text-2xl font-black text-[var(--lumiverse-ink)]">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--BeaconVie-bg)] p-4">
+      <div className="max-w-md rounded-3xl border border-[var(--BeaconVie-border)] bg-white p-6 text-center shadow-sm dark:bg-white/8">
+        <h1 className="text-2xl font-black text-[var(--BeaconVie-ink)]">
           {t("common.authSessionErrorTitle")}
         </h1>
-        <p className="mt-3 text-sm font-bold leading-6 text-[var(--lumiverse-muted)]">
+        <p className="mt-3 text-sm font-bold leading-6 text-[var(--BeaconVie-muted)]">
           {t("common.authSessionErrorDescription")}
         </p>
         <button
           type="button"
           onClick={onRetry}
-          className="lumiverse-button-primary mt-5 w-full"
+          className="BeaconVie-button-primary mt-5 w-full"
         >
           {t("common.tryAgain")}
         </button>
@@ -106,7 +106,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   if (!user) return <AppShellLoading />;
 
   return (
-    <div className="lumiverse-shell min-h-screen">
+    <div className="BeaconVie-shell min-h-screen">
       {focusMode ? null : (
         <AppSidebar
           collapsed={sidebarCollapsed}
@@ -126,7 +126,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <WelcomeLoginModal
         open={showWelcome}
         fullname={user?.fullname}
-        avatar="/cat-home.jpg"
+        avatar="/brand/beaconvie-ai-mascot.png"
         onClose={() => setShowWelcome(false)}
       />
       <main

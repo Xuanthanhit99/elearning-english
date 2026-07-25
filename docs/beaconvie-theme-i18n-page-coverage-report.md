@@ -1,4 +1,4 @@
-# Lumiverse Theme + i18n Page Coverage Report
+﻿# BeaconVie Theme + i18n Page Coverage Report
 
 ## 1. Total pages
 
@@ -164,7 +164,7 @@ Responsive issues: no browser-per-route visual pass was completed for all 98 rou
 | `english-web-build/src/i18n/locales/en.ts` | i18n | Added English auth messages | Auth i18n coverage |
 | `english-web-build/src/i18n/locales/zh.ts` | i18n | Added Chinese auth messages | Keep locale parity |
 | `english-web-build/src/i18n/locales/de.ts` | i18n | Added German auth messages | Keep locale parity |
-| `docs/lumiverse-theme-i18n-page-coverage-report.md` | docs | Added page-by-page coverage report | Track exact route status |
+| `docs/beaconvie-theme-i18n-page-coverage-report.md` | docs | Added page-by-page coverage report | Track exact route status |
 
 ## 7. Verification
 
@@ -183,7 +183,7 @@ Commands run:
 - `npm run build`
 - `npm run i18n:check`
 
-Full frontend lint is still expected to fail from known legacy files outside this pass, as recorded in `lumiverse-theme-i18n-review-report.md`.
+Full frontend lint is still expected to fail from known legacy files outside this pass, as recorded in `beaconvie-theme-i18n-review-report.md`.
 
 ## 8. Final conclusion
 

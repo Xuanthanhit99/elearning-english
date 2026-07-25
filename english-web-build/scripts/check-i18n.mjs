@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+﻿import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -57,7 +57,7 @@ function sameList(a, b) {
   return a.length === b.length && a.every((item, index) => item === b[index]);
 }
 
-const tempDir = mkdtempSync(join(tmpdir(), "lumiverse-i18n-"));
+const tempDir = mkdtempSync(join(tmpdir(), "beaconvie-i18n-"));
 
 try {
   const dictionaries = {};

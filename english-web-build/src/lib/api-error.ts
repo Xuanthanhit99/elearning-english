@@ -1,4 +1,4 @@
-import { AxiosError } from "axios";
+﻿import { AxiosError } from "axios";
 
 export type NormalizedApiError = {
   message: string;
@@ -13,7 +13,7 @@ export type ApiErrorLike = Error & {
   response?: AxiosError["response"];
 };
 
-const DEFAULT_MESSAGE = "Có lỗi xảy ra. Vui lòng thử lại.";
+const DEFAULT_MESSAGE = "CÃ³ lá»—i xáº£y ra. Vui lÃ²ng thá»­ láº¡i.";
 
 function normalizeMessage(value: unknown, fallback = DEFAULT_MESSAGE) {
   if (Array.isArray(value)) {

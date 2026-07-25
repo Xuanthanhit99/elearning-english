@@ -1,4 +1,4 @@
-export function LeaderboardLoading() {
+﻿export function LeaderboardLoading() {
   return (
     <div className="mt-6 space-y-3">
       {Array.from({ length: 7 }).map((_, index) => (
@@ -21,7 +21,7 @@ export function LeaderboardError({
   return (
     <div className="mt-6 rounded-3xl border border-rose-200 bg-rose-50 p-8 text-center">
       <p className="text-lg font-black text-rose-700">
-        Không thể tải bảng xếp hạng
+        KhÃ´ng thá»ƒ táº£i báº£ng xáº¿p háº¡ng
       </p>
       <p className="mt-2 text-sm text-rose-600">
         {message}
@@ -30,7 +30,7 @@ export function LeaderboardError({
         onClick={onRetry}
         className="mt-5 rounded-xl bg-rose-600 px-4 py-2 font-black text-white"
       >
-        Thử lại
+        Thá»­ láº¡i
       </button>
     </div>
   );
@@ -43,16 +43,16 @@ export function LeaderboardEmpty({
 }) {
   const message =
     scope === 'FRIENDS'
-      ? 'Hãy kết bạn để bắt đầu thi đua cùng nhau.'
+      ? 'HÃ£y káº¿t báº¡n Ä‘á»ƒ báº¯t Ä‘áº§u thi Ä‘ua cÃ¹ng nhau.'
       : scope === 'CLUB'
-        ? 'Club chưa có hoạt động XP trong tuần này.'
-        : 'Chưa có dữ liệu bảng xếp hạng.';
+        ? 'Club chÆ°a cÃ³ hoáº¡t Ä‘á»™ng XP trong tuáº§n nÃ y.'
+        : 'ChÆ°a cÃ³ dá»¯ liá»‡u báº£ng xáº¿p háº¡ng.';
 
   return (
     <div className="mt-6 rounded-3xl border border-dashed bg-white p-10 text-center">
-      <div className="text-5xl">🏁</div>
+      <div className="text-5xl">ðŸ</div>
       <p className="mt-4 text-lg font-black">
-        Chưa có thứ hạng
+        ChÆ°a cÃ³ thá»© háº¡ng
       </p>
       <p className="mt-2 text-sm text-slate-500">
         {message}

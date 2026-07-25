@@ -1,4 +1,4 @@
-// src/Components/Footer.tsx
+﻿// src/Components/Footer.tsx
 "use client";
 
 import Image from "next/image";
@@ -47,8 +47,8 @@ export default function Footer() {
             <div className="flex justify-center lg:justify-end">
               <div className="rounded-[34px] border border-white/20 bg-white/10 p-5 backdrop-blur">
                 <Image
-                  src="/cat-home.jpg"
-                  alt="Lumi mascot"
+                  src="/brand/beaconvie-ai-mascot.png"
+                  alt="Beacon mascot"
                   width={220}
                   height={220}
                   className="rounded-[28px] object-cover"

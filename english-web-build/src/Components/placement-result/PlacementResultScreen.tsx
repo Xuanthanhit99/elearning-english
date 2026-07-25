@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ArrowRight,
@@ -27,21 +27,21 @@ import {
   PlacementResultData,
 } from "@/src/lib/placement-result-api";
 import {
-  LumiverseBadge,
-  LumiverseButton,
-  LumiverseCard,
-  LumiverseProgress,
-  LumiverseSectionHeader,
-  LumiverseState,
-} from "@/src/Components/UI/Lumiverse";
+  BeaconVieBadge,
+  BeaconVieButton,
+  BeaconVieCard,
+  BeaconVieProgress,
+  BeaconVieSectionHeader,
+  BeaconVieState,
+} from "@/src/Components/UI/BeaconVie";
 
 const skillMeta: Record<LearningSkill, { label: string; icon: typeof Type }> = {
-  VOCABULARY: { label: "Vocabulary", icon: Type },
-  GRAMMAR: { label: "Grammar", icon: BookOpen },
-  LISTENING: { label: "Listening", icon: Headphones },
-  READING: { label: "Reading", icon: BookOpen },
-  SPEAKING: { label: "Speaking", icon: Mic2 },
-  WRITING: { label: "Writing", icon: PencilLine },
+  VOCABULARY: { label: "Từ vựng", icon: Type },
+  GRAMMAR: { label: "Ngữ pháp", icon: BookOpen },
+  LISTENING: { label: "Luyện nghe", icon: Headphones },
+  READING: { label: "Luyện đọc", icon: BookOpen },
+  SPEAKING: { label: "Luyện nói", icon: Mic2 },
+  WRITING: { label: "Luyện viết", icon: PencilLine },
 };
 
 export default function PlacementResultScreen({ testId }: { testId: string }) {
@@ -75,22 +75,22 @@ export default function PlacementResultScreen({ testId }: { testId: string }) {
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center px-4 py-10">
-        <LumiverseCard className="w-full max-w-lg p-8 text-center">
-          <Loader2 aria-hidden className="mx-auto h-10 w-10 animate-spin text-[var(--lumiverse-primary)]" />
-          <h1 className="mt-5 text-2xl font-black text-[var(--lumiverse-ink)]">
+        <BeaconVieCard className="w-full max-w-lg p-8 text-center">
+          <Loader2 aria-hidden className="mx-auto h-10 w-10 animate-spin text-[var(--BeaconVie-primary)]" />
+          <h1 className="mt-5 text-2xl font-black text-[var(--BeaconVie-ink)]">
             Preparing your result
           </h1>
-          <p className="mt-2 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+          <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
             The result is generated through the existing placement result API.
           </p>
-        </LumiverseCard>
+        </BeaconVieCard>
       </main>
     );
   }
 
   if (!data) {
     return (
-      <LumiverseState
+      <BeaconVieState
         title="Result is unavailable"
         description={error}
         actionLabel="Try again"
@@ -103,15 +103,15 @@ export default function PlacementResultScreen({ testId }: { testId: string }) {
   return (
     <main className="min-h-screen px-3 py-5 sm:px-4 lg:px-6">
       <div className="mx-auto max-w-7xl space-y-5">
-        <LumiverseCard className="overflow-hidden p-0">
+        <BeaconVieCard className="overflow-hidden p-0">
           <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:p-8">
             <section>
-              <LumiverseBadge>Placement Result</LumiverseBadge>
-              <h1 className="mt-4 max-w-4xl text-3xl font-black tracking-tight text-[var(--lumiverse-ink)] sm:text-5xl">
+              <BeaconVieBadge>Placement Result</BeaconVieBadge>
+              <h1 className="mt-4 max-w-4xl text-3xl font-black tracking-tight text-[var(--BeaconVie-ink)] sm:text-5xl">
                 Your current level is {data.overview.overallLevel}
               </h1>
               {data.overview.summary ? (
-                <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-[var(--lumiverse-muted)]">
+                <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-[var(--BeaconVie-muted)]">
                   {data.overview.summary}
                 </p>
               ) : null}
@@ -128,36 +128,36 @@ export default function PlacementResultScreen({ testId }: { testId: string }) {
               </div>
 
               {completedDate ? (
-                <p className="mt-5 text-sm font-bold text-[var(--lumiverse-muted)]">
+                <p className="mt-5 text-sm font-bold text-[var(--BeaconVie-muted)]">
                   Completed {completedDate}
                 </p>
               ) : null}
             </section>
 
-            <LumiverseCard className="border-blue-100 bg-blue-50/45 p-5">
+            <BeaconVieCard className="border-blue-100 bg-blue-50/45 p-5">
               <div className="relative mx-auto h-36 w-full max-w-[220px]">
                 <Image
-                  src="/images/placement/poppy-result.png"
-                  alt="Lumi celebrating your placement result"
+                  src="/images/placement/BeaconVie-result.png"
+                  alt="Beacon celebrating your placement result"
                   fill
                   priority
                   className="object-contain"
                 />
               </div>
               <div className="mt-5 text-center">
-                <p className="text-sm font-black uppercase tracking-[0.12em] text-[var(--lumiverse-muted)]">
+                <p className="text-sm font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-muted)]">
                   Overall level
                 </p>
-                <p className="mt-2 text-6xl font-black text-[var(--lumiverse-primary)]">
+                <p className="mt-2 text-6xl font-black text-[var(--BeaconVie-primary)]">
                   {data.overview.overallLevel}
                 </p>
-                <p className="mt-2 font-bold text-[var(--lumiverse-muted)]">
+                <p className="mt-2 font-bold text-[var(--BeaconVie-muted)]">
                   {levelLabel(data.overview.overallLevel)}
                 </p>
               </div>
-            </LumiverseCard>
+            </BeaconVieCard>
           </div>
-        </LumiverseCard>
+        </BeaconVieCard>
 
         {error ? (
           <p className="rounded-2xl bg-rose-50 p-4 text-sm font-bold text-rose-600">
@@ -166,8 +166,8 @@ export default function PlacementResultScreen({ testId }: { testId: string }) {
         ) : null}
 
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <LumiverseCard className="p-6">
-            <LumiverseSectionHeader
+          <BeaconVieCard className="p-6">
+            <BeaconVieSectionHeader
               eyebrow="Skills"
               title="Skill breakdown"
               description="Every score, status, level and feedback item below comes from the result API."
@@ -177,7 +177,7 @@ export default function PlacementResultScreen({ testId }: { testId: string }) {
                 <SkillCard key={skill.skill} skill={skill} />
               ))}
             </div>
-          </LumiverseCard>
+          </BeaconVieCard>
 
           <aside className="space-y-5">
             <InsightList title="Strengths" items={data.overview.strengths} positive />
@@ -191,26 +191,26 @@ export default function PlacementResultScreen({ testId }: { testId: string }) {
           <CertificateCard data={data} />
         </section>
 
-        <LumiverseCard className="p-6">
+        <BeaconVieCard className="p-6">
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <LumiverseButton onClick={() => router.push(data.actions.startLearningUrl)}>
+            <BeaconVieButton onClick={() => router.push(data.actions.startLearningUrl)}>
               Continue learning
               <ArrowRight aria-hidden className="h-4 w-4" />
-            </LumiverseButton>
-            <LumiverseButton tone="soft" onClick={() => router.push(data.actions.retryTestUrl)}>
+            </BeaconVieButton>
+            <BeaconVieButton tone="soft" onClick={() => router.push(data.actions.retryTestUrl)}>
               Retake test
               <RefreshCw aria-hidden className="h-4 w-4" />
-            </LumiverseButton>
-            <LumiverseButton tone="soft" onClick={() => router.push(data.actions.chooseOtherPathUrl)}>
+            </BeaconVieButton>
+            <BeaconVieButton tone="soft" onClick={() => router.push(data.actions.chooseOtherPathUrl)}>
               Choose another path
               <Route aria-hidden className="h-4 w-4" />
-            </LumiverseButton>
-            <LumiverseButton tone="ghost" onClick={() => router.push(data.actions.detailedAnalysisUrl)}>
+            </BeaconVieButton>
+            <BeaconVieButton tone="ghost" onClick={() => router.push(data.actions.detailedAnalysisUrl)}>
               Detailed analysis
               <BarChart3 aria-hidden className="h-4 w-4" />
-            </LumiverseButton>
+            </BeaconVieButton>
           </div>
-        </LumiverseCard>
+        </BeaconVieCard>
       </div>
     </main>
   );
@@ -222,26 +222,26 @@ function SkillCard({ skill }: { skill: PlacementResultData["skills"][number] }) 
   const skipped = skill.status === "SKIPPED";
 
   return (
-    <article className="rounded-3xl border border-[var(--lumiverse-border)] bg-white/75 p-5">
+    <article className="rounded-3xl border border-[var(--BeaconVie-border)] bg-white/75 p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-[var(--lumiverse-primary)]">
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-[var(--BeaconVie-primary)]">
             <Icon aria-hidden className="h-5 w-5" />
           </span>
           <div>
-            <h3 className="font-black text-[var(--lumiverse-ink)]">{meta.label}</h3>
-            <p className="text-xs font-bold text-[var(--lumiverse-muted)]">
+            <h3 className="font-black text-[var(--BeaconVie-ink)]">{meta.label}</h3>
+            <p className="text-xs font-bold text-[var(--BeaconVie-muted)]">
               {skill.level ?? skill.label ?? skill.status}
             </p>
           </div>
         </div>
-        <span className="text-2xl font-black text-[var(--lumiverse-primary)]">
-          {skipped ? "—" : Math.round(skill.score)}
+        <span className="text-2xl font-black text-[var(--BeaconVie-primary)]">
+          {skipped ? "â€”" : Math.round(skill.score)}
         </span>
       </div>
-      {!skipped ? <LumiverseProgress value={skill.score} className="mt-4" /> : null}
+      {!skipped ? <BeaconVieProgress value={skill.score} className="mt-4" /> : null}
       {skill.feedback ? (
-        <p className="mt-4 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+        <p className="mt-4 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
           {skill.feedback}
         </p>
       ) : null}
@@ -264,23 +264,23 @@ function InsightList({
   positive?: boolean;
 }) {
   return (
-    <LumiverseCard className="p-5">
-      <h2 className="text-lg font-black text-[var(--lumiverse-ink)]">{title}</h2>
+    <BeaconVieCard className="p-5">
+      <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">{title}</h2>
       {items.length ? (
         <div className="mt-4 space-y-2">
           {items.map((item) => (
-            <p key={item} className="flex gap-2 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+            <p key={item} className="flex gap-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
               <CheckCircle2 aria-hidden className={`mt-0.5 h-4 w-4 shrink-0 ${positive ? "text-emerald-500" : "text-amber-500"}`} />
               {item}
             </p>
           ))}
         </div>
       ) : (
-        <p className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-[var(--lumiverse-muted)]">
+        <p className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-[var(--BeaconVie-muted)]">
           No items returned by the backend.
         </p>
       )}
-    </LumiverseCard>
+    </BeaconVieCard>
   );
 }
 
@@ -291,15 +291,15 @@ function ProjectionCard({ data }: { data: PlacementResultData }) {
     data.overview.projectedWeeksMax !== null;
 
   return (
-    <LumiverseCard className="p-5">
-      <h2 className="text-lg font-black text-[var(--lumiverse-ink)]">
+    <BeaconVieCard className="p-5">
+      <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">
         Recommended direction
       </h2>
       {hasProjection ? (
-        <p className="mt-4 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+        <p className="mt-4 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
           The backend projects{" "}
           {data.overview.projectedLevel ? (
-            <strong className="text-[var(--lumiverse-primary)]">{data.overview.projectedLevel}</strong>
+            <strong className="text-[var(--BeaconVie-primary)]">{data.overview.projectedLevel}</strong>
           ) : (
             "your next level"
           )}{" "}
@@ -309,78 +309,78 @@ function ProjectionCard({ data }: { data: PlacementResultData }) {
           .
         </p>
       ) : (
-        <p className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-[var(--lumiverse-muted)]">
+        <p className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-[var(--BeaconVie-muted)]">
           No projection was returned by the backend.
         </p>
       )}
-    </LumiverseCard>
+    </BeaconVieCard>
   );
 }
 
 function LearningDirection({ data }: { data: PlacementResultData }) {
   return (
-    <LumiverseCard className="p-6">
-      <LumiverseSectionHeader
+    <BeaconVieCard className="p-6">
+      <BeaconVieSectionHeader
         eyebrow="Path"
         title="Learning path preview"
         description="Phases and priorities are shown only from backend result data."
       />
       <div className="grid gap-4 md:grid-cols-3">
         {data.learningPath.phases.map((phase) => (
-          <article key={phase.phase} className="rounded-3xl border border-[var(--lumiverse-border)] bg-white/75 p-4">
-            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--lumiverse-primary)]">
+          <article key={phase.phase} className="rounded-3xl border border-[var(--BeaconVie-border)] bg-white/75 p-4">
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-primary)]">
               Phase {phase.phase}
-              {phase.targetLevel ? ` • ${phase.targetLevel}` : ""}
+              {phase.targetLevel ? ` â€¢ ${phase.targetLevel}` : ""}
             </p>
-            <h3 className="mt-3 font-black text-[var(--lumiverse-ink)]">{phase.title}</h3>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+            <h3 className="mt-3 font-black text-[var(--BeaconVie-ink)]">{phase.title}</h3>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
               {phase.description}
             </p>
-            <LumiverseProgress value={phase.progress} className="mt-4" />
+            <BeaconVieProgress value={phase.progress} className="mt-4" />
           </article>
         ))}
       </div>
-    </LumiverseCard>
+    </BeaconVieCard>
   );
 }
 
 function CertificateCard({ data }: { data: PlacementResultData }) {
   return (
-    <LumiverseCard className="p-5">
+    <BeaconVieCard className="p-5">
       <Trophy aria-hidden className="h-9 w-9 text-amber-500" />
-      <h2 className="mt-4 text-xl font-black text-[var(--lumiverse-ink)]">
+      <h2 className="mt-4 text-xl font-black text-[var(--BeaconVie-ink)]">
         Certificate
       </h2>
-      <p className="mt-2 text-4xl font-black text-[var(--lumiverse-primary)]">
+      <p className="mt-2 text-4xl font-black text-[var(--BeaconVie-primary)]">
         {data.certificate.level}
       </p>
       {data.certificate.code ? (
-        <p className="mt-2 text-xs font-bold text-[var(--lumiverse-muted)]">
+        <p className="mt-2 text-xs font-bold text-[var(--BeaconVie-muted)]">
           {data.certificate.code}
         </p>
       ) : null}
       {data.certificate.url ? (
-        <Link href={data.certificate.url} className="lumiverse-button-soft mt-5 w-full" target="_blank">
+        <Link href={data.certificate.url} className="BeaconVie-button-soft mt-5 w-full" target="_blank">
           Download certificate
           <Download aria-hidden className="h-4 w-4" />
         </Link>
       ) : (
-        <p className="mt-5 rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-[var(--lumiverse-muted)]">
+        <p className="mt-5 rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-[var(--BeaconVie-muted)]">
           No certificate file URL was returned by the backend.
         </p>
       )}
-    </LumiverseCard>
+    </BeaconVieCard>
   );
 }
 
 function Metric({ icon: Icon, label, value }: { icon: typeof Trophy; label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-[var(--lumiverse-border)] bg-white/70 p-4">
-      <Icon aria-hidden className="h-5 w-5 text-[var(--lumiverse-primary)]" />
-      <p className="mt-3 text-xs font-black uppercase tracking-[0.12em] text-[var(--lumiverse-muted)]">
+    <div className="rounded-2xl border border-[var(--BeaconVie-border)] bg-white/70 p-4">
+      <Icon aria-hidden className="h-5 w-5 text-[var(--BeaconVie-primary)]" />
+      <p className="mt-3 text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-muted)]">
         {label}
       </p>
-      <p className="mt-1 text-xl font-black text-[var(--lumiverse-ink)]">
+      <p className="mt-1 text-xl font-black text-[var(--BeaconVie-ink)]">
         {value}
       </p>
     </div>

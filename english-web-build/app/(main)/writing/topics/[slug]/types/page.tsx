@@ -1,4 +1,4 @@
-import ChooseWritingTypePage from "@/src/Components/WritingPage/ChooseWritingTypePage/ChooseWritingTypePage";
+﻿import ChooseWritingTypePage from "@/src/Components/WritingPage/ChooseWritingTypePage/ChooseWritingTypePage";
 
 export default async function WritingTopicSlug({
   params,

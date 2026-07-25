@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -13,18 +13,18 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  { icon: "home", label: "Trang chủ", href: "/dashboard", match: (path) => path === "/dashboard" },
-  { icon: "book", label: "Khóa học", href: "/courses" },
-  { icon: "book", label: "Từ vựng", href: "/vocabulary" },
-  { icon: "graduation", label: "Ngữ pháp", href: "/grammar" },
+  { icon: "home", label: "Trang chá»§", href: "/dashboard", match: (path) => path === "/dashboard" },
+  { icon: "book", label: "KhÃ³a há»c", href: "/courses" },
+  { icon: "book", label: "Tá»« vá»±ng", href: "/vocabulary" },
+  { icon: "graduation", label: "Ngá»¯ phÃ¡p", href: "/grammar" },
   { icon: "volume", label: "Nghe", href: "/listening" },
-  { icon: "mic", label: "Nói", href: "/speaking" },
-  { icon: "book", label: "Đọc", href: "/reading" },
-  { icon: "pen", label: "Viết", href: "/writing" },
+  { icon: "mic", label: "NÃ³i", href: "/speaking" },
+  { icon: "book", label: "Äá»c", href: "/reading" },
+  { icon: "pen", label: "Viáº¿t", href: "/writing" },
   { icon: "star", label: "Flashcards", href: "/vocabulary/flashcards" },
-  { icon: "users", label: "Cộng đồng", href: "/community" },
+  { icon: "users", label: "Cá»™ng Ä‘á»“ng", href: "/community" },
   { icon: "shop", label: "Pet", href: "/pet" },
-  { icon: "settings", label: "Hồ sơ", href: "/profile" },
+  { icon: "settings", label: "Há»“ sÆ¡", href: "/profile" },
 ];
 
 function isActive(item: NavItem, pathname: string) {
@@ -42,13 +42,13 @@ export default function MobileStudyNav() {
         <Link
           href="/profile"
           className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#e8e9f5] bg-[#f7f5ff] text-[#652cff]"
-          aria-label="Mở hồ sơ"
+          aria-label="Má»Ÿ há»“ sÆ¡"
         >
           <AppIcon name="settings" tone="purple" bare size={18} />
         </Link>
       </div>
 
-      <nav className="no-scrollbar mt-2 flex gap-2 overflow-x-auto pb-0.5" aria-label="Điều hướng học tập">
+      <nav className="no-scrollbar mt-2 flex gap-2 overflow-x-auto pb-0.5" aria-label="Äiá»u hÆ°á»›ng há»c táº­p">
         {navItems.map((item) => {
           const active = isActive(item, pathname);
 

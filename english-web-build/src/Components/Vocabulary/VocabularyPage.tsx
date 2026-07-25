@@ -12,7 +12,7 @@ import StudySidebar from "@/src/Components/Layout/StudySidebar";
 import { X, Gift, BookOpen, Star, Target, RotateCcw } from "lucide-react";
 import { useTranslation } from "@/src/hooks/useTranslation";
 import { Locale } from "@/src/i18n/types";
-import { LumiverseState } from "@/src/Components/UI/Lumiverse";
+import { BeaconVieState } from "@/src/Components/UI/BeaconVie";
 import vocab from "./vocabularyPage.content";
 
 type VocabularyWord = {
@@ -221,7 +221,7 @@ const buildVocabularySvg = (word?: VocabularyWord | null) => {
   const tone = getVisualTone(word);
   const label = escapeSvgText(word?.word || "word");
   const meaning = escapeSvgText(
-    word?.meaningVi || word?.meaningEn || "Vocabulary",
+    word?.meaningVi || word?.meaningEn || "Từ vựng",
   );
   const initial = escapeSvgText((word?.word || "V").slice(0, 1).toUpperCase());
 
@@ -273,7 +273,7 @@ export default function VocabularyPage() {
   const c = vocab[locale];
   const user = useAuthStore((state) => state.user);
   const displayName = user?.fullname || "Minh Anh";
-  const avatar = user?.avatar || "/cat-home.jpg";
+  const avatar = user?.avatar || "/brand/beaconvie-ai-mascot.png";
 
   const [today, setToday] = useState<TodayVocabulary | null>(null);
   const [dailyWords, setDailyWords] = useState<DailyWordItem[]>([]);
@@ -470,7 +470,7 @@ export default function VocabularyPage() {
         setMessage(c.messages.removedFromNotebook);
       } else {
         await api.post(`/vocabulary/words/${currentWord.id}/notebook`, {
-          note: "Lưu từ từ trang học hôm nay",
+          note: "Luu t? t? trang h?c hôm nay",
         });
         setMessage(c.messages.addedToNotebook);
       }
@@ -635,10 +635,10 @@ export default function VocabularyPage() {
   if (loadFailed && !today) {
     return (
       <div className="grid min-h-[60vh] place-items-center px-4">
-        <LumiverseState
-          title="Không tải được dữ liệu từ vựng"
+        <BeaconVieState
+          title="Không t?i du?c d? li?u t? v?ng"
           description={c.messages.loadTodayError}
-          actionLabel="Thử lại"
+          actionLabel="Th? l?i"
           onAction={loadVocabulary}
           tone="error"
         />
@@ -915,7 +915,7 @@ function TopicHero({
   const topicName = today?.topic?.name || "Environment";
   const description =
     today?.topic?.description ||
-    "Học từ vựng theo chủ đề mỗi ngày giúp bạn ghi nhớ tốt hơn và áp dụng dễ dàng hơn.";
+    "H?c t? v?ng theo ch? d? m?i ngày giúp b?n ghi nh? t?t hon và áp d?ng d? dàng hon.";
   const wordCount = today?.words?.length || 10;
   return (
     <section className="relative overflow-hidden rounded-2xl bg-[#f1edff] p-8 shadow-sm">
@@ -923,7 +923,7 @@ function TopicHero({
         <div>
           <div className="flex flex-wrap items-center gap-3">
             <span className="inline-flex items-center gap-2 rounded-lg bg-white/80 px-3 py-2 text-sm font-black text-[#4f2bd8]">
-              <AppIcon name="calendar" bare size={16} /> Chủ đề hôm nay
+              <AppIcon name="calendar" bare size={16} /> Ch? d? hôm nay
             </span>
             <select
               value={level}
@@ -943,13 +943,13 @@ function TopicHero({
           </p>
           <div className="mt-7 flex flex-wrap gap-8 text-sm font-black text-[#59627f]">
             <span className="inline-flex items-center gap-2">
-              <AppIcon name="shield" bare size={16} /> {wordCount} từ mới
+              <AppIcon name="shield" bare size={16} /> {wordCount} t? m?i
             </span>
             <span className="inline-flex items-center gap-2">
-              <AppIcon name="target" bare size={16} /> {level} - Theo trình độ
+              <AppIcon name="target" bare size={16} /> {level} - Theo trình d?
             </span>
             <span className="inline-flex items-center gap-2">
-              <AppIcon name="calendar" bare size={16} /> Cập nhật mỗi ngày
+              <AppIcon name="calendar" bare size={16} /> C?p nh?t m?i ngày
             </span>
           </div>
         </div>
@@ -968,23 +968,23 @@ function ActionRow({ onOpenChallenge }: { onOpenChallenge: () => void }) {
   return (
     <div className="flex flex-wrap items-center gap-4">
       <button className="inline-flex items-center gap-2 rounded-xl bg-[#6d35ff] px-6 py-3 text-sm font-black text-white">
-        <AppIcon name="sparkles" bare size={17} /> Theo chủ đề mỗi ngày
+        <AppIcon name="sparkles" bare size={17} /> Theo ch? d? m?i ngày
       </button>
       <button className="rounded-xl border border-[#dfe2f3] bg-white px-6 py-3 text-sm font-black text-[#303956]">
-        Ngẫu nhiên
+        Ng?u nhiên
       </button>
       <button
         onClick={onOpenChallenge}
         className="ml-auto inline-flex items-center gap-2 rounded-xl border border-[#dfe2f3] bg-white px-6 py-3 text-sm font-black text-[#303956]"
       >
-        <AppIcon name="zap" bare size={17} className="text-amber-500" /> Thử
+        <AppIcon name="zap" bare size={17} className="text-amber-500" /> Th?
         thách hôm nay
       </button>
     </div>
   );
 }
 
-function FoxyNote({
+function BeaconNote({
   loading,
   suggestions,
 }: {
@@ -996,10 +996,10 @@ function FoxyNote({
     <section className="flex items-center justify-between gap-4 overflow-hidden rounded-xl bg-[#f1edff] px-6 py-4">
       <p className="max-w-3xl text-sm font-bold leading-6 text-[#303956]">
         {loading
-          ? "✨ Foxy đang tải kế hoạch từ vựng của bạn..."
+          ? "? Beacon dang t?i k? ho?ch t? v?ng c?a b?n..."
           : due
-            ? `✨ Bạn có ${due} từ cần ôn hôm nay. Foxy đã chuẩn bị gợi ý bên phải rồi nhé.`
-            : "Chủ đề hôm nay đã sẵn sàng. Học từng từ, lưu vào sổ tay hoặc mở flashcard để ôn lại."}
+            ? `? B?n có ${due} t? c?n ôn hôm nay. Beacon dã chu?n b? g?i ý bên ph?i r?i nhé.`
+            : "Ch? d? hôm nay dã s?n sàng. H?c t?ng t?, luu vào s? tay ho?c m? flashcard d? ôn l?i."}
       </p>
       <AppIcon name="paw" tone="orange" className="h-16 w-16" size={34} />
     </section>
@@ -1025,13 +1025,13 @@ function WordStudyCard(props: {
   const { completed, item, locked, total, word } = props;
   const displayWord = word?.word || "Environment";
   const meaning =
-    word?.meaningVi || word?.meaningEn || "Môi trường, hoàn cảnh xung quanh";
+    word?.meaningVi || word?.meaningEn || "Môi tru?ng, hoàn c?nh xung quanh";
   const example =
     word?.example ||
     "We should protect the environment for future generations.";
   const exampleVi = word?.meaningVi
-    ? `Nghĩa: ${word.meaningVi}`
-    : "Chúng ta nên bảo vệ môi trường cho các thế hệ tương lai.";
+    ? `Nghia: ${word.meaningVi}`
+    : "Chúng ta nên b?o v? môi tru?ng cho các th? h? tuong lai.";
   const image = getVocabularyImageUrl(word);
 
   return (
@@ -1056,7 +1056,7 @@ function WordStudyCard(props: {
           </div>
 
           <p className="mt-4 text-lg font-bold text-[#7377a8]">
-            {word?.phonetic || "/ɪnˈvaɪrənmənt/"}
+            {word?.phonetic || "/?n'va?r?nm?nt/"}
           </p>
           <span className="mt-5 inline-flex rounded-lg bg-[#dcfce7] px-3 py-1.5 text-sm font-black text-[#16a34a]">
             {word?.partOfSpeech || c.studyCard.defaultPartOfSpeech}
@@ -1082,7 +1082,7 @@ function WordStudyCard(props: {
               <img
                 src={image.src}
                 alt={
-                  word?.word ? `Ảnh minh họa từ ${word.word}` : "Ảnh từ vựng"
+                  word?.word ? `?nh minh h?a t? ${word.word}` : "?nh t? v?ng"
                 }
                 loading="lazy"
                 onError={(event) => {
@@ -1274,7 +1274,7 @@ function WordDetailTabs({
               value={level}
               badge={
                 word?.difficulty
-                  ? `Độ khó ${word.difficulty}`
+                  ? `Ð? khó ${word.difficulty}`
                   : c.detailTab.mediumBadge
               }
             />
@@ -1389,10 +1389,10 @@ function ExampleTabContent({
   ];
   const viExamples = [
     word?.meaningVi
-      ? `Nghĩa chính: ${word.meaningVi}.`
-      : "Thành phố đang đầu tư vào các nguồn năng lượng bền vững để giảm lượng khí thải carbon.",
-    "Chúng ta nên dùng từ này tự nhiên trong tiếng Anh hằng ngày.",
-    "Công ty này cam kết phát triển bền vững.",
+      ? `Nghia chính: ${word.meaningVi}.`
+      : "Thành ph? dang d?u tu vào các ngu?n nang lu?ng b?n v?ng d? gi?m lu?ng khí th?i carbon.",
+    "Chúng ta nên dùng t? này t? nhiên trong ti?ng Anh h?ng ngày.",
+    "Công ty này cam k?t phát tri?n b?n v?ng.",
   ];
   const family = (
     word?.synonyms?.length
@@ -1405,20 +1405,20 @@ function ExampleTabContent({
       <aside className="space-y-5 text-sm font-bold text-[#4f5790]">
         <ExampleMeta
           label={c.detailTab.wordType}
-          value={word?.partOfSpeech || "adjective (tính từ)"}
+          value={word?.partOfSpeech || "adjective (tính t?)"}
         />
         <ExampleMeta
           action={
             word?.word ? () => speakWord(word.word, word.audio) : undefined
           }
           label={c.exampleTab.phonetic}
-          value={word?.phonetic || "/səˈsteɪ.nə.bəl/"}
+          value={word?.phonetic || "/s?'ste?.n?.b?l/"}
         />
         <ExampleMeta
           badge={level}
           label={c.detailTab.level}
           value={
-            word?.difficulty ? `Độ khó ${word.difficulty}` : "Trung cấp cao"
+            word?.difficulty ? `Ð? khó ${word.difficulty}` : "Trung c?p cao"
           }
         />
         <ExampleMeta
@@ -1478,7 +1478,7 @@ function ExampleTabContent({
               </button>
             </div>
             <p className="mt-3 text-sm font-bold text-[#4f5790]">
-              {word?.phonetic || "/səˈsteɪ.nə.bəl/"}
+              {word?.phonetic || "/s?'ste?.n?.b?l/"}
             </p>
             <p className="mt-5 text-sm font-black text-[#101733]">
               {c.exampleTab.meaning}
@@ -1486,7 +1486,7 @@ function ExampleTabContent({
             <p className="mt-2 max-w-xl text-sm font-bold leading-6 text-[#4f5790]">
               {word?.meaningVi ||
                 word?.meaningEn ||
-                "Có thể duy trì lâu dài mà không gây hại cho môi trường hoặc cạn kiệt tài nguyên."}
+                "Có th? duy trì lâu dài mà không gây h?i cho môi tru?ng ho?c c?n ki?t tài nguyên."}
             </p>
           </div>
 
@@ -1494,7 +1494,7 @@ function ExampleTabContent({
             {image.src ? (
               <img
                 src={image.src}
-                alt={word?.word ? `Ảnh minh họa từ ${word.word}` : "Ảnh ví dụ"}
+                alt={word?.word ? `?nh minh h?a t? ${word.word}` : "?nh ví d?"}
                 className={`h-28 w-40 rounded-xl ${
                   image.mode === "sticker" ? "object-contain" : "object-cover"
                 }`}
@@ -1623,12 +1623,12 @@ function SynonymTabContent({
             </button>
           </div>
           <p className="mt-2 text-sm font-bold text-[#4f5790]">
-            {word?.phonetic || "/səˈsteɪ.nə.bəl/"}
+            {word?.phonetic || "/s?'ste?.n?.b?l/"}
           </p>
           <p className="mt-4 max-w-xl text-sm font-bold leading-6 text-[#4f5790]">
             {word?.meaningVi ||
               word?.meaningEn ||
-              "Có thể duy trì lâu dài mà không gây hại cho môi trường hoặc cạn kiệt tài nguyên."}
+              "Có th? duy trì lâu dài mà không gây h?i cho môi tru?ng ho?c c?n ki?t tài nguyên."}
           </p>
         </div>
 
@@ -1636,7 +1636,7 @@ function SynonymTabContent({
           {image.src ? (
             <img
               src={image.src}
-              alt={word?.word ? `Ảnh minh họa từ ${word.word}` : "Ảnh từ chính"}
+              alt={word?.word ? `?nh minh h?a t? ${word.word}` : "?nh t? chính"}
               className={`h-28 w-40 rounded-xl ${
                 image.mode === "sticker" ? "object-contain" : "object-cover"
               }`}
@@ -1695,7 +1695,7 @@ function SynonymTabContent({
                   {item.image.src ? (
                     <img
                       src={item.image.src}
-                      alt={`Ảnh minh họa từ đồng nghĩa ${item.word}`}
+                      alt={`?nh minh h?a t? d?ng nghia ${item.word}`}
                       className={`h-11 w-11 ${
                         item.image.mode === "sticker"
                           ? "object-contain"
@@ -1812,12 +1812,12 @@ function AntonymTabContent({
             </button>
           </div>
           <p className="mt-2 text-sm font-bold text-[#4f5790]">
-            {word?.phonetic || "/səˈsteɪ.nə.bəl/"}
+            {word?.phonetic || "/s?'ste?.n?.b?l/"}
           </p>
           <p className="mt-4 max-w-xl text-sm font-bold leading-6 text-[#4f5790]">
             {word?.meaningVi ||
               word?.meaningEn ||
-              "Có thể duy trì lâu dài mà không gây hại cho môi trường hoặc cạn kiệt tài nguyên."}
+              "Có th? duy trì lâu dài mà không gây h?i cho môi tru?ng ho?c c?n ki?t tài nguyên."}
           </p>
         </div>
 
@@ -1825,7 +1825,7 @@ function AntonymTabContent({
           {image.src ? (
             <img
               src={image.src}
-              alt={word?.word ? `Ảnh minh họa từ ${word.word}` : "Ảnh từ chính"}
+              alt={word?.word ? `?nh minh h?a t? ${word.word}` : "?nh t? chính"}
               className={`h-28 w-40 rounded-xl ${
                 image.mode === "sticker" ? "object-contain" : "object-cover"
               }`}
@@ -1878,7 +1878,7 @@ function AntonymTabContent({
                   {item.image.src && item.image.mode === "sticker" ? (
                     <img
                       src={item.image.src}
-                      alt={`Ảnh minh họa từ trái nghĩa ${item.word}`}
+                      alt={`?nh minh h?a t? trái nghia ${item.word}`}
                       className="h-10 w-10 object-contain opacity-80"
                       onError={(event) => {
                         event.currentTarget.style.display = "none";
@@ -1953,12 +1953,12 @@ function RelatedPhraseTabContent({
             </button>
           </div>
           <p className="mt-2 text-sm font-bold text-[#4f5790]">
-            {word?.phonetic || "/səˈsteɪ.nə.bəl/"}
+            {word?.phonetic || "/s?'ste?.n?.b?l/"}
           </p>
           <p className="mt-4 max-w-xl text-sm font-bold leading-6 text-[#4f5790]">
             {word?.meaningVi ||
               word?.meaningEn ||
-              "Có thể duy trì lâu dài mà không gây hại cho môi trường hoặc cạn kiệt tài nguyên."}
+              "Có th? duy trì lâu dài mà không gây h?i cho môi tru?ng ho?c c?n ki?t tài nguyên."}
           </p>
         </div>
 
@@ -1966,7 +1966,7 @@ function RelatedPhraseTabContent({
           {image.src ? (
             <img
               src={image.src}
-              alt={word?.word ? `Ảnh minh họa từ ${word.word}` : "Ảnh từ chính"}
+              alt={word?.word ? `?nh minh h?a t? ${word.word}` : "?nh t? chính"}
               className={`h-28 w-40 rounded-xl ${
                 image.mode === "sticker" ? "object-contain" : "object-cover"
               }`}
@@ -2047,43 +2047,43 @@ function buildRelatedPhrases(
     sustainable: [
       {
         phrase: "sustainable development",
-        meaning: "phát triển bền vững",
+        meaning: "phát tri?n b?n v?ng",
         example: "The UN promotes sustainable development worldwide.",
       },
       {
         phrase: "sustainable energy",
-        meaning: "năng lượng bền vững",
+        meaning: "nang lu?ng b?n v?ng",
         example: "Solar and wind are examples of sustainable energy.",
       },
       {
         phrase: "sustainable future",
-        meaning: "tương lai bền vững",
+        meaning: "tuong lai b?n v?ng",
         example: "We must act now to secure a sustainable future.",
       },
       {
         phrase: "sustainable living",
-        meaning: "lối sống bền vững",
+        meaning: "l?i s?ng b?n v?ng",
         example: "He adopted a sustainable living to reduce waste.",
       },
       {
         phrase: "sustainable solutions",
-        meaning: "giải pháp bền vững",
+        meaning: "gi?i pháp b?n v?ng",
         example: "We need sustainable solutions to climate change.",
       },
       {
         phrase: "sustainable practices",
-        meaning: "thực hành bền vững",
+        meaning: "th?c hành b?n v?ng",
         example: "The company follows sustainable practices in production.",
       },
       {
         phrase: "environmentally sustainable",
-        meaning: "bền vững về môi trường",
+        meaning: "b?n v?ng v? môi tru?ng",
         example:
           "This product is made with environmentally sustainable materials.",
       },
       {
         phrase: "financially sustainable",
-        meaning: "bền vững về tài chính",
+        meaning: "b?n v?ng v? tài chính",
         example: "The project is financially sustainable in the long term.",
       },
     ],
@@ -2106,8 +2106,8 @@ function buildRelatedPhrases(
   return base.map((phrase, index) => ({
     phrase,
     meaning: topicWords[index % Math.max(topicWords.length, 1)]
-      ? `liên quan đến ${topicWords[index % topicWords.length]}`
-      : "cụm từ liên quan",
+      ? `liên quan d?n ${topicWords[index % topicWords.length]}`
+      : "c?m t? liên quan",
     example: `Try using ${phrase} in a natural English sentence.`,
   }));
 }
@@ -2119,28 +2119,28 @@ function buildSimplePhonetic(value: string) {
 
 function buildSynonymMeaning(value: string) {
   const meanings: Record<string, string> = {
-    "eco-friendly": "thân thiện với môi trường",
-    conservation: "sự bảo tồn",
-    conserve: "bảo tồn, giữ gìn",
-    durable: "bền, dùng được lâu",
-    ecology: "sinh thái học",
-    ecosystem: "hệ sinh thái",
-    efficient: "hiệu quả, tiết kiệm",
-    environmental: "thuộc về môi trường",
-    green: "xanh, thân thiện với môi trường",
+    "eco-friendly": "thân thi?n v?i môi tru?ng",
+    conservation: "s? b?o t?n",
+    conserve: "b?o t?n, gi? gìn",
+    durable: "b?n, dùng du?c lâu",
+    ecology: "sinh thái h?c",
+    ecosystem: "h? sinh thái",
+    efficient: "hi?u qu?, ti?t ki?m",
+    environmental: "thu?c v? môi tru?ng",
+    green: "xanh, thân thi?n v?i môi tru?ng",
     lasting: "lâu dài",
-    reusable: "có thể tái sử dụng",
-    renewable: "có thể tái tạo",
-    recycle: "tái chế",
-    recyclable: "có thể tái chế",
-    responsible: "có trách nhiệm",
+    reusable: "có th? tái s? d?ng",
+    renewable: "có th? tái t?o",
+    recycle: "tái ch?",
+    recyclable: "có th? tái ch?",
+    responsible: "có trách nhi?m",
     sustain: "duy trì",
-    sustainable: "bền vững",
-    sustainability: "sự bền vững",
-    viable: "khả thi, có thể duy trì",
-    enduring: "bền vững, lâu dài",
+    sustainable: "b?n v?ng",
+    sustainability: "s? b?n v?ng",
+    viable: "kh? thi, có th? duy trì",
+    enduring: "b?n v?ng, lâu dài",
   };
-  return meanings[value.toLowerCase()] || "Nghĩa đang cập nhật";
+  return meanings[value.toLowerCase()] || "Nghia dang c?p nh?t";
 }
 
 function buildSynonymExample(value: string) {
@@ -2158,13 +2158,13 @@ function buildSynonymExample(value: string) {
 
 function buildAntonymMeaning(value: string) {
   const meanings: Record<string, string> = {
-    destructive: "gây hủy hoại",
-    harmful: "có hại",
-    "short-term": "ngắn hạn",
-    unsustainable: "không bền vững",
+    destructive: "gây h?y ho?i",
+    harmful: "có h?i",
+    "short-term": "ng?n h?n",
+    unsustainable: "không b?n v?ng",
     wasteful: "lãng phí",
   };
-  return meanings[value.toLowerCase()] || "Nghĩa đang cập nhật";
+  return meanings[value.toLowerCase()] || "Nghia dang c?p nh?t";
 }
 
 function buildAntonymExample(value: string) {
@@ -2348,7 +2348,7 @@ function WordCard(props: {
   const { locked, activeIndex, total, word, item } = props;
   const displayWord = word?.word || "environment";
   const meaning =
-    word?.meaningVi || word?.meaningEn || "Môi trường, hoàn cảnh xung quanh";
+    word?.meaningVi || word?.meaningEn || "Môi tru?ng, hoàn c?nh xung quanh";
   const example =
     word?.example ||
     "We should protect the environment for future generations.";
@@ -2362,7 +2362,7 @@ function WordCard(props: {
               className="inline-flex items-center gap-2 rounded-lg bg-[#efe9ff] px-3 py-2 text-sm font-black text-[#6d35ff]"
             >
               <AppIcon name="book" bare size={15} />
-              Chi tiết
+              Chi ti?t
             </button>
             <button
               onClick={props.onFlashcard}
@@ -2377,7 +2377,7 @@ function WordCard(props: {
               className="inline-flex items-center gap-2 rounded-lg bg-[#fff7ed] px-3 py-2 text-sm font-black text-[#f97316]"
             >
               <AppIcon name="message" bare size={15} />
-              Chia sẻ
+              Chia s?
             </button>
           </div>
           <div className="flex flex-wrap items-center gap-4">
@@ -2390,14 +2390,14 @@ function WordCard(props: {
             </button>
           </div>
           <p className="text-xl font-bold text-[#59627f]">
-            {word?.phonetic || "/ɪnˈvaɪrənmənt/"}
+            {word?.phonetic || "/?n'va?r?nm?nt/"}
           </p>
           <span className="inline-flex rounded-lg bg-[#dff8e8] px-3 py-2 text-sm font-black text-[#16a34a]">
-            {word?.partOfSpeech || "Danh từ"}
+            {word?.partOfSpeech || "Danh t?"}
           </span>
           <h3 className="text-xl font-black">{meaning}</h3>
           <div className="border-l-4 border-[#d9ceff] pl-4">
-            <p className="text-sm font-black text-[#6d35ff]">Ví dụ</p>
+            <p className="text-sm font-black text-[#6d35ff]">Ví d?</p>
             <p className="mt-3 font-bold text-[#303956]">{example}</p>
           </div>
         </div>
@@ -2428,28 +2428,28 @@ function WordCard(props: {
         <StatusButton
           tone="green"
           icon="check"
-          label="Đã biết"
+          label="Ðã bi?t"
           onClick={props.onKnown}
           disabled={locked}
         />
         <StatusButton
           tone="orange"
           icon="calendar"
-          label="Cần ôn lại"
+          label="C?n ôn l?i"
           onClick={props.onReview}
           disabled={locked}
         />
         <StatusButton
           tone="red"
           icon="x"
-          label="Chưa biết"
+          label="Chua bi?t"
           onClick={props.onLearning}
           disabled={locked}
         />
         <StatusButton
           tone="purple"
           icon="notebook"
-          label={item?.inNotebook ? "Bỏ sổ tay" : "Thêm vào sổ tay"}
+          label={item?.inNotebook ? "B? s? tay" : "Thêm vào s? tay"}
           onClick={props.onNotebook}
           disabled={locked}
         />
@@ -2511,9 +2511,9 @@ function ProgressCard({
         size={28}
       />
       <div className="min-w-0 flex-1">
-        <h3 className="font-black">Tiến độ chủ đề hôm nay</h3>
+        <h3 className="font-black">Ti?n d? ch? d? hôm nay</h3>
         <p className="mt-1 text-sm font-bold text-[#69708b]">
-          Bạn đã học {learned}/{total} từ
+          B?n dã h?c {learned}/{total} t?
         </p>
       </div>
       <div className="h-2 w-full rounded-full bg-[#e1e4f2] sm:w-80">
@@ -2528,7 +2528,7 @@ function ProgressCard({
         disabled={completed}
         className="rounded-xl bg-[#6d35ff] px-8 py-4 font-black text-white disabled:cursor-not-allowed disabled:bg-[#22c55e]"
       >
-        {completed ? "Đã hoàn thành" : "Hoàn thành"}
+        {completed ? "Ðã hoàn thành" : "Hoàn thành"}
       </button>
     </section>
   );
@@ -2542,17 +2542,17 @@ function WeeklyTopics({ plan }: { plan: WeeklyPlan | null }) {
     ["T5", "heart", "Health", false],
     ["T6", "globe", "Travel", false],
     ["T7", "library", "Culture", false],
-    ["CN", "target", "Review", false],
+    ["CN", "target", "Ôn tập", false],
   ] as const;
 
   const dayLabelMap: Record<number, string> = {
-    0: "Chủ nhật",
-    2: "Thứ 2",
-    3: "Thứ 3",
-    4: "Thứ 4",
-    5: "Thứ 5",
-    6: "Thứ 6",
-    7: "Thứ 7",
+    0: "Ch? nh?t",
+    2: "Th? 2",
+    3: "Th? 3",
+    4: "Th? 4",
+    5: "Th? 5",
+    6: "Th? 6",
+    7: "Th? 7",
   };
 
   const getDayLabel = (dayOfWeek: number) => {
@@ -2571,7 +2571,7 @@ function WeeklyTopics({ plan }: { plan: WeeklyPlan | null }) {
       )
     : fallback;
   return (
-    <Panel title="Chủ đề trong tuần" action="Xem lịch">
+    <Panel title="Ch? d? trong tu?n" action="Xem l?ch">
       <div className="space-y-2">
         {days.map(([day, icon, label, active]) => (
           <div
@@ -2847,11 +2847,11 @@ function ChallengeCard({
 
 function LearningTip() {
   return (
-    <Panel title="Mẹo học từ vựng">
+    <Panel title="M?o h?c t? v?ng">
       <div className="flex items-center gap-5">
         <p className="text-sm font-bold leading-6 text-[#69708b]">
-          Học từ theo chủ đề giúp não bộ liên kết thông tin tốt hơn và nhớ lâu
-          hơn.
+          H?c t? theo ch? d? giúp não b? liên k?t thông tin t?t hon và nh? lâu
+          hon.
         </p>
         <AppIcon name="leaf" tone="emerald" className="h-14 w-14" size={26} />
       </div>
@@ -3572,8 +3572,8 @@ function LessonCompletedModal({
           </p>
 
           <img
-            src="/mascots/foxy-happy.png"
-            alt="Foxy"
+            src="/brand/beaconvie-ai-mascot.png"
+            alt="Beacon"
             className="mx-auto mt-5 h-48 object-contain"
           />
         </div>

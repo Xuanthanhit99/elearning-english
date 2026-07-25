@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   ChevronDown,
@@ -51,7 +51,7 @@ export function CommunityCommentsPanel({
       setError(
         e instanceof Error
           ? e.message
-          : 'Không thể tải các bình luận trước đó',
+          : 'KhÃ´ng thá»ƒ táº£i cÃ¡c bÃ¬nh luáº­n trÆ°á»›c Ä‘Ã³',
       );
     } finally {
       setLoading(false);
@@ -85,7 +85,7 @@ export function CommunityCommentsPanel({
       onCountChange?.(1);
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : 'Không thể gửi bình luận',
+        e instanceof Error ? e.message : 'KhÃ´ng thá»ƒ gá»­i bÃ¬nh luáº­n',
       );
     } finally {
       setSubmitting(false);
@@ -130,7 +130,7 @@ export function CommunityCommentsPanel({
       onCountChange?.(1);
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : 'Không thể trả lời bình luận',
+        e instanceof Error ? e.message : 'KhÃ´ng thá»ƒ tráº£ lá»i bÃ¬nh luáº­n',
       );
     } finally {
       setSubmitting(false);
@@ -141,7 +141,7 @@ export function CommunityCommentsPanel({
     return (
       <div className="flex items-center justify-center gap-2 py-8 text-slate-600">
         <Loader2 className="animate-spin text-indigo-600" size={20} />
-        Đang tải bình luận...
+        Äang táº£i bÃ¬nh luáº­n...
       </div>
     );
   }
@@ -156,7 +156,7 @@ export function CommunityCommentsPanel({
             onClick={() => void loadComments()}
             className="ml-3 font-bold underline"
           >
-            Thử lại
+            Thá»­ láº¡i
           </button>
         </div>
       )}
@@ -172,7 +172,7 @@ export function CommunityCommentsPanel({
             }
           }}
           rows={2}
-          placeholder="Viết bình luận..."
+          placeholder="Viáº¿t bÃ¬nh luáº­n..."
           className="min-h-[52px] flex-1 resize-none rounded-2xl border-2 border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500"
         />
 
@@ -197,10 +197,10 @@ export function CommunityCommentsPanel({
             className="mx-auto text-slate-400"
           />
           <p className="mt-2 text-sm font-semibold text-slate-700">
-            Chưa có bình luận
+            ChÆ°a cÃ³ bÃ¬nh luáº­n
           </p>
           <p className="mt-1 text-xs text-slate-500">
-            Hãy bắt đầu cuộc trò chuyện.
+            HÃ£y báº¯t Ä‘áº§u cuá»™c trÃ² chuyá»‡n.
           </p>
         </div>
       ) : (
@@ -222,7 +222,7 @@ export function CommunityCommentsPanel({
                   <img
                     src={
                       comment.author.avatar ||
-                      '/cat-home.jpg'
+                      '/brand/beaconvie-ai-mascot.png'
                     }
                     alt={comment.author.fullname}
                     className="h-10 w-10 shrink-0 rounded-full border-2 border-white object-cover shadow-sm ring-1 ring-slate-200"
@@ -256,7 +256,7 @@ export function CommunityCommentsPanel({
                         className="flex items-center gap-1.5 text-xs font-bold text-slate-600 transition hover:text-indigo-700"
                       >
                         <Reply size={14} />
-                        Trả lời
+                        Tráº£ lá»i
                       </button>
 
                       {replyCount > 0 && (
@@ -276,8 +276,8 @@ export function CommunityCommentsPanel({
                             <ChevronDown size={14} />
                           )}
                           {isExpanded
-                            ? 'Ẩn câu trả lời'
-                            : `Xem ${replyCount} câu trả lời`}
+                            ? 'áº¨n cÃ¢u tráº£ lá»i'
+                            : `Xem ${replyCount} cÃ¢u tráº£ lá»i`}
                         </button>
                       )}
                     </div>
@@ -292,7 +292,7 @@ export function CommunityCommentsPanel({
                             <img
                               src={
                                 reply.author.avatar ||
-                                '/cat-home.jpg'
+                                '/brand/beaconvie-ai-mascot.png'
                               }
                               alt={reply.author.fullname}
                               className="h-8 w-8 shrink-0 rounded-full border border-white object-cover shadow-sm ring-1 ring-slate-200"
@@ -323,7 +323,7 @@ export function CommunityCommentsPanel({
                                 className="mt-2 flex items-center gap-1 text-xs font-bold text-slate-600 hover:text-indigo-700"
                               >
                                 <Reply size={12} />
-                                Trả lời
+                                Tráº£ lá»i
                               </button>
                             </div>
                           </div>
@@ -342,7 +342,7 @@ export function CommunityCommentsPanel({
         <div className="rounded-2xl border-2 border-indigo-200 bg-indigo-50 p-4">
           <div className="mb-2 flex items-center justify-between">
             <p className="text-sm font-semibold text-indigo-800">
-              Trả lời <strong>{replyTo.author.fullname}</strong>
+              Tráº£ lá»i <strong>{replyTo.author.fullname}</strong>
             </p>
 
             <button

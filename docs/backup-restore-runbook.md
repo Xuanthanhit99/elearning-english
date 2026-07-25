@@ -1,4 +1,4 @@
-# Backup And Restore Runbook
+﻿# Backup And Restore Runbook
 
 ## Backup Policy
 
@@ -12,14 +12,14 @@
 
 ```powershell
 cd D:\elearning-english
-.\scripts\backup\postgres-backup.ps1 -ContainerName english_platform_postgres -Database poppylingo -User poppylingo
+.\scripts\backup\postgres-backup.ps1 -ContainerName english_platform_postgres -Database beaconvie -User beaconvie
 ```
 
 ## Isolated Restore Verification
 
 ```powershell
 cd D:\elearning-english
-.\scripts\backup\postgres-restore-verify.ps1 -BackupPath .\backups\poppylingo-YYYYMMDD-HHMMSS.sql -ContainerName english_platform_postgres -User poppylingo
+.\scripts\backup\postgres-restore-verify.ps1 -BackupPath .\backups\beaconvie-YYYYMMDD-HHMMSS.sql -ContainerName english_platform_postgres -User beaconvie
 ```
 
 The restore verifier creates a temporary database, restores the dump, checks that public tables exist, and drops the temporary database.

@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   Inject,
   Injectable,
@@ -34,12 +34,12 @@ export class AuthTwoFactorService {
     });
 
     if (!user) {
-      throw new BadRequestException('Không tìm thấy tài khoản');
+      throw new BadRequestException('KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n');
     }
 
     const secret = generateSecret();
     const otpauthUrl = generateURI({
-      issuer: 'PoppyLingo',
+      issuer: 'BeaconVie',
       label: user.email,
       secret,
     });
@@ -65,7 +65,7 @@ export class AuthTwoFactorService {
 
     if (!user?.twoFactorTempSecret) {
       throw new BadRequestException(
-        'Chưa khởi tạo 2FA, vui lòng gọi /auth/2fa/setup trước',
+        'ChÆ°a khá»Ÿi táº¡o 2FA, vui lÃ²ng gá»i /auth/2fa/setup trÆ°á»›c',
       );
     }
 
@@ -73,7 +73,7 @@ export class AuthTwoFactorService {
     const isValid = verifySync({ token: otp, secret }).valid;
 
     if (!isValid) {
-      throw new BadRequestException('Mã OTP không đúng');
+      throw new BadRequestException('MÃ£ OTP khÃ´ng Ä‘Ãºng');
     }
 
     const recoveryCodes = generateRecoveryCodes(8);
@@ -123,14 +123,14 @@ export class AuthTwoFactorService {
     });
 
     if (!user?.twoFactorSecret) {
-      throw new BadRequestException('2FA hiện chưa được bật');
+      throw new BadRequestException('2FA hiá»‡n chÆ°a Ä‘Æ°á»£c báº­t');
     }
 
     const verified = await this.verifyAny(user, credentials);
 
     if (!verified) {
       throw new UnauthorizedException(
-        'Không thể xác minh danh tính để tắt 2FA',
+        'KhÃ´ng thá»ƒ xÃ¡c minh danh tÃ­nh Ä‘á»ƒ táº¯t 2FA',
       );
     }
 

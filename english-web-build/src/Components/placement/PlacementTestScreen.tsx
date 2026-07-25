@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ArrowRight,
@@ -35,12 +35,12 @@ const skillMeta: Record<
   LearningSkill,
   { label: string; icon: typeof Type; accent: string }
 > = {
-  VOCABULARY: { label: "Vocabulary", icon: Type, accent: "text-violet-700 bg-violet-50" },
-  GRAMMAR: { label: "Grammar", icon: BookOpen, accent: "text-emerald-700 bg-emerald-50" },
-  LISTENING: { label: "Listening", icon: Headphones, accent: "text-orange-700 bg-orange-50" },
-  READING: { label: "Reading", icon: FileText, accent: "text-sky-700 bg-sky-50" },
-  SPEAKING: { label: "Speaking", icon: Mic2, accent: "text-blue-700 bg-blue-50" },
-  WRITING: { label: "Writing", icon: PencilLine, accent: "text-cyan-700 bg-cyan-50" },
+  VOCABULARY: { label: "Từ vựng", icon: Type, accent: "text-violet-700 bg-violet-50" },
+  GRAMMAR: { label: "Ngữ pháp", icon: BookOpen, accent: "text-emerald-700 bg-emerald-50" },
+  LISTENING: { label: "Luyện nghe", icon: Headphones, accent: "text-orange-700 bg-orange-50" },
+  READING: { label: "Luyện đọc", icon: FileText, accent: "text-sky-700 bg-sky-50" },
+  SPEAKING: { label: "Luyện nói", icon: Mic2, accent: "text-blue-700 bg-blue-50" },
+  WRITING: { label: "Luyện viết", icon: PencilLine, accent: "text-cyan-700 bg-cyan-50" },
 };
 
 export default function PlacementTestScreen({ sessionId }: { sessionId: string }) {

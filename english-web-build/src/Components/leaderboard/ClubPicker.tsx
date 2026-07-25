@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import type { ClubSummary } from '@/src/types/leaderboard';
 
@@ -15,10 +15,10 @@ export function ClubPicker({
     return (
       <div className="mt-4 rounded-2xl border border-dashed bg-white p-6 text-center">
         <p className="font-black">
-          Bạn chưa tham gia câu lạc bộ nào
+          Báº¡n chÆ°a tham gia cÃ¢u láº¡c bá»™ nÃ o
         </p>
         <p className="mt-1 text-sm text-slate-500">
-          Tham gia Club để thi đua cùng các thành viên.
+          Tham gia Club Ä‘á»ƒ thi Ä‘ua cÃ¹ng cÃ¡c thÃ nh viÃªn.
         </p>
       </div>
     );
@@ -49,7 +49,7 @@ export function ClubPicker({
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  '🏫'
+                  'ðŸ«'
                 )}
               </div>
 
@@ -58,7 +58,7 @@ export function ClubPicker({
                   {club.name}
                 </p>
                 <p className="text-xs text-slate-500">
-                  {club.memberCount} thành viên
+                  {club.memberCount} thÃ nh viÃªn
                 </p>
               </div>
             </button>

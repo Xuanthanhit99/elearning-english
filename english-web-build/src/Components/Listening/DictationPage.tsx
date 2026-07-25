@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ChevronLeft,
@@ -29,22 +29,22 @@ export default function DictationPage() {
               </div>
 
               <h1 className="mt-5 text-3xl font-black">
-                Nghe chép chính tả
+                Nghe chÃ©p chÃ­nh táº£
               </h1>
 
               <p className="mx-auto mt-3 max-w-2xl leading-7 text-slate-500">
-                Backend Listening hiện tại chỉ hỗ trợ câu hỏi
-                trắc nghiệm A/B/C/D. Màn dictation cũ dùng textarea
-                và chưa có API chấm nội dung văn bản, nên không nên
-                giả lập gọi endpoint answer hiện tại.
+                Backend Listening hiá»‡n táº¡i chá»‰ há»— trá»£ cÃ¢u há»i
+                tráº¯c nghiá»‡m A/B/C/D. MÃ n dictation cÅ© dÃ¹ng textarea
+                vÃ  chÆ°a cÃ³ API cháº¥m ná»™i dung vÄƒn báº£n, nÃªn khÃ´ng nÃªn
+                giáº£ láº­p gá»i endpoint answer hiá»‡n táº¡i.
               </p>
 
               <div className="mx-auto mt-6 max-w-2xl rounded-2xl bg-amber-50 p-5 text-left text-sm leading-7 text-amber-800">
-                Để mở chức năng này, backend cần thêm
+                Äá»ƒ má»Ÿ chá»©c nÄƒng nÃ y, backend cáº§n thÃªm
                 <code className="mx-1 rounded bg-white px-2 py-1">
                   POST /listening/dictation/:sessionId/answer
                 </code>
-                với transcript chuẩn hóa, similarity score và word
+                vá»›i transcript chuáº©n hÃ³a, similarity score vÃ  word
                 diff.
               </div>
 
@@ -55,7 +55,7 @@ export default function DictationPage() {
                 className="mt-7 inline-flex items-center gap-2 rounded-xl bg-violet-600 px-6 py-3 font-black text-white"
               >
                 <Headphones size={18} />
-                Luyện nghe trắc nghiệm
+                Luyá»‡n nghe tráº¯c nghiá»‡m
               </button>
             </section>
           </div>

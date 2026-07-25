@@ -1,4 +1,4 @@
-import ReadingResultPage from "@/src/Components/reading/ReadingResultPage";
+﻿import ReadingResultPage from "@/src/Components/reading/ReadingResultPage";
 
 export default async function ReadingResult({
   params,

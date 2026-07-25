@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { io, Socket } from "socket.io-client";
 import { NotificationItem } from "@/src/lib/notifications-api";

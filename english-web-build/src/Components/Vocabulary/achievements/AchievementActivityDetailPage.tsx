@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -48,7 +48,7 @@ export default function AchievementActivityDetailPage() {
     let active = true;
     async function load() {
       if (!key || !type || !id) {
-        setMessage("Thiếu thông tin hoạt động.");
+        setMessage("Thiáº¿u thÃ´ng tin hoáº¡t Ä‘á»™ng.");
         setLoading(false);
         return;
       }
@@ -59,7 +59,7 @@ export default function AchievementActivityDetailPage() {
         });
         if (active) setData(res.data);
       } catch {
-        if (active) setMessage("Chưa tải được chi tiết hoạt động.");
+        if (active) setMessage("ChÆ°a táº£i Ä‘Æ°á»£c chi tiáº¿t hoáº¡t Ä‘á»™ng.");
       } finally {
         if (active) setLoading(false);
       }
@@ -90,7 +90,7 @@ export default function AchievementActivityDetailPage() {
     return (
       <div className="px-4 py-7 lg:px-8">
         <section className="rounded-3xl border border-red-100 bg-red-50 p-6 font-bold text-red-600">
-          {message || "Không có dữ liệu hoạt động."}
+          {message || "KhÃ´ng cÃ³ dá»¯ liá»‡u hoáº¡t Ä‘á»™ng."}
         </section>
       </div>
     );
@@ -99,13 +99,13 @@ export default function AchievementActivityDetailPage() {
   return (
     <div className="px-4 py-7 lg:px-8">
       <div className="mb-7 flex items-center gap-2 text-sm font-bold text-[#73799b]">
-        <Link href="/">Trang chủ</Link>
+        <Link href="/">Trang chá»§</Link>
         <ChevronRight size={16} />
-        <Link href="/vocabulary/overview">Tổng quan</Link>
+        <Link href="/vocabulary/overview">Tá»•ng quan</Link>
         <ChevronRight size={16} />
-        <Link href="/vocabulary/achievements">Thành tích gần đây</Link>
+        <Link href="/vocabulary/achievements">ThÃ nh tÃ­ch gáº§n Ä‘Ã¢y</Link>
         <ChevronRight size={16} />
-        <span className="text-[#101733]">Chi tiết hoạt động</span>
+        <span className="text-[#101733]">Chi tiáº¿t hoáº¡t Ä‘á»™ng</span>
       </div>
 
       <div className="grid gap-7 xl:grid-cols-[1fr_420px]">
@@ -147,7 +147,7 @@ export default function AchievementActivityDetailPage() {
           </section>
 
           <section className="rounded-3xl border border-[#ebeaf6] bg-white p-6 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
-            <h2 className="text-xl font-black text-[#101733]">Nội dung hoạt động</h2>
+            <h2 className="text-xl font-black text-[#101733]">Ná»™i dung hoáº¡t Ä‘á»™ng</h2>
             <div className="mt-5 grid gap-5 md:grid-cols-[280px_1fr]">
               <div className="relative grid min-h-[150px] place-items-center overflow-hidden rounded-2xl bg-gradient-to-br from-blue-100 to-violet-100">
                 <AppIcon name={data.header.icon} bare size={54} className="text-[#6d35ff]" />
@@ -170,7 +170,7 @@ export default function AchievementActivityDetailPage() {
           </section>
 
           <section className="rounded-3xl border border-[#ebeaf6] bg-white p-6 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
-            <h2 className="text-xl font-black text-[#101733]">Quá trình của bạn</h2>
+            <h2 className="text-xl font-black text-[#101733]">QuÃ¡ trÃ¬nh cá»§a báº¡n</h2>
             <div className="mt-5 space-y-1">
               {data.timeline.map((item, index) => (
                 <div key={`${item.title}-${index}`} className={`grid grid-cols-[28px_80px_1fr_auto] items-center gap-4 rounded-2xl px-3 py-4 ${index === data.timeline.length - 1 ? "bg-[#f7f1ff]" : ""}`}>
@@ -188,14 +188,14 @@ export default function AchievementActivityDetailPage() {
 
         <aside className="space-y-6">
           <section className="rounded-3xl border border-[#ebeaf6] bg-white p-6 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
-            <h2 className="text-xl font-black text-[#101733]">Phần thưởng mốc tiến độ</h2>
+            <h2 className="text-xl font-black text-[#101733]">Pháº§n thÆ°á»Ÿng má»‘c tiáº¿n Ä‘á»™</h2>
             <div className="mt-5 space-y-3">
               {data.rewards.map((reward) => (
                 <div key={reward.label} className={`flex items-center gap-4 rounded-2xl border p-4 ${reward.claimed ? "border-orange-200 bg-orange-50/40" : "border-[#ebeaf6] bg-[#fbfaff]"}`}>
                   <AppIcon name={reward.claimed ? "star" : "lock"} tone={reward.claimed ? "yellow" : "slate"} />
                   <div className="min-w-0 flex-1">
                     <h3 className="font-black text-[#101733]">{reward.label}</h3>
-                    <p className="text-sm font-bold text-[#69708b]">{reward.claimed ? "Đã nhận" : `Cần đạt ${reward.required}`}</p>
+                    <p className="text-sm font-bold text-[#69708b]">{reward.claimed ? "ÄÃ£ nháº­n" : `Cáº§n Ä‘áº¡t ${reward.required}`}</p>
                   </div>
                   <span className="font-black text-[#6d35ff]">{reward.reward}</span>
                 </div>
@@ -204,7 +204,7 @@ export default function AchievementActivityDetailPage() {
           </section>
 
           <section className="rounded-3xl border border-[#ebeaf6] bg-white p-6 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
-            <h2 className="text-xl font-black text-[#101733]">Gợi ý cho bạn</h2>
+            <h2 className="text-xl font-black text-[#101733]">Gá»£i Ã½ cho báº¡n</h2>
             <div className="mt-5 space-y-4">
               {data.suggestions.map((item) => (
                 <Link key={item.title} href={item.href} className="flex gap-4 rounded-2xl border border-[#ebeaf6] bg-white p-4 hover:bg-[#fbfaff]">
@@ -218,7 +218,7 @@ export default function AchievementActivityDetailPage() {
               ))}
             </div>
             <Link href="/vocabulary" className="mt-6 flex h-12 items-center justify-center gap-2 rounded-xl bg-[#6d35ff] text-sm font-black text-white">
-              Xem tất cả bài học <ChevronRight size={17} />
+              Xem táº¥t cáº£ bÃ i há»c <ChevronRight size={17} />
             </Link>
           </section>
         </aside>

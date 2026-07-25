@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   Bookmark,
@@ -44,22 +44,22 @@ const sidebarItems: Array<{
   label: string;
   icon: typeof Home;
 }> = [
-  { key: 'HOME', label: 'Trang chủ', icon: Home },
-  { key: 'EXPLORE', label: 'Khám phá', icon: Compass },
-  { key: 'MY_POSTS', label: 'Bài viết của tôi', icon: UserRound },
-  { key: 'FOLLOWING', label: 'Đang theo dõi', icon: UsersRound },
-  { key: 'FRIENDS', label: 'Bạn bè', icon: UserRoundSearch },
-  { key: 'CLUBS', label: 'Câu lạc bộ', icon: Sparkles },
-  { key: 'CHALLENGES', label: 'Thử thách', icon: Trophy },
-  { key: 'LEADERBOARD', label: 'Bảng xếp hạng', icon: Medal },
-  { key: 'MESSAGES', label: 'Tin nhắn', icon: MessageSquareText },
+  { key: 'HOME', label: 'Trang chá»§', icon: Home },
+  { key: 'EXPLORE', label: 'KhÃ¡m phÃ¡', icon: Compass },
+  { key: 'MY_POSTS', label: 'BÃ i viáº¿t cá»§a tÃ´i', icon: UserRound },
+  { key: 'FOLLOWING', label: 'Äang theo dÃµi', icon: UsersRound },
+  { key: 'FRIENDS', label: 'Báº¡n bÃ¨', icon: UserRoundSearch },
+  { key: 'CLUBS', label: 'CÃ¢u láº¡c bá»™', icon: Sparkles },
+  { key: 'CHALLENGES', label: 'Thá»­ thÃ¡ch', icon: Trophy },
+  { key: 'LEADERBOARD', label: 'Báº£ng xáº¿p háº¡ng', icon: Medal },
+  { key: 'MESSAGES', label: 'Tin nháº¯n', icon: MessageSquareText },
 ];
 
 const feedTabs = [
-  { key: 'FOR_YOU', label: 'Dành cho bạn' },
-  { key: 'FOLLOWING', label: 'Đang theo dõi' },
-  { key: 'LATEST', label: 'Mới nhất' },
-  { key: 'POPULAR', label: 'Phổ biến' },
+  { key: 'FOR_YOU', label: 'DÃ nh cho báº¡n' },
+  { key: 'FOLLOWING', label: 'Äang theo dÃµi' },
+  { key: 'LATEST', label: 'Má»›i nháº¥t' },
+  { key: 'POPULAR', label: 'Phá»• biáº¿n' },
 ];
 
 function EmptyPanel({
@@ -70,12 +70,12 @@ function EmptyPanel({
   description: string;
 }) {
   return (
-    <div className="rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] px-6 py-14 text-center shadow-sm">
-      <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]">
+    <div className="rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] px-6 py-14 text-center shadow-sm">
+      <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]">
         <Sparkles size={26} />
       </div>
       <h3 className="mt-4 text-lg font-bold text-slate-900">{title}</h3>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--lumiverse-muted)]">
+      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--BeaconVie-muted)]">
         {description}
       </p>
     </div>
@@ -131,7 +131,7 @@ export function CommunityPage() {
         setError(
           e instanceof Error
             ? e.message
-            : 'Không thể tải bảng tin cộng đồng',
+            : 'KhÃ´ng thá»ƒ táº£i báº£ng tin cá»™ng Ä‘á»“ng',
         );
 
         if (reset) {
@@ -232,24 +232,24 @@ export function CommunityPage() {
         <button
           type="button"
           onClick={() => setModal(true)}
-          className="flex w-full items-center gap-3 rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-4 text-left shadow-sm transition hover:border-[var(--lumiverse-primary)]/40 hover:shadow-md"
+          className="flex w-full items-center gap-3 rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-4 text-left shadow-sm transition hover:border-[var(--BeaconVie-primary)]/40 hover:shadow-md"
         >
-          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--lumiverse-primary)] text-white">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--BeaconVie-primary)] text-white">
             <Plus size={23} />
           </span>
 
           <span className="min-w-0">
             <strong className="block text-slate-900">
-              Bạn muốn chia sẻ điều gì?
+              Báº¡n muá»‘n chia sáº» Ä‘iá»u gÃ¬?
             </strong>
-            <small className="block text-[var(--lumiverse-muted)]">
-              Chia sẻ kiến thức, đặt câu hỏi, bài nói hoặc bài viết.
+            <small className="block text-[var(--BeaconVie-muted)]">
+              Chia sáº» kiáº¿n thá»©c, Ä‘áº·t cÃ¢u há»i, bÃ i nÃ³i hoáº·c bÃ i viáº¿t.
             </small>
           </span>
         </button>
 
         {view === 'EXPLORE' && (
-          <div className="flex gap-2 rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-3 shadow-sm">
+          <div className="flex gap-2 rounded-2xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-3 shadow-sm">
             <div className="relative min-w-0 flex-1">
               <Search
                 size={18}
@@ -261,21 +261,21 @@ export function CommunityPage() {
                 onKeyDown={(event) => {
                   if (event.key === 'Enter') submitSearch();
                 }}
-                placeholder="Tìm bài viết, hashtag hoặc nội dung..."
-                className="w-full rounded-xl border border-[var(--lumiverse-border)] py-2.5 pl-10 pr-3 text-sm outline-none focus:border-[var(--lumiverse-primary)]"
+                placeholder="TÃ¬m bÃ i viáº¿t, hashtag hoáº·c ná»™i dung..."
+                className="w-full rounded-xl border border-[var(--BeaconVie-border)] py-2.5 pl-10 pr-3 text-sm outline-none focus:border-[var(--BeaconVie-primary)]"
               />
             </div>
             <button
               type="button"
               onClick={submitSearch}
-              className="rounded-xl bg-[var(--lumiverse-primary)] px-4 py-2.5 text-sm font-semibold text-white"
+              className="rounded-xl bg-[var(--BeaconVie-primary)] px-4 py-2.5 text-sm font-semibold text-white"
             >
-              Tìm
+              TÃ¬m
             </button>
           </div>
         )}
 
-        <div className="flex gap-2 overflow-x-auto rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-2 shadow-sm">
+        <div className="flex gap-2 overflow-x-auto rounded-2xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-2 shadow-sm">
           {feedTabs.map((item) => (
             <button
               key={item.key}
@@ -290,7 +290,7 @@ export function CommunityPage() {
               }}
               className={`whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition ${
                 activeFeedTab === item.key
-                  ? 'bg-[var(--lumiverse-primary)] text-white'
+                  ? 'bg-[var(--BeaconVie-primary)] text-white'
                   : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
@@ -300,29 +300,29 @@ export function CommunityPage() {
         </div>
 
         {error && (
-          <div className="rounded-2xl border border-[var(--lumiverse-danger)]/25 bg-[var(--lumiverse-danger-soft)] p-4">
-            <p className="text-sm text-[var(--lumiverse-danger)]">{error}</p>
+          <div className="rounded-2xl border border-[var(--BeaconVie-danger)]/25 bg-[var(--BeaconVie-danger-soft)] p-4">
+            <p className="text-sm text-[var(--BeaconVie-danger)]">{error}</p>
             <button
               type="button"
               onClick={() => void loadFeed(true)}
-              className="mt-3 rounded-xl bg-[var(--lumiverse-card)] px-4 py-2 text-sm font-semibold text-[var(--lumiverse-danger)] shadow-sm"
+              className="mt-3 rounded-xl bg-[var(--BeaconVie-card)] px-4 py-2 text-sm font-semibold text-[var(--BeaconVie-danger)] shadow-sm"
             >
-              Thử lại
+              Thá»­ láº¡i
             </button>
           </div>
         )}
 
         {loading ? (
-          <div className="rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] py-12 text-center text-[var(--lumiverse-muted)]">
-            Đang tải bảng tin...
+          <div className="rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] py-12 text-center text-[var(--BeaconVie-muted)]">
+            Äang táº£i báº£ng tin...
           </div>
         ) : posts.length === 0 ? (
-          <div className="rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] px-5 py-12 text-center">
+          <div className="rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] px-5 py-12 text-center">
             <h3 className="font-bold text-slate-900">
-              Chưa có bài viết nào
+              ChÆ°a cÃ³ bÃ i viáº¿t nÃ o
             </h3>
-            <p className="mt-2 text-sm text-[var(--lumiverse-muted)]">
-              Hãy trở thành người đầu tiên chia sẻ với cộng đồng.
+            <p className="mt-2 text-sm text-[var(--BeaconVie-muted)]">
+              HÃ£y trá»Ÿ thÃ nh ngÆ°á»i Ä‘áº§u tiÃªn chia sáº» vá»›i cá»™ng Ä‘á»“ng.
             </p>
           </div>
         ) : (
@@ -336,9 +336,9 @@ export function CommunityPage() {
             type="button"
             onClick={() => void loadFeed(false)}
             disabled={loadingMore}
-            className="w-full rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] py-3 font-semibold text-[var(--lumiverse-primary)] transition hover:bg-[var(--lumiverse-hover-tint)] disabled:opacity-50"
+            className="w-full rounded-2xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] py-3 font-semibold text-[var(--BeaconVie-primary)] transition hover:bg-[var(--BeaconVie-hover-tint)] disabled:opacity-50"
           >
-            {loadingMore ? 'Đang tải...' : 'Xem thêm'}
+            {loadingMore ? 'Äang táº£i...' : 'Xem thÃªm'}
           </button>
         )}
       </>
@@ -348,9 +348,9 @@ export function CommunityPage() {
   return (
     <main className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[220px_minmax(0,1fr)_300px]">
       <aside className="hidden lg:block">
-        <div className="sticky top-6 rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-4 shadow-sm">
+        <div className="sticky top-6 rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-4 shadow-sm">
           <h2 className="mb-4 px-3 text-lg font-bold text-slate-900">
-            Cộng đồng
+            Cá»™ng Ä‘á»“ng
           </h2>
 
           <nav className="space-y-1">
@@ -377,8 +377,8 @@ export function CommunityPage() {
                   }}
                   className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition ${
                     active
-                      ? 'bg-[var(--lumiverse-primary)] text-white shadow-sm'
-                      : 'text-[var(--lumiverse-muted)] hover:bg-[var(--lumiverse-hover-tint)] hover:text-[var(--lumiverse-primary)]'
+                      ? 'bg-[var(--BeaconVie-primary)] text-white shadow-sm'
+                      : 'text-[var(--BeaconVie-muted)] hover:bg-[var(--BeaconVie-hover-tint)] hover:text-[var(--BeaconVie-primary)]'
                   }`}
                 >
                   <Icon size={18} />
@@ -394,13 +394,13 @@ export function CommunityPage() {
 
       <aside className="hidden lg:block">
         <div className="sticky top-6 space-y-4">
-          <div className="rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-5 shadow-sm">
+          <div className="rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-5 shadow-sm">
             <div className="flex items-center gap-2">
               <Flame size={18} className="text-orange-500" />
-              <h3 className="font-bold text-slate-900">Chủ đề nổi bật</h3>
+              <h3 className="font-bold text-slate-900">Chá»§ Ä‘á» ná»•i báº­t</h3>
             </div>
 
-            <div className="mt-4 space-y-3 text-sm text-[var(--lumiverse-primary)]">
+            <div className="mt-4 space-y-3 text-sm text-[var(--BeaconVie-primary)]">
               {[
                 '#DailyConversation',
                 '#IELTSPreparation',
@@ -425,13 +425,13 @@ export function CommunityPage() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-5 shadow-sm">
+          <div className="rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-5 shadow-sm">
             <h3 className="font-bold text-slate-900">
-              Nguyên tắc cộng đồng
+              NguyÃªn táº¯c cá»™ng Ä‘á»“ng
             </h3>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              Tôn trọng, không spam, không công kích cá nhân và ưu tiên
-              nội dung hữu ích cho việc học tiếng Anh.
+              TÃ´n trá»ng, khÃ´ng spam, khÃ´ng cÃ´ng kÃ­ch cÃ¡ nhÃ¢n vÃ  Æ°u tiÃªn
+              ná»™i dung há»¯u Ã­ch cho viá»‡c há»c tiáº¿ng Anh.
             </p>
           </div>
         </div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRef } from "react";
 import Link from "next/link";
@@ -18,11 +18,11 @@ export default function FeaturedCoursesSection() {
       <div className="mx-auto max-w-6xl px-4">
         <div className="mx-auto mb-14 max-w-3xl text-center">
           <p className="mb-4 text-sm font-extrabold uppercase tracking-[0.25em] text-[#ff6b00]">
-            Khóa học nổi bật
+            KhÃ³a há»c ná»•i báº­t
           </p>
 
           <h2 className="text-4xl font-extrabold text-[#1f2a44] sm:text-5xl">
-            Được học viên đánh giá cao
+            ÄÆ°á»£c há»c viÃªn Ä‘Ã¡nh giÃ¡ cao
           </h2>
         </div>
 
@@ -32,7 +32,7 @@ export default function FeaturedCoursesSection() {
             type="button"
             className="absolute left-0 top-1/2 z-30 hidden h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#1f2a44] text-3xl font-bold text-white shadow-xl hover:bg-[#ff6b00] md:block"
           >
-            ‹
+            â€¹
           </button>
 
           <button
@@ -40,7 +40,7 @@ export default function FeaturedCoursesSection() {
             type="button"
             className="absolute right-0 top-1/2 z-30 hidden h-12 w-12 translate-x-1/2 -translate-y-1/2 rounded-full bg-[#1f2a44] text-3xl font-bold text-white shadow-xl hover:bg-[#ff6b00] md:block"
           >
-            ›
+            â€º
           </button>
 
           <Swiper
@@ -88,7 +88,7 @@ export default function FeaturedCoursesSection() {
             href="/courses"
             className="inline-flex rounded-2xl bg-[#ff6b00] px-8 py-4 font-bold text-white shadow-lg shadow-orange-200 hover:bg-[#e85f00]"
           >
-            Xem tất cả khóa học
+            Xem táº¥t cáº£ khÃ³a há»c
           </Link>
         </div>
       </div>
@@ -99,53 +99,53 @@ export default function FeaturedCoursesSection() {
 const featuredCourses = [
   {
     title: "English Starter",
-    tag: "Beginner • Free lessons",
+    tag: "Beginner â€¢ Free lessons",
     rating: "4.9",
     lessons: 32,
     students: 1240,
-    price: "Miễn phí",
+    price: "Miá»…n phÃ­",
     color: "bg-[#fff4e8]",
-    desc: "Từ mất gốc đến giao tiếp cơ bản, phù hợp người mới bắt đầu.",
+    desc: "Tá»« máº¥t gá»‘c Ä‘áº¿n giao tiáº¿p cÆ¡ báº£n, phÃ¹ há»£p ngÆ°á»i má»›i báº¯t Ä‘áº§u.",
   },
   {
     title: "Speaking Daily",
-    tag: "Speaking • Practice",
+    tag: "Speaking â€¢ Practice",
     rating: "4.8",
     lessons: 28,
     students: 980,
     price: "599K",
     color: "bg-[#eef8f2]",
-    desc: "Luyện nói theo tình huống hằng ngày để tăng phản xạ giao tiếp.",
+    desc: "Luyá»‡n nÃ³i theo tÃ¬nh huá»‘ng háº±ng ngÃ y Ä‘á»ƒ tÄƒng pháº£n xáº¡ giao tiáº¿p.",
   },
   {
     title: "Work English",
-    tag: "Business • Work",
+    tag: "Business â€¢ Work",
     rating: "4.9",
     lessons: 30,
     students: 740,
     price: "799K",
     color: "bg-[#f4f2fb]",
-    desc: "Tiếng Anh cho email, họp, phỏng vấn và giao tiếp công việc.",
+    desc: "Tiáº¿ng Anh cho email, há»p, phá»ng váº¥n vÃ  giao tiáº¿p cÃ´ng viá»‡c.",
   },
   {
     title: "IELTS Basic",
-    tag: "IELTS • Foundation",
+    tag: "IELTS â€¢ Foundation",
     rating: "4.7",
     lessons: 36,
     students: 860,
     price: "699K",
     color: "bg-[#fff7ed]",
-    desc: "Xây nền từ vựng, ngữ pháp và kỹ năng làm bài IELTS cơ bản.",
+    desc: "XÃ¢y ná»n tá»« vá»±ng, ngá»¯ phÃ¡p vÃ  ká»¹ nÄƒng lÃ m bÃ i IELTS cÆ¡ báº£n.",
   },
   {
     title: "Grammar Boost",
-    tag: "Grammar • Practice",
+    tag: "Grammar â€¢ Practice",
     rating: "4.8",
     lessons: 24,
     students: 650,
     price: "399K",
     color: "bg-[#f0f9ff]",
-    desc: "Luyện ngữ pháp thực chiến qua ví dụ, bài tập và sửa lỗi thường gặp.",
+    desc: "Luyá»‡n ngá»¯ phÃ¡p thá»±c chiáº¿n qua vÃ­ dá»¥, bÃ i táº­p vÃ  sá»­a lá»—i thÆ°á»ng gáº·p.",
   },
 ];
 
@@ -163,14 +163,14 @@ function CourseCard({ course }: { course: (typeof featuredCourses)[number] }) {
       </div>
 
       <div className="p-6">
-        <div className="font-bold text-[#ff9900]">★★★★★ {course.rating}</div>
+        <div className="font-bold text-[#ff9900]">â˜…â˜…â˜…â˜…â˜… {course.rating}</div>
 
         <p className="mt-4 min-h-[72px] text-lg leading-8 text-[#5b6b85]">
           {course.desc}
         </p>
 
         <div className="mt-4 font-semibold text-[#5b6b85]">
-          {course.lessons} bài học · {course.students} học viên
+          {course.lessons} bÃ i há»c Â· {course.students} há»c viÃªn
         </div>
 
         <div className="mt-6 flex items-center justify-between">
@@ -179,7 +179,7 @@ function CourseCard({ course }: { course: (typeof featuredCourses)[number] }) {
           </span>
 
           <button className="rounded-full bg-[#1f2a44] px-6 py-3 font-bold text-white hover:bg-[#ff6b00]">
-            Chi tiết
+            Chi tiáº¿t
           </button>
         </div>
       </div>

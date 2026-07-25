@@ -1,4 +1,4 @@
-import AppShell from "@/src/Components/Layout/AppShell";
+﻿import AppShell from "@/src/Components/Layout/AppShell";
 
 export default function MainLayout({
   children,

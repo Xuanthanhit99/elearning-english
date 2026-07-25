@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { UserCheck, UserPlus } from 'lucide-react';
 import { useState } from 'react';
@@ -38,12 +38,12 @@ export function CommunityFollowButton({
       disabled={loading}
       className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold transition disabled:opacity-50 ${
         following
-          ? 'border border-[var(--lumiverse-primary)]/25 bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]'
-          : 'bg-[var(--lumiverse-primary)] text-white hover:brightness-110'
+          ? 'border border-[var(--BeaconVie-primary)]/25 bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]'
+          : 'bg-[var(--BeaconVie-primary)] text-white hover:brightness-110'
       }`}
     >
       {following ? <UserCheck size={17} /> : <UserPlus size={17} />}
-      {following ? 'Đang theo dõi' : 'Theo dõi'}
+      {following ? 'Äang theo dÃµi' : 'Theo dÃµi'}
     </button>
   );
 }

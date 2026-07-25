@@ -1,4 +1,4 @@
-import {
+﻿import {
   formatXp,
   leagueIcons,
   leagueLabels,
@@ -13,9 +13,9 @@ export function LeaderboardHistoryList({
   if (!items.length) {
     return (
       <div className="rounded-3xl bg-white p-10 text-center">
-        <div className="text-5xl">📚</div>
+        <div className="text-5xl">ðŸ“š</div>
         <p className="mt-4 font-black">
-          Chưa có lịch sử mùa giải
+          ChÆ°a cÃ³ lá»‹ch sá»­ mÃ¹a giáº£i
         </p>
       </div>
     );
@@ -42,7 +42,7 @@ export function LeaderboardHistoryList({
 
             <div className="grid grid-cols-3 gap-3 text-center">
               <Metric
-                label="Hạng"
+                label="Háº¡ng"
                 value={`#${item.finalRank}`}
               />
               <Metric
@@ -50,13 +50,13 @@ export function LeaderboardHistoryList({
                 value={formatXp(item.periodXp)}
               />
               <Metric
-                label="Kết quả"
+                label="Káº¿t quáº£"
                 value={
                   item.promoted
-                    ? 'Thăng'
+                    ? 'ThÄƒng'
                     : item.relegated
-                      ? 'Xuống'
-                      : 'Giữ'
+                      ? 'Xuá»‘ng'
+                      : 'Giá»¯'
                 }
               />
             </div>

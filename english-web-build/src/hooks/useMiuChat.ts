@@ -1,4 +1,4 @@
-// hooks/useMiuChat.ts
+﻿// hooks/useMiuChat.ts
 import { useCallback, useState } from "react";
 import { ChatMessage, PetStatus, QuickActionKey } from "../types/chat";
 import { sendChatMessage } from "../lib/chat.api";
@@ -9,7 +9,7 @@ export function useMiuChat(initialPet: PetStatus) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "ASSISTANT",
-      content: `Xin chào, mình là ${initialPet.name}. Hôm nay mình sẽ đi theo cổ vũ bạn học tiếng Anh.`,
+      content: `Xin chÃ o, mÃ¬nh lÃ  ${initialPet.name}. HÃ´m nay mÃ¬nh sáº½ Ä‘i theo cá»• vÅ© báº¡n há»c tiáº¿ng Anh.`,
     },
   ]);
   const [loading, setLoading] = useState(false);
@@ -35,11 +35,11 @@ export function useMiuChat(initialPet: PetStatus) {
           { role: "ASSISTANT", content: data.reply },
         ]);
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Có lỗi xảy ra";
+        const message = err instanceof Error ? err.message : "CÃ³ lá»—i xáº£y ra";
         setError(message);
         setMessages((prev) => [
           ...prev,
-          { role: "ASSISTANT", content: "Lumi đang hơi lag 🐱💤 Thử lại nhé!" },
+          { role: "ASSISTANT", content: "Beacon Ä‘ang hÆ¡i lag ðŸ±ðŸ’¤ Thá»­ láº¡i nhÃ©!" },
         ]);
       } finally {
         setLoading(false);

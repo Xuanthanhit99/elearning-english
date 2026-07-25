@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -95,7 +95,7 @@ export default function SpeakingCategoriesPage() {
   }
 
   if (!data) {
-    return <div className="p-10 text-red-500">Không tải được categories.</div>;
+    return <div className="p-10 text-red-500">KhÃ´ng táº£i Ä‘Æ°á»£c categories.</div>;
   }
 
   return (
@@ -171,7 +171,7 @@ function Header() {
         </p>
       </div>
 
-      <div className="hidden text-8xl lg:block">🎙️💬🌿</div>
+      <div className="hidden text-8xl lg:block">ðŸŽ™ï¸ðŸ’¬ðŸŒ¿</div>
     </div>
   );
 }
@@ -225,7 +225,7 @@ function CategoryCard({
           />
         ) : (
           <div className="flex h-full items-center justify-center text-7xl">
-            {item.icon || '🎙️'}
+            {item.icon || 'ðŸŽ™ï¸'}
           </div>
         )}
       </div>
@@ -298,7 +298,7 @@ function ProgressCard({
 
         <div className="space-y-5 text-sm">
           <ProgressLegend title="Completed" value={progress.completed} color="green" />
-          <ProgressLegend title="In Progress" value={progress.inProgress} color="orange" />
+          <ProgressLegend title="Đang học" value={progress.inProgress} color="orange" />
           <ProgressLegend title="Not Started" value={progress.notStarted} color="indigo" />
         </div>
       </div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   AlertCircle,
@@ -27,12 +27,12 @@ import {
   startPlacementProcessing,
 } from "@/src/lib/placement-processing-api";
 import {
-  LumiverseBadge,
-  LumiverseButton,
-  LumiverseCard,
-  LumiverseProgress,
-  LumiverseSectionHeader,
-} from "@/src/Components/UI/Lumiverse";
+  BeaconVieBadge,
+  BeaconVieButton,
+  BeaconVieCard,
+  BeaconVieProgress,
+  BeaconVieSectionHeader,
+} from "@/src/Components/UI/BeaconVie";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3002";
 
@@ -127,12 +127,12 @@ export default function PlacementProcessingScreen({ sessionId }: { sessionId: st
   if (!data) {
     return (
       <main className="flex min-h-screen items-center justify-center px-4 py-10">
-        <LumiverseCard className="w-full max-w-lg p-8 text-center">
-          <Loader2 aria-hidden className="mx-auto h-10 w-10 animate-spin text-[var(--lumiverse-primary)]" />
-          <h1 className="mt-5 text-2xl font-black text-[var(--lumiverse-ink)]">
+        <BeaconVieCard className="w-full max-w-lg p-8 text-center">
+          <Loader2 aria-hidden className="mx-auto h-10 w-10 animate-spin text-[var(--BeaconVie-primary)]" />
+          <h1 className="mt-5 text-2xl font-black text-[var(--BeaconVie-ink)]">
             Starting placement analysis
           </h1>
-          <p className="mt-2 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+          <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
             The backend is preparing the processing job for this test.
           </p>
           {error ? (
@@ -140,7 +140,7 @@ export default function PlacementProcessingScreen({ sessionId }: { sessionId: st
               {error}
             </p>
           ) : null}
-        </LumiverseCard>
+        </BeaconVieCard>
       </main>
     );
   }
@@ -151,28 +151,28 @@ export default function PlacementProcessingScreen({ sessionId }: { sessionId: st
   return (
     <main className="min-h-screen px-3 py-5 sm:px-4 lg:px-6">
       <div className="mx-auto max-w-7xl space-y-5">
-        <LumiverseCard className="p-6 lg:p-8">
+        <BeaconVieCard className="p-6 lg:p-8">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
             <section>
-              <LumiverseBadge>{data.status}</LumiverseBadge>
-              <h1 className="mt-4 max-w-4xl text-3xl font-black tracking-tight text-[var(--lumiverse-ink)] sm:text-5xl">
+              <BeaconVieBadge>{data.status}</BeaconVieBadge>
+              <h1 className="mt-4 max-w-4xl text-3xl font-black tracking-tight text-[var(--BeaconVie-ink)] sm:text-5xl">
                 {failed
                   ? "Analysis needs attention"
                   : completed
                     ? "Analysis complete"
                     : "Analyzing your placement test"}
               </h1>
-              <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-[var(--lumiverse-muted)]">
+              <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-[var(--BeaconVie-muted)]">
                 Progress, steps, logs, skill states, and redirect are driven by
                 the existing placement processing API. No progress is simulated.
               </p>
 
               <div className="mt-7">
-                <div className="flex items-center justify-between text-sm font-black text-[var(--lumiverse-muted)]">
+                <div className="flex items-center justify-between text-sm font-black text-[var(--BeaconVie-muted)]">
                   <span>Overall progress</span>
                   <span>{data.progress}%</span>
                 </div>
-                <LumiverseProgress value={data.progress} className="mt-2 h-4" />
+                <BeaconVieProgress value={data.progress} className="mt-2 h-4" />
               </div>
 
               {error ? (
@@ -182,34 +182,34 @@ export default function PlacementProcessingScreen({ sessionId }: { sessionId: st
               ) : null}
             </section>
 
-            <LumiverseCard className="border-slate-100 bg-white/70 p-5">
+            <BeaconVieCard className="border-slate-100 bg-white/70 p-5">
               <ConnectionStatus connecting={connecting} failed={failed} />
               <div className="mt-5 space-y-4">
                 <Fact icon={Clock3} label="Estimated remaining" value={formatDuration(data.estimatedRemainingSeconds)} />
                 <Fact icon={activeStep ? stepIcons[activeStep.key] : Circle} label="Current step" value={activeStep?.title ?? "Waiting"} />
               </div>
               {failed ? (
-                <LumiverseButton
+                <BeaconVieButton
                   className="mt-6 w-full"
                   loading={starting}
                   onClick={() => void initializeProcessing()}
                 >
                   Retry processing
                   <RefreshCw aria-hidden className="h-4 w-4" />
-                </LumiverseButton>
+                </BeaconVieButton>
               ) : completed && data.nextUrl ? (
-                <LumiverseButton className="mt-6 w-full" onClick={() => router.replace(data.nextUrl as string)}>
+                <BeaconVieButton className="mt-6 w-full" onClick={() => router.replace(data.nextUrl as string)}>
                   Open result
                   <ArrowRight aria-hidden className="h-4 w-4" />
-                </LumiverseButton>
+                </BeaconVieButton>
               ) : null}
-            </LumiverseCard>
+            </BeaconVieCard>
           </div>
-        </LumiverseCard>
+        </BeaconVieCard>
 
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <LumiverseCard className="p-6">
-            <LumiverseSectionHeader
+          <BeaconVieCard className="p-6">
+            <BeaconVieSectionHeader
               eyebrow="Pipeline"
               title="Processing steps"
               description="Each step uses the status and progress returned by the backend snapshot."
@@ -219,7 +219,7 @@ export default function PlacementProcessingScreen({ sessionId }: { sessionId: st
                 <StepCard key={step.key} step={step} />
               ))}
             </div>
-          </LumiverseCard>
+          </BeaconVieCard>
 
           <LogPanel logs={data.logs} connecting={connecting} failed={failed} />
         </section>
@@ -243,10 +243,10 @@ function ConnectionStatus({ connecting, failed }: { connecting: boolean; failed:
         {failed ? <AlertCircle aria-hidden className="h-5 w-5" /> : connecting ? <Loader2 aria-hidden className="h-5 w-5 animate-spin" /> : <CheckCircle2 aria-hidden className="h-5 w-5" />}
       </span>
       <div>
-        <p className="font-black text-[var(--lumiverse-ink)]">
+        <p className="font-black text-[var(--BeaconVie-ink)]">
           {failed ? "Failed" : connecting ? "Connecting" : "Live updates"}
         </p>
-        <p className="text-xs font-bold text-[var(--lumiverse-muted)]">
+        <p className="text-xs font-bold text-[var(--BeaconVie-muted)]">
           SSE with polling fallback
         </p>
       </div>
@@ -256,12 +256,12 @@ function ConnectionStatus({ connecting, failed }: { connecting: boolean; failed:
 
 function Fact({ icon: Icon, label, value }: { icon: typeof Clock3; label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-[var(--lumiverse-border)] bg-white/75 p-4">
-      <Icon aria-hidden className="h-5 w-5 text-[var(--lumiverse-primary)]" />
-      <p className="mt-3 text-xs font-black uppercase tracking-[0.12em] text-[var(--lumiverse-muted)]">
+    <div className="rounded-2xl border border-[var(--BeaconVie-border)] bg-white/75 p-4">
+      <Icon aria-hidden className="h-5 w-5 text-[var(--BeaconVie-primary)]" />
+      <p className="mt-3 text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-muted)]">
         {label}
       </p>
-      <p className="mt-1 font-black text-[var(--lumiverse-ink)]">{value}</p>
+      <p className="mt-1 font-black text-[var(--BeaconVie-ink)]">{value}</p>
     </div>
   );
 }
@@ -269,19 +269,19 @@ function Fact({ icon: Icon, label, value }: { icon: typeof Clock3; label: string
 function StepCard({ step }: { step: PlacementProcessingSnapshot["steps"][number] }) {
   const Icon = stepIcons[step.key];
   return (
-    <article className="rounded-3xl border border-[var(--lumiverse-border)] bg-white/75 p-5">
+    <article className="rounded-3xl border border-[var(--BeaconVie-border)] bg-white/75 p-5">
       <div className="flex items-start justify-between gap-3">
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-[var(--lumiverse-primary)]">
+        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-[var(--BeaconVie-primary)]">
           <Icon aria-hidden className="h-6 w-6" />
         </span>
         <StatusIcon status={step.status} />
       </div>
-      <h3 className="mt-4 font-black text-[var(--lumiverse-ink)]">{step.title}</h3>
-      <p className="mt-1 text-sm font-bold text-[var(--lumiverse-muted)]">
+      <h3 className="mt-4 font-black text-[var(--BeaconVie-ink)]">{step.title}</h3>
+      <p className="mt-1 text-sm font-bold text-[var(--BeaconVie-muted)]">
         {statusLabel(step.status)}
       </p>
       <div className="mt-5">
-        <LumiverseProgress value={step.progress} />
+        <BeaconVieProgress value={step.progress} />
       </div>
     </article>
   );
@@ -289,8 +289,8 @@ function StepCard({ step }: { step: PlacementProcessingSnapshot["steps"][number]
 
 function SkillPanel({ skills }: { skills: PlacementProcessingSnapshot["skills"] }) {
   return (
-    <LumiverseCard className="p-6">
-      <LumiverseSectionHeader
+    <BeaconVieCard className="p-6">
+      <BeaconVieSectionHeader
         eyebrow="Skills"
         title="Skill evaluation"
         description="Skill status, score, level, and message come directly from the processing snapshot."
@@ -299,24 +299,24 @@ function SkillPanel({ skills }: { skills: PlacementProcessingSnapshot["skills"] 
         {skills.map((item) => {
           const Icon = skillIcons[item.skill];
           return (
-            <div key={item.skill} className="rounded-2xl border border-[var(--lumiverse-border)] bg-white/75 p-4">
+            <div key={item.skill} className="rounded-2xl border border-[var(--BeaconVie-border)] bg-white/75 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-[var(--lumiverse-primary)]">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-[var(--BeaconVie-primary)]">
                     <Icon aria-hidden className="h-5 w-5" />
                   </span>
                   <div>
-                    <p className="font-black text-[var(--lumiverse-ink)]">{item.skill}</p>
-                    <p className="text-xs font-bold text-[var(--lumiverse-muted)]">
+                    <p className="font-black text-[var(--BeaconVie-ink)]">{item.skill}</p>
+                    <p className="text-xs font-bold text-[var(--BeaconVie-muted)]">
                       {item.level ?? statusLabel(item.status)}
                     </p>
                   </div>
                 </div>
                 <StatusIcon status={item.status} />
               </div>
-              <LumiverseProgress value={item.progress} className="mt-4" />
+              <BeaconVieProgress value={item.progress} className="mt-4" />
               {item.message ? (
-                <p className="mt-3 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+                <p className="mt-3 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
                   {item.message}
                 </p>
               ) : null}
@@ -324,7 +324,7 @@ function SkillPanel({ skills }: { skills: PlacementProcessingSnapshot["skills"] 
           );
         })}
       </div>
-    </LumiverseCard>
+    </BeaconVieCard>
   );
 }
 
@@ -338,9 +338,9 @@ function LogPanel({
   failed: boolean;
 }) {
   return (
-    <LumiverseCard className="p-5">
+    <BeaconVieCard className="p-5">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-black text-[var(--lumiverse-ink)]">Processing log</h2>
+        <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">Processing log</h2>
         <span className={[
           "rounded-full px-3 py-1 text-xs font-black",
           failed ? "bg-rose-50 text-rose-600" : connecting ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-700",
@@ -352,52 +352,52 @@ function LogPanel({
         {logs.length ? (
           logs.map((log) => (
             <div key={log.id} className="grid grid-cols-[70px_24px_minmax(0,1fr)] gap-3">
-              <span className="text-xs font-bold text-[var(--lumiverse-muted)]">
+              <span className="text-xs font-bold text-[var(--BeaconVie-muted)]">
                 {new Date(log.createdAt).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
               </span>
               <StatusIcon status={log.status} />
-              <p className="text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+              <p className="text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
                 {log.message}
               </p>
             </div>
           ))
         ) : (
-          <p className="rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-[var(--lumiverse-muted)]">
+          <p className="rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-[var(--BeaconVie-muted)]">
             Waiting for the backend to publish processing logs.
           </p>
         )}
       </div>
-    </LumiverseCard>
+    </BeaconVieCard>
   );
 }
 
 function InsightPanel({ insights }: { insights: string[] }) {
   return (
-    <LumiverseCard className="p-5">
-      <h2 className="text-lg font-black text-[var(--lumiverse-ink)]">Insights</h2>
+    <BeaconVieCard className="p-5">
+      <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">Insights</h2>
       <div className="mt-4 space-y-3">
         {insights.length ? (
           insights.slice(-5).map((insight, index) => (
-            <p key={`${insight}-${index}`} className="rounded-2xl bg-blue-50/55 p-4 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+            <p key={`${insight}-${index}`} className="rounded-2xl bg-blue-50/55 p-4 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
               {insight}
             </p>
           ))
         ) : (
-          <p className="rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-[var(--lumiverse-muted)]">
+          <p className="rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-[var(--BeaconVie-muted)]">
             Insights will appear here if the backend returns them.
           </p>
         )}
       </div>
-    </LumiverseCard>
+    </BeaconVieCard>
   );
 }
 
 function StatusIcon({ status }: { status: ProcessingItemStatus }) {
   if (status === "COMPLETED") return <CheckCircle2 aria-hidden className="h-5 w-5 shrink-0 text-emerald-500" />;
-  if (status === "PROCESSING") return <Loader2 aria-hidden className="h-5 w-5 shrink-0 animate-spin text-[var(--lumiverse-primary)]" />;
+  if (status === "PROCESSING") return <Loader2 aria-hidden className="h-5 w-5 shrink-0 animate-spin text-[var(--BeaconVie-primary)]" />;
   if (status === "FAILED") return <AlertCircle aria-hidden className="h-5 w-5 shrink-0 text-rose-500" />;
   if (status === "SKIPPED") return <Circle aria-hidden className="h-5 w-5 shrink-0 text-amber-500" />;
   return <Circle aria-hidden className="h-5 w-5 shrink-0 text-slate-300" />;

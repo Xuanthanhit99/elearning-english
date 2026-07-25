@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   CalendarClock,
@@ -189,7 +189,7 @@ export default function PlacementSpeakingQuestion({
       <div>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <span className="rounded-full bg-blue-50 px-4 py-2 text-sm font-black text-blue-700">
-            Speaking • {level}
+            Speaking â€¢ {level}
           </span>
           <span className="text-sm font-bold text-slate-500">
             Recommended answer: 30-60 seconds
@@ -394,7 +394,7 @@ function SkipDialog({
             type="button"
             onClick={onClose}
             disabled={loading}
-            aria-label="Close dialog"
+            aria-label="Đóng hộp thoại"
             className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50"
           >
             <X aria-hidden className="h-6 w-6" />

@@ -1,4 +1,4 @@
-import { DEFAULT_LOCALE, Locale } from "@/src/i18n/types";
+﻿import { DEFAULT_LOCALE, Locale } from "@/src/i18n/types";
 
 const INTL_LOCALES: Record<Locale, string> = {
   vi: "vi-VN",

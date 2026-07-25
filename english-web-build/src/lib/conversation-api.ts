@@ -1,4 +1,4 @@
-import { api, refreshSession } from "@/src/lib/axios";
+﻿import { api, refreshSession } from "@/src/lib/axios";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002";
 
@@ -115,14 +115,14 @@ export async function finishConversation(sessionId: string) {
 
 /**
  * Streams the AI reply as plain-text chunks via `fetch(...).body.getReader()`
- * against the backend's chunked POST response (see ConversationController —
+ * against the backend's chunked POST response (see ConversationController â€”
  * deliberately not EventSource/SSE, which is GET-only and awkward for a
  * message body). Not built on the shared `api` axios instance because axios
  * doesn't expose a streaming response body reader the way raw `fetch` does.
  *
  * Mirrors axios.ts's own 401-then-refresh-then-retry-once behavior (the
  * interceptor there only covers axios calls, not this raw fetch), so an
- * expired access token doesn't need a full page reload to recover from —
+ * expired access token doesn't need a full page reload to recover from â€”
  * one retry after a session refresh, same as every other authenticated call.
  */
 export async function streamConversationMessage(
@@ -146,7 +146,7 @@ export async function streamConversationMessage(
       await refreshSession();
       response = await doFetch();
     } catch {
-      // fall through — the error below will surface as a normal failure
+      // fall through â€” the error below will surface as a normal failure
     }
   }
 
@@ -156,7 +156,7 @@ export async function streamConversationMessage(
       const errorBody = await response.json();
       if (typeof errorBody?.message === "string") message = errorBody.message;
     } catch {
-      // response wasn't JSON (e.g. a network-level failure) — keep the default message
+      // response wasn't JSON (e.g. a network-level failure) â€” keep the default message
     }
     throw new Error(message);
   }

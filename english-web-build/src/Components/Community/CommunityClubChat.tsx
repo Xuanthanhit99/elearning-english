@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Loader2, Send } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -54,9 +54,9 @@ export function CommunityClubChat({ clubId }: { clubId: string }) {
   return (
     <section className="overflow-hidden rounded-3xl border-2 border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-100 p-5">
-        <h2 className="text-xl font-extrabold text-slate-950">Chat nhóm</h2>
+        <h2 className="text-xl font-extrabold text-slate-950">Chat nhÃ³m</h2>
         <p className="text-sm font-semibold text-slate-500">
-          Trò chuyện với các thành viên trong câu lạc bộ.
+          TrÃ² chuyá»‡n vá»›i cÃ¡c thÃ nh viÃªn trong cÃ¢u láº¡c bá»™.
         </p>
       </div>
 
@@ -64,7 +64,7 @@ export function CommunityClubChat({ clubId }: { clubId: string }) {
         {loading ? (
           <div className="flex h-60 items-center justify-center text-slate-500">
             <Loader2 className="mr-2 animate-spin text-indigo-600" />
-            Đang tải tin nhắn...
+            Äang táº£i tin nháº¯n...
           </div>
         ) : messages.length ? (
           messages.map((message) => (
@@ -87,7 +87,7 @@ export function CommunityClubChat({ clubId }: { clubId: string }) {
           ))
         ) : (
           <div className="flex h-60 items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white text-center font-semibold text-slate-500">
-            Chưa có tin nhắn nào. Hãy mở lời cho câu lạc bộ nhé.
+            ChÆ°a cÃ³ tin nháº¯n nÃ o. HÃ£y má»Ÿ lá»i cho cÃ¢u láº¡c bá»™ nhÃ©.
           </div>
         )}
       </div>
@@ -103,7 +103,7 @@ export function CommunityClubChat({ clubId }: { clubId: string }) {
             }
           }}
           rows={2}
-          placeholder="Nhập tin nhắn..."
+          placeholder="Nháº­p tin nháº¯n..."
           className="min-h-12 flex-1 resize-none rounded-2xl border-2 border-slate-200 px-4 py-3 font-semibold outline-none focus:border-indigo-400"
         />
         <button
@@ -111,7 +111,7 @@ export function CommunityClubChat({ clubId }: { clubId: string }) {
           onClick={() => void submit()}
           disabled={sending || !content.trim()}
           className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white disabled:cursor-not-allowed disabled:bg-slate-300"
-          aria-label="Gửi tin nhắn"
+          aria-label="Gá»­i tin nháº¯n"
         >
           {sending ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
         </button>

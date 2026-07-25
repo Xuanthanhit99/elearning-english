@@ -1,4 +1,4 @@
-param(
+﻿param(
   [Parameter(Mandatory = $true)]
   [string]$BackupPath,
   [string]$ContainerName = "english_platform_postgres",
@@ -12,7 +12,7 @@ if (-not (Test-Path $BackupPath)) {
   throw "Backup file not found: $BackupPath"
 }
 
-if (-not $User) { $User = "poppylingo" }
+if (-not $User) { $User = "beaconvie" }
 
 $dbExists = docker exec $ContainerName psql -U $User -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$RestoreDatabase'"
 if ($dbExists.Trim() -eq "1") {

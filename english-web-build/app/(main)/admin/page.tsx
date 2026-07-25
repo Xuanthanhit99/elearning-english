@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   Archive,
@@ -78,7 +78,7 @@ export default function AdminBackofficePage() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Backend already enforces this via RolesGuard on every endpoint — this
+  // Backend already enforces this via RolesGuard on every endpoint â€” this
   // is purely a UX improvement (Part 14: "permission-aware navigation,
   // permission-denied states") so a non-admin gets a clear message instead
   // of a page that renders empty/erroring API calls one by one.
@@ -123,7 +123,7 @@ export default function AdminBackofficePage() {
       setAiUsage(aiUsageData);
       setBullMqQueues(bullMqData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Không tải được dữ liệu admin.");
+      setError(err instanceof Error ? err.message : "KhÃ´ng táº£i Ä‘Æ°á»£c dá»¯ liá»‡u admin.");
     } finally {
       setLoading(false);
     }
@@ -141,14 +141,14 @@ export default function AdminBackofficePage() {
     if (!overview) return [];
     return [
       {
-        title: "Người dùng",
+        title: "NgÆ°á»i dÃ¹ng",
         value: overview.users.total,
-        sub: `${overview.users.active} active, ${overview.users.registrationsToday} mới hôm nay`,
+        sub: `${overview.users.active} active, ${overview.users.registrationsToday} má»›i hÃ´m nay`,
         icon: Users,
         tone: "violet",
       },
       {
-        title: "Nội dung",
+        title: "Ná»™i dung",
         value:
           Number(overview.content.courses ?? 0) +
           Number(overview.content.lessons ?? 0) +
@@ -158,14 +158,14 @@ export default function AdminBackofficePage() {
         tone: "blue",
       },
       {
-        title: "Cộng đồng",
+        title: "Cá»™ng Ä‘á»“ng",
         value: overview.community.posts,
         sub: `${overview.community.clubs} club, ${overview.community.comments} comment`,
         icon: Flag,
         tone: "emerald",
       },
       {
-        title: "Sức khỏe",
+        title: "Sá»©c khá»e",
         value: overview.operations.health.db.status,
         sub: `DB ${overview.operations.health.db.latencyMs}ms`,
         icon: HeartPulse,
@@ -181,10 +181,10 @@ export default function AdminBackofficePage() {
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-950">
             <Lock size={26} />
           </div>
-          <h1 className="mt-4 text-xl font-black">Không có quyền truy cập</h1>
+          <h1 className="mt-4 text-xl font-black">KhÃ´ng cÃ³ quyá»n truy cáº­p</h1>
           <p className="mt-2 text-sm font-semibold text-slate-500">
-            Trang này chỉ dành cho quản trị viên hoặc kiểm duyệt viên. Tài khoản của bạn không có
-            quyền truy cập khu vực quản trị.
+            Trang nÃ y chá»‰ dÃ nh cho quáº£n trá»‹ viÃªn hoáº·c kiá»ƒm duyá»‡t viÃªn. TÃ i khoáº£n cá»§a báº¡n khÃ´ng cÃ³
+            quyá»n truy cáº­p khu vá»±c quáº£n trá»‹.
           </p>
         </div>
       </main>
@@ -200,9 +200,9 @@ export default function AdminBackofficePage() {
               <ShieldCheck size={15} />
               Admin Backoffice
             </div>
-            <h1 className="mt-3 text-2xl font-black md:text-3xl">Trung tâm vận hành Lumiverse</h1>
+            <h1 className="mt-3 text-2xl font-black md:text-3xl">Trung tÃ¢m váº­n hÃ nh BeaconVie</h1>
             <p className="mt-1 max-w-2xl text-sm font-semibold text-slate-500">
-              Quản trị người dùng, nội dung, moderation, queue, health và audit log trên cùng một màn.
+              Quáº£n trá»‹ ngÆ°á»i dÃ¹ng, ná»™i dung, moderation, queue, health vÃ  audit log trÃªn cÃ¹ng má»™t mÃ n.
             </p>
           </div>
           <button
@@ -212,14 +212,14 @@ export default function AdminBackofficePage() {
             disabled={loading}
           >
             <RefreshCw size={17} className={loading ? "animate-spin" : ""} />
-            Làm mới
+            LÃ m má»›i
           </button>
         </header>
 
         <section className="flex flex-col gap-3 rounded-3xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-2">
             {[
-              ["overview", "Tổng quan"],
+              ["overview", "Tá»•ng quan"],
               ["users", "Users"],
               ["content", "Content"],
               ["moderation", "Moderation"],
@@ -248,7 +248,7 @@ export default function AdminBackofficePage() {
               onKeyDown={(event) => {
                 if (event.key === "Enter") void load();
               }}
-              placeholder="Tìm user, nội dung, bài viết..."
+              placeholder="TÃ¬m user, ná»™i dung, bÃ i viáº¿t..."
               className="min-h-11 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold outline-none focus:border-violet-400 dark:border-slate-700 dark:bg-slate-950"
             />
             <button
@@ -256,7 +256,7 @@ export default function AdminBackofficePage() {
               onClick={() => void load()}
               className="min-h-11 rounded-2xl border border-violet-200 px-4 text-sm font-black text-violet-700"
             >
-              Tìm
+              TÃ¬m
             </button>
           </div>
         </section>
@@ -292,9 +292,9 @@ export default function AdminBackofficePage() {
             )}
 
             {tab === "users" && (
-              <Panel title="User Management" description="Ban, unban, reset XP/streak và gán role có audit log.">
+              <Panel title="User Management" description="Ban, unban, reset XP/streak vÃ  gÃ¡n role cÃ³ audit log.">
                 <ResponsiveTable
-                  columns={["Người dùng", "Role", "Status", "XP", "Streak", "Action"]}
+                  columns={["NgÆ°á»i dÃ¹ng", "Role", "Status", "XP", "Streak", "Action"]}
                   rows={(users?.items ?? []).map((user) => [
                     <UserCell key="user" user={user} />,
                     user.role,
@@ -331,7 +331,7 @@ export default function AdminBackofficePage() {
             {tab === "content" && (
               <Panel
                 title="Content Management"
-                description="Bảng dùng chung cho Vocabulary, Grammar, Reading, Listening, Speaking, Writing, Placement và Course."
+                description="Bảng dùng chung cho từ vựng, ngữ pháp, luyện đọc, luyện nghe, luyện nói, luyện viết, kiểm tra trình độ và khóa học."
                 action={
                   <select
                     value={contentType}
@@ -347,7 +347,7 @@ export default function AdminBackofficePage() {
                 }
               >
                 <ResponsiveTable
-                  columns={["Tiêu đề", "Meta", "Trạng thái", "Cập nhật", "Action"]}
+                  columns={["TiÃªu Ä‘á»", "Meta", "Tráº¡ng thÃ¡i", "Cáº­p nháº­t", "Action"]}
                   rows={(content?.items ?? []).map((item) => [
                     item.title ?? item.word ?? item.question ?? item.id,
                     item.level ?? item.source ?? item.type ?? item.slug ?? "-",
@@ -393,12 +393,12 @@ export default function AdminBackofficePage() {
             )}
 
             {tab === "moderation" && (
-              <Panel title="Community Moderation" description="Ẩn, khôi phục hoặc soft-delete bài viết cộng đồng.">
+              <Panel title="Kiểm duyệt cộng đồng" description="Ẩn, khôi phục hoặc soft-delete bài viết cộng đồng.">
                 <ResponsiveTable
-                  columns={["Bài viết", "Tác giả", "Status", "Tương tác", "Action"]}
+                  columns={["BÃ i viáº¿t", "TÃ¡c giáº£", "Status", "TÆ°Æ¡ng tÃ¡c", "Action"]}
                   rows={(posts?.items ?? []).map((post) => [
                     <div key="post" className="max-w-md">
-                      <p className="font-black">{post.title ?? "Bài viết cộng đồng"}</p>
+                      <p className="font-black">{post.title ?? "BÃ i viáº¿t cá»™ng Ä‘á»“ng"}</p>
                       <p className="line-clamp-2 text-xs font-semibold text-slate-500">{post.content}</p>
                     </div>,
                     post.author?.fullname ?? "-",
@@ -432,7 +432,7 @@ export default function AdminBackofficePage() {
             )}
 
             {tab === "moderation" && (
-              <Panel title="Club Moderation" description="Archive, restore hoặc xoá club vi phạm; chuyển quyền sở hữu.">
+              <Panel title="Club Moderation" description="Archive, restore hoáº·c xoÃ¡ club vi pháº¡m; chuyá»ƒn quyá»n sá»Ÿ há»¯u.">
                 <ResponsiveTable
                   columns={["Club", "Owner", "Status", "Members", "Action"]}
                   rows={(clubs?.items ?? []).map((club) => [
@@ -453,7 +453,7 @@ export default function AdminBackofficePage() {
                         }
                       />
                       <SmallAction
-                        label="Xoá"
+                        label="XoÃ¡"
                         loading={busyId === `${club.id}-delete`}
                         onClick={() =>
                           runAction(`${club.id}-delete`, () =>
@@ -468,24 +468,24 @@ export default function AdminBackofficePage() {
             )}
 
             {tab === "overview" && revenue && (
-              <Panel title="Doanh thu" description="Tổng hợp từ đơn hàng đã thanh toán (Order.status = PAID).">
+              <Panel title="Doanh thu" description="Tá»•ng há»£p tá»« Ä‘Æ¡n hÃ ng Ä‘Ã£ thanh toÃ¡n (Order.status = PAID).">
                 <div className="grid gap-4 sm:grid-cols-3">
-                  <RevenueStat label="Tổng doanh thu" value={revenue.totalRevenue} />
+                  <RevenueStat label="Tá»•ng doanh thu" value={revenue.totalRevenue} />
                   <RevenueStat label="Platform fee" value={revenue.platformFee} />
-                  <RevenueStat label="Doanh thu giáo viên" value={revenue.teacherRevenue} />
+                  <RevenueStat label="Doanh thu giÃ¡o viÃªn" value={revenue.teacherRevenue} />
                 </div>
                 <p className="mt-3 text-xs font-bold text-slate-500">
-                  {revenue.totalOrders} đơn hàng · {revenue.totalStudents} học viên · {revenue.totalTeachers} giáo viên
+                  {revenue.totalOrders} Ä‘Æ¡n hÃ ng Â· {revenue.totalStudents} há»c viÃªn Â· {revenue.totalTeachers} giÃ¡o viÃªn
                 </p>
               </Panel>
             )}
 
             {tab === "operations" && operations && (
               <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-                <Panel title="Queue Monitoring" description="Theo dõi processing jobs an toàn, không restart worker từ UI.">
+                <Panel title="Queue Monitoring" description="Theo dÃµi processing jobs an toÃ n, khÃ´ng restart worker tá»« UI.">
                   <QueueList queues={operations.queues} />
                 </Panel>
-                <Panel title="Health Dashboard" description="API, DB, scheduler, memory và trạng thái BullMQ.">
+                <Panel title="Health Dashboard" description="API, DB, scheduler, memory vÃ  tráº¡ng thÃ¡i BullMQ.">
                   <div className="space-y-3">
                     <HealthRow label="API" value={operations.health.api.status} />
                     <HealthRow label="Database" value={`${operations.health.db.status} (${operations.health.db.latencyMs}ms)`} />
@@ -494,7 +494,7 @@ export default function AdminBackofficePage() {
                     <HealthRow label="Memory" value={`${operations.health.memory.heapUsedMb}/${operations.health.memory.heapTotalMb} MB`} />
                   </div>
                 </Panel>
-                <Panel title="Feature Flags" description="Bật/tắt tính năng theo thời gian thực — thay đổi được audit và invalidate cache ngay.">
+                <Panel title="Feature Flags" description="Báº­t/táº¯t tÃ­nh nÄƒng theo thá»i gian thá»±c â€” thay Ä‘á»•i Ä‘Æ°á»£c audit vÃ  invalidate cache ngay.">
                   <div className="grid gap-2 sm:grid-cols-2">
                     {operations.featureFlags.flags.map((flag) => (
                       <button
@@ -503,7 +503,7 @@ export default function AdminBackofficePage() {
                         disabled={busyId === `flag-${flag.key}`}
                         onClick={() =>
                           // runAction already reloads everything (including
-                          // this flag's fresh value) on success — no need
+                          // this flag's fresh value) on success â€” no need
                           // for a separate optimistic local-state patch.
                           runAction(`flag-${flag.key}`, () =>
                             setAdminFeatureFlag(flag.key, !flag.isEnabled),
@@ -522,21 +522,21 @@ export default function AdminBackofficePage() {
                     ))}
                   </div>
                 </Panel>
-                <Panel title="Cron Monitor" description="Các scheduled jobs đã đăng ký trong hệ thống.">
+                <Panel title="Cron Monitor" description="CÃ¡c scheduled jobs Ä‘Ã£ Ä‘Äƒng kÃ½ trong há»‡ thá»‘ng.">
                   <ResponsiveTable
                     columns={["Job", "Module", "Status", "Last run"]}
                     rows={operations.cron.map((job) => [
                       job.name,
                       job.module,
                       <StatusPill key="status" value={job.status} />,
-                      job.lastRun ?? "Chưa có dữ liệu",
+                      job.lastRun ?? "ChÆ°a cÃ³ dá»¯ liá»‡u",
                     ])}
                   />
                 </Panel>
                 {bullMqQueues && (
-                  <Panel title="BullMQ Queues" description="Số liệu thật từ BullMQ (waiting/active/completed/failed), không phải bảng DB proxy.">
+                  <Panel title="BullMQ Queues" description="Sá»‘ liá»‡u tháº­t tá»« BullMQ (waiting/active/completed/failed), khÃ´ng pháº£i báº£ng DB proxy.">
                     <ResponsiveTable
-                      columns={["Queue", "Waiting", "Active", "Completed", "Failed", "Paused"]}
+                      columns={["Hàng đợi", "Đang chờ", "Đang chạy", "Hoàn thành", "Thất bại", "Tạm dừng"]}
                       rows={bullMqQueues.map((q) => [
                         q.name,
                         q.waiting,
@@ -560,7 +560,7 @@ export default function AdminBackofficePage() {
                       {aiUsage.byModule.map((m) => (
                         <div key={m.module} className="flex items-center justify-between rounded-2xl bg-slate-50 p-3 text-sm font-bold dark:bg-slate-950">
                           <span>{m.module}</span>
-                          <span className="text-slate-500">{m.requests} req · {m.averageDurationMs}ms avg</span>
+                          <span className="text-slate-500">{m.requests} req Â· {m.averageDurationMs}ms avg</span>
                         </div>
                       ))}
                     </div>
@@ -570,9 +570,9 @@ export default function AdminBackofficePage() {
             )}
 
             {tab === "audit" && (
-              <Panel title="Audit Logs" description="Theo dõi thao tác quản trị, không lưu password/token/secret.">
+              <Panel title="Audit Logs" description="Theo dÃµi thao tÃ¡c quáº£n trá»‹, khÃ´ng lÆ°u password/token/secret.">
                 <ResponsiveTable
-                  columns={["Action", "Admin", "Fields", "Thời gian"]}
+                  columns={["Action", "Admin", "Fields", "Thá»i gian"]}
                   rows={(auditLogs?.items ?? []).map((log) => [
                     log.action,
                     log.user?.email ?? "-",
@@ -595,7 +595,7 @@ export default function AdminBackofficePage() {
       await action();
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Thao tác admin thất bại.");
+      setError(err instanceof Error ? err.message : "Thao tÃ¡c admin tháº¥t báº¡i.");
     } finally {
       setBusyId(null);
     }
@@ -638,8 +638,8 @@ function ResponsiveTable({
     return (
       <div className="flex min-h-40 flex-col items-center justify-center rounded-3xl bg-slate-50 p-6 text-center dark:bg-slate-950">
         <Database className="text-slate-300" size={36} />
-        <p className="mt-3 font-black">Chưa có dữ liệu</p>
-        <p className="mt-1 text-sm font-semibold text-slate-500">Thử đổi bộ lọc hoặc làm mới trang.</p>
+        <p className="mt-3 font-black">ChÆ°a cÃ³ dá»¯ liá»‡u</p>
+        <p className="mt-1 text-sm font-semibold text-slate-500">Thá»­ Ä‘á»•i bá»™ lá»c hoáº·c lÃ m má»›i trang.</p>
       </div>
     );
   }
@@ -771,7 +771,7 @@ function RevenueStat({
 }) {
   const display =
     format === "currency"
-      ? value.toLocaleString("vi-VN") + "đ"
+      ? value.toLocaleString("vi-VN") + "Ä‘"
       : format === "ms"
         ? `${value}ms`
         : value.toLocaleString("vi-VN");

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { api } from "@/src/lib/axios";
 import { useEffect, useMemo, useState } from "react";
@@ -21,7 +21,7 @@ type ArenaProfile = {
   ratingLifecycleStage?: "PLACEMENT" | "PROVISIONAL" | "ESTABLISHED";
   decayEligible?: boolean;
   decayDaysRemaining?: number;
-  // Phase F2.1 — additive fields, always present from GET /arena/lobby
+  // Phase F2.1 â€” additive fields, always present from GET /arena/lobby
   // (profile.*) once the backend migration is applied; optional here only
   // so this type still compiles against any cached/mocked older response.
   placementMatchesRemaining?: number;
@@ -55,28 +55,28 @@ type ArenaSeasonSummary = {
 };
 
 const MODES = [
-  { id: "SOLO_1V1", title: "Solo 1vs1", desc: "Ghép theo MMR, thắng/thua tính Elo rõ ràng.", shape: "Bạn VS Đối thủ" },
-  { id: "TEAM_2V2", title: "Team 2vs2", desc: "Điểm đội là tổng điểm, hỗ trợ voice, emoji, ping.", shape: "A + B VS C + D" },
-  { id: "TEAM_3V3", title: "Team 3vs3", desc: "Cảm giác MOBA học tiếng Anh, thua mất điểm nhẹ hơn Solo.", shape: "3 người VS 3 người" },
-  { id: "TOURNAMENT", title: "Tournament", desc: "Bracket cuối tuần: 64 → 32 → 16 → Champion.", shape: "Knockout" },
+  { id: "SOLO_1V1", title: "Đấu đơn 1vs1", desc: "GhÃ©p theo MMR, tháº¯ng/thua tÃ­nh Elo rÃµ rÃ ng.", shape: "Báº¡n VS Äá»‘i thá»§" },
+  { id: "TEAM_2V2", title: "Đấu đội 2vs2", desc: "Äiá»ƒm Ä‘á»™i lÃ  tá»•ng Ä‘iá»ƒm, há»— trá»£ voice, emoji, ping.", shape: "A + B VS C + D" },
+  { id: "TEAM_3V3", title: "Đấu đội 3vs3", desc: "Cáº£m giÃ¡c MOBA há»c tiáº¿ng Anh, thua máº¥t Ä‘iá»ƒm nháº¹ hÆ¡n Solo.", shape: "3 ngÆ°á»i VS 3 ngÆ°á»i" },
+  { id: "TOURNAMENT", title: "Giải đấu", desc: "Nhánh đấu cuối tuần: 64 -> 32 -> 16 -> vô địch.", shape: "Loại trực tiếp" },
 ];
 
-const SKILLS = ["Vocabulary", "Grammar", "Listening", "Pronunciation", "Mixed"];
+const SKILLS = ["Từ vựng", "Ngữ pháp", "Luyện nghe", "Phát âm", "Tổng hợp"];
 const WIN_CONDITIONS = [
-  { id: "TIME", label: "Theo thời gian", hint: "3 phút, ai đúng nhiều hơn thắng" },
-  { id: "MAX_WRONG", label: "Sai tối đa", hint: "Sai 5 câu là thua" },
-  { id: "RACE", label: "Race", hint: "Ai đúng trước 30 câu thắng" },
-  { id: "BEST_OF", label: "Best of", hint: "Best of 3 / 5 / 7" },
+  { id: "TIME", label: "Theo thá»i gian", hint: "3 phÃºt, ai Ä‘Ãºng nhiá»u hÆ¡n tháº¯ng" },
+  { id: "MAX_WRONG", label: "Sai tá»‘i Ä‘a", hint: "Sai 5 cÃ¢u lÃ  thua" },
+  { id: "RACE", label: "Đua tốc độ", hint: "Ai Ä‘Ãºng trÆ°á»›c 30 cÃ¢u tháº¯ng" },
+  { id: "BEST_OF", label: "Đấu theo lượt", hint: "Thắng 2/3, 3/5 hoặc 4/7 lượt" },
 ];
-const DIFFICULTIES = ["A1", "A2", "B1", "B2", "C1", "Mixed"];
-const TOPICS = ["Animals", "Business", "Travel", "IELTS", "TOEIC", "Conversation", "Daily life"];
+const DIFFICULTIES = ["A1", "A2", "B1", "B2", "C1", "Tổng hợp"];
+const TOPICS = ["Động vật", "Công việc", "Du lịch", "IELTS", "TOEIC", "Hội thoại", "Đời sống hằng ngày"];
 
 const defaultForm = {
-  name: "Phòng Arena vui vẻ",
+  name: "PhÃ²ng Arena vui váº»",
   visibility: "PUBLIC",
   password: "",
   gameMode: "SOLO_1V1",
-  skill: "Vocabulary",
+  skill: "Từ vựng",
   winCondition: "TIME",
   durationSec: 180,
   maxWrong: 5,
@@ -124,13 +124,13 @@ export default function ArenaPage() {
     } catch (error: any) {
       console.error(error);
       // Silent background polls (every 3s) shouldn't blow away an already-loaded
-      // lobby on a transient blip — only surface the error state on the initial load.
+      // lobby on a transient blip â€” only surface the error state on the initial load.
       if (!silent) {
         setLoadFailed(true);
         setMessage(
           error?.response?.status === 401
-            ? "Bạn cần đăng nhập để vào Arena."
-            : "Không tải được Arena. Vui lòng thử lại.",
+            ? "Báº¡n cáº§n Ä‘Äƒng nháº­p Ä‘á»ƒ vÃ o Arena."
+            : "KhÃ´ng táº£i Ä‘Æ°á»£c Arena. Vui lÃ²ng thá»­ láº¡i.",
         );
       }
     } finally {
@@ -156,11 +156,11 @@ export default function ArenaPage() {
         targetCorrect: Number(form.targetCorrect),
         bestOf: Number(form.bestOf),
       });
-      setMessage("Đã tạo phòng Arena. Đang mở phòng chi tiết...");
+      setMessage("ÄÃ£ táº¡o phÃ²ng Arena. Äang má»Ÿ phÃ²ng chi tiáº¿t...");
       window.location.href = `/arena/rooms?roomId=${res.data.id}`;
     } catch (error: any) {
       console.error(error);
-      setMessage(error?.response?.data?.message || "Chưa tạo được phòng Arena.");
+      setMessage(error?.response?.data?.message || "ChÆ°a táº¡o Ä‘Æ°á»£c phÃ²ng Arena.");
     } finally {
       setCreating(false);
     }
@@ -170,7 +170,7 @@ export default function ArenaPage() {
   const enterQueue = async () => {
     try {
       setQueueing(true);
-      setMessage("Đang tìm đối thủ theo MMR...");
+      setMessage("Äang tÃ¬m Ä‘á»‘i thá»§ theo MMR...");
       const res = await api.post("/arena/queue", {
         gameMode: form.gameMode === "TOURNAMENT" ? "SOLO_1V1" : form.gameMode,
         skill: form.skill,
@@ -179,15 +179,15 @@ export default function ArenaPage() {
       });
 
       if (res.data.matched && res.data.room?.id) {
-        setMessage("Đã tìm thấy trận. Đang mở phòng...");
+        setMessage("ÄÃ£ tÃ¬m tháº¥y tráº­n. Äang má»Ÿ phÃ²ng...");
         window.location.href = `/arena/rooms?roomId=${res.data.room.id}`;
         return;
       }
 
-      setMessage("Đã vào hàng chờ. Hệ thống sẽ mở rộng khoảng MMR sau 10s và 20s.");
+      setMessage("ÄÃ£ vÃ o hÃ ng chá». Há»‡ thá»‘ng sáº½ má»Ÿ rá»™ng khoáº£ng MMR sau 10s vÃ  20s.");
     } catch (error: any) {
       console.error(error);
-      setMessage(error?.response?.data?.message || "Chưa vào được hàng chờ.");
+      setMessage(error?.response?.data?.message || "ChÆ°a vÃ o Ä‘Æ°á»£c hÃ ng chá».");
     } finally {
       setQueueing(false);
     }
@@ -195,7 +195,7 @@ export default function ArenaPage() {
 
   const leaveQueue = async () => {
     await api.post("/arena/queue/leave");
-    setMessage("Đã rời hàng chờ Arena.");
+    setMessage("ÄÃ£ rá»i hÃ ng chá» Arena.");
   };
   const joinRoom = async (room: ArenaRoom, password = "") => {
     if (room.visibility === "PRIVATE" && !password) {
@@ -206,13 +206,13 @@ export default function ArenaPage() {
 
     try {
       await api.post(`/arena/rooms/${room.id}/join`, { password });
-      setMessage("Đã tham gia phòng. Realtime trận đấu sẽ được nối ở phase tiếp theo.");
+      setMessage("ÄÃ£ tham gia phÃ²ng. Realtime tráº­n Ä‘áº¥u sáº½ Ä‘Æ°á»£c ná»‘i á»Ÿ phase tiáº¿p theo.");
       setPasswordRoom(null);
       setRoomPassword("");
       window.location.href = `/arena/rooms?roomId=${room.id}`;
     } catch (error: any) {
       console.error(error);
-      setMessage(error?.response?.data?.message || "Chưa vào được phòng.");
+      setMessage(error?.response?.data?.message || "ChÆ°a vÃ o Ä‘Æ°á»£c phÃ²ng.");
     }
   };
 
@@ -220,11 +220,11 @@ export default function ArenaPage() {
     <main className="min-h-screen bg-[var(--background)] px-4 py-8">
       <section className="mx-auto max-w-7xl space-y-6">
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-          <div className="lumiverse-gradient rounded-[34px] p-7 text-white shadow-xl">
-            <p className="text-sm font-extrabold uppercase tracking-wide text-white/80">Lumiverse Arena</p>
-            <h1 className="mt-3 text-4xl font-black leading-tight">Đấu trường học tiếng Anh & nuôi linh thú</h1>
+          <div className="BeaconVie-gradient rounded-[34px] p-7 text-white shadow-xl">
+            <p className="text-sm font-extrabold uppercase tracking-wide text-white/80">BeaconVie Arena</p>
+            <h1 className="mt-3 text-4xl font-black leading-tight">Äáº¥u trÆ°á»ng há»c tiáº¿ng Anh & nuÃ´i linh thÃº</h1>
             <p className="mt-4 max-w-3xl text-lg font-bold leading-8 text-white/75">
-              Học bài để nhận năng lượng Arena, đấu PvP để nhận Arena Point, Food, Gold, Trophy, rồi dùng phần thưởng nuôi linh thú tiến hóa.
+              Há»c bÃ i Ä‘á»ƒ nháº­n nÄƒng lÆ°á»£ng Arena, Ä‘áº¥u PvP Ä‘á»ƒ nháº­n Arena Point, Food, Gold, Trophy, rá»“i dÃ¹ng pháº§n thÆ°á»Ÿng nuÃ´i linh thÃº tiáº¿n hÃ³a.
             </p>
 
             <div className="mt-7 grid gap-3 md:grid-cols-4">
@@ -235,7 +235,7 @@ export default function ArenaPage() {
                   onClick={() => setForm({ ...form, gameMode: mode.id })}
                   className={`rounded-[24px] border p-4 text-left transition ${
                     form.gameMode === mode.id
-                      ? "border-[var(--lumiverse-violet)] bg-white text-[var(--lumiverse-ink)]"
+                      ? "border-[var(--BeaconVie-violet)] bg-white text-[var(--BeaconVie-ink)]"
                       : "border-white/15 bg-white/10 text-white hover:bg-white/15"
                   }`}
                 >
@@ -250,15 +250,15 @@ export default function ArenaPage() {
         </div>
 
         {message && (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[var(--lumiverse-card)] px-5 py-4 font-extrabold text-[var(--lumiverse-primary)] shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[var(--BeaconVie-card)] px-5 py-4 font-extrabold text-[var(--BeaconVie-primary)] shadow-sm">
             <span>{message}</span>
             {loadFailed && (
               <button
                 type="button"
                 onClick={() => fetchLobby()}
-                className="rounded-xl bg-[var(--lumiverse-primary)] px-4 py-2 text-sm font-black text-white"
+                className="rounded-xl bg-[var(--BeaconVie-primary)] px-4 py-2 text-sm font-black text-white"
               >
-                Thử lại
+                Thá»­ láº¡i
               </button>
             )}
           </div>
@@ -267,25 +267,25 @@ export default function ArenaPage() {
         {profile?.isInPlacement &&
           (profile.placementMatchesCompleted ?? 0) === 0 &&
           !placementIntroDismissed && (
-            <div className="rounded-[26px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-6 shadow-sm">
-              <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">
-                Trận xếp hạng đầu tiên
+            <div className="rounded-[26px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-6 shadow-sm">
+              <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--BeaconVie-primary)]">
+                Tráº­n xáº¿p háº¡ng Ä‘áº§u tiÃªn
               </p>
-              <h2 className="mt-2 text-2xl font-black text-[var(--lumiverse-ink)]">
-                Chơi {profile.placementMatchesTotal ?? 5} trận xếp hạng để xác định hạng khởi điểm
+              <h2 className="mt-2 text-2xl font-black text-[var(--BeaconVie-ink)]">
+                ChÆ¡i {profile.placementMatchesTotal ?? 5} tráº­n xáº¿p háº¡ng Ä‘á»ƒ xÃ¡c Ä‘á»‹nh háº¡ng khá»Ÿi Ä‘iá»ƒm
               </h2>
-              <p className="mt-3 font-bold leading-7 text-[var(--lumiverse-muted)]">
-                Kết quả {profile.placementMatchesTotal ?? 5} trận đầu tiên (thắng lẫn thua) sẽ quyết định hạng Arena
-                khởi điểm của bạn. Trong lúc xếp hạng, việc mất kết nối/kết nối lại vẫn diễn ra bình thường và
-                phần thưởng (XP, Vàng, Arena Point) vẫn được cộng như các trận khác. Đối thủ của bạn có thể là người
-                đang xếp hạng hoặc người chơi đã có hạng — không có gì đảm bảo bạn chỉ gặp người đang xếp hạng.
+              <p className="mt-3 font-bold leading-7 text-[var(--BeaconVie-muted)]">
+                Káº¿t quáº£ {profile.placementMatchesTotal ?? 5} tráº­n Ä‘áº§u tiÃªn (tháº¯ng láº«n thua) sáº½ quyáº¿t Ä‘á»‹nh háº¡ng Arena
+                khá»Ÿi Ä‘iá»ƒm cá»§a báº¡n. Trong lÃºc xáº¿p háº¡ng, viá»‡c máº¥t káº¿t ná»‘i/káº¿t ná»‘i láº¡i váº«n diá»…n ra bÃ¬nh thÆ°á»ng vÃ 
+                pháº§n thÆ°á»Ÿng (XP, VÃ ng, Arena Point) váº«n Ä‘Æ°á»£c cá»™ng nhÆ° cÃ¡c tráº­n khÃ¡c. Äá»‘i thá»§ cá»§a báº¡n cÃ³ thá»ƒ lÃ  ngÆ°á»i
+                Ä‘ang xáº¿p háº¡ng hoáº·c ngÆ°á»i chÆ¡i Ä‘Ã£ cÃ³ háº¡ng â€” khÃ´ng cÃ³ gÃ¬ Ä‘áº£m báº£o báº¡n chá»‰ gáº·p ngÆ°á»i Ä‘ang xáº¿p háº¡ng.
               </p>
               <button
                 type="button"
                 onClick={() => setPlacementIntroDismissed(true)}
-                className="mt-4 rounded-2xl bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] px-6 py-3 font-black text-white"
+                className="mt-4 rounded-2xl bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] px-6 py-3 font-black text-white"
               >
-                Đã hiểu
+                ÄÃ£ hiá»ƒu
               </button>
             </div>
           )}
@@ -294,10 +294,10 @@ export default function ArenaPage() {
           <div className="rounded-[26px] border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-extrabold uppercase tracking-wide text-emerald-700">Bạn đang ở trong phòng</p>
-                <h2 className="mt-1 text-2xl font-black text-[var(--lumiverse-ink)]">{myActiveRoom?.name}</h2>
-                <p className="mt-1 text-sm font-bold text-[var(--lumiverse-muted)]">
-                  {myActiveRoom.participants.length}/{myActiveRoom.maxPlayers} người · {myActiveRoom.status || "WAITING"}
+                <p className="text-sm font-extrabold uppercase tracking-wide text-emerald-700">Báº¡n Ä‘ang á»Ÿ trong phÃ²ng</p>
+                <h2 className="mt-1 text-2xl font-black text-[var(--BeaconVie-ink)]">{myActiveRoom?.name}</h2>
+                <p className="mt-1 text-sm font-bold text-[var(--BeaconVie-muted)]">
+                  {myActiveRoom.participants.length}/{myActiveRoom.maxPlayers} ngÆ°á»i Â· {myActiveRoom.status || "WAITING"}
                 </p>
               </div>
               <button
@@ -305,22 +305,22 @@ export default function ArenaPage() {
                 onClick={() => myActiveRoom && (window.location.href = `/arena/rooms?roomId=${myActiveRoom.id}`)}
                 className="rounded-2xl bg-emerald-600 px-5 py-3 font-black text-white"
               >
-                Quay lại phòng
+                Quay láº¡i phÃ²ng
               </button>
             </div>
           </div>
         )}
 
         <div className="grid gap-6 xl:grid-cols-[440px_1fr]">
-          <section className="rounded-[30px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
+          <section className="rounded-[30px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
             <div className="mb-5">
-              <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Tạo phòng</p>
-              <h2 className="mt-1 text-2xl font-black text-[var(--lumiverse-ink)]">{selectedMode.title}</h2>
-              <p className="mt-2 text-sm font-bold leading-6 text-[var(--lumiverse-muted)]">{selectedMode.desc}</p>
+              <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--BeaconVie-primary)]">Táº¡o phÃ²ng</p>
+              <h2 className="mt-1 text-2xl font-black text-[var(--BeaconVie-ink)]">{selectedMode.title}</h2>
+              <p className="mt-2 text-sm font-bold leading-6 text-[var(--BeaconVie-muted)]">{selectedMode.desc}</p>
             </div>
 
             <div className="space-y-4">
-              <Field label="Tên phòng">
+              <Field label="TÃªn phÃ²ng">
                 <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="arena-input" />
               </Field>
 
@@ -337,19 +337,19 @@ export default function ArenaPage() {
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <Field label="Kỹ năng">
+                <Field label="Ká»¹ nÄƒng">
                   <Select value={form.skill} values={SKILLS} onChange={(value) => setForm({ ...form, skill: value })} />
                 </Field>
-                <Field label="Độ khó">
+                <Field label="Äá»™ khÃ³">
                   <Select value={form.difficulty} values={DIFFICULTIES} onChange={(value) => setForm({ ...form, difficulty: value })} />
                 </Field>
               </div>
 
-              <Field label="Bộ câu hỏi">
+              <Field label="Bá»™ cÃ¢u há»i">
                 <Select value={form.topic} values={TOPICS} onChange={(value) => setForm({ ...form, topic: value })} />
               </Field>
 
-              <Field label="Điều kiện thắng">
+              <Field label="Äiá»u kiá»‡n tháº¯ng">
                 <div className="grid gap-2">
                   {WIN_CONDITIONS.map((condition) => (
                     <button
@@ -358,21 +358,21 @@ export default function ArenaPage() {
                       onClick={() => setForm({ ...form, winCondition: condition.id })}
                       className={`rounded-2xl border px-4 py-3 text-left ${
                         form.winCondition === condition.id
-                          ? "border-[var(--lumiverse-primary)] bg-[var(--lumiverse-primary-soft)]"
-                          : "border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)]"
+                          ? "border-[var(--BeaconVie-primary)] bg-[var(--BeaconVie-primary-soft)]"
+                          : "border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)]"
                       }`}
                     >
-                      <div className="font-black text-[var(--lumiverse-ink)]">{condition.label}</div>
-                      <div className="text-xs font-bold text-[var(--lumiverse-muted)]">{condition.hint}</div>
+                      <div className="font-black text-[var(--BeaconVie-ink)]">{condition.label}</div>
+                      <div className="text-xs font-bold text-[var(--BeaconVie-muted)]">{condition.hint}</div>
                     </button>
                   ))}
                 </div>
               </Field>
 
               <div className="grid gap-3 sm:grid-cols-3">
-                <NumberField label="Giây" value={form.durationSec} onChange={(value) => setForm({ ...form, durationSec: value })} />
-                <NumberField label="Sai tối đa" value={form.maxWrong} onChange={(value) => setForm({ ...form, maxWrong: value })} />
-                <NumberField label="Race câu" value={form.targetCorrect} onChange={(value) => setForm({ ...form, targetCorrect: value })} />
+                <NumberField label="GiÃ¢y" value={form.durationSec} onChange={(value) => setForm({ ...form, durationSec: value })} />
+                <NumberField label="Sai tá»‘i Ä‘a" value={form.maxWrong} onChange={(value) => setForm({ ...form, maxWrong: value })} />
+                <NumberField label="Race cÃ¢u" value={form.targetCorrect} onChange={(value) => setForm({ ...form, targetCorrect: value })} />
               </div>
 
               <div className="grid gap-3 sm:grid-cols-3">
@@ -390,29 +390,29 @@ export default function ArenaPage() {
                   createRoom();
                 }}
                 disabled={creating}
-                className="w-full rounded-2xl bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] px-6 py-4 font-black text-white shadow-lg shadow-blue-200 disabled:opacity-60"
+                className="w-full rounded-2xl bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] px-6 py-4 font-black text-white shadow-lg shadow-blue-200 disabled:opacity-60"
               >
-                {myActiveRoom ? "Quay lại phòng đang có" : creating ? "Đang tạo..." : "Tạo phòng Arena"}
+                {myActiveRoom ? "Quay láº¡i phÃ²ng Ä‘ang cÃ³" : creating ? "Äang táº¡o..." : "Táº¡o phÃ²ng Arena"}
               </button>
             </div>
           </section>
 
           <section className="space-y-6">
-            <div className="rounded-[30px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
+            <div className="rounded-[30px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
               <div className="mb-5 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Lobby</p>
-                  <h2 className="text-2xl font-black text-[var(--lumiverse-ink)]">Phòng đang chờ</h2>
+                  <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--BeaconVie-primary)]">Lobby</p>
+                  <h2 className="text-2xl font-black text-[var(--BeaconVie-ink)]">PhÃ²ng Ä‘ang chá»</h2>
                 </div>
-                <button type="button" onClick={() => fetchLobby()} className="rounded-full bg-[var(--lumiverse-primary-soft)] px-4 py-2 text-sm font-black text-[var(--lumiverse-primary)]">Làm mới</button>
+                <button type="button" onClick={() => fetchLobby()} className="rounded-full bg-[var(--BeaconVie-primary-soft)] px-4 py-2 text-sm font-black text-[var(--BeaconVie-primary)]">LÃ m má»›i</button>
               </div>
 
               <div className="grid gap-4 lg:grid-cols-2">
                 {rooms.length ? rooms.map((room) => (
                   <RoomCard key={room.id} room={room} onJoin={() => joinRoom(room)} />
                 )) : (
-                  <div className="rounded-2xl border border-dashed border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-8 text-center font-bold text-[var(--lumiverse-muted)] lg:col-span-2">
-                    Chưa có phòng nào. Tạo phòng đầu tiên để mở đấu trường nhé.
+                  <div className="rounded-2xl border border-dashed border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-8 text-center font-bold text-[var(--BeaconVie-muted)] lg:col-span-2">
+                    ChÆ°a cÃ³ phÃ²ng nÃ o. Táº¡o phÃ²ng Ä‘áº§u tiÃªn Ä‘á»ƒ má»Ÿ Ä‘áº¥u trÆ°á»ng nhÃ©.
                   </div>
                 )}
               </div>
@@ -428,28 +428,28 @@ export default function ArenaPage() {
           min-height: 48px;
           width: 100%;
           border-radius: 16px;
-          border: 1px solid var(--lumiverse-border);
-          background: var(--lumiverse-card);
+          border: 1px solid var(--BeaconVie-border);
+          background: var(--BeaconVie-card);
           padding: 0 14px;
           font-weight: 800;
-          color: var(--lumiverse-ink);
+          color: var(--BeaconVie-ink);
           outline: none;
         }
-        .arena-input:focus { border-color: var(--lumiverse-primary); }
+        .arena-input:focus { border-color: var(--BeaconVie-primary); }
       `}</style>
 
       {passwordRoom && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--lumiverse-overlay)] px-4">
-          <div className="w-full max-w-md rounded-[28px] bg-[var(--lumiverse-card)] p-6 shadow-2xl">
-            <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Phòng private</p>
-            <h2 className="mt-2 text-2xl font-black text-[var(--lumiverse-ink)]">{passwordRoom.name}</h2>
-            <p className="mt-2 text-sm font-bold text-[var(--lumiverse-muted)]">Nhập mật khẩu để tham gia phòng này.</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--BeaconVie-overlay)] px-4">
+          <div className="w-full max-w-md rounded-[28px] bg-[var(--BeaconVie-card)] p-6 shadow-2xl">
+            <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--BeaconVie-primary)]">PhÃ²ng private</p>
+            <h2 className="mt-2 text-2xl font-black text-[var(--BeaconVie-ink)]">{passwordRoom.name}</h2>
+            <p className="mt-2 text-sm font-bold text-[var(--BeaconVie-muted)]">Nháº­p máº­t kháº©u Ä‘á»ƒ tham gia phÃ²ng nÃ y.</p>
             <input
               value={roomPassword}
               onChange={(event) => setRoomPassword(event.target.value)}
               type="password"
               autoFocus
-              placeholder="Mật khẩu phòng"
+              placeholder="Máº­t kháº©u phÃ²ng"
               className="arena-input mt-5"
               onKeyDown={(event) => {
                 if (event.key === "Enter" && roomPassword.trim()) {
@@ -464,17 +464,17 @@ export default function ArenaPage() {
                   setPasswordRoom(null);
                   setRoomPassword("");
                 }}
-                className="rounded-2xl bg-[var(--lumiverse-primary-soft)] px-5 py-3 font-black text-[var(--lumiverse-primary)]"
+                className="rounded-2xl bg-[var(--BeaconVie-primary-soft)] px-5 py-3 font-black text-[var(--BeaconVie-primary)]"
               >
-                Hủy
+                Há»§y
               </button>
               <button
                 type="button"
                 onClick={() => roomPassword.trim() && joinRoom(passwordRoom, roomPassword.trim())}
-                className="rounded-2xl bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] px-5 py-3 font-black text-white disabled:opacity-50"
+                className="rounded-2xl bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] px-5 py-3 font-black text-white disabled:opacity-50"
                 disabled={!roomPassword.trim()}
               >
-                Vào phòng
+                VÃ o phÃ²ng
               </button>
             </div>
           </div>
@@ -494,21 +494,21 @@ function ProfileCard({
   loading: boolean;
 }) {
   return (
-    <div className="rounded-[34px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
-      <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Hồ sơ Arena</p>
+    <div className="rounded-[34px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
+      <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--BeaconVie-primary)]">Há»“ sÆ¡ Arena</p>
       {loading ? (
-        <div className="mt-5 font-bold text-[var(--lumiverse-muted)]">Đang tải...</div>
+        <div className="mt-5 font-bold text-[var(--BeaconVie-muted)]">Äang táº£i...</div>
       ) : profile?.isInPlacement ? (
         <>
           {/* Phase F2.1: while isInPlacement, show placement progress instead
-              of a finalized tier/rank badge — the current mmr number is
+              of a finalized tier/rank badge â€” the current mmr number is
               still shown (never hidden from its own owner), but framed as
               provisional, not a permanent rank. */}
-          <div className="mt-4 text-3xl font-black text-[var(--lumiverse-primary)]">
-            Xếp hạng {profile.placementMatchesCompleted ?? 0}/{profile.placementMatchesTotal ?? 5}
+          <div className="mt-4 text-3xl font-black text-[var(--BeaconVie-primary)]">
+            Xáº¿p háº¡ng {profile.placementMatchesCompleted ?? 0}/{profile.placementMatchesTotal ?? 5}
           </div>
-          <p className="mt-1 font-bold text-[var(--lumiverse-muted)]">
-            MMR tạm thời {profile?.mmr || 1500} · Chưa xác định hạng chính thức
+          <p className="mt-1 font-bold text-[var(--BeaconVie-muted)]">
+            MMR táº¡m thá»i {profile?.mmr || 1500} Â· ChÆ°a xÃ¡c Ä‘á»‹nh háº¡ng chÃ­nh thá»©c
           </p>
           <div className="mt-5 grid grid-cols-2 gap-3">
             <Stat label="Arena" value={profile?.arenaPoint || 1500} />
@@ -516,14 +516,14 @@ function ProfileCard({
             <Stat label="Gold" value={profile?.gold || 0} />
             <Stat label="Streak" value={profile?.winStreak || 0} />
           </div>
-          <p className="mt-4 text-xs font-black uppercase tracking-wide text-[var(--lumiverse-muted)]">
-            {profile.ratingLifecycleStage || "PLACEMENT"} · Peak {profile.peakMmr || profile.mmr || 1500}
+          <p className="mt-4 text-xs font-black uppercase tracking-wide text-[var(--BeaconVie-muted)]">
+            {profile.ratingLifecycleStage || "PLACEMENT"} Â· Peak {profile.peakMmr || profile.mmr || 1500}
           </p>
         </>
       ) : (
         <>
-          <div className="mt-4 text-5xl font-black text-[var(--lumiverse-ink)]">{profile?.mmr || 1500}</div>
-          <p className="mt-1 font-bold text-[var(--lumiverse-muted)]">MMR hiện tại · Win rate {profile?.winRate || 0}%</p>
+          <div className="mt-4 text-5xl font-black text-[var(--BeaconVie-ink)]">{profile?.mmr || 1500}</div>
+          <p className="mt-1 font-bold text-[var(--BeaconVie-muted)]">MMR hiá»‡n táº¡i Â· Win rate {profile?.winRate || 0}%</p>
           <div className="mt-5 grid grid-cols-2 gap-3">
             <Stat label="Arena" value={profile?.arenaPoint || 1500} />
             <Stat label="Food" value={profile?.arenaFood || 0} />
@@ -534,13 +534,13 @@ function ProfileCard({
             <Stat label="Peak" value={profile?.peakMmr || profile?.mmr || 1500} />
             <Stat label="Rated" value={profile?.ratedMatchCount || 0} />
           </div>
-          <p className="mt-4 text-xs font-black uppercase tracking-wide text-[var(--lumiverse-muted)]">
-            {profile?.tier || "BRONZE"} · {profile?.ratingLifecycleStage || "PROVISIONAL"}
-            {profile?.decayEligible ? " · Decay eligible" : profile?.decayDaysRemaining ? ` · Decay in ${profile.decayDaysRemaining}d` : ""}
+          <p className="mt-4 text-xs font-black uppercase tracking-wide text-[var(--BeaconVie-muted)]">
+            {profile?.tier || "BRONZE"} Â· {profile?.ratingLifecycleStage || "PROVISIONAL"}
+            {profile?.decayEligible ? " Â· Decay eligible" : profile?.decayDaysRemaining ? ` Â· Decay in ${profile.decayDaysRemaining}d` : ""}
           </p>
           {seasonSummary?.season && (
-            <p className="mt-2 text-sm font-bold text-[var(--lumiverse-muted)]">
-              {seasonSummary.season.name || "Arena Season"} · Season peak {seasonSummary.seasonPeakMmr || profile?.mmr || 1500}
+            <p className="mt-2 text-sm font-bold text-[var(--BeaconVie-muted)]">
+              {seasonSummary.season.name || "Arena Season"} Â· Season peak {seasonSummary.seasonPeakMmr || profile?.mmr || 1500}
             </p>
           )}
         </>
@@ -551,37 +551,37 @@ function ProfileCard({
 
 function RoomCard({ room, onJoin }: { room: ArenaRoom; onJoin: () => void }) {
   return (
-    <div className="rounded-[24px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-5">
+    <div className="rounded-[24px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-lg font-black text-[var(--lumiverse-ink)]">{room.name}</h3>
-          <p className="mt-1 text-sm font-bold text-[var(--lumiverse-muted)]">Host: {room.host?.fullname || "Người chơi"}</p>
+          <h3 className="text-lg font-black text-[var(--BeaconVie-ink)]">{room.name}</h3>
+          <p className="mt-1 text-sm font-bold text-[var(--BeaconVie-muted)]">Host: {room.host?.fullname || "NgÆ°á»i chÆ¡i"}</p>
         </div>
-        <span className="rounded-full bg-[var(--lumiverse-primary-soft)] px-3 py-1 text-xs font-black text-[var(--lumiverse-primary)]">{room.visibility}</span>
+        <span className="rounded-full bg-[var(--BeaconVie-primary-soft)] px-3 py-1 text-xs font-black text-[var(--BeaconVie-primary)]">{room.visibility}</span>
       </div>
-      <div className="mt-4 flex flex-wrap gap-2 text-xs font-black text-[var(--lumiverse-muted)]">
+      <div className="mt-4 flex flex-wrap gap-2 text-xs font-black text-[var(--BeaconVie-muted)]">
         <Tag>{room.gameMode}</Tag><Tag>{room.skill}</Tag><Tag>{room.difficulty}</Tag><Tag>{room.topic}</Tag>
       </div>
       <div className="mt-4 flex items-center justify-between">
-        <p className="font-extrabold text-[var(--lumiverse-ink)]">{room.participants.length}/{room.maxPlayers} người</p>
-        <button type="button" onClick={onJoin} className="rounded-full bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] px-5 py-2 text-sm font-black text-white">Vào phòng</button>
+        <p className="font-extrabold text-[var(--BeaconVie-ink)]">{room.participants.length}/{room.maxPlayers} ngÆ°á»i</p>
+        <button type="button" onClick={onJoin} className="rounded-full bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] px-5 py-2 text-sm font-black text-white">VÃ o phÃ²ng</button>
       </div>
-      <div className="mt-3 text-xs font-bold text-[var(--lumiverse-muted)]">
-        {room.voiceChat ? "Voice" : "No voice"} · {room.emojiEnabled ? "Emoji" : "No emoji"} · {room.pingEnabled ? "Ping" : "No ping"}
+      <div className="mt-3 text-xs font-bold text-[var(--BeaconVie-muted)]">
+        {room.voiceChat ? "Voice" : "No voice"} Â· {room.emojiEnabled ? "Emoji" : "No emoji"} Â· {room.pingEnabled ? "Ping" : "No ping"}
       </div>
     </div>
   );
 }
 
 function RewardLoop() {
-  const items = ["Học bài", "Nhận năng lượng Arena", "Đấu PvP", "Nhận Point + Food + Gold", "Nuôi linh thú", "Mở skin / hiệu ứng"];
+  const items = ["Há»c bÃ i", "Nháº­n nÄƒng lÆ°á»£ng Arena", "Äáº¥u PvP", "Nháº­n Point + Food + Gold", "NuÃ´i linh thÃº", "Má»Ÿ skin / hiá»‡u á»©ng"];
   return (
-    <div className="rounded-[30px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
-      <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Vòng lặp giữ chân</p>
+    <div className="rounded-[30px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
+      <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--BeaconVie-primary)]">VÃ²ng láº·p giá»¯ chÃ¢n</p>
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         {items.map((item, index) => (
-          <div key={item} className="rounded-2xl bg-[var(--lumiverse-card)] p-4 font-black text-[var(--lumiverse-ink)]">
-            <span className="mr-2 text-[var(--lumiverse-primary)]">{index + 1}.</span>{item}
+          <div key={item} className="rounded-2xl bg-[var(--BeaconVie-card)] p-4 font-black text-[var(--BeaconVie-ink)]">
+            <span className="mr-2 text-[var(--BeaconVie-primary)]">{index + 1}.</span>{item}
           </div>
         ))}
       </div>
@@ -590,7 +590,7 @@ function RewardLoop() {
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <label className="block"><span className="mb-2 block text-xs font-black uppercase tracking-wide text-[var(--lumiverse-muted)]">{label}</span>{children}</label>;
+  return <label className="block"><span className="mb-2 block text-xs font-black uppercase tracking-wide text-[var(--BeaconVie-muted)]">{label}</span>{children}</label>;
 }
 
 function Select({ value, values, onChange }: { value: string; values: string[]; onChange: (value: string) => void }) {
@@ -602,13 +602,13 @@ function NumberField({ label, value, onChange }: { label: string; value: number;
 }
 
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
-  return <button type="button" onClick={() => onChange(!checked)} className={`rounded-2xl border px-4 py-3 text-sm font-black ${checked ? "border-[var(--lumiverse-primary)] bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]" : "border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] text-[var(--lumiverse-muted)]"}`}>{label}: {checked ? "On" : "Off"}</button>;
+  return <button type="button" onClick={() => onChange(!checked)} className={`rounded-2xl border px-4 py-3 text-sm font-black ${checked ? "border-[var(--BeaconVie-primary)] bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]" : "border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] text-[var(--BeaconVie-muted)]"}`}>{label}: {checked ? "On" : "Off"}</button>;
 }
 
 function Stat({ label, value }: { label: string; value: number }) {
-  return <div className="rounded-2xl bg-[var(--lumiverse-card)] p-4"><div className="text-2xl font-black text-[var(--lumiverse-primary)]">{value}</div><div className="text-xs font-black text-[var(--lumiverse-muted)]">{label}</div></div>;
+  return <div className="rounded-2xl bg-[var(--BeaconVie-card)] p-4"><div className="text-2xl font-black text-[var(--BeaconVie-primary)]">{value}</div><div className="text-xs font-black text-[var(--BeaconVie-muted)]">{label}</div></div>;
 }
 
 function Tag({ children }: { children: React.ReactNode }) {
-  return <span className="rounded-full bg-[var(--lumiverse-primary-soft)] px-3 py-1">{children}</span>;
+  return <span className="rounded-full bg-[var(--BeaconVie-primary-soft)] px-3 py-1">{children}</span>;
 }

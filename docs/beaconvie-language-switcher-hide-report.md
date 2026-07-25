@@ -1,4 +1,4 @@
-# Lumiverse Language Switcher Hide Report
+﻿# BeaconVie Language Switcher Hide Report
 
 ## Files modified
 
@@ -41,7 +41,7 @@ To restore the UI later, change `languageSwitcher` to `true`.
 ## Components still kept
 
 - Locale store: `src/store/languageStore.ts`
-- Locale cookie: `lumiverse-locale`
+- Locale cookie: `beaconvie-locale`
 - Translation files: `src/i18n/locales/*.ts`
 - Translation hook: `src/hooks/useTranslation.ts`
 - Locale formatter: `src/lib/locale-format.ts`

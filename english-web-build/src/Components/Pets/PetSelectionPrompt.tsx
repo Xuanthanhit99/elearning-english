@@ -11,7 +11,7 @@ type PetSelectionPromptProps = {
 
 export default function PetSelectionPrompt({
   open,
-  fullname = "bạn",
+  fullname = "b?n",
   daysLeft = 7,
   onClose,
 }: PetSelectionPromptProps) {
@@ -24,7 +24,7 @@ export default function PetSelectionPrompt({
           type="button"
           onClick={onClose}
           className="sticky right-5 top-5 z-20 ml-auto flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-xl font-black text-[#1f2a44] shadow-sm hover:bg-white"
-          aria-label="Đóng thông báo chọn thú cưng"
+          aria-label="Ðóng thông báo ch?n thú cung"
         >
           ×
         </button>
@@ -32,26 +32,26 @@ export default function PetSelectionPrompt({
         <div className="-mt-10 bg-gradient-to-br from-[#fff0dc] via-white to-[#eef6ff] p-7 sm:p-9">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
             <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-[30px] bg-white text-6xl shadow-xl ring-4 ring-[#ff6b00]/20">
-              🐾
+              ??
             </div>
 
             <div>
               <p className="text-sm font-extrabold uppercase tracking-wide text-[#ff6b00]">
-                Chọn bạn đồng hành đầu tiên
+                Ch?n b?n d?ng hành d?u tiên
               </p>
               <h2 className="mt-2 text-3xl font-black leading-tight text-[#1f2a44]">
-                Chào {fullname}, bạn chưa chọn thú cưng học tập
+                Chào {fullname}, b?n chua ch?n thú cung h?c t?p
               </h2>
               <p className="mt-3 font-bold leading-7 text-[#5b6b85]">
-                Bạn chỉ được chọn một loại thú cưng. Nếu sau {daysLeft} ngày bạn chưa chọn, Lumiverse sẽ chọn ngẫu nhiên và khóa thú cưng đó cho tài khoản của bạn.
+                B?n ch? du?c ch?n m?t lo?i thú cung. N?u sau {daysLeft} ngày b?n chua ch?n, BeaconVie s? ch?n ng?u nhiên và khóa thú cung dó cho tài kho?n c?a b?n.
               </p>
             </div>
           </div>
 
           <div className="mt-7 grid gap-3 rounded-[24px] border border-[#ead8c2] bg-white/75 p-4 sm:grid-cols-3">
-            <MiniStep icon="🐱" title="Chọn thú" text="Mèo, chó, gấu trúc..." />
-            <MiniStep icon="✏️" title="Đặt tên" text="Tạo kết nối riêng" />
-            <MiniStep icon="🔥" title="Học & chăm" text="Nhận XP, coin, food" />
+            <MiniStep icon="??" title="Ch?n thú" text="Mèo, chó, g?u trúc..." />
+            <MiniStep icon="??" title="Ð?t tên" text="T?o k?t n?i riêng" />
+            <MiniStep icon="??" title="H?c & cham" text="Nh?n XP, coin, food" />
           </div>
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -60,7 +60,7 @@ export default function PetSelectionPrompt({
               onClick={onClose}
               className="inline-flex items-center justify-center rounded-2xl bg-[#ff6b00] px-7 py-4 font-extrabold text-white shadow-lg shadow-orange-200 transition hover:scale-[1.02]"
             >
-              Chọn thú cưng ngay
+              Ch?n thú cung ngay
             </Link>
 
             <button
@@ -68,11 +68,11 @@ export default function PetSelectionPrompt({
               onClick={onClose}
               className="rounded-2xl bg-[#fff0dc] px-7 py-4 font-extrabold text-[#92400e]"
             >
-              Để sau
+              Ð? sau
             </button>
 
             <span className="text-sm font-bold text-[#5b6b85] sm:ml-auto">
-              Còn {daysLeft} ngày để tự chọn
+              Còn {daysLeft} ngày d? t? ch?n
             </span>
           </div>
         </div>

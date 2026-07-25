@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /* eslint-disable @next/next/no-img-element */
 
@@ -197,7 +197,7 @@ export default function AppHeader({
     <header
       data-testid="app-header"
       className={[
-        "fixed right-0 top-0 z-30 h-[76px] border-b border-[var(--lumiverse-border)] bg-[var(--lumiverse-shell-surface)] shadow-[0_10px_34px_rgba(24,50,118,0.08)] backdrop-blur-2xl transition-[left] duration-300",
+        "fixed right-0 top-0 z-30 h-[76px] border-b border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-shell-surface)] shadow-[0_10px_34px_rgba(24,50,118,0.08)] backdrop-blur-2xl transition-[left] duration-300",
         sidebarCollapsed ? "lg:left-[96px]" : "lg:left-[280px]",
         "left-0",
       ].join(" ")}
@@ -207,7 +207,7 @@ export default function AppHeader({
           type="button"
           aria-label={t("header.openMenu")}
           onClick={onOpenMobileMenu}
-          className="lumiverse-button-soft h-11 w-11 shrink-0 p-0 lg:hidden"
+          className="BeaconVie-button-soft h-11 w-11 shrink-0 p-0 lg:hidden"
         >
           <Menu size={20} />
         </button>
@@ -215,16 +215,16 @@ export default function AppHeader({
         <Link
           href="/search"
           aria-label={t("header.searchPlaceholder")}
-          className="lumiverse-button-soft h-11 w-11 shrink-0 p-0 md:hidden"
+          className="BeaconVie-button-soft h-11 w-11 shrink-0 p-0 md:hidden"
         >
           <Search size={18} />
         </Link>
 
         <div className="hidden min-w-[190px] lg:block">
-          <p className="truncate text-sm font-black text-[var(--lumiverse-ink)]">
+          <p className="truncate text-sm font-black text-[var(--BeaconVie-ink)]">
             {t("header.greeting", { name: fullname.split(" ").slice(-1)[0] })}
           </p>
-          <p className="truncate text-xs font-bold text-[var(--lumiverse-muted)]">
+          <p className="truncate text-xs font-bold text-[var(--BeaconVie-muted)]">
             {t("header.readyToday")}
           </p>
         </div>
@@ -236,7 +236,7 @@ export default function AppHeader({
         >
           <Search
             aria-hidden
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--lumiverse-muted)] sm:left-4"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--BeaconVie-muted)] sm:left-4"
             size={18}
           />
           <input
@@ -255,21 +255,21 @@ export default function AppHeader({
             onFocus={() => {
               if (suggestions.length > 0) setSuggestionsOpen(true);
             }}
-            className="lumiverse-input h-12 w-full pl-10 pr-3 text-sm font-bold outline-none transition placeholder:text-slate-400 sm:pl-11 sm:pr-4"
+            className="BeaconVie-input h-12 w-full pl-10 pr-3 text-sm font-bold outline-none transition placeholder:text-slate-400 sm:pl-11 sm:pr-4"
             placeholder={t("header.searchPlaceholder")}
             aria-label={t("header.searchPlaceholder")}
           />
           {suggestionsLoading && (
             <Loader2
               aria-hidden
-              className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-[var(--lumiverse-primary)]"
+              className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-[var(--BeaconVie-primary)]"
             />
           )}
           {suggestionsOpen && suggestions.length > 0 && (
             <div
               id="global-search-suggestions"
               role="listbox"
-              className="lumiverse-surface absolute left-0 right-0 top-14 z-50 overflow-hidden rounded-3xl"
+              className="BeaconVie-surface absolute left-0 right-0 top-14 z-50 overflow-hidden rounded-3xl"
             >
               {suggestions.map((item) => (
                 <Link
@@ -277,7 +277,7 @@ export default function AppHeader({
                   href={item.href}
                   role="option"
                   onClick={() => setSuggestionsOpen(false)}
-                  className="flex items-center justify-between gap-3 px-4 py-3 text-sm font-bold text-[var(--lumiverse-muted)] hover:bg-[var(--lumiverse-hover-tint)] hover:text-[var(--lumiverse-primary)]"
+                  className="flex items-center justify-between gap-3 px-4 py-3 text-sm font-bold text-[var(--BeaconVie-muted)] hover:bg-[var(--BeaconVie-hover-tint)] hover:text-[var(--BeaconVie-primary)]"
                 >
                   <span className="min-w-0">
                     <span className="block truncate font-black">{item.title}</span>
@@ -285,13 +285,13 @@ export default function AppHeader({
                       {item.subtitle ?? item.type}
                     </span>
                   </span>
-                    <Search size={15} className="shrink-0 text-[var(--lumiverse-cyan)]" />
+                    <Search size={15} className="shrink-0 text-[var(--BeaconVie-cyan)]" />
                 </Link>
               ))}
               <button
                 type="button"
                 onClick={() => submitSearch()}
-                className="flex w-full items-center justify-center border-t border-[var(--lumiverse-border)] px-4 py-3 text-sm font-black text-[var(--lumiverse-primary)]"
+                className="flex w-full items-center justify-center border-t border-[var(--BeaconVie-border)] px-4 py-3 text-sm font-black text-[var(--BeaconVie-primary)]"
               >
                 {t("header.searchAllResults")}
               </button>
@@ -300,8 +300,8 @@ export default function AppHeader({
         </form>
 
         <div className="hidden items-center gap-2 md:flex">
-          <HeaderStat icon={<Flame size={18} className="lumiverse-beacon-glow" />} label={t("header.streak")} locale={locale} value={streak} />
-          <HeaderStat icon={<Star size={18} className="lumiverse-beacon-glow" />} label={t("header.xp")} locale={locale} value={xp} />
+          <HeaderStat icon={<Flame size={18} className="BeaconVie-beacon-glow" />} label={t("header.streak")} locale={locale} value={streak} />
+          <HeaderStat icon={<Star size={18} className="BeaconVie-beacon-glow" />} label={t("header.xp")} locale={locale} value={xp} />
         </div>
 
         {features.languageSwitcher ? (
@@ -313,11 +313,11 @@ export default function AppHeader({
           type="button"
           aria-label={t("header.notifications")}
           onClick={() => setNotificationsOpen(true)}
-          className="lumiverse-button-soft relative h-11 w-11 shrink-0 p-0 text-[var(--lumiverse-primary)]"
+          className="BeaconVie-button-soft relative h-11 w-11 shrink-0 p-0 text-[var(--BeaconVie-primary)]"
         >
           <Bell size={19} />
           {unreadNotifications > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--lumiverse-notification)] px-1 text-[10px] font-black text-white">
+            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--BeaconVie-notification)] px-1 text-[10px] font-black text-white">
               {unreadNotifications > 99 ? "99+" : unreadNotifications}
             </span>
           )}
@@ -329,7 +329,7 @@ export default function AppHeader({
             aria-expanded={profileOpen}
             aria-label={t("header.account")}
             onClick={() => setProfileOpen((open) => !open)}
-            className="lumiverse-button-soft h-12 gap-2 px-2.5 text-left"
+            className="BeaconVie-button-soft h-12 gap-2 px-2.5 text-left"
           >
             {displayUser?.avatar ? (
               <img
@@ -338,15 +338,15 @@ export default function AppHeader({
                 className="h-9 w-9 rounded-full object-cover"
               />
             ) : (
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--lumiverse-primary-soft)] text-xs font-black text-[var(--lumiverse-primary)]">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--BeaconVie-primary-soft)] text-xs font-black text-[var(--BeaconVie-primary)]">
                 {getInitials(fullname)}
               </span>
             )}
             <span className="hidden min-w-0 sm:block">
-              <span className="block max-w-[110px] truncate text-sm font-black text-[var(--lumiverse-ink)]">
+              <span className="block max-w-[110px] truncate text-sm font-black text-[var(--BeaconVie-ink)]">
                 {fullname}
               </span>
-              <span className="block truncate text-xs font-bold text-[var(--lumiverse-muted)]">
+              <span className="block truncate text-xs font-bold text-[var(--BeaconVie-muted)]">
                 {level}
               </span>
             </span>
@@ -359,7 +359,7 @@ export default function AppHeader({
           </button>
 
           {profileOpen && (
-            <div className="lumiverse-surface absolute right-0 top-14 z-50 w-[min(14rem,calc(100vw-1.5rem))] rounded-3xl p-2">
+            <div className="BeaconVie-surface absolute right-0 top-14 z-50 w-[min(14rem,calc(100vw-1.5rem))] rounded-3xl p-2">
               <DropdownLink href="/profile" icon={<User size={16} />}>
                 {t("header.profile")}
               </DropdownLink>
@@ -372,7 +372,7 @@ export default function AppHeader({
               <button
                 type="button"
                 onClick={handleLogout}
-                className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-black text-[var(--lumiverse-danger)] hover:bg-[var(--lumiverse-danger-soft)]"
+                className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-black text-[var(--BeaconVie-danger)] hover:bg-[var(--BeaconVie-danger-soft)]"
               >
                 <LogOut size={16} />
                 {t("header.logout")}
@@ -401,13 +401,13 @@ function HeaderStat({
   value: number;
 }) {
   return (
-    <div className="flex h-12 items-center gap-2 rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] px-3 shadow-sm">
-      <span className="text-[var(--lumiverse-gold)]">{icon}</span>
+    <div className="flex h-12 items-center gap-2 rounded-2xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] px-3 shadow-sm">
+      <span className="text-[var(--BeaconVie-gold)]">{icon}</span>
       <span>
-        <span className="block text-sm font-black text-[var(--lumiverse-ink)]">
+        <span className="block text-sm font-black text-[var(--BeaconVie-ink)]">
           {formatNumber(value, locale)}
         </span>
-        <span className="block text-[11px] font-bold text-[var(--lumiverse-muted)]">
+        <span className="block text-[11px] font-bold text-[var(--BeaconVie-muted)]">
           {label}
         </span>
       </span>
@@ -427,7 +427,7 @@ function DropdownLink({
   return (
     <Link
       href={href}
-      className="flex min-w-0 items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-black text-[var(--lumiverse-muted)] hover:bg-[var(--lumiverse-hover-tint)] hover:text-[var(--lumiverse-primary)]"
+      className="flex min-w-0 items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-black text-[var(--BeaconVie-muted)] hover:bg-[var(--BeaconVie-hover-tint)] hover:text-[var(--BeaconVie-primary)]"
     >
       <span className="shrink-0">{icon}</span>
       <span className="truncate">{children}</span>

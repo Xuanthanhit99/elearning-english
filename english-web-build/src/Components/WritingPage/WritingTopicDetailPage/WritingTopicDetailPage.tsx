@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { api } from "@/src/lib/axios";
 import {
@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LumiverseLoadingState } from "@/src/Components/UI/Lumiverse";
+import { BeaconVieLoadingState } from "@/src/Components/UI/BeaconVie";
 
 type LessonStatus = "COMPLETED" | "IN_PROGRESS" | "NOT_STARTED";
 
@@ -109,7 +109,7 @@ export default function WritingTopicDetailPage() {
       setData(res.data);
     } catch (err) {
       console.error(err);
-      setError("Không tải được chi tiết chủ đề.");
+      setError("KhÃ´ng táº£i Ä‘Æ°á»£c chi tiáº¿t chá»§ Ä‘á».");
     } finally {
       setLoading(false);
     }
@@ -141,7 +141,7 @@ export default function WritingTopicDetailPage() {
 
   if (loading)
     return (
-      <LumiverseLoadingState className="m-10" label="Đang tải bài luyện viết..." />
+      <BeaconVieLoadingState className="m-10" label="Äang táº£i bÃ i luyá»‡n viáº¿t..." />
     );
 
   if (error) {
@@ -152,13 +152,13 @@ export default function WritingTopicDetailPage() {
           onClick={loadDetail}
           className="mt-4 rounded-xl bg-violet-600 px-5 py-3 font-bold text-white"
         >
-          Thử lại
+          Thá»­ láº¡i
         </button>
       </div>
     );
   }
 
-  if (!data) return <div className="p-10">Không tìm thấy chủ đề.</div>;
+  if (!data) return <div className="p-10">KhÃ´ng tÃ¬m tháº¥y chá»§ Ä‘á».</div>;
 
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
@@ -189,7 +189,7 @@ export default function WritingTopicDetailPage() {
                   active={tab === "LESSONS"}
                   onClick={() => setTab("LESSONS")}
                 >
-                  Lessons ({data.lessons.length})
+                  Bài học ({data.lessons.length})
                 </TabButton>
 
                 <TabButton
@@ -203,7 +203,7 @@ export default function WritingTopicDetailPage() {
                   active={tab === "TIPS"}
                   onClick={() => setTab("TIPS")}
                 >
-                  Tips & Resources
+                  Mẹo và tài nguyên
                 </TabButton>
               </div>
 
@@ -212,10 +212,10 @@ export default function WritingTopicDetailPage() {
                 onChange={(e) => setSort(e.target.value)}
                 className="mb-3 h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold outline-none"
               >
-                <option value="DEFAULT">Sort by: Default</option>
-                <option value="PROGRESS">Sort by: Progress</option>
-                <option value="NEWEST">Sort by: Newest</option>
-                <option value="TITLE">Sort by: Title</option>
+                <option value="DEFAULT">Sắp xếp: Mặc định</option>
+                <option value="PROGRESS">Sắp xếp: Tiến độ</option>
+                <option value="NEWEST">Sắp xếp: Mới nhất</option>
+                <option value="TITLE">Sắp xếp: Tiêu đề</option>
               </select>
             </div>
 
@@ -245,9 +245,9 @@ function Breadcrumb({ title }: { title: string }) {
   return (
     <div className="flex items-center gap-3 text-sm font-bold text-slate-400">
       <Home className="h-4 w-4" />
-      <span>Writing</span>
+      <span>Luyện viết</span>
       <ChevronRight className="h-4 w-4" />
-      <span>All Topics</span>
+      <span>Tất cả chủ đề</span>
       <ChevronRight className="h-4 w-4" />
       <span className="text-[#09083f]">{title}</span>
     </div>
@@ -293,7 +293,7 @@ function ProgressPanel({
 }) {
   return (
     <section className="rounded-3xl bg-white p-7 shadow-sm ring-1 ring-slate-100">
-      <h2 className="text-xl font-extrabold">Your Progress</h2>
+      <h2 className="text-xl font-extrabold">Tiến độ của bạn</h2>
 
       <div className="mt-6 flex items-center justify-between">
         <div className="grid h-40 w-40 place-items-center rounded-full bg-violet-100">
@@ -302,7 +302,7 @@ function ProgressPanel({
               <p className="text-4xl font-extrabold">
                 {data.progress.overall}%
               </p>
-              <p className="text-xs font-semibold text-slate-500">Overall</p>
+              <p className="text-xs font-semibold text-slate-500">Tổng thể</p>
             </div>
           </div>
         </div>
@@ -311,19 +311,19 @@ function ProgressPanel({
           <ProgressMeta
             icon={<BookOpen className="h-5 w-5 text-violet-600" />}
             value={data.progress.totalLessons}
-            label="Lessons"
+            label="Bài học"
             bg="bg-violet-50"
           />
           <ProgressMeta
             icon={<CheckCircle2 className="h-5 w-5 text-green-600" />}
             value={data.progress.completed}
-            label="Completed"
+            label="Hoàn thành"
             bg="bg-green-50"
           />
           <ProgressMeta
             icon={<Timer className="h-5 w-5 text-orange-500" />}
             value={data.progress.inProgress}
-            label="In Progress"
+            label="Đang học"
             bg="bg-orange-50"
           />
         </div>
@@ -334,7 +334,7 @@ function ProgressPanel({
         disabled={!data.nextLesson}
         className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-violet-600 font-bold text-white disabled:opacity-50"
       >
-        Continue Learning
+        Tiếp tục học
         <ChevronRight className="h-5 w-5" />
       </button>
     </section>
@@ -436,7 +436,7 @@ function LessonRow({
 
           <span className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
-            {lesson.learnerCount} learners
+            {lesson.learnerCount} người học
           </span>
         </div>
       </div>
@@ -458,10 +458,10 @@ function LessonRow({
       </div>
       <span className="rounded-xl border border-violet-300 px-4 py-2 text-sm font-bold text-violet-600">
         {lesson.status === "COMPLETED"
-          ? "Review"
+          ? "Ôn tập"
           : lesson.status === "IN_PROGRESS"
-            ? "Continue"
-            : "Start"}
+            ? "Tiếp tục"
+            : "Bắt đầu"}
       </span>
       <ChevronRight className="h-7 w-7 text-slate-400" />
     </button>
@@ -476,9 +476,9 @@ function StatusBadge({ status }: { status: LessonStatus }) {
   };
 
   const label: Record<LessonStatus, string> = {
-    COMPLETED: "Completed",
-    IN_PROGRESS: "In Progress",
-    NOT_STARTED: "Not Started",
+    COMPLETED: "Hoàn thành",
+    IN_PROGRESS: "Đang học",
+    NOT_STARTED: "Chưa bắt đầu",
   };
 
   return (
@@ -498,9 +498,9 @@ function DifficultyBadge({ difficulty }: { difficulty: string }) {
   };
 
   const label: Record<string, string> = {
-    BEGINNER: "Beginner",
-    INTERMEDIATE: "Intermediate",
-    ADVANCED: "Advanced",
+    BEGINNER: "Cơ bản",
+    INTERMEDIATE: "Trung cấp",
+    ADVANCED: "Nâng cao",
   };
 
   return (
@@ -514,11 +514,11 @@ function DifficultyBadge({ difficulty }: { difficulty: string }) {
 
 function formatType(type: string) {
   const map: Record<string, string> = {
-    SENTENCE: "Sentence Writing",
-    PARAGRAPH: "Paragraph",
-    ESSAY: "Essay",
+    SENTENCE: "Viết câu",
+    PARAGRAPH: "Đoạn văn",
+    ESSAY: "Bài luận",
     EMAIL: "Email",
-    STORY: "Story",
+    STORY: "Câu chuyện",
     OPINION: "Opinion",
     IELTS_TASK_1: "IELTS Task 1",
     IELTS_TASK_2: "IELTS Task 2",
@@ -530,10 +530,10 @@ function formatType(type: string) {
 function StatsPanel({ stats }: { stats: TopicDetail["stats"] }) {
   return (
     <section className="grid grid-cols-2 gap-4 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
-      <StatItem label="Average Score" value={`${stats.averageScore}/100`} />
-      <StatItem label="Best Score" value={`${stats.bestScore}/100`} />
-      <StatItem label="Attempts" value={String(stats.totalAttempts)} />
-      <StatItem label="Estimated" value={`${stats.estimatedHours}h`} />
+      <StatItem label="Điểm trung bình" value={`${stats.averageScore}/100`} />
+      <StatItem label="Điểm tốt nhất" value={`${stats.bestScore}/100`} />
+      <StatItem label="Số lần luyện" value={String(stats.totalAttempts)} />
+      <StatItem label="Thời lượng ước tính" value={`${stats.estimatedHours}h`} />
     </section>
   );
 }
@@ -559,7 +559,7 @@ function AIRecommendationCard({
   return (
     <section className="rounded-3xl bg-violet-50 p-6 shadow-sm ring-1 ring-violet-100">
       <p className="text-lg font-extrabold text-violet-700">
-        AI Recommendation
+        Gợi ý từ AI
       </p>
 
       <h3 className="mt-4 text-xl font-extrabold">{recommendation.title}</h3>
@@ -570,9 +570,9 @@ function AIRecommendationCard({
 
       <div className="mt-4 flex items-center gap-4 text-xs font-bold text-slate-500">
         <span>{formatType(recommendation.type)}</span>
-        <span>•</span>
+        <span>â€¢</span>
         <span>{recommendation.level}</span>
-        <span>•</span>
+        <span>â€¢</span>
         <span>{recommendation.estimatedTime} min</span>
       </div>
 
@@ -580,7 +580,7 @@ function AIRecommendationCard({
         onClick={onStart}
         className="mt-5 h-11 w-full rounded-xl bg-violet-600 font-bold text-white"
       >
-        Start Recommended Lesson
+        Bắt đầu bài học gợi ý
       </button>
     </section>
   );
@@ -591,15 +591,15 @@ function AboutPanel({ data }: { data: TopicDetail }) {
 
   return (
     <div className="mt-5 grid grid-cols-2 gap-5">
-      <InfoBox title="Overview" items={[about?.overview || data.description]} />
+      <InfoBox title="Tổng quan" items={[about?.overview || data.description]} />
       <InfoBox
-        title="Learning Objectives"
+        title="Mục tiêu học tập"
         items={about?.learningObjectives || []}
       />
-      <InfoBox title="Grammar Focus" items={about?.grammarFocus || []} />
-      <InfoBox title="Common Mistakes" items={about?.commonMistakes || []} />
+      <InfoBox title="Trọng tâm ngữ pháp" items={about?.grammarFocus || []} />
+      <InfoBox title="Lỗi thường gặp" items={about?.commonMistakes || []} />
       <InfoBox
-        title="Recommended Vocabulary"
+        title="Từ vựng gợi ý"
         items={about?.recommendedVocabulary || []}
       />
     </div>
@@ -614,7 +614,7 @@ function InfoBox({ title, items }: { title: string; items: string[] }) {
       <div className="mt-4 space-y-3">
         {items.map((item, index) => (
           <p key={index} className="text-sm leading-6 text-slate-600">
-            • {item}
+            â€¢ {item}
           </p>
         ))}
       </div>
@@ -625,7 +625,7 @@ function InfoBox({ title, items }: { title: string; items: string[] }) {
 function TipsPanel({ tips }: { tips: string[] }) {
   return (
     <div className="mt-5 rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-100">
-      <h2 className="text-xl font-extrabold">Tips & Resources</h2>
+      <h2 className="text-xl font-extrabold">Mẹo và tài nguyên</h2>
 
       <div className="mt-5 grid grid-cols-2 gap-4">
         {tips.map((tip, index) => (
@@ -638,3 +638,6 @@ function TipsPanel({ tips }: { tips: string[] }) {
     </div>
   );
 }
+
+
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   CheckCircle2,
@@ -81,7 +81,7 @@ export default function ListeningResultPage({
       setError(
         getApiErrorMessage(
           requestError,
-          "Không tải được kết quả Listening.",
+          "KhÃ´ng táº£i Ä‘Æ°á»£c káº¿t quáº£ Listening.",
         ),
       );
     } finally {
@@ -115,7 +115,7 @@ export default function ListeningResultPage({
       setError(
         getApiErrorMessage(
           requestError,
-          "Không tạo được bài Listening tiếp theo.",
+          "KhÃ´ng táº¡o Ä‘Æ°á»£c bÃ i Listening tiáº¿p theo.",
         ),
       );
     } finally {
@@ -140,7 +140,7 @@ export default function ListeningResultPage({
       setError(
         getApiErrorMessage(
           requestError,
-          "Không gửi được đánh giá.",
+          "KhÃ´ng gá»­i Ä‘Æ°á»£c Ä‘Ã¡nh giÃ¡.",
         ),
       );
     } finally {
@@ -149,7 +149,7 @@ export default function ListeningResultPage({
   }
 
   if (loading) {
-    return <PageState text="Đang tải kết quả..." />;
+    return <PageState text="Äang táº£i káº¿t quáº£..." />;
   }
 
   if (error && !data) {
@@ -175,23 +175,23 @@ export default function ListeningResultPage({
                     LISTENING RESULT
                   </div>
                   <h1 className="mt-4 text-4xl font-black">
-                    {data.summary.topic || "Listening"}
+                    {data.summary.topic || "Luyện nghe"}
                   </h1>
                   <p className="mt-3 text-white/75">
-                    {data.summary.level} ·{" "}
+                    {data.summary.level} Â·{" "}
                     {data.summary.totalTimeText}
                   </p>
                 </div>
 
                 <div className="rounded-3xl bg-white/10 p-6 text-center">
                   <p className="text-sm font-bold text-white/70">
-                    Điểm số
+                    Äiá»ƒm sá»‘
                   </p>
                   <p className="mt-1 text-6xl font-black">
                     {data.summary.score}
                   </p>
                   <p className="mt-3 font-black text-yellow-300">
-                    +{data.summary.xpEarned} XP · +
+                    +{data.summary.xpEarned} XP Â· +
                     {data.summary.coinsEarned} xu
                   </p>
                 </div>
@@ -200,7 +200,7 @@ export default function ListeningResultPage({
 
             {finishMeta?.missionUpdated && (
               <section className="mt-6 rounded-3xl border border-emerald-200 bg-emerald-50 p-6 font-bold text-emerald-700">
-                🎯 Nhiệm vụ Listening đã được cập nhật.
+                ðŸŽ¯ Nhiá»‡m vá»¥ Listening Ä‘Ã£ Ä‘Æ°á»£c cáº­p nháº­t.
               </section>
             )}
 
@@ -214,22 +214,22 @@ export default function ListeningResultPage({
               <Stat
                 icon={<Target />}
                 value={`${data.summary.accuracy}%`}
-                label="Độ chính xác"
+                label="Äá»™ chÃ­nh xÃ¡c"
               />
               <Stat
                 icon={<CheckCircle2 />}
                 value={String(data.summary.correct)}
-                label="Câu đúng"
+                label="CÃ¢u Ä‘Ãºng"
               />
               <Stat
                 icon={<XCircle />}
                 value={String(data.summary.wrong)}
-                label="Câu sai"
+                label="CÃ¢u sai"
               />
               <Stat
                 icon={<Headphones />}
                 value={data.summary.totalTimeText}
-                label="Thời gian nghe"
+                label="Thá»i gian nghe"
               />
             </section>
 
@@ -243,34 +243,34 @@ export default function ListeningResultPage({
                   <div className="mt-5 grid gap-4 md:grid-cols-2">
                     <div className="rounded-2xl bg-emerald-50 p-5">
                       <h3 className="font-black text-emerald-700">
-                        Điểm mạnh
+                        Äiá»ƒm máº¡nh
                       </h3>
                       <ul className="mt-3 space-y-2 text-sm text-emerald-700">
                         {data.feedback.strengths.length ? (
                           data.feedback.strengths.map(
                             (item) => (
-                              <li key={item}>• {item}</li>
+                              <li key={item}>â€¢ {item}</li>
                             ),
                           )
                         ) : (
-                          <li>• Tiếp tục luyện để tạo điểm mạnh mới.</li>
+                          <li>â€¢ Tiáº¿p tá»¥c luyá»‡n Ä‘á»ƒ táº¡o Ä‘iá»ƒm máº¡nh má»›i.</li>
                         )}
                       </ul>
                     </div>
 
                     <div className="rounded-2xl bg-amber-50 p-5">
                       <h3 className="font-black text-amber-700">
-                        Cần cải thiện
+                        Cáº§n cáº£i thiá»‡n
                       </h3>
                       <ul className="mt-3 space-y-2 text-sm text-amber-700">
                         {data.feedback.improvements.length ? (
                           data.feedback.improvements.map(
                             (item) => (
-                              <li key={item}>• {item}</li>
+                              <li key={item}>â€¢ {item}</li>
                             ),
                           )
                         ) : (
-                          <li>• Duy trì luyện nghe hằng ngày.</li>
+                          <li>â€¢ Duy trÃ¬ luyá»‡n nghe háº±ng ngÃ y.</li>
                         )}
                       </ul>
                     </div>
@@ -279,7 +279,7 @@ export default function ListeningResultPage({
 
                 <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
                   <h2 className="text-xl font-black">
-                    Xem lại câu hỏi
+                    Xem láº¡i cÃ¢u há»i
                   </h2>
 
                   <div className="mt-5 space-y-4">
@@ -297,15 +297,15 @@ export default function ListeningResultPage({
                           {question.question}
                         </h3>
                         <p className="mt-2 text-sm">
-                          Bạn chọn:{" "}
+                          Báº¡n chá»n:{" "}
                           <strong>
                             {question.selectedAnswer ??
-                              "Bỏ qua"}
+                              "Bá» qua"}
                           </strong>
                         </p>
                         {!question.isCorrect && (
                           <p className="mt-1 text-sm text-emerald-700">
-                            Đáp án đúng:{" "}
+                            ÄÃ¡p Ã¡n Ä‘Ãºng:{" "}
                             <strong>
                               {question.correctAnswer}
                             </strong>
@@ -338,8 +338,8 @@ export default function ListeningResultPage({
                       className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-50 py-3 font-bold text-violet-600"
                     >
                       {showAll
-                        ? "Thu gọn"
-                        : "Xem tất cả"}
+                        ? "Thu gá»n"
+                        : "Xem táº¥t cáº£"}
                       <ChevronDown
                         size={17}
                         className={
@@ -353,17 +353,17 @@ export default function ListeningResultPage({
 
               <aside className="space-y-6">
                 <MissionCard
-                  title="Nhiệm vụ hôm nay"
+                  title="Nhiá»‡m vá»¥ hÃ´m nay"
                   mission={dailyMission}
                 />
                 <MissionCard
-                  title="Mục tiêu tuần"
+                  title="Má»¥c tiÃªu tuáº§n"
                   mission={weeklyMission}
                 />
 
                 <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
                   <h2 className="font-black">
-                    Bạn thấy bài học thế nào?
+                    Báº¡n tháº¥y bÃ i há»c tháº¿ nÃ o?
                   </h2>
 
                   <div className="mt-4 flex gap-2">
@@ -396,8 +396,8 @@ export default function ListeningResultPage({
                     className="mt-4 w-full rounded-xl bg-violet-600 py-3 font-black text-white disabled:opacity-50"
                   >
                     {ratingSent
-                      ? "Đã gửi đánh giá · Bấm sao để sửa"
-                      : "Gửi đánh giá"}
+                      ? "ÄÃ£ gá»­i Ä‘Ã¡nh giÃ¡ Â· Báº¥m sao Ä‘á»ƒ sá»­a"
+                      : "Gá»­i Ä‘Ã¡nh giÃ¡"}
                   </button>
                 </section>
 
@@ -407,7 +407,7 @@ export default function ListeningResultPage({
                   className="flex w-full items-center justify-center gap-2 rounded-xl border border-violet-200 bg-white py-3 font-black text-violet-600 disabled:opacity-50"
                 >
                   <RotateCcw size={17} />
-                  Làm lại bài này
+                  LÃ m láº¡i bÃ i nÃ y
                 </button>
 
                 <button
@@ -417,7 +417,7 @@ export default function ListeningResultPage({
                   }
                   className="w-full rounded-xl bg-violet-600 py-3 font-black text-white disabled:opacity-50"
                 >
-                  Luyện bài tiếp theo
+                  Luyá»‡n bÃ i tiáº¿p theo
                 </button>
 
                 <button
@@ -496,7 +496,7 @@ function MissionCard({
         </>
       ) : (
         <p className="mt-4 text-sm text-slate-500">
-          Chưa có nhiệm vụ Listening.
+          ChÆ°a cÃ³ nhiá»‡m vá»¥ Listening.
         </p>
       )}
     </section>
@@ -519,7 +519,7 @@ function PageState({
             onClick={action}
             className="mt-4 rounded-xl bg-violet-600 px-5 py-2 font-bold text-white"
           >
-            Tải lại
+            Táº£i láº¡i
           </button>
         )}
       </div>

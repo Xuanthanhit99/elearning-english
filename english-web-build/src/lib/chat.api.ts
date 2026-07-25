@@ -1,4 +1,4 @@
-// services/chat.api.ts
+﻿// services/chat.api.ts
 import { getApiErrorMessage } from "./api-error";
 import {
   SendMessageParams,
@@ -16,7 +16,7 @@ export async function sendChatMessage(
     return (data?.data ?? data) as SendMessageResponse;
   } catch (error) {
     throw new Error(
-      getApiErrorMessage(error, "Lumi đang lag xíu, thử lại sau nhé"),
+      getApiErrorMessage(error, "Beacon Ä‘ang lag xÃ­u, thá»­ láº¡i sau nhÃ©"),
     );
   }
 }
@@ -27,7 +27,7 @@ export async function createChatSession(): Promise<{ id: string }> {
     return (data?.data ?? data) as { id: string };
   } catch (error) {
     throw new Error(
-      getApiErrorMessage(error, "Không thể tạo phiên trò chuyện"),
+      getApiErrorMessage(error, "KhÃ´ng thá»ƒ táº¡o phiÃªn trÃ² chuyá»‡n"),
     );
   }
 }
@@ -42,7 +42,7 @@ export async function getChatMessages(
     return (data?.data ?? data) as ChatMessage[];
   } catch (error) {
     throw new Error(
-      getApiErrorMessage(error, "Không thể tải lịch sử trò chuyện"),
+      getApiErrorMessage(error, "KhÃ´ng thá»ƒ táº£i lá»‹ch sá»­ trÃ² chuyá»‡n"),
     );
   }
 }
@@ -53,7 +53,7 @@ export async function getPetStatus(): Promise<PetStatus> {
     return (data?.data ?? data) as PetStatus;
   } catch (error) {
     throw new Error(
-      getApiErrorMessage(error, "Không thể tải thông tin linh thú"),
+      getApiErrorMessage(error, "KhÃ´ng thá»ƒ táº£i thÃ´ng tin linh thÃº"),
     );
   }
 }

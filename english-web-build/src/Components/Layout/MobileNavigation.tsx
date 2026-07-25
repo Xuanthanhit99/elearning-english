@@ -1,14 +1,14 @@
-"use client";
+﻿"use client";
 
 import { BookOpen, Home, Menu, Target, Trophy } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const primaryItems = [
-  { label: "Home", href: "/dashboard", icon: Home },
-  { label: "Learn", href: "/learn", icon: BookOpen },
-  { label: "Missions", href: "/missions", icon: Target },
-  { label: "Rank", href: "/leaderboard", icon: Trophy },
+  { label: "Tổng quan", href: "/dashboard", icon: Home },
+  { label: "Học tập", href: "/learn", icon: BookOpen },
+  { label: "Nhiệm vụ", href: "/missions", icon: Target },
+  { label: "Xếp hạng", href: "/leaderboard", icon: Trophy },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -25,8 +25,8 @@ export default function MobileNavigation({
   return (
     <nav
       data-testid="app-bottom-nav"
-      aria-label="Mobile primary navigation"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--lumiverse-border)] bg-[var(--lumiverse-shell-surface)] px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-14px_38px_rgba(24,50,118,0.12)] backdrop-blur-2xl lg:hidden"
+      aria-label="Điều hướng chính trên di động"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-shell-surface)] px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-14px_38px_rgba(24,50,118,0.12)] backdrop-blur-2xl lg:hidden"
     >
       <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
         {primaryItems.map((item) => {
@@ -41,8 +41,8 @@ export default function MobileNavigation({
               className={[
                 "flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[11px] font-black transition",
                 active
-                  ? "bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]"
-                  : "text-[var(--lumiverse-muted)] hover:bg-[var(--lumiverse-hover-tint)] hover:text-[var(--lumiverse-primary)]",
+                  ? "bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]"
+                  : "text-[var(--BeaconVie-muted)] hover:bg-[var(--BeaconVie-hover-tint)] hover:text-[var(--BeaconVie-primary)]",
               ].join(" ")}
             >
               <Icon aria-hidden className="h-5 w-5" strokeWidth={2.5} />
@@ -53,12 +53,12 @@ export default function MobileNavigation({
 
         <button
           type="button"
-          aria-label="Open full menu"
+          aria-label="Mở toàn bộ menu"
           onClick={onOpenMenu}
-          className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[11px] font-black text-[var(--lumiverse-muted)] transition hover:bg-[var(--lumiverse-hover-tint)] hover:text-[var(--lumiverse-primary)]"
+          className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[11px] font-black text-[var(--BeaconVie-muted)] transition hover:bg-[var(--BeaconVie-hover-tint)] hover:text-[var(--BeaconVie-primary)]"
         >
           <Menu aria-hidden className="h-5 w-5" strokeWidth={2.5} />
-          <span>More</span>
+          <span>Thêm</span>
         </button>
       </div>
     </nav>

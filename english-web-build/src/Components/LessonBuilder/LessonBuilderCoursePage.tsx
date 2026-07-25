@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { lessonBuilderApi } from "@/src/lib/lesson-builder-api";
 import {
@@ -82,7 +82,7 @@ export default function LessonBuilderCoursePage() {
         res.data.sections?.flatMap((section: any) => section.lessons || [])?.[0];
       setActiveLessonId((current) => current || first?.id || "");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Không tải được course.");
+      setError(err.response?.data?.message || "KhÃ´ng táº£i Ä‘Æ°á»£c course.");
     } finally {
       setLoading("");
     }
@@ -129,7 +129,7 @@ export default function LessonBuilderCoursePage() {
     } catch (err: any) {
       setError(
         err.response?.data?.message ||
-          "Bạn cần làm quiz đạt yêu cầu trước khi hoàn thành bài học.",
+          "Báº¡n cáº§n lÃ m quiz Ä‘áº¡t yÃªu cáº§u trÆ°á»›c khi hoÃ n thÃ nh bÃ i há»c.",
       );
     } finally {
       setLoading("");
@@ -158,7 +158,7 @@ export default function LessonBuilderCoursePage() {
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-black text-emerald-700">
                 <Sparkles size={16} />
-                AI Course cá nhân
+                AI Course cÃ¡ nhÃ¢n
               </div>
               <h1 className="mt-4 text-4xl font-black text-slate-950">
                 {course?.title || "Course"}
@@ -169,7 +169,7 @@ export default function LessonBuilderCoursePage() {
             </div>
             <div className="min-w-[260px] rounded-2xl bg-violet-50 p-4">
               <div className="flex items-center justify-between font-black text-violet-700">
-                <span>Tiến độ</span>
+                <span>Tiáº¿n Ä‘á»™</span>
                 <span>{progress}%</span>
               </div>
               <div className="mt-3 h-3 rounded-full bg-white">
@@ -179,7 +179,7 @@ export default function LessonBuilderCoursePage() {
                 />
               </div>
               <p className="mt-2 text-sm font-bold text-slate-500">
-                {completedCount}/{lessons.length} bài hoàn thành
+                {completedCount}/{lessons.length} bÃ i hoÃ n thÃ nh
               </p>
             </div>
           </div>
@@ -188,7 +188,7 @@ export default function LessonBuilderCoursePage() {
         <div className="mt-6 grid gap-6 xl:grid-cols-[360px_1fr]">
           <aside className="h-fit rounded-[24px] border border-violet-100 bg-white p-4 shadow-sm">
             <h2 className="px-2 text-lg font-black text-slate-950">
-              Danh sách bài học
+              Danh sÃ¡ch bÃ i há»c
             </h2>
             <div className="mt-4 space-y-5">
               {course?.sections.map((section) => (
@@ -229,7 +229,7 @@ export default function LessonBuilderCoursePage() {
                                 : "text-slate-500"
                             }`}
                           >
-                            {lesson.duration || 15} phút
+                            {lesson.duration || 15} phÃºt
                           </span>
                         </span>
                         <ChevronRight size={16} />
@@ -262,12 +262,12 @@ export default function LessonBuilderCoursePage() {
                   ) : (
                     <CheckCircle2 size={18} />
                   )}
-                  Hoàn thành bài
+                  HoÃ n thÃ nh bÃ i
                 </button>
               </div>
 
               <div className="prose prose-slate mt-6 max-w-none whitespace-pre-wrap rounded-2xl bg-slate-50 p-5 font-semibold leading-8 text-slate-700">
-                {activeLesson?.content || "Bài học chưa có nội dung."}
+                {activeLesson?.content || "BÃ i há»c chÆ°a cÃ³ ná»™i dung."}
               </div>
             </article>
 
@@ -278,7 +278,7 @@ export default function LessonBuilderCoursePage() {
                     Mini Quiz
                   </h2>
                   <p className="mt-1 font-semibold text-slate-500">
-                    Làm quiz để mở trạng thái hoàn thành bài.
+                    LÃ m quiz Ä‘á»ƒ má»Ÿ tráº¡ng thÃ¡i hoÃ n thÃ nh bÃ i.
                   </p>
                 </div>
                 <button
@@ -291,7 +291,7 @@ export default function LessonBuilderCoursePage() {
 
               {quizzes.length === 0 ? (
                 <p className="mt-5 rounded-2xl bg-slate-50 p-5 font-bold text-slate-500">
-                  Bài này chưa có quiz. Bạn có thể đánh dấu hoàn thành ngay.
+                  BÃ i nÃ y chÆ°a cÃ³ quiz. Báº¡n cÃ³ thá»ƒ Ä‘Ã¡nh dáº¥u hoÃ n thÃ nh ngay.
                 </p>
               ) : (
                 <div className="mt-5 space-y-4">
@@ -336,7 +336,7 @@ export default function LessonBuilderCoursePage() {
                     ) : (
                       <Play size={18} />
                     )}
-                    Nộp quiz
+                    Ná»™p quiz
                   </button>
 
                   {quizResult && (
@@ -347,8 +347,8 @@ export default function LessonBuilderCoursePage() {
                           : "bg-amber-50 text-amber-700"
                       }`}
                     >
-                      Kết quả: {quizResult.correct}/{quizResult.total} câu đúng
-                      - {quizResult.score} điểm
+                      Káº¿t quáº£: {quizResult.correct}/{quizResult.total} cÃ¢u Ä‘Ãºng
+                      - {quizResult.score} Ä‘iá»ƒm
                     </div>
                   )}
                 </div>

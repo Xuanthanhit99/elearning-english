@@ -1,10 +1,10 @@
-# Lumiverse Phase 1 Audit & Refactor Report
+﻿# BeaconVie Phase 1 Audit & Refactor Report
 
 Date: 2026-07-20
 
 ## Scope
 
-Phase 1 establishes the Lumiverse design foundation for the active Next.js frontend in `english-web-build`.
+Phase 1 establishes the BeaconVie design foundation for the active Next.js frontend in `english-web-build`.
 
 No backend, database, API contract, authentication flow, cookie handling, or business logic was changed.
 
@@ -25,29 +25,29 @@ No backend, database, API contract, authentication flow, cookie handling, or bus
 
 ## Phase 1 Changes
 
-- Added Lumiverse CSS tokens in `app/globals.css`:
-  - Brand colors from the supplied PoppyLingo logo: royal blue, electric cyan, violet, gold, rose, mint.
+- Added BeaconVie CSS tokens in `app/globals.css`:
+  - Brand colors from the supplied BeaconVie logo: royal blue, electric cyan, violet, gold, rose, mint.
   - App background, card/surface, border, shadow, radius, focus ring, input, button, progress, skeleton shimmer utilities.
   - Dark mode token support.
-- Updated root body styling to use the global Lumiverse background instead of fixed page colors.
+- Updated root body styling to use the global BeaconVie background instead of fixed page colors.
 - Updated app shell spacing for the new header/sidebar rhythm.
 - Restyled shared header:
   - Glass navigation surface.
-  - Lumiverse search input.
+  - BeaconVie search input.
   - Updated stats, notification button, profile menu, and dropdown surface.
 - Restyled shared sidebar:
   - Glass sidebar surface.
   - Gradient active navigation item.
   - Updated collapsed state and premium card.
 - Restyled language and theme dropdown controls.
-- Reworked the shared logo presentation using the existing `poppylingo-logo.png` asset.
-- Added reusable UI foundation in `src/Components/UI/Lumiverse.tsx`:
-  - `LumiverseCard`
-  - `LumiverseButton`
-  - `LumiverseBadge`
-  - `LumiverseProgress`
-  - `LumiverseSkeleton`
-  - `LumiverseState`
+- Reworked the shared logo presentation using the existing `beaconvie-logo.png` asset.
+- Added reusable UI foundation in `src/Components/UI/BeaconVie.tsx`:
+  - `BeaconVieCard`
+  - `BeaconVieButton`
+  - `BeaconVieBadge`
+  - `BeaconVieProgress`
+  - `BeaconVieSkeleton`
+  - `BeaconVieState`
 - Updated global loading and error surfaces.
 - Applied the new shared skeleton/state/progress primitives to Dashboard without changing `getDashboard()` or data flow.
 
@@ -64,12 +64,12 @@ No backend, database, API contract, authentication flow, cookie handling, or bus
 - `src/Components/Layout/ThemeToggle.tsx`
 - `src/Components/UI/AppLogo.tsx`
 - `src/Components/UI/ResponsiveContainer.tsx`
-- `src/Components/UI/Lumiverse.tsx`
+- `src/Components/UI/BeaconVie.tsx`
 - `src/Components/Dashboard/DashboardPage.tsx`
 
 ## Refactor Plan By Phase
 
-1. Phase 1: Lumiverse foundation and shared app shell.
+1. Phase 1: BeaconVie foundation and shared app shell.
 2. Phase 2: Homepage and Auth/Placement onboarding.
 3. Phase 3: Dashboard, Analytics, Progress, History, Reports.
 4. Phase 4: Learning Path, Vocabulary, Grammar, Listening, Speaking, Reading, Writing.
@@ -81,7 +81,7 @@ No backend, database, API contract, authentication flow, cookie handling, or bus
 - All screens continue to call existing API/state hooks and do not use static demo replacements.
 - `src/lib/axios.ts` remains compatible with httpOnly cookie auth.
 - Shared shell appears consistent across desktop/tablet/mobile.
-- Loading, empty, and error states use Lumiverse primitives as modules are migrated.
+- Loading, empty, and error states use BeaconVie primitives as modules are migrated.
 - Lint and production build pass after each completed phase, or remaining failures are documented.
 
 ## Verification
@@ -94,4 +94,4 @@ No backend, database, API contract, authentication flow, cookie handling, or bus
   - `@typescript-eslint/no-explicit-any` in Arena and several API helpers.
   - Existing warnings for unused variables and `<img>` usage across older pages.
 
-These full-repo lint failures were not introduced by the Lumiverse foundation files touched in Phase 1.
+These full-repo lint failures were not introduced by the BeaconVie foundation files touched in Phase 1.

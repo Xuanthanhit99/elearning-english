@@ -1,9 +1,11 @@
-import vi from "./locales/vi";
-import en from "./locales/en";
-import zh from "./locales/zh";
-import de from "./locales/de";
+﻿import vi from "./locales/vi";
 import { Dictionary, Locale } from "./types";
 
-export const dictionaries: Record<Locale, Dictionary> = { vi, en, zh, de };
+export const dictionaries: Record<Locale, Dictionary> = {
+  vi,
+  en: vi,
+  zh: vi,
+  de: vi,
+};
 
 export * from "./types";

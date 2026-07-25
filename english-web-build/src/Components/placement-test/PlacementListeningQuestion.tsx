@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Headphones, Pause, Play, RotateCcw, Volume2 } from "lucide-react";
 import { useRef, useState } from "react";

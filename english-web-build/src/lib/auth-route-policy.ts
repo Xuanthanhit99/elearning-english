@@ -1,4 +1,4 @@
-import {
+﻿import {
   DEFAULT_AUTHENTICATED_PATH,
   normalizeRedirectPath,
 } from "./auth-redirect";

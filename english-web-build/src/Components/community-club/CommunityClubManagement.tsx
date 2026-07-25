@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   Check,
@@ -43,7 +43,7 @@ export function CommunityClubManagement({
       setLoading(true);
       setData(await getClubManagement(clubId));
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Không thể tải quản lý Club");
+      setError(e instanceof Error ? e.message : "KhÃ´ng thá»ƒ táº£i quáº£n lÃ½ Club");
     } finally {
       setLoading(false);
     }
@@ -62,7 +62,7 @@ export function CommunityClubManagement({
   async function invite(userId: string) {
     try {
       setBusy(userId);
-      await inviteClubMember(clubId, userId, "Mời bạn tham gia câu lạc bộ");
+      await inviteClubMember(clubId, userId, "Má»i báº¡n tham gia cÃ¢u láº¡c bá»™");
       setInviteResults((current) =>
         current.map((item) =>
           item.id === userId ? { ...item, invited: true } : item,
@@ -92,7 +92,7 @@ export function CommunityClubManagement({
   }
 
   async function transfer(userId: string) {
-    if (!window.confirm("Bạn chắc chắn muốn chuyển quyền chủ câu lạc bộ?")) {
+    if (!window.confirm("Báº¡n cháº¯c cháº¯n muá»‘n chuyá»ƒn quyá»n chá»§ cÃ¢u láº¡c bá»™?")) {
       return;
     }
 
@@ -101,7 +101,7 @@ export function CommunityClubManagement({
   }
 
   async function kick(memberId: string) {
-    if (!window.confirm("Bạn chắc chắn muốn đuổi thành viên này?")) {
+    if (!window.confirm("Báº¡n cháº¯c cháº¯n muá»‘n Ä‘uá»•i thÃ nh viÃªn nÃ y?")) {
       return;
     }
 
@@ -112,7 +112,7 @@ export function CommunityClubManagement({
   async function removeClub() {
     if (
       !window.confirm(
-        "Xóa câu lạc bộ sẽ xóa toàn bộ dữ liệu liên quan. Bạn chắc chắn?",
+        "XÃ³a cÃ¢u láº¡c bá»™ sáº½ xÃ³a toÃ n bá»™ dá»¯ liá»‡u liÃªn quan. Báº¡n cháº¯c cháº¯n?",
       )
     ) {
       return;
@@ -144,21 +144,21 @@ export function CommunityClubManagement({
         <section className="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center gap-2">
             <UserPlus size={20} className="text-indigo-600" />
-            <h3 className="font-extrabold">Mời thành viên</h3>
+            <h3 className="font-extrabold">Má»i thÃ nh viÃªn</h3>
             {data.permissions.canDeleteClub && (
               <section className="rounded-3xl border-2 border-red-200 bg-red-50 p-5">
-                <h3 className="font-extrabold text-red-800">Xóa câu lạc bộ</h3>
+                <h3 className="font-extrabold text-red-800">XÃ³a cÃ¢u láº¡c bá»™</h3>
 
                 {data.members.length === 1 ? (
                   <p className="mt-2 text-sm leading-6 text-red-700">
-                    Bạn là thành viên duy nhất. Bạn có thể xóa câu lạc bộ này.
-                    Toàn bộ bài viết, tin nhắn, sự kiện và tài liệu sẽ bị xóa.
+                    Báº¡n lÃ  thÃ nh viÃªn duy nháº¥t. Báº¡n cÃ³ thá»ƒ xÃ³a cÃ¢u láº¡c bá»™ nÃ y.
+                    ToÃ n bá»™ bÃ i viáº¿t, tin nháº¯n, sá»± kiá»‡n vÃ  tÃ i liá»‡u sáº½ bá»‹ xÃ³a.
                   </p>
                 ) : (
                   <p className="mt-2 text-sm leading-6 text-red-700">
-                    Câu lạc bộ hiện còn {data.members.length} thành viên. Bạn
-                    phải chuyển quyền cho người khác hoặc xử lý thành viên trước
-                    khi xóa.
+                    CÃ¢u láº¡c bá»™ hiá»‡n cÃ²n {data.members.length} thÃ nh viÃªn. Báº¡n
+                    pháº£i chuyá»ƒn quyá»n cho ngÆ°á»i khÃ¡c hoáº·c xá»­ lÃ½ thÃ nh viÃªn trÆ°á»›c
+                    khi xÃ³a.
                   </p>
                 )}
 
@@ -169,7 +169,7 @@ export function CommunityClubManagement({
                   className="mt-4 flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 font-bold text-white disabled:cursor-not-allowed disabled:bg-red-300"
                 >
                   <Trash2 size={17} />
-                  Xóa câu lạc bộ
+                  XÃ³a cÃ¢u láº¡c bá»™
                 </button>
               </section>
             )}
@@ -187,7 +187,7 @@ export function CommunityClubManagement({
                 onKeyDown={(event) => {
                   if (event.key === "Enter") void searchUsers();
                 }}
-                placeholder="Tìm người dùng theo tên, username hoặc email..."
+                placeholder="TÃ¬m ngÆ°á»i dÃ¹ng theo tÃªn, username hoáº·c email..."
                 className="w-full rounded-xl border-2 py-3 pl-10 pr-4"
               />
             </div>
@@ -197,7 +197,7 @@ export function CommunityClubManagement({
               onClick={() => void searchUsers()}
               className="rounded-xl bg-indigo-600 px-5 font-bold text-white"
             >
-              Tìm
+              TÃ¬m
             </button>
           </div>
 
@@ -206,7 +206,7 @@ export function CommunityClubManagement({
               {inviteResults.map((user) => (
                 <div key={user.id} className="flex items-center gap-3 py-3">
                   <img
-                    src={user.avatar || "/cat-home.jpg"}
+                    src={user.avatar || "/brand/beaconvie-ai-mascot.png"}
                     alt=""
                     className="h-10 w-10 rounded-full object-cover"
                   />
@@ -224,7 +224,7 @@ export function CommunityClubManagement({
                     disabled={busy === user.id || user.invited}
                     className="rounded-xl bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-700 disabled:opacity-50"
                   >
-                    {user.invited ? "Đã mời" : "Mời"}
+                    {user.invited ? "ÄÃ£ má»i" : "Má»i"}
                   </button>
                 </div>
               ))}
@@ -236,13 +236,13 @@ export function CommunityClubManagement({
       {data.permissions.canApproveJoinRequests &&
         data.pendingRequests.length > 0 && (
           <section className="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
-            <h3 className="font-extrabold">Yêu cầu xin gia nhập</h3>
+            <h3 className="font-extrabold">YÃªu cáº§u xin gia nháº­p</h3>
 
             <div className="mt-3 divide-y">
               {data.pendingRequests.map((request: any) => (
                 <div key={request.id} className="flex items-center gap-3 py-3">
                   <img
-                    src={request.user.avatar || "/cat-home.jpg"}
+                    src={request.user.avatar || "/brand/beaconvie-ai-mascot.png"}
                     alt=""
                     className="h-10 w-10 rounded-full object-cover"
                   />
@@ -250,7 +250,7 @@ export function CommunityClubManagement({
                   <div className="flex-1">
                     <strong>{request.user.fullname}</strong>
                     <p className="text-sm text-slate-500">
-                      {request.message || "Muốn tham gia câu lạc bộ"}
+                      {request.message || "Muá»‘n tham gia cÃ¢u láº¡c bá»™"}
                     </p>
                   </div>
 
@@ -276,7 +276,7 @@ export function CommunityClubManagement({
         )}
 
       <section className="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
-        <h3 className="font-extrabold">Quản lý thành viên</h3>
+        <h3 className="font-extrabold">Quáº£n lÃ½ thÃ nh viÃªn</h3>
 
         <div className="mt-3 divide-y">
           {data.members.map((member: any) => (
@@ -285,7 +285,7 @@ export function CommunityClubManagement({
               className="flex flex-wrap items-center gap-3 py-3"
             >
               <img
-                src={member.user.avatar || "/cat-home.jpg"}
+                src={member.user.avatar || "/brand/beaconvie-ai-mascot.png"}
                 alt=""
                 className="h-11 w-11 rounded-full object-cover"
               />
@@ -316,9 +316,9 @@ export function CommunityClubManagement({
                   }
                   className="rounded-xl border-2 border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-indigo-500"
                 >
-                  <option value="ADMIN">Quản trị viên</option>
-                  <option value="MODERATOR">Điều hành viên</option>
-                  <option value="MEMBER">Thành viên</option>
+                  <option value="ADMIN">Quáº£n trá»‹ viÃªn</option>
+                  <option value="MODERATOR">Äiá»u hÃ nh viÃªn</option>
+                  <option value="MEMBER">ThÃ nh viÃªn</option>
                 </select>
               )}
 
@@ -329,7 +329,7 @@ export function CommunityClubManagement({
                     onClick={() => void transfer(member.user.id)}
                     className="rounded-xl bg-amber-50 px-3 py-2 text-sm font-bold text-amber-700"
                   >
-                    Chuyển quyền
+                    Chuyá»ƒn quyá»n
                   </button>
                 )}
 
@@ -349,11 +349,11 @@ export function CommunityClubManagement({
 
       {data.permissions.canDeleteClub && (
         <section className="rounded-3xl border-2 border-red-200 bg-red-50 p-5">
-          <h3 className="font-extrabold text-red-800">Khu vực nguy hiểm</h3>
+          <h3 className="font-extrabold text-red-800">Khu vá»±c nguy hiá»ƒm</h3>
 
           <p className="mt-2 text-sm leading-6 text-red-700">
-            Chỉ có thể xóa Club khi Club chỉ còn một mình chủ phòng. Nếu còn
-            thành viên khác, hãy chuyển quyền hoặc xử lý thành viên trước.
+            Chá»‰ cÃ³ thá»ƒ xÃ³a Club khi Club chá»‰ cÃ²n má»™t mÃ¬nh chá»§ phÃ²ng. Náº¿u cÃ²n
+            thÃ nh viÃªn khÃ¡c, hÃ£y chuyá»ƒn quyá»n hoáº·c xá»­ lÃ½ thÃ nh viÃªn trÆ°á»›c.
           </p>
 
           <button
@@ -362,7 +362,7 @@ export function CommunityClubManagement({
             className="mt-4 flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 font-bold text-white"
           >
             <Trash2 size={17} />
-            Xóa câu lạc bộ
+            XÃ³a cÃ¢u láº¡c bá»™
           </button>
         </section>
       )}

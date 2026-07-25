@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -24,7 +24,7 @@ export default function AuthCallbackPage() {
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="text-center">
-        <div className="mb-4">Đang xử lý đăng nhập...</div>
+        <div className="mb-4">Äang xá»­ lÃ½ Ä‘Äƒng nháº­p...</div>
       </div>
     </div>
   );

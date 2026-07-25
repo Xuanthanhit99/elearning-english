@@ -1,4 +1,4 @@
-import WritingTopicsPage from "@/src/Components/WritingPage/WritingTopicsPage/WritingTopicsPage";
+﻿import WritingTopicsPage from "@/src/Components/WritingPage/WritingTopicsPage/WritingTopicsPage";
 
 
 export default function WritingTopics() {

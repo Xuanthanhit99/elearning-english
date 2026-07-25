@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   Check,
@@ -94,7 +94,7 @@ export function CommunityFriendsView({
   return (
     <div className="space-y-5">
       <div className="rounded-3xl border bg-white p-5 shadow-sm">
-        <h2 className="text-xl font-bold">Tìm bạn học</h2>
+        <h2 className="text-xl font-bold">TÃ¬m báº¡n há»c</h2>
         <div className="mt-4 flex gap-2">
           <div className="relative flex-1">
             <Search
@@ -107,7 +107,7 @@ export function CommunityFriendsView({
               onKeyDown={(event) => {
                 if (event.key === 'Enter') void search();
               }}
-              placeholder="Tìm theo tên, username hoặc email..."
+              placeholder="TÃ¬m theo tÃªn, username hoáº·c email..."
               className="w-full rounded-xl border py-3 pl-10 pr-4 outline-none focus:border-indigo-500"
             />
           </div>
@@ -116,7 +116,7 @@ export function CommunityFriendsView({
             onClick={search}
             className="rounded-xl bg-indigo-600 px-5 font-semibold text-white"
           >
-            Tìm
+            TÃ¬m
           </button>
         </div>
 
@@ -128,7 +128,7 @@ export function CommunityFriendsView({
                 className="flex items-center gap-3 py-3"
               >
                 <img
-                  src={user.avatar || '/cat-home.jpg'}
+                  src={user.avatar || '/brand/beaconvie-ai-mascot.png'}
                   alt=""
                   className="h-11 w-11 rounded-full object-cover"
                 />
@@ -137,7 +137,7 @@ export function CommunityFriendsView({
                     {user.fullname}
                   </strong>
                   <span className="text-sm text-slate-500">
-                    {user.username ? `@${user.username} · ` : ''}
+                    {user.username ? `@${user.username} Â· ` : ''}
                     Level {user.level}
                   </span>
                 </div>
@@ -149,13 +149,13 @@ export function CommunityFriendsView({
                     className="flex items-center gap-2 rounded-xl bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-600"
                   >
                     <UserPlus size={17} />
-                    Kết bạn
+                    Káº¿t báº¡n
                   </button>
                 )}
 
                 {user.relationship === 'REQUEST_SENT' && (
                   <span className="rounded-xl bg-slate-100 px-3 py-2 text-sm text-slate-500">
-                    Đã gửi lời mời
+                    ÄÃ£ gá»­i lá»i má»i
                   </span>
                 )}
 
@@ -166,7 +166,7 @@ export function CommunityFriendsView({
                     className="flex items-center gap-2 rounded-xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white"
                   >
                     <MessageCircle size={17} />
-                    Nhắn tin
+                    Nháº¯n tin
                   </button>
                 )}
               </div>
@@ -177,7 +177,7 @@ export function CommunityFriendsView({
 
       {requests.length > 0 && (
         <div className="rounded-3xl border bg-white p-5 shadow-sm">
-          <h3 className="font-bold">Lời mời kết bạn</h3>
+          <h3 className="font-bold">Lá»i má»i káº¿t báº¡n</h3>
           <div className="mt-3 divide-y">
             {requests.map((request) => (
               <div
@@ -187,7 +187,7 @@ export function CommunityFriendsView({
                 <img
                   src={
                     request.requester.avatar ||
-                    '/cat-home.jpg'
+                    '/brand/beaconvie-ai-mascot.png'
                   }
                   alt=""
                   className="h-10 w-10 rounded-full object-cover"
@@ -195,7 +195,7 @@ export function CommunityFriendsView({
                 <div className="flex-1">
                   <strong>{request.requester.fullname}</strong>
                   <p className="text-sm text-slate-500">
-                    Muốn kết bạn với bạn
+                    Muá»‘n káº¿t báº¡n vá»›i báº¡n
                   </p>
                 </div>
                 <button
@@ -221,16 +221,16 @@ export function CommunityFriendsView({
       <div className="rounded-3xl border bg-white p-5 shadow-sm">
         <div className="flex items-center gap-2">
           <UserRoundCheck size={20} className="text-indigo-600" />
-          <h3 className="font-bold">Bạn bè của tôi</h3>
+          <h3 className="font-bold">Báº¡n bÃ¨ cá»§a tÃ´i</h3>
         </div>
 
         {loading ? (
           <p className="mt-4 text-sm text-slate-500">
-            Đang tải...
+            Äang táº£i...
           </p>
         ) : friends.length === 0 ? (
           <p className="mt-4 text-sm text-slate-500">
-            Bạn chưa có bạn bè trong cộng đồng.
+            Báº¡n chÆ°a cÃ³ báº¡n bÃ¨ trong cá»™ng Ä‘á»“ng.
           </p>
         ) : (
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -240,7 +240,7 @@ export function CommunityFriendsView({
                 className="flex items-center gap-3 rounded-2xl border p-3"
               >
                 <img
-                  src={friend.avatar || '/cat-home.jpg'}
+                  src={friend.avatar || '/brand/beaconvie-ai-mascot.png'}
                   alt=""
                   className="h-10 w-10 rounded-full object-cover"
                 />

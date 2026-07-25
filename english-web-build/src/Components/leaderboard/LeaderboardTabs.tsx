@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import type { LeaderboardScope } from '@/src/types/leaderboard';
 
@@ -9,18 +9,18 @@ const tabs: Array<{
 }> = [
   {
     value: 'GLOBAL',
-    label: 'Toàn cầu',
-    icon: '🌍',
+    label: 'ToÃ n cáº§u',
+    icon: 'ðŸŒ',
   },
   {
     value: 'FRIENDS',
-    label: 'Bạn bè',
-    icon: '👥',
+    label: 'Báº¡n bÃ¨',
+    icon: 'ðŸ‘¥',
   },
   {
     value: 'CLUB',
-    label: 'Câu lạc bộ',
-    icon: '🏫',
+    label: 'CÃ¢u láº¡c bá»™',
+    icon: 'ðŸ«',
   },
 ];
 

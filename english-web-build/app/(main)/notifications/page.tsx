@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { safeNotificationHref } from "@/src/lib/notification-navigation";
 import { useNotificationStore } from "@/src/store/notificationStore";
@@ -60,33 +60,33 @@ export default function NotificationsPage() {
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-black text-[var(--lumiverse-primary)]">
+          <p className="text-sm font-black text-[var(--BeaconVie-primary)]">
             Notification Center
           </p>
-          <h1 className="mt-2 text-3xl font-black text-[var(--lumiverse-ink)]">
+          <h1 className="mt-2 text-3xl font-black text-[var(--BeaconVie-ink)]">
             Thong bao
           </h1>
-          <p className="mt-2 text-sm font-bold text-[var(--lumiverse-muted)]">
+          <p className="mt-2 text-sm font-bold text-[var(--BeaconVie-muted)]">
             Mission, thanh tich, nhac hoc, muc tieu va cong dong deu o day.
           </p>
         </div>
         <button
           type="button"
           onClick={() => void markAllRead()}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-[var(--lumiverse-primary)] px-5 font-black text-white shadow-sm transition hover:opacity-95 disabled:opacity-60"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-[var(--BeaconVie-primary)] px-5 font-black text-white shadow-sm transition hover:opacity-95 disabled:opacity-60"
         >
           <CheckCheck size={18} />
           Doc tat ca ({unreadCount})
         </button>
       </header>
 
-      <section className="mt-6 rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-3 shadow-sm sm:p-5 dark:shadow-black/20">
+      <section className="mt-6 rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-3 shadow-sm sm:p-5 dark:shadow-black/20">
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
-                className="h-24 animate-pulse rounded-2xl bg-[var(--lumiverse-card-soft)]"
+                className="h-24 animate-pulse rounded-2xl bg-[var(--BeaconVie-card-soft)]"
               />
             ))}
           </div>
@@ -102,14 +102,14 @@ export default function NotificationsPage() {
             </button>
           </div>
         ) : items.length ? (
-          <div className="divide-y divide-[var(--lumiverse-border)]">
+          <div className="divide-y divide-[var(--BeaconVie-border)]">
             {items.map((item) => {
               const Icon = iconMap[item.type] ?? Bell;
               return (
                 <article
                   key={item.id}
                   className={`grid gap-4 rounded-2xl px-3 py-4 sm:grid-cols-[52px_minmax(0,1fr)_auto] sm:items-center ${
-                    item.isRead ? "" : "bg-[var(--lumiverse-card-soft)]"
+                    item.isRead ? "" : "bg-[var(--BeaconVie-card-soft)]"
                   }`}
                 >
                   <span className="grid h-12 w-12 place-items-center rounded-2xl bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-200">
@@ -121,20 +121,20 @@ export default function NotificationsPage() {
                     className="min-w-0"
                   >
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="font-black text-[var(--lumiverse-ink)]">{item.title}</h2>
+                      <h2 className="font-black text-[var(--BeaconVie-ink)]">{item.title}</h2>
                       {!item.isRead && (
                         <span className="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-black text-white dark:bg-red-400 dark:text-slate-950">
                           Moi
                         </span>
                       )}
-                      <span className="rounded-full bg-[var(--lumiverse-card-soft)] px-2 py-0.5 text-[10px] font-black text-[var(--lumiverse-muted)]">
+                      <span className="rounded-full bg-[var(--BeaconVie-card-soft)] px-2 py-0.5 text-[10px] font-black text-[var(--BeaconVie-muted)]">
                         {item.type}
                       </span>
                     </div>
-                    <p className="mt-1 line-clamp-2 text-sm font-bold text-[var(--lumiverse-muted)]">
+                    <p className="mt-1 line-clamp-2 text-sm font-bold text-[var(--BeaconVie-muted)]">
                       {item.message}
                     </p>
-                    <p className="mt-2 text-xs font-bold text-[var(--lumiverse-muted)]">
+                    <p className="mt-2 text-xs font-bold text-[var(--BeaconVie-muted)]">
                       {timeAgo(item.createdAt)}
                     </p>
                   </Link>
@@ -143,7 +143,7 @@ export default function NotificationsPage() {
                       <button
                         type="button"
                         onClick={() => void markRead(item.id)}
-                        className="rounded-xl border border-[var(--lumiverse-border)] px-3 py-2 text-xs font-black text-[var(--lumiverse-primary)] transition hover:bg-[var(--lumiverse-card-soft)]"
+                        className="rounded-xl border border-[var(--BeaconVie-border)] px-3 py-2 text-xs font-black text-[var(--BeaconVie-primary)] transition hover:bg-[var(--BeaconVie-card-soft)]"
                       >
                         Da doc
                       </button>
@@ -151,7 +151,7 @@ export default function NotificationsPage() {
                     <button
                       type="button"
                       onClick={() => void archive(item.id)}
-                      className="grid h-9 w-9 place-items-center rounded-xl text-[var(--lumiverse-muted)] transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-200"
+                      className="grid h-9 w-9 place-items-center rounded-xl text-[var(--BeaconVie-muted)] transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-200"
                     >
                       <Trash2 size={17} />
                     </button>
@@ -161,12 +161,12 @@ export default function NotificationsPage() {
             })}
           </div>
         ) : (
-          <div className="rounded-3xl border border-dashed border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] p-10 text-center">
-            <Bell className="mx-auto text-[var(--lumiverse-muted)]" size={48} />
-            <h2 className="mt-4 text-xl font-black text-[var(--lumiverse-ink)]">
+          <div className="rounded-3xl border border-dashed border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-10 text-center">
+            <Bell className="mx-auto text-[var(--BeaconVie-muted)]" size={48} />
+            <h2 className="mt-4 text-xl font-black text-[var(--BeaconVie-ink)]">
               Chua co thong bao
             </h2>
-            <p className="mt-2 text-sm font-bold text-[var(--lumiverse-muted)]">
+            <p className="mt-2 text-sm font-bold text-[var(--BeaconVie-muted)]">
               Hoan thanh bai hoc hoac nhiem vu de nhan cap nhat moi.
             </p>
           </div>
@@ -177,7 +177,7 @@ export default function NotificationsPage() {
             type="button"
             disabled={loadingMore}
             onClick={() => void load(page + 1)}
-            className="mt-5 flex h-11 w-full items-center justify-center rounded-2xl border border-[var(--lumiverse-border)] font-black text-[var(--lumiverse-primary)] transition hover:bg-[var(--lumiverse-card-soft)] disabled:opacity-60"
+            className="mt-5 flex h-11 w-full items-center justify-center rounded-2xl border border-[var(--BeaconVie-border)] font-black text-[var(--BeaconVie-primary)] transition hover:bg-[var(--BeaconVie-card-soft)] disabled:opacity-60"
           >
             {loadingMore ? (
               <Loader2 className="animate-spin" size={18} />

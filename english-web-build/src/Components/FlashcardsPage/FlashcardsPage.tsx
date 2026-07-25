@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   BookOpen,
@@ -22,23 +22,23 @@ import {
 import { speakWord } from "@/src/lib/tts-api";
 
 const navs = [
-  ["Trang chủ", Home],
-  ["Tổng quan", BookOpen],
-  ["Từ vựng", BookOpen],
-  ["Ngữ pháp", GraduationCap],
+  ["Trang chá»§", Home],
+  ["Tá»•ng quan", BookOpen],
+  ["Tá»« vá»±ng", BookOpen],
+  ["Ngá»¯ phÃ¡p", GraduationCap],
   ["Nghe", Volume2],
-  ["Nói", Mic],
-  ["Đọc hiểu", BookOpen],
-  ["Viết", X],
+  ["NÃ³i", Mic],
+  ["Äá»c hiá»ƒu", BookOpen],
+  ["Viáº¿t", X],
   ["Flashcards", Star],
 ];
 
 const reviewWords = [
-  ["adventure", "/ədˈventʃər/", "Khó", "red"],
-  ["memorable", "/ˈmemərəbl/", "Trung bình", "orange"],
-  ["explore", "/ɪkˈsplɔːr/", "Dễ", "green"],
-  ["experience", "/ɪkˈspɪəriəns/", "Trung bình", "orange"],
-  ["destination", "/ˌdestɪˈneɪʃn/", "Dễ", "green"],
+  ["adventure", "/É™dËˆventÊƒÉ™r/", "KhÃ³", "red"],
+  ["memorable", "/ËˆmemÉ™rÉ™bl/", "Trung bÃ¬nh", "orange"],
+  ["explore", "/ÉªkËˆsplÉ”Ër/", "Dá»…", "green"],
+  ["experience", "/ÉªkËˆspÉªÉ™riÉ™ns/", "Trung bÃ¬nh", "orange"],
+  ["destination", "/ËŒdestÉªËˆneÉªÊƒn/", "Dá»…", "green"],
 ];
 
 export default function FlashcardsPage() {
@@ -47,7 +47,7 @@ export default function FlashcardsPage() {
       <div className="flex">
         <aside className="hidden fixed left-0 top-0 h-screen w-[280px] border-r border-purple-100 bg-white px-5 py-6">
           <div className="mb-10 flex items-center gap-3">
-            {/* <div className="text-3xl">🦊</div> */}
+            {/* <div className="text-3xl">ðŸ¦Š</div> */}
             <h1 className="text-3xl font-black">
               Study<span className="text-purple-600">Arena</span>
             </h1>
@@ -55,7 +55,7 @@ export default function FlashcardsPage() {
 
           <nav className="space-y-2">
             <p className="px-3 text-xs font-bold uppercase tracking-widest text-purple-400">
-              Học tập
+              Há»c táº­p
             </p>
 
             {navs.map(([label, Icon]: any) => (
@@ -74,21 +74,21 @@ export default function FlashcardsPage() {
 
             <div className="ml-7 border-l border-purple-200 pl-4">
               <button className="mb-2 w-full rounded-xl bg-purple-100 px-4 py-3 text-left text-sm font-black text-purple-700">
-                Ôn tập hôm nay
+                Ã”n táº­p hÃ´m nay
               </button>
               <button className="mb-2 w-full px-4 py-2 text-left text-sm font-bold">
-                Tất cả thẻ
+                Táº¥t cáº£ tháº»
               </button>
               <button className="w-full px-4 py-2 text-left text-sm font-bold">
-                Tạo bộ thẻ
+                Táº¡o bá»™ tháº»
               </button>
             </div>
 
             <p className="px-3 pt-6 text-xs font-bold uppercase tracking-widest text-purple-400">
-              Cộng đồng
+              Cá»™ng Ä‘á»“ng
             </p>
 
-            {["Cộng đồng", "Hỏi đáp", "Thành tích"].map((item) => (
+            {["Cá»™ng Ä‘á»“ng", "Há»i Ä‘Ã¡p", "ThÃ nh tÃ­ch"].map((item) => (
               <button
                 key={item}
                 className="flex w-full items-center gap-4 rounded-xl px-4 py-3 text-sm font-black hover:bg-purple-50"
@@ -99,13 +99,13 @@ export default function FlashcardsPage() {
             ))}
 
             <p className="px-3 pt-6 text-xs font-bold uppercase tracking-widest text-purple-400">
-              Khác
+              KhÃ¡c
             </p>
 
             {[
-              ["Khoá học", BookOpen],
+              ["KhoÃ¡ há»c", BookOpen],
               ["Shop", ShoppingBag],
-              ["Cài đặt", Settings],
+              ["CÃ i Ä‘áº·t", Settings],
             ].map(([label, Icon]: any) => (
               <button
                 key={label}
@@ -118,12 +118,12 @@ export default function FlashcardsPage() {
           </nav>
 
           <div className="absolute bottom-6 left-5 right-5 rounded-2xl bg-purple-50 p-5">
-            <p className="mb-3 font-black text-purple-700">👑 Nâng cấp Premium</p>
+            <p className="mb-3 font-black text-purple-700">ðŸ‘‘ NÃ¢ng cáº¥p Premium</p>
             <p className="mb-4 text-sm leading-6 text-purple-500">
-              Học không giới hạn, nhận nhiều đặc quyền hấp dẫn!
+              Há»c khÃ´ng giá»›i háº¡n, nháº­n nhiá»u Ä‘áº·c quyá»n háº¥p dáº«n!
             </p>
             <button className="rounded-xl bg-purple-600 px-5 py-3 text-sm font-black text-white">
-              Nâng cấp ngay
+              NÃ¢ng cáº¥p ngay
             </button>
           </div>
         </aside>
@@ -134,19 +134,19 @@ export default function FlashcardsPage() {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-400" />
               <input
                 className="h-14 w-full rounded-xl border border-purple-200 pl-12 outline-none"
-                placeholder="Tìm bài học, từ vựng, ngữ pháp..."
+                placeholder="TÃ¬m bÃ i há»c, tá»« vá»±ng, ngá»¯ phÃ¡p..."
               />
             </div>
 
             <div className="flex items-center gap-8">
               <Top icon={<Flame className="text-red-500" />} value="18" label="Streak" />
-              <Top icon={<Star className="text-yellow-400" />} value="2,450" label="XP hôm nay" />
+              <Top icon={<Star className="text-yellow-400" />} value="2,450" label="XP hÃ´m nay" />
               <Top icon={<Diamond className="text-sky-400" />} value="5,230" label="Xu" />
               <Gift className="text-purple-600" />
-              <span>🔔</span>
+              <span>ðŸ””</span>
               <div className="flex items-center gap-3">
                 <div className="grid h-11 w-11 place-items-center rounded-full bg-cyan-100 text-xl">
-                  👦
+                  ðŸ‘¦
                 </div>
                 <div>
                   <p className="text-sm font-black">Minh Anh</p>
@@ -160,29 +160,29 @@ export default function FlashcardsPage() {
           <div className="grid grid-cols-[1fr_420px] gap-9 px-9 py-8">
             <section>
               <p className="mb-5 text-sm font-bold text-purple-500">
-                ← Trang chủ › Flashcards › Ôn tập hôm nay
+                â† Trang chá»§ â€º Flashcards â€º Ã”n táº­p hÃ´m nay
               </p>
 
               <div className="mb-8 flex items-center justify-between">
                 <div>
                   <h2 className="mb-3 text-4xl font-black">
-                    Flashcards <span className="text-purple-600">♟</span>
+                    Flashcards <span className="text-purple-600">â™Ÿ</span>
                   </h2>
                   <p className="text-lg font-medium text-purple-500">
-                    Ôn tập từ vựng hiệu quả với phương pháp lặp lại ngắt quãng (SRS)
+                    Ã”n táº­p tá»« vá»±ng hiá»‡u quáº£ vá»›i phÆ°Æ¡ng phÃ¡p láº·p láº¡i ngáº¯t quÃ£ng (SRS)
                   </p>
                 </div>
 
                 <div className="flex items-center gap-5">
                   <div className="rounded-2xl border border-purple-200 bg-purple-50 px-6 py-5 text-sm font-bold leading-6">
-                    Cùng ôn tập mỗi ngày <br /> để ghi nhớ từ vựng lâu hơn nhé!
+                    CÃ¹ng Ã´n táº­p má»—i ngÃ y <br /> Ä‘á»ƒ ghi nhá»› tá»« vá»±ng lÃ¢u hÆ¡n nhÃ©!
                   </div>
-                  {/* <div className="text-7xl">🦊</div> */}
+                  {/* <div className="text-7xl">ðŸ¦Š</div> */}
                 </div>
               </div>
 
               <div className="mb-6 flex gap-4">
-                {["Ôn tập hôm nay 28", "Mới học 15", "Dễ 32", "Trung bình 48", "Khó 16"].map(
+                {["Ã”n táº­p hÃ´m nay 28", "Má»›i há»c 15", "Dá»… 32", "Trung bÃ¬nh 48", "KhÃ³ 16"].map(
                   (item, i) => (
                     <button
                       key={item}
@@ -219,24 +219,24 @@ export default function FlashcardsPage() {
                   </h3>
 
                   <p className="mb-8 text-2xl font-black text-purple-600">
-                    /ədˈventʃər/
+                    /É™dËˆventÊƒÉ™r/
                   </p>
 
                   <div className="mx-auto mb-8 h-px w-[560px] bg-purple-100" />
 
                   <p className="mb-12 text-2xl font-bold">
-                    (n) cuộc phiêu lưu, cuộc mạo hiểm
+                    (n) cuá»™c phiÃªu lÆ°u, cuá»™c máº¡o hiá»ƒm
                   </p>
 
                   <p className="font-semibold text-purple-400">
-                    ⟳ Nhấn vào thẻ hoặc nút bên dưới để lật thẻ
+                    âŸ³ Nháº¥n vÃ o tháº» hoáº·c nÃºt bÃªn dÆ°á»›i Ä‘á»ƒ láº­t tháº»
                   </p>
                 </div>
 
                 <div className="mb-8 flex items-center justify-between">
                   <button className="rounded-xl border border-purple-200 bg-white px-6 py-4 font-black text-purple-500">
                     <RotateCcw className="mr-2 inline" />
-                    Bỏ qua
+                    Bá» qua
                   </button>
 
                   <div className="w-[520px] text-center">
@@ -247,31 +247,31 @@ export default function FlashcardsPage() {
                   </div>
 
                   <button className="rounded-xl border border-purple-200 bg-white px-6 py-4 font-black text-purple-500">
-                    ⌨ Bàn phím
+                    âŒ¨ BÃ n phÃ­m
                   </button>
                 </div>
 
                 <div className="grid grid-cols-4 gap-6">
-                  <Rate title="Again" desc="Chưa nhớ" icon="🔁" color="red" />
-                  <Rate title="Hard" desc="Khó nhớ" icon="☹️" color="orange" />
-                  <Rate title="Good" desc="Ghi nhớ tốt" icon="🙂" color="green" />
-                  <Rate title="Easy" desc="Rất dễ nhớ" icon="⭐" color="purple" />
+                  <Rate title="Again" desc="ChÆ°a nhá»›" icon="ðŸ”" color="red" />
+                  <Rate title="Hard" desc="KhÃ³ nhá»›" icon="â˜¹ï¸" color="orange" />
+                  <Rate title="Good" desc="Ghi nhá»› tá»‘t" icon="ðŸ™‚" color="green" />
+                  <Rate title="Easy" desc="Ráº¥t dá»… nhá»›" icon="â­" color="purple" />
                 </div>
 
                 <div className="mt-8 flex items-center justify-between rounded-2xl border border-purple-200 bg-white/70 p-6">
                   <div className="flex items-center gap-5">
-                    <div className="text-5xl">💡</div>
+                    <div className="text-5xl">ðŸ’¡</div>
                     <div>
                       <p className="mb-1 text-lg font-black text-purple-700">
-                        Mẹo học Flashcards
+                        Máº¹o há»c Flashcards
                       </p>
                       <p className="font-medium text-purple-500">
-                        Đánh giá chính xác mức độ nhớ của bạn. Hệ thống sẽ sắp xếp
-                        lịch ôn tập phù hợp.
+                        ÄÃ¡nh giÃ¡ chÃ­nh xÃ¡c má»©c Ä‘á»™ nhá»› cá»§a báº¡n. Há»‡ thá»‘ng sáº½ sáº¯p xáº¿p
+                        lá»‹ch Ã´n táº­p phÃ¹ há»£p.
                       </p>
                     </div>
                   </div>
-                  {/* <div className="text-6xl">🦊</div> */}
+                  {/* <div className="text-6xl">ðŸ¦Š</div> */}
                 </div>
               </div>
             </section>
@@ -279,38 +279,38 @@ export default function FlashcardsPage() {
             <aside className="space-y-6">
               <Card>
                 <div className="mb-8 flex justify-between">
-                  <h3 className="text-xl font-black">Tiến độ buổi học</h3>
-                  <button className="font-bold text-purple-600">Sửa mục tiêu ✎</button>
+                  <h3 className="text-xl font-black">Tiáº¿n Ä‘á»™ buá»•i há»c</h3>
+                  <button className="font-bold text-purple-600">Sá»­a má»¥c tiÃªu âœŽ</button>
                 </div>
 
                 <div className="mx-auto mb-8 grid h-40 w-40 place-items-center rounded-full bg-[conic-gradient(#7c16ff_60%,#eee8ff_0)]">
                   <div className="grid h-28 w-28 place-items-center rounded-full bg-white text-center">
                     <div>
                       <p className="text-4xl font-black">60%</p>
-                      <p className="font-bold">Hoàn thành</p>
+                      <p className="font-bold">HoÃ n thÃ nh</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 text-center">
-                  <Mini value="28" label="Thẻ cần ôn" icon="♟" />
-                  <Mini value="17" label="Đã ôn xong" icon="✅" />
-                  <Mini value="12:45" label="Thời gian" icon={<Clock size={18} />} />
+                  <Mini value="28" label="Tháº» cáº§n Ã´n" icon="â™Ÿ" />
+                  <Mini value="17" label="ÄÃ£ Ã´n xong" icon="âœ…" />
+                  <Mini value="12:45" label="Thá»i gian" icon={<Clock size={18} />} />
                 </div>
               </Card>
 
               <Card className="flex items-center justify-between">
                 <div>
-                  <p className="mb-2 text-xl font-black">🔥 Duy trì chuỗi ngày!</p>
+                  <p className="mb-2 text-xl font-black">ðŸ”¥ Duy trÃ¬ chuá»—i ngÃ y!</p>
                   <p className="font-medium text-purple-500">
-                    Bạn đã ôn tập 18 ngày liên tục 🔥
+                    Báº¡n Ä‘Ã£ Ã´n táº­p 18 ngÃ y liÃªn tá»¥c ðŸ”¥
                   </p>
                 </div>
-                <div className="text-6xl">🦊</div>
+                <div className="text-6xl">ðŸ¦Š</div>
               </Card>
 
               <Card>
-                <h3 className="mb-6 text-xl font-black">Danh sách từ cần ôn</h3>
+                <h3 className="mb-6 text-xl font-black">Danh sÃ¡ch tá»« cáº§n Ã´n</h3>
 
                 <div className="space-y-5">
                   {reviewWords.map(([word, ipa, level, color]) => (
@@ -348,7 +348,7 @@ export default function FlashcardsPage() {
                 </div>
 
                 <button className="mt-8 w-full rounded-xl border border-purple-300 py-4 font-black text-purple-600">
-                  Xem tất cả thẻ →
+                  Xem táº¥t cáº£ tháº» â†’
                 </button>
               </Card>
             </aside>

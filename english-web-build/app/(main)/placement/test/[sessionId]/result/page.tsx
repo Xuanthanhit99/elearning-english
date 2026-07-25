@@ -1,4 +1,4 @@
-import PlacementResultScreen from "@/src/Components/placement-result/PlacementResultScreen";
+﻿import PlacementResultScreen from "@/src/Components/placement-result/PlacementResultScreen";
 
 export default async function PlacementResultPage({
   params,

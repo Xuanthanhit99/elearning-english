@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/src/lib/axios";
@@ -52,7 +52,7 @@ type PronunciationResult = {
 };
 
 const LEVEL = "A2";
-const GOAL = "Speaking";
+const GOAL = "Luyện nói";
 
 function unwrap<T>(payload: unknown): T {
   return ((payload as { data?: T })?.data ?? payload) as T;
@@ -86,7 +86,7 @@ export default function PronunciationPage() {
       });
       setExercise(unwrap<PronunciationExercise>(data));
     } catch (err) {
-      setError(getApiErrorMessage(err, "Không tạo được bài luyện phát âm"));
+      setError(getApiErrorMessage(err, "KhÃ´ng táº¡o Ä‘Æ°á»£c bÃ i luyá»‡n phÃ¡t Ã¢m"));
     } finally {
       setLoadingExercise(false);
     }
@@ -97,7 +97,7 @@ export default function PronunciationPage() {
       const { data } = await api.get("/pronunciation/history");
       setHistory(unwrap<PronunciationResult[]>(data) || []);
     } catch {
-      // Lịch sử chỉ để hiển thị tiến độ, không chặn luyện tập nếu lỗi.
+      // Lá»‹ch sá»­ chá»‰ Ä‘á»ƒ hiá»ƒn thá»‹ tiáº¿n Ä‘á»™, khÃ´ng cháº·n luyá»‡n táº­p náº¿u lá»—i.
     }
   };
 
@@ -123,7 +123,7 @@ export default function PronunciationPage() {
       setSelectedWord(analyzed.feedback?.wordFeedback?.[0] ?? null);
       void loadHistory();
     } catch (err) {
-      setError(getApiErrorMessage(err, "Không phân tích được phát âm. Thử lại nhé."));
+      setError(getApiErrorMessage(err, "KhÃ´ng phÃ¢n tÃ­ch Ä‘Æ°á»£c phÃ¡t Ã¢m. Thá»­ láº¡i nhÃ©."));
     } finally {
       setAnalyzing(false);
     }
@@ -138,7 +138,7 @@ export default function PronunciationPage() {
       !navigator.mediaDevices?.getUserMedia ||
       typeof MediaRecorder === "undefined"
     ) {
-      setError("Trình duyệt không hỗ trợ ghi âm.");
+      setError("TrÃ¬nh duyá»‡t khÃ´ng há»— trá»£ ghi Ã¢m.");
       return;
     }
 
@@ -162,7 +162,7 @@ export default function PronunciationPage() {
       recorder.start();
       setRecording(true);
     } catch {
-      setError("Không truy cập được microphone. Hãy cấp quyền ghi âm cho trình duyệt.");
+      setError("KhÃ´ng truy cáº­p Ä‘Æ°á»£c microphone. HÃ£y cáº¥p quyá»n ghi Ã¢m cho trÃ¬nh duyá»‡t.");
     }
   };
 
@@ -273,34 +273,34 @@ function Hero() {
       <div className="relative z-10 grid items-center gap-8 lg:grid-cols-[1fr_360px]">
         <div>
           <div className="mb-5 inline-flex rounded-full border border-[#ffd4ad] bg-white px-4 py-2 text-sm font-black text-[#ff6b00] shadow-sm">
-            🎤 AI Pronunciation Coach
+            ðŸŽ¤ AI Pronunciation Coach
           </div>
 
           <h1 className="max-w-4xl text-5xl font-black leading-tight text-[#1f2a44] lg:text-7xl">
-            Luyện phát âm chuẩn hơn cùng{" "}
-            <span className="text-[#ff6b00]">Lumi AI</span>
+            Luyá»‡n phÃ¡t Ã¢m chuáº©n hÆ¡n cÃ¹ng{" "}
+            <span className="text-[#ff6b00]">Beacon AI</span>
           </h1>
 
           <p className="mt-5 max-w-3xl text-lg font-bold leading-8 text-[#5b6b85]">
-            Nghe mẫu, ghi âm, nhận điểm phát âm và xem lỗi từng từ. Lumi sẽ giúp
-            bạn sửa âm cuối, trọng âm, độ rõ và độ trôi chảy.
+            Nghe máº«u, ghi Ã¢m, nháº­n Ä‘iá»ƒm phÃ¡t Ã¢m vÃ  xem lá»—i tá»«ng tá»«. Beacon sáº½ giÃºp
+            báº¡n sá»­a Ã¢m cuá»‘i, trá»ng Ã¢m, Ä‘á»™ rÃµ vÃ  Ä‘á»™ trÃ´i cháº£y.
           </p>
         </div>
 
         <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#1f2a44] via-[#4d4378] to-[#6b5796] p-7 text-white shadow-2xl">
           <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-white/10" />
-          <div className="absolute bottom-4 right-6 text-7xl opacity-20">🐱</div>
+          <div className="absolute bottom-4 right-6 text-7xl opacity-20">ðŸ±</div>
 
-          <h2 className="relative z-10 text-3xl font-black">Hôm nay luyện gì?</h2>
+          <h2 className="relative z-10 text-3xl font-black">HÃ´m nay luyá»‡n gÃ¬?</h2>
           <p className="relative z-10 mt-3 font-bold leading-7 text-white/80">
-            Lumi gợi ý luyện 10 câu ngắn để cải thiện âm cuối và trọng âm.
+            Beacon gá»£i Ã½ luyá»‡n 10 cÃ¢u ngáº¯n Ä‘á»ƒ cáº£i thiá»‡n Ã¢m cuá»‘i vÃ  trá»ng Ã¢m.
           </p>
 
           <div className="relative z-10 mt-6 grid grid-cols-2 gap-3">
-            <MiniHeroStat value="10" label="câu luyện" />
+            <MiniHeroStat value="10" label="cÃ¢u luyá»‡n" />
             <MiniHeroStat value="+20" label="XP" />
             <MiniHeroStat value="A2" label="level" />
-            <MiniHeroStat value="5m" label="thời gian" />
+            <MiniHeroStat value="5m" label="thá»i gian" />
           </div>
         </div>
       </div>
@@ -327,13 +327,13 @@ function PracticeSummary({
   onPlay: () => void;
 }) {
   return (
-    <SoftCard title="Bài luyện hiện tại">
+    <SoftCard title="BÃ i luyá»‡n hiá»‡n táº¡i">
       <div className="rounded-3xl bg-gradient-to-br from-[#fffaf5] to-[#f7f1fb] p-5">
         <div className="text-sm font-black text-[#ff6b00]">
           {exercise?.type === "sentence" ? "Sentence practice" : exercise?.type || "..."}
         </div>
         <h3 className="mt-3 text-xl font-black leading-6 text-[#1f2a44]">
-          {exercise?.text || "Đang tải câu luyện..."}
+          {exercise?.text || "Äang táº£i cÃ¢u luyá»‡n..."}
         </h3>
         <p className="mt-1 font-bold text-[#5b6b85]">{exercise?.ipa || ""}</p>
 
@@ -343,7 +343,7 @@ function PracticeSummary({
           disabled={!exercise || speaking}
           className="mt-5 w-full rounded-2xl bg-[#1f2a44] py-3 font-black text-white transition hover:bg-[#ff6b00] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {speaking ? "🔊 Đang phát..." : "🔊 Nghe mẫu"}
+          {speaking ? "ðŸ”Š Äang phÃ¡t..." : "ðŸ”Š Nghe máº«u"}
         </button>
       </div>
     </SoftCard>
@@ -352,9 +352,9 @@ function PracticeSummary({
 
 function TodayProgress({ count, percent }: { count: number; percent: number }) {
   return (
-    <SoftCard title="Tiến độ hôm nay">
+    <SoftCard title="Tiáº¿n Ä‘á»™ hÃ´m nay">
       <div className="flex items-center justify-between text-sm font-black text-[#1f2a44]">
-        <span>{count} / 10 câu</span>
+        <span>{count} / 10 cÃ¢u</span>
         <span>{percent}%</span>
       </div>
 
@@ -363,7 +363,7 @@ function TodayProgress({ count, percent }: { count: number; percent: number }) {
       </div>
 
       <div className="mt-4 rounded-2xl bg-[#fff0dc] px-4 py-3 text-sm font-black text-[#ff6b00]">
-        🔥 Giữ chuỗi luyện nói hôm nay
+        ðŸ”¥ Giá»¯ chuá»—i luyá»‡n nÃ³i hÃ´m nay
       </div>
     </SoftCard>
   );
@@ -371,13 +371,13 @@ function TodayProgress({ count, percent }: { count: number; percent: number }) {
 
 function PracticeSteps() {
   const steps = [
-    ["1", "Nghe mẫu", "Nghe chậm trước."],
-    ["2", "Ghi âm", "Nói rõ âm cuối."],
-    ["3", "Sửa lỗi", "Xem lỗi từng từ."],
+    ["1", "Nghe máº«u", "Nghe cháº­m trÆ°á»›c."],
+    ["2", "Ghi Ã¢m", "NÃ³i rÃµ Ã¢m cuá»‘i."],
+    ["3", "Sá»­a lá»—i", "Xem lá»—i tá»«ng tá»«."],
   ];
 
   return (
-    <SoftCard title="Cách luyện">
+    <SoftCard title="CÃ¡ch luyá»‡n">
       <div className="space-y-3">
         {steps.map(([num, title, desc]) => (
           <div key={num} className="flex gap-3 rounded-2xl bg-[#fffaf5] p-3">
@@ -428,12 +428,12 @@ function MainPractice({
       <div className="relative z-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <span className="rounded-full bg-[#fff0dc] px-4 py-2 text-xs font-black text-[#ff6b00]">
-            {exercise?.type === "sentence" ? "Sentence practice" : exercise?.type || "Practice"}
+            {exercise?.type === "sentence" ? "Sentence practice" : exercise?.type || "Luyện tập"}
           </span>
 
           <div className="flex items-center gap-2">
             <span className="rounded-full bg-[#f7f1fb] px-4 py-2 text-xs font-black text-[#6b5796]">
-              {exercise?.level || LEVEL} · {GOAL}
+              {exercise?.level || LEVEL} Â· {GOAL}
             </span>
             <button
               type="button"
@@ -441,7 +441,7 @@ function MainPractice({
               disabled={loading}
               className="rounded-full border border-[#ead8c2] bg-white px-4 py-2 text-xs font-black text-[#5b6b85] transition hover:border-[#ff6b00] hover:text-[#ff6b00] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              🔄 Đổi câu khác
+              ðŸ”„ Äá»•i cÃ¢u khÃ¡c
             </button>
           </div>
         </div>
@@ -449,25 +449,25 @@ function MainPractice({
         {loading ? (
           <div className="mt-10 text-center">
             <div className="mx-auto flex h-20 w-20 animate-bounce items-center justify-center rounded-full bg-[#fff4e8] text-5xl shadow-inner">
-              🐱
+              ðŸ±
             </div>
-            <p className="mt-6 font-bold text-[#5b6b85]">Lumi đang soạn câu luyện cho bạn...</p>
+            <p className="mt-6 font-bold text-[#5b6b85]">Beacon Ä‘ang soáº¡n cÃ¢u luyá»‡n cho báº¡n...</p>
           </div>
         ) : (
           <div className="mt-8 text-center">
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#fff4e8] text-5xl shadow-inner">
-              🐱
+              ðŸ±
             </div>
 
             <p className="mt-6 text-4xl font-black leading-tight text-[#1f2a44]">
-              {exercise?.text || "Chưa có câu luyện."}
+              {exercise?.text || "ChÆ°a cÃ³ cÃ¢u luyá»‡n."}
             </p>
 
             <p className="mt-3 text-lg font-bold text-[#5b6b85]">{exercise?.ipa}</p>
 
             {!!exercise?.focusSounds?.length && (
               <p className="mx-auto mt-4 max-w-2xl font-bold leading-7 text-[#5b6b85]">
-                Tập trung vào{" "}
+                Táº­p trung vÃ o{" "}
                 {exercise.focusSounds.map((item, index) => (
                   <span key={item.word}>
                     <b>{item.sound}</b> trong <b>{item.word}</b>
@@ -492,7 +492,7 @@ function MainPractice({
             disabled={!exercise || speakingSlow}
             className="rounded-2xl bg-[#fff0dc] py-4 font-black text-[#ff6b00] transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            🐢 {speakingSlow ? "Đang phát..." : "Nghe chậm"}
+            ðŸ¢ {speakingSlow ? "Äang phÃ¡t..." : "Nghe cháº­m"}
           </button>
 
           <button
@@ -501,7 +501,7 @@ function MainPractice({
             disabled={!exercise || speaking}
             className="rounded-2xl bg-[#1f2a44] py-4 font-black text-white transition hover:bg-[#ff6b00] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            🔊 {speaking ? "Đang phát..." : "Nghe mẫu"}
+            ðŸ”Š {speaking ? "Äang phÃ¡t..." : "Nghe máº«u"}
           </button>
         </div>
 
@@ -520,15 +520,15 @@ function MainPractice({
                 <span className="absolute -inset-4 animate-pulse rounded-full border-4 border-red-200" />
               </>
             )}
-            <span className="relative z-10">🎙️</span>
+            <span className="relative z-10">ðŸŽ™ï¸</span>
           </button>
 
           <p className="mt-4 font-black text-[#1f2a44]">
             {analyzing
-              ? "Lumi đang phân tích..."
+              ? "Beacon Ä‘ang phÃ¢n tÃ­ch..."
               : recording
-                ? "Đang nghe bạn nói, nhấn để dừng..."
-                : "Nhấn để bắt đầu ghi âm"}
+                ? "Äang nghe báº¡n nÃ³i, nháº¥n Ä‘á»ƒ dá»«ng..."
+                : "Nháº¥n Ä‘á»ƒ báº¯t Ä‘áº§u ghi Ã¢m"}
           </p>
         </div>
 
@@ -565,15 +565,15 @@ function AnalyzingCard() {
   return (
     <div className="rounded-[34px] border border-[#ead8c2] bg-white p-8 text-center shadow-[0_30px_90px_rgba(31,42,68,0.10)]">
       <div className="mx-auto flex h-24 w-24 animate-bounce items-center justify-center rounded-full bg-[#fff4e8] text-5xl">
-        🐱
+        ðŸ±
       </div>
 
       <h2 className="mt-5 text-3xl font-black text-[#1f2a44]">
-        Lumi đang phân tích phát âm...
+        Beacon Ä‘ang phÃ¢n tÃ­ch phÃ¡t Ã¢m...
       </h2>
 
       <p className="mt-2 font-bold text-[#5b6b85]">
-        AI đang kiểm tra độ rõ, trọng âm, âm cuối và độ trôi chảy.
+        AI Ä‘ang kiá»ƒm tra Ä‘á»™ rÃµ, trá»ng Ã¢m, Ã¢m cuá»‘i vÃ  Ä‘á»™ trÃ´i cháº£y.
       </p>
 
       <div className="mx-auto mt-6 h-3 max-w-md overflow-hidden rounded-full bg-slate-100">
@@ -587,20 +587,20 @@ function EmptyResultCard({ hasExercise }: { hasExercise: boolean }) {
   return (
     <div className="rounded-[34px] border border-dashed border-[#ead8c2] bg-white/60 p-8 text-center">
       <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#fff4e8] text-4xl">
-        🎙️
+        ðŸŽ™ï¸
       </div>
       <h2 className="mt-4 text-2xl font-black text-[#1f2a44]">
-        {hasExercise ? "Chưa có kết quả nào" : "Đang chuẩn bị câu luyện..."}
+        {hasExercise ? "ChÆ°a cÃ³ káº¿t quáº£ nÃ o" : "Äang chuáº©n bá»‹ cÃ¢u luyá»‡n..."}
       </h2>
       <p className="mt-2 font-bold text-[#5b6b85]">
-        Nghe mẫu rồi nhấn nút ghi âm để Lumi chấm điểm phát âm của bạn.
+        Nghe máº«u rá»“i nháº¥n nÃºt ghi Ã¢m Ä‘á»ƒ Beacon cháº¥m Ä‘iá»ƒm phÃ¡t Ã¢m cá»§a báº¡n.
       </p>
     </div>
   );
 }
 
 function ResultCard({ result }: { result: PronunciationResult }) {
-  const label = result.score >= 85 ? "Excellent" : result.score >= 70 ? "Good" : result.score >= 50 ? "Cần luyện thêm" : "Cần cố gắng hơn";
+  const label = result.score >= 85 ? "Excellent" : result.score >= 70 ? "Good" : result.score >= 50 ? "Cáº§n luyá»‡n thÃªm" : "Cáº§n cá»‘ gáº¯ng hÆ¡n";
 
   return (
     <div className="rounded-[34px] border border-[#ead8c2] bg-white p-7 shadow-[0_30px_90px_rgba(31,42,68,0.10)]">
@@ -616,18 +616,18 @@ function ResultCard({ result }: { result: PronunciationResult }) {
 
         <div className="flex-1">
           <h2 className="text-3xl font-black text-[#1f2a44]">
-            Kết quả phát âm
+            Káº¿t quáº£ phÃ¡t Ã¢m
           </h2>
 
           <p className="mt-2 font-bold leading-7 text-[#5b6b85]">
-            {result.feedback.miuNote || "Lumi đã chấm xong bài luyện của bạn."}
+            {result.feedback.miuNote || "Beacon Ä‘Ã£ cháº¥m xong bÃ i luyá»‡n cá»§a báº¡n."}
           </p>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <MiniScore label="Độ rõ" value={result.clarity} />
-            <MiniScore label="Trọng âm" value={result.stress} />
-            <MiniScore label="Âm cuối" value={result.endingSound} />
-            <MiniScore label="Độ trôi chảy" value={result.fluency} />
+            <MiniScore label="Äá»™ rÃµ" value={result.clarity} />
+            <MiniScore label="Trá»ng Ã¢m" value={result.stress} />
+            <MiniScore label="Ã‚m cuá»‘i" value={result.endingSound} />
+            <MiniScore label="Äá»™ trÃ´i cháº£y" value={result.fluency} />
           </div>
         </div>
       </div>
@@ -667,9 +667,9 @@ function WordFeedbackPanel({
   return (
     <div className="rounded-[34px] border border-[#ead8c2] bg-white p-7 shadow-[0_30px_90px_rgba(31,42,68,0.10)]">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-black text-[#1f2a44]">Từng từ trong câu</h2>
+        <h2 className="text-2xl font-black text-[#1f2a44]">Tá»«ng tá»« trong cÃ¢u</h2>
         <span className="rounded-full bg-[#fff0dc] px-4 py-2 text-xs font-black text-[#ff6b00]">
-          Click để xem lỗi
+          Click Ä‘á»ƒ xem lá»—i
         </span>
       </div>
 
@@ -692,7 +692,7 @@ function WordFeedbackPanel({
                       : "bg-red-50 text-red-500"
               }`}
             >
-              {item.status === "good" ? "✅" : item.status === "warning" ? "⚠️" : "❌"}{" "}
+              {item.status === "good" ? "âœ…" : item.status === "warning" ? "âš ï¸" : "âŒ"}{" "}
               {item.word}
             </button>
           );
@@ -712,11 +712,11 @@ function WordDetail({
   onPlay: () => void;
 }) {
   return (
-    <SoftCard title="Lỗi cần sửa">
+    <SoftCard title="Lá»—i cáº§n sá»­a">
       <div className="rounded-[26px] bg-gradient-to-br from-[#fffaf5] to-white p-5">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-sm font-black text-[#ff6b00]">Đang phân tích</p>
+            <p className="text-sm font-black text-[#ff6b00]">Äang phÃ¢n tÃ­ch</p>
             <h3 className="mt-1 text-4xl font-black text-[#1f2a44]">
               {word.word}
             </h3>
@@ -726,8 +726,8 @@ function WordDetail({
         </div>
 
         <div className="mt-5 space-y-3">
-          <InfoLine label="IPA đúng" value={word.correctIpa} />
-          <InfoLine label="Bạn đọc" value={word.userIpa} />
+          <InfoLine label="IPA Ä‘Ãºng" value={word.correctIpa} />
+          <InfoLine label="Báº¡n Ä‘á»c" value={word.userIpa} />
         </div>
 
         <div className="mt-4 rounded-2xl bg-red-50 p-4 font-bold leading-7 text-red-500">
@@ -740,7 +740,7 @@ function WordDetail({
           disabled={speaking}
           className="mt-4 w-full rounded-2xl bg-[#1f2a44] py-3 font-black text-white transition hover:bg-[#ff6b00] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          🔊 {speaking ? "Đang phát..." : "Nghe từ này"}
+          ðŸ”Š {speaking ? "Äang phÃ¡t..." : "Nghe tá»« nÃ y"}
         </button>
       </div>
     </SoftCard>
@@ -749,9 +749,9 @@ function WordDetail({
 
 function StatusBadge({ status }: { status: WordStatus }) {
   const config = {
-    good: "bg-emerald-50 text-emerald-600 ✅ Tốt",
-    warning: "bg-orange-50 text-orange-500 ⚠️ Cần sửa",
-    bad: "bg-red-50 text-red-500 ❌ Sai âm",
+    good: "bg-emerald-50 text-emerald-600 âœ… Tá»‘t",
+    warning: "bg-orange-50 text-orange-500 âš ï¸ Cáº§n sá»­a",
+    bad: "bg-red-50 text-red-500 âŒ Sai Ã¢m",
   }[status];
 
   return <span className={`rounded-full px-3 py-2 text-xs font-black ${config}`} />;
@@ -784,13 +784,13 @@ function MiniDrill({
                 className="flex w-full items-center justify-between rounded-2xl bg-[#fffaf5] px-4 py-3 text-left font-black text-[#1f2a44] transition hover:bg-[#fff0dc] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <span>{item}</span>
-                <span>{speaking ? "⏳" : "🔊"}</span>
+                <span>{speaking ? "â³" : "ðŸ”Š"}</span>
               </button>
             );
           })
         ) : (
           <p className="rounded-2xl bg-[#fffaf5] px-4 py-3 font-bold text-[#5b6b85]">
-            Chưa có drill cho câu này.
+            ChÆ°a cÃ³ drill cho cÃ¢u nÃ y.
           </p>
         )}
       </div>
@@ -800,7 +800,7 @@ function MiniDrill({
         onClick={onRetry}
         className="mt-4 w-full rounded-2xl bg-[#ff6b00] py-3 font-black text-white shadow-lg shadow-orange-200"
       >
-        🎙️ Luyện lại câu này
+        ðŸŽ™ï¸ Luyá»‡n láº¡i cÃ¢u nÃ y
       </button>
     </SoftCard>
   );
@@ -811,13 +811,13 @@ function AiCoach({ note }: { note: string }) {
     <div className="rounded-[34px] bg-gradient-to-br from-[#1f2a44] via-[#4d4378] to-[#6b5796] p-7 text-white shadow-2xl">
       <div className="flex items-start gap-4">
         <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-4xl">
-          🐱
+          ðŸ±
         </div>
 
         <div>
-          <h2 className="text-3xl font-black">Lumi AI Coach</h2>
+          <h2 className="text-3xl font-black">Beacon AI Coach</h2>
           <p className="mt-3 font-bold leading-7 text-white/80">
-            {note || "Luyện thêm vài câu để Lumi đưa ra nhận xét chi tiết hơn nhé."}
+            {note || "Luyá»‡n thÃªm vÃ i cÃ¢u Ä‘á»ƒ Beacon Ä‘Æ°a ra nháº­n xÃ©t chi tiáº¿t hÆ¡n nhÃ©."}
           </p>
         </div>
       </div>

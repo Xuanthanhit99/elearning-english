@@ -1,4 +1,4 @@
-# Lumiverse Theme Production Polish Report
+﻿# BeaconVie Theme Production Polish Report
 
 ## Scope
 
@@ -31,8 +31,8 @@ Khong thay doi theme provider, theme store, routing, auth flow, backend, i18n fo
 ## Fixed Theme Issues
 
 - Removed production-visible fixed light backgrounds such as `#fff4e8`, `#fbfbff`, `bg-white` from shared surfaces touched in this phase.
-- Replaced fixed ink colors such as `#1f2a44`, `#101733`, `slate-950`, `slate-500` with `--lumiverse-ink` and `--lumiverse-muted` where they are content colors.
-- Replaced fixed borders like `border-slate-200` with `--lumiverse-border` in Auth inputs and Notification Center.
+- Replaced fixed ink colors such as `#1f2a44`, `#101733`, `slate-950`, `slate-500` with `--beaconvie-ink` and `--beaconvie-muted` where they are content colors.
+- Replaced fixed borders like `border-slate-200` with `--beaconvie-border` in Auth inputs and Notification Center.
 - Added dark-safe treatment for semantic states: auth error, 2FA warning, notification error, unread notification, icon badge and empty state.
 - Reduced dark-mode shadow glare with dark-specific shadow classes on Auth and modal surfaces.
 - Kept semantic colors for success/error/brand states, but paired them with dark-safe backgrounds where needed.

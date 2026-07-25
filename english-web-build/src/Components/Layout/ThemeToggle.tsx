@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { Monitor, Moon, Sun } from "lucide-react";
@@ -58,13 +58,13 @@ export default function ThemeToggle({
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
-        className="lumiverse-button-soft h-11 w-11 p-0 text-[var(--lumiverse-muted)]"
+        className="BeaconVie-button-soft h-11 w-11 p-0 text-[var(--BeaconVie-muted)]"
       >
         <ActiveIcon aria-hidden size={18} />
       </button>
 
       {open && (
-        <div className="lumiverse-surface absolute right-0 top-14 z-50 w-44 rounded-3xl p-1.5" role="menu">
+        <div className="BeaconVie-surface absolute right-0 top-14 z-50 w-44 rounded-3xl p-1.5" role="menu">
           {OPTIONS.map(({ value, icon: Icon }) => (
             <button
               key={value}
@@ -74,8 +74,8 @@ export default function ThemeToggle({
               onClick={() => choose(value)}
               className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-bold transition ${
                 value === theme
-                  ? "bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]"
-                  : "text-[var(--lumiverse-muted)] hover:bg-[var(--lumiverse-hover-tint)]"
+                  ? "bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]"
+                  : "text-[var(--BeaconVie-muted)] hover:bg-[var(--BeaconVie-hover-tint)]"
               }`}
             >
               <Icon aria-hidden size={16} />

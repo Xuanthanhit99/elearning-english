@@ -32,9 +32,9 @@ type ArenaQuestion = {
   skill: string;
   prompt: string;
   options?: string[];
-  // Phase A: backend giờ chỉ trả answer/explanation sau khi chính user đã
-  // tự trả lời câu này (hoặc trận đã kết thúc) — trước đó field này sẽ
-  // không có trong response, không phải lỗi.
+  // Phase A: backend gi? ch? tr? answer/explanation sau khi chính user dã
+  // t? tr? l?i câu này (ho?c tr?n dã k?t thúc) — tru?c dó field này s?
+  // không có trong response, không ph?i l?i.
   answer?: string;
   explanation?: string;
   points: number;
@@ -139,35 +139,35 @@ type Room = {
 };
 
 const ARENA_TIER_LABELS_VI: Record<string, string> = {
-  BRONZE: "Đồng",
-  SILVER: "Bạc",
+  BRONZE: "Ð?ng",
+  SILVER: "B?c",
   GOLD: "Vàng",
-  PLATINUM: "Bạch kim",
-  DIAMOND: "Kim cương",
-  MASTER: "Cao thủ",
-  LEGEND: "Huyền thoại",
+  PLATINUM: "B?ch kim",
+  DIAMOND: "Kim cuong",
+  MASTER: "Cao th?",
+  LEGEND: "Huy?n tho?i",
 };
 
-const EMOJIS = ["🔥", "👏", "😆", "💪", "⚡", "🎯"];
+const EMOJIS = ["??", "??", "??", "??", "?", "??"];
 
 const POWER_UP_LABELS: Record<ArenaPowerUpType, { name: string; icon: string; description: string }> = {
-  DOUBLE_SCORE: { name: "Nhân đôi điểm", icon: "✨", description: "Câu đúng tiếp theo được x2 điểm" },
-  SHIELD: { name: "Khiên chắn", icon: "🛡️", description: "Chặn 1 hiệu ứng bất lợi từ đối thủ" },
-  TIME_BOOST: { name: "Cộng giờ", icon: "⏱️", description: "Thêm thời gian trả lời câu hiện tại" },
-  FREEZE: { name: "Đóng băng", icon: "❄️", description: "Rút ngắn thời gian trả lời của đối thủ" },
+  DOUBLE_SCORE: { name: "Nhân dôi di?m", icon: "?", description: "Câu dúng ti?p theo du?c x2 di?m" },
+  SHIELD: { name: "Khiên ch?n", icon: "???", description: "Ch?n 1 hi?u ?ng b?t l?i t? d?i th?" },
+  TIME_BOOST: { name: "C?ng gi?", icon: "??", description: "Thêm th?i gian tr? l?i câu hi?n t?i" },
+  FREEZE: { name: "Ðóng bang", icon: "??", description: "Rút ng?n th?i gian tr? l?i c?a d?i th?" },
 };
 
 const POWER_UP_ERROR_MESSAGES: Record<string, string> = {
-  ARENA_POWER_UP_OUT_OF_USES: "Bạn đã dùng hết lượt power-up này trong trận.",
-  ARENA_POWER_UP_ON_COOLDOWN: "Power-up đang hồi chiêu, chờ chút nhé.",
-  ARENA_POWER_UP_INVALID_TARGET: "Không tìm thấy đối thủ hợp lệ.",
-  ARENA_POWER_UP_INVALID_QUESTION: "Không thể dùng lúc này (đối thủ đã trả lời hoặc chưa có câu hỏi).",
-  ARENA_POWER_UP_NOT_SUPPORTED: "Power-up này không khả dụng ở chế độ hiện tại.",
-  ARENA_MATCH_NOT_PLAYING: "Trận chưa bắt đầu hoặc đã kết thúc.",
-  ARENA_POWER_UP_REQUEST_CONFLICT: "Yêu cầu bị xung đột, thử lại.",
-  INVALID_SESSION: "Phiên kết nối realtime không hợp lệ, thử tải lại trang.",
+  ARENA_POWER_UP_OUT_OF_USES: "B?n dã dùng h?t lu?t power-up này trong tr?n.",
+  ARENA_POWER_UP_ON_COOLDOWN: "Power-up dang h?i chiêu, ch? chút nhé.",
+  ARENA_POWER_UP_INVALID_TARGET: "Không tìm th?y d?i th? h?p l?.",
+  ARENA_POWER_UP_INVALID_QUESTION: "Không th? dùng lúc này (d?i th? dã tr? l?i ho?c chua có câu h?i).",
+  ARENA_POWER_UP_NOT_SUPPORTED: "Power-up này không kh? d?ng ? ch? d? hi?n t?i.",
+  ARENA_MATCH_NOT_PLAYING: "Tr?n chua b?t d?u ho?c dã k?t thúc.",
+  ARENA_POWER_UP_REQUEST_CONFLICT: "Yêu c?u b? xung d?t, th? l?i.",
+  INVALID_SESSION: "Phiên k?t n?i realtime không h?p l?, th? t?i l?i trang.",
 };
-const PINGS = ["Tập trung", "Cần trợ giúp", "Đẩy tốc độ", "Good job", "Phòng thủ", "Finish now"];
+const PINGS = ["T?p trung", "C?n tr? giúp", "Ð?y t?c d?", "Good job", "Phòng th?", "Finish now"];
 
 export default function ArenaRoomPage({ roomId }: { roomId: string }) {
   const user = useAuthStore((state) => state.user);
@@ -185,7 +185,7 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
       setRoom(res.data);
     } catch (error: any) {
       console.error(error);
-      setMessage(error?.response?.data?.message || "Không tải được phòng Arena.");
+      setMessage(error?.response?.data?.message || "Không t?i du?c phòng Arena.");
     } finally {
       setLoading(false);
     }
@@ -245,29 +245,29 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
       await fetchRoom();
     } catch (error: any) {
       console.error(error);
-      setMessage(error?.response?.data?.message || "Chưa gửi được tín hiệu.");
+      setMessage(error?.response?.data?.message || "Chua g?i du?c tín hi?u.");
     }
   };
 
   const setReady = async (ready: boolean) => {
     try {
       await api.post(`/arena/rooms/${roomId}/ready`, { ready });
-      setMessage(ready ? "Bạn đã sẵn sàng. Chờ mọi người cùng ready nhé." : "Bạn đã hủy sẵn sàng.");
+      setMessage(ready ? "B?n dã s?n sàng. Ch? m?i ngu?i cùng ready nhé." : "B?n dã h?y s?n sàng.");
       await fetchRoom();
     } catch (error: any) {
       console.error(error);
-      setMessage(error?.response?.data?.message || "Chưa cập nhật được trạng thái sẵn sàng.");
+      setMessage(error?.response?.data?.message || "Chua c?p nh?t du?c tr?ng thái s?n sàng.");
     }
   };
 
   const retryPreparation = async () => {
     try {
       await api.post(`/arena/rooms/${roomId}/retry`);
-      setMessage("Đang thử chuẩn bị lại trận đấu...");
+      setMessage("Ðang th? chu?n b? l?i tr?n d?u...");
       await fetchRoom();
     } catch (error: any) {
       console.error(error);
-      setMessage(error?.response?.data?.message || "Chưa thử lại được, vui lòng thử lại sau.");
+      setMessage(error?.response?.data?.message || "Chua th? l?i du?c, vui lòng th? l?i sau.");
     }
   };
 
@@ -282,85 +282,85 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
   const submitAnswer = async (answer: string) => {
     if (!currentQuestion) return;
     if (!matchReady) {
-      setMessage("Trận đang đếm ngược, chờ hết 5 giây rồi trả lời nhé.");
+      setMessage("Tr?n dang d?m ngu?c, ch? h?t 5 giây r?i tr? l?i nhé.");
       return;
     }
     try {
       const res = await api.post(`/arena/rooms/${roomId}/questions/${currentQuestion.id}/answer`, { answer });
-      setMessage(res.data.answer.isCorrect ? "Chính xác! Điểm của bạn đã tăng." : "Chưa đúng. Backend đã ghi nhận câu trả lời.");
+      setMessage(res.data.answer.isCorrect ? "Chính xác! Ði?m c?a b?n dã tang." : "Chua dúng. Backend dã ghi nh?n câu tr? l?i.");
       await fetchRoom();
     } catch (error: any) {
       console.error(error);
-      setMessage(error?.response?.data?.message || "Chưa gửi được câu trả lời.");
+      setMessage(error?.response?.data?.message || "Chua g?i du?c câu tr? l?i.");
     }
   };
 
   const usePowerUp = async (type: ArenaPowerUpType) => {
     const ack = await usePowerUpAction(roomId, type);
     if ("error" in ack) {
-      setMessage(POWER_UP_ERROR_MESSAGES[ack.error] || "Không dùng được power-up này.");
+      setMessage(POWER_UP_ERROR_MESSAGES[ack.error] || "Không dùng du?c power-up này.");
       return;
     }
     setMessage(
       ack.status === "BLOCKED"
-        ? `${POWER_UP_LABELS[type].name} đã bị đối thủ chặn bằng khiên!`
-        : `Đã dùng ${POWER_UP_LABELS[type].name}.`,
+        ? `${POWER_UP_LABELS[type].name} dã b? d?i th? ch?n b?ng khiên!`
+        : `Ðã dùng ${POWER_UP_LABELS[type].name}.`,
     );
   };
 
   if (loading) {
-    return <main className="min-h-screen bg-[var(--background)] p-8 font-black text-[var(--lumiverse-ink)]">Đang tải phòng Arena...</main>;
+    return <main className="min-h-screen bg-[var(--background)] p-8 font-black text-[var(--BeaconVie-ink)]">Ðang t?i phòng Arena...</main>;
   }
 
   if (!room) {
-    return <main className="min-h-screen bg-[var(--background)] p-8 font-black text-[var(--lumiverse-ink)]">{message || "Không tìm thấy phòng."}</main>;
+    return <main className="min-h-screen bg-[var(--background)] p-8 font-black text-[var(--BeaconVie-ink)]">{message || "Không tìm th?y phòng."}</main>;
   }
 
   return (
     <main className="min-h-screen bg-[var(--background)] px-4 py-8">
       <section className="mx-auto max-w-7xl space-y-6">
-        <div className="lumiverse-gradient flex flex-wrap items-center justify-between gap-4 rounded-[30px] p-6 text-white shadow-xl">
+        <div className="BeaconVie-gradient flex flex-wrap items-center justify-between gap-4 rounded-[30px] p-6 text-white shadow-xl">
           <div>
             <button type="button" onClick={leaveToLobby} className="text-sm font-extrabold text-white/80">
-              ← Rời phòng
+              ? R?i phòng
             </button>
             <h1 className="mt-2 text-3xl font-black">{room.name}</h1>
             <p className="mt-2 font-bold text-white/70">
               {room.mode || room.gameMode}
               {room.teamFormat ? ` · ${room.teamFormat}` : ""} · {room.skill} · {room.difficulty} · {room.topic} · {room.status}
               {" · "}
-              {room.participants.length}/{room.maxPlayers} người chơi
+              {room.participants.length}/{room.maxPlayers} ngu?i choi
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Badge active={realtimeConnected}>{realtimeConnected ? "Realtime" : "Đang kết nối lại..."}</Badge>
+            <Badge active={realtimeConnected}>{realtimeConnected ? "Realtime" : "Ðang k?t n?i l?i..."}</Badge>
             <Badge active={room.voiceChat}>Voice chat</Badge>
             <Badge active={room.emojiEnabled}>Emoji</Badge>
             <Badge active={room.pingEnabled}>Ping</Badge>
           </div>
         </div>
 
-        {message && <div className="rounded-2xl bg-[var(--lumiverse-card)] px-5 py-4 font-extrabold text-[var(--lumiverse-primary)] shadow-sm">{message}</div>}
+        {message && <div className="rounded-2xl bg-[var(--BeaconVie-card)] px-5 py-4 font-extrabold text-[var(--BeaconVie-primary)] shadow-sm">{message}</div>}
 
         {room.status === "WAITING" && room.isParticipant && (
           <ArenaModal>
-            <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Phòng chờ Arena</p>
-            <h2 className="mt-2 text-3xl font-black text-[var(--lumiverse-ink)]">
-              {myParticipant?.ready ? "Bạn đã sẵn sàng" : "Chuẩn bị vào trận"}
+            <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--BeaconVie-primary)]">Phòng ch? Arena</p>
+            <h2 className="mt-2 text-3xl font-black text-[var(--BeaconVie-ink)]">
+              {myParticipant?.ready ? "B?n dã s?n sàng" : "Chu?n b? vào tr?n"}
             </h2>
-            <p className="mt-3 font-bold leading-7 text-[var(--lumiverse-muted)]">
-              {readyCount}/{room.maxPlayers} người chơi đã sẵn sàng ({room.participants.length}/{room.maxPlayers} đã vào phòng). Khi đủ người, trận sẽ tự đếm ngược 5 giây và mở câu hỏi.
+            <p className="mt-3 font-bold leading-7 text-[var(--BeaconVie-muted)]">
+              {readyCount}/{room.maxPlayers} ngu?i choi dã s?n sàng ({room.participants.length}/{room.maxPlayers} dã vào phòng). Khi d? ngu?i, tr?n s? t? d?m ngu?c 5 giây và m? câu h?i.
             </p>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <button
                 type="button"
                 onClick={() => setReady(!myParticipant?.ready)}
-                className={`rounded-2xl px-5 py-4 font-black text-white ${myParticipant?.ready ? "bg-[var(--lumiverse-muted)]" : "bg-emerald-600"}`}
+                className={`rounded-2xl px-5 py-4 font-black text-white ${myParticipant?.ready ? "bg-[var(--BeaconVie-muted)]" : "bg-emerald-600"}`}
               >
-                {myParticipant?.ready ? "Hủy sẵn sàng" : "Tôi sẵn sàng"}
+                {myParticipant?.ready ? "H?y s?n sàng" : "Tôi s?n sàng"}
               </button>
-              <button type="button" onClick={leaveToLobby} className="rounded-2xl bg-[var(--lumiverse-primary-soft)] px-5 py-4 font-black text-[var(--lumiverse-primary)]">
-                Thoát về lobby
+              <button type="button" onClick={leaveToLobby} className="rounded-2xl bg-[var(--BeaconVie-primary-soft)] px-5 py-4 font-black text-[var(--BeaconVie-primary)]">
+                Thoát v? lobby
               </button>
             </div>
           </ArenaModal>
@@ -368,20 +368,20 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
 
         {room.status === "PREPARING" && (
           <ArenaModal>
-            <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Đang chuẩn bị trận đấu</p>
-            <h2 className="mt-2 text-3xl font-black text-[var(--lumiverse-ink)]">Đang tạo câu hỏi...</h2>
-            <p className="mt-3 font-bold leading-7 text-[var(--lumiverse-muted)]">
-              Hệ thống đang chuẩn bị bộ câu hỏi cho trận đấu. Việc này chỉ mất vài giây.
+            <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--BeaconVie-primary)]">Ðang chu?n b? tr?n d?u</p>
+            <h2 className="mt-2 text-3xl font-black text-[var(--BeaconVie-ink)]">Ðang t?o câu h?i...</h2>
+            <p className="mt-3 font-bold leading-7 text-[var(--BeaconVie-muted)]">
+              H? th?ng dang chu?n b? b? câu h?i cho tr?n d?u. Vi?c này ch? m?t vài giây.
             </p>
           </ArenaModal>
         )}
 
         {room.status === "FAILED" && room.isParticipant && (
           <ArenaModal>
-            <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-danger)]">Chuẩn bị trận đấu thất bại</p>
-            <h2 className="mt-2 text-3xl font-black text-[var(--lumiverse-ink)]">Có lỗi xảy ra</h2>
-            <p className="mt-3 font-bold leading-7 text-[var(--lumiverse-muted)]">
-              {room.preparationError || "Không chuẩn bị được câu hỏi cho trận đấu."}
+            <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--BeaconVie-danger)]">Chu?n b? tr?n d?u th?t b?i</p>
+            <h2 className="mt-2 text-3xl font-black text-[var(--BeaconVie-ink)]">Có l?i x?y ra</h2>
+            <p className="mt-3 font-bold leading-7 text-[var(--BeaconVie-muted)]">
+              {room.preparationError || "Không chu?n b? du?c câu h?i cho tr?n d?u."}
             </p>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <button
@@ -389,10 +389,10 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
                 onClick={retryPreparation}
                 className="rounded-2xl bg-emerald-600 px-5 py-4 font-black text-white"
               >
-                Thử lại
+                Th? l?i
               </button>
-              <button type="button" onClick={leaveToLobby} className="rounded-2xl bg-[var(--lumiverse-primary-soft)] px-5 py-4 font-black text-[var(--lumiverse-primary)]">
-                Thoát về lobby
+              <button type="button" onClick={leaveToLobby} className="rounded-2xl bg-[var(--BeaconVie-primary-soft)] px-5 py-4 font-black text-[var(--BeaconVie-primary)]">
+                Thoát v? lobby
               </button>
             </div>
           </ArenaModal>
@@ -400,29 +400,29 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
 
         {room.status === "PLAYING" && countdownLeft > 0 && (
           <ArenaModal>
-            <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Trận sắp bắt đầu</p>
-            <div className="mt-3 text-8xl font-black text-[var(--lumiverse-ink)]">{countdownLeft}</div>
-            <p className="mt-2 font-bold text-[var(--lumiverse-muted)]">Câu hỏi sẽ tự mở sau khi đếm ngược kết thúc.</p>
+            <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--BeaconVie-primary)]">Tr?n s?p b?t d?u</p>
+            <div className="mt-3 text-8xl font-black text-[var(--BeaconVie-ink)]">{countdownLeft}</div>
+            <p className="mt-2 font-bold text-[var(--BeaconVie-muted)]">Câu h?i s? t? m? sau khi d?m ngu?c k?t thúc.</p>
           </ArenaModal>
         )}
 
         {showResultModal && (
           <ArenaModal>
-            <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Kết quả trận đấu</p>
-            <h2 className="mt-2 text-4xl font-black text-[var(--lumiverse-ink)]">
-              {winnerTeam === myTeam ? "Bạn thắng!" : "Đội bạn thua"}
+            <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--BeaconVie-primary)]">K?t qu? tr?n d?u</p>
+            <h2 className="mt-2 text-4xl font-black text-[var(--BeaconVie-ink)]">
+              {winnerTeam === myTeam ? "B?n th?ng!" : "Ð?i b?n thua"}
             </h2>
-            <p className="mt-3 font-bold leading-7 text-[var(--lumiverse-muted)]">
-              Đội {winnerTeam} chiến thắng. Người thắng: {winnerParticipants.map((participant) => participant.user?.fullname || "Player").join(", ")}.
+            <p className="mt-3 font-bold leading-7 text-[var(--BeaconVie-muted)]">
+              Ð?i {winnerTeam} chi?n th?ng. Ngu?i th?ng: {winnerParticipants.map((participant) => participant.user?.fullname || "Player").join(", ")}.
             </p>
             {activeMatch?.result && (
-              <div className="mt-4 rounded-2xl bg-[var(--lumiverse-card)] p-4 font-black text-[var(--lumiverse-ink)]">
-                Đội A: {activeMatch.result.teamAScore ?? "-"} điểm · Đội B: {activeMatch.result.teamBScore ?? "-"} điểm
+              <div className="mt-4 rounded-2xl bg-[var(--BeaconVie-card)] p-4 font-black text-[var(--BeaconVie-ink)]">
+                Ð?i A: {activeMatch.result.teamAScore ?? "-"} di?m · Ð?i B: {activeMatch.result.teamBScore ?? "-"} di?m
               </div>
             )}
 
             {room.progression?.status === "COMPLETED" && (
-              <div className="mt-4 rounded-2xl bg-[var(--lumiverse-card)] p-4 text-[var(--lumiverse-ink)]">
+              <div className="mt-4 rounded-2xl bg-[var(--BeaconVie-card)] p-4 text-[var(--BeaconVie-ink)]">
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-black">
                   {typeof room.progression.xpAwarded === "number" && (
                     <span>+{room.progression.xpAwarded} XP</span>
@@ -432,48 +432,48 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
                   )}
                   {typeof room.progression.mmrDelta === "number" && room.progression.mmrDelta !== 0 && (
                     <span>
-                      Điểm xếp hạng {room.progression.mmrDelta > 0 ? "+" : ""}
-                      {room.progression.mmrDelta} ({room.progression.previousMmr} → {room.progression.nextMmr})
+                      Ði?m x?p h?ng {room.progression.mmrDelta > 0 ? "+" : ""}
+                      {room.progression.mmrDelta} ({room.progression.previousMmr} ? {room.progression.nextMmr})
                     </span>
                   )}
                 </div>
                 {room.progression.previousTier && room.progression.nextTier && room.progression.previousTier !== room.progression.nextTier && (
-                  <p className="mt-2 font-bold text-[var(--lumiverse-primary)]">
-                    {room.progression.promoted ? "Thăng hạng" : "Rớt hạng"}: {ARENA_TIER_LABELS_VI[room.progression.previousTier] || room.progression.previousTier} → {ARENA_TIER_LABELS_VI[room.progression.nextTier] || room.progression.nextTier}
+                  <p className="mt-2 font-bold text-[var(--BeaconVie-primary)]">
+                    {room.progression.promoted ? "Thang h?ng" : "R?t h?ng"}: {ARENA_TIER_LABELS_VI[room.progression.previousTier] || room.progression.previousTier} ? {ARENA_TIER_LABELS_VI[room.progression.nextTier] || room.progression.nextTier}
                   </p>
                 )}
                 {room.progression.placementCompleted && (
-                  <div className="mt-4 rounded-2xl border-2 border-[var(--lumiverse-primary)] bg-[var(--lumiverse-card)] p-4">
-                    <p className="text-xs font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">
-                      Hoàn thành xếp hạng!
+                  <div className="mt-4 rounded-2xl border-2 border-[var(--BeaconVie-primary)] bg-[var(--BeaconVie-card)] p-4">
+                    <p className="text-xs font-extrabold uppercase tracking-wide text-[var(--BeaconVie-primary)]">
+                      Hoàn thành x?p h?ng!
                     </p>
-                    <p className="mt-1 text-2xl font-black text-[var(--lumiverse-ink)]">
-                      Hạng của bạn: {(room.progression.nextTier && ARENA_TIER_LABELS_VI[room.progression.nextTier]) || room.progression.nextTier || "—"}
+                    <p className="mt-1 text-2xl font-black text-[var(--BeaconVie-ink)]">
+                      H?ng c?a b?n: {(room.progression.nextTier && ARENA_TIER_LABELS_VI[room.progression.nextTier]) || room.progression.nextTier || "—"}
                     </p>
                     {typeof room.progression.nextMmr === "number" && (
-                      <p className="mt-1 font-bold text-[var(--lumiverse-muted)]">MMR: {room.progression.nextMmr}</p>
+                      <p className="mt-1 font-bold text-[var(--BeaconVie-muted)]">MMR: {room.progression.nextMmr}</p>
                     )}
                   </div>
                 )}
                 {room.progression.rewardBreakdown?.reasonBreakdown && room.progression.rewardBreakdown.reasonBreakdown.length > 0 && (
-                  <p className="mt-2 text-sm font-bold text-[var(--lumiverse-muted)]">
+                  <p className="mt-2 text-sm font-bold text-[var(--BeaconVie-muted)]">
                     {room.progression.rewardBreakdown.reasonBreakdown.join(" · ")}
                   </p>
                 )}
               </div>
             )}
             {room.progression && room.progression.status !== "COMPLETED" && room.progression.status !== "SKIPPED" && (
-              <div className="mt-4 rounded-2xl bg-[var(--lumiverse-card)] p-4 text-sm font-bold text-[var(--lumiverse-muted)]">
-                Đang xử lý phần thưởng, vui lòng tải lại sau ít phút…
+              <div className="mt-4 rounded-2xl bg-[var(--BeaconVie-card)] p-4 text-sm font-bold text-[var(--BeaconVie-muted)]">
+                Ðang x? lý ph?n thu?ng, vui lòng t?i l?i sau ít phút…
               </div>
             )}
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <button type="button" onClick={() => setResultDismissed(true)} className="rounded-2xl bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] px-5 py-4 font-black text-white">
-                Xem lại phòng
+              <button type="button" onClick={() => setResultDismissed(true)} className="rounded-2xl bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] px-5 py-4 font-black text-white">
+                Xem l?i phòng
               </button>
-              <button type="button" onClick={() => (window.location.href = "/arena")} className="rounded-2xl bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] px-5 py-4 font-black text-white">
-                Về lobby
+              <button type="button" onClick={() => (window.location.href = "/arena")} className="rounded-2xl bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] px-5 py-4 font-black text-white">
+                V? lobby
               </button>
             </div>
           </ArenaModal>
@@ -481,56 +481,56 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
 
         {showHostChangedModal && latestHostChange && (
           <ArenaModal>
-            <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Chủ phòng đã đổi</p>
-            <h2 className="mt-2 text-3xl font-black text-[var(--lumiverse-ink)]">
-              {latestHostChange.payload?.newHostName || "Người chơi khác"} là chủ phòng mới
+            <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--BeaconVie-primary)]">Ch? phòng dã d?i</p>
+            <h2 className="mt-2 text-3xl font-black text-[var(--BeaconVie-ink)]">
+              {latestHostChange.payload?.newHostName || "Ngu?i choi khác"} là ch? phòng m?i
             </h2>
-            <p className="mt-3 font-bold leading-7 text-[var(--lumiverse-muted)]">
-              {latestHostChange.payload?.previousHostName || "Chủ phòng cũ"} đã rời phòng. Phòng vẫn tiếp tục với chủ phòng mới.
+            <p className="mt-3 font-bold leading-7 text-[var(--BeaconVie-muted)]">
+              {latestHostChange.payload?.previousHostName || "Ch? phòng cu"} dã r?i phòng. Phòng v?n ti?p t?c v?i ch? phòng m?i.
             </p>
             <button
               type="button"
               onClick={() => setDismissedHostEventId(latestHostChange.id)}
-              className="mt-5 rounded-2xl bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] px-6 py-4 font-black text-white"
+              className="mt-5 rounded-2xl bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] px-6 py-4 font-black text-white"
             >
-              Đã hiểu
+              Ðã hi?u
             </button>
           </ArenaModal>
         )}
 
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-          <section className="rounded-[30px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-[22px] bg-[var(--lumiverse-card)] px-5 py-4">
+          <section className="rounded-[30px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-[22px] bg-[var(--BeaconVie-card)] px-5 py-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-wide text-[var(--lumiverse-primary)]">Sẵn sàng</p>
-                <p className="font-black text-[var(--lumiverse-ink)]">
-                  {readyCount}/{room.participants.length} người chơi đã ready
+                <p className="text-xs font-black uppercase tracking-wide text-[var(--BeaconVie-primary)]">S?n sàng</p>
+                <p className="font-black text-[var(--BeaconVie-ink)]">
+                  {readyCount}/{room.participants.length} ngu?i choi dã ready
                 </p>
               </div>
               {room.status === "WAITING" && room.isParticipant && (
                 <button
                   type="button"
                   onClick={() => setReady(!myParticipant?.ready)}
-                  className={`rounded-2xl px-5 py-3 font-black text-white ${myParticipant?.ready ? "bg-[var(--lumiverse-muted)]" : "bg-emerald-600"}`}
+                  className={`rounded-2xl px-5 py-3 font-black text-white ${myParticipant?.ready ? "bg-[var(--BeaconVie-muted)]" : "bg-emerald-600"}`}
                 >
-                  {myParticipant?.ready ? "Hủy sẵn sàng" : "Tôi sẵn sàng"}
+                  {myParticipant?.ready ? "H?y s?n sàng" : "Tôi s?n sàng"}
                 </button>
               )}
             </div>
 
             <div className="grid gap-6 md:grid-cols-[1fr_auto_1fr]">
-              <TeamColumn title="Đội A" participants={teamA} tone="orange" battleStates={activeMatch?.battleStates} />
-              <div className="flex items-center justify-center text-4xl font-black text-[var(--lumiverse-primary)]">VS</div>
-              <TeamColumn title="Đội B" participants={teamB} tone="blue" battleStates={activeMatch?.battleStates} />
+              <TeamColumn title="Ð?i A" participants={teamA} tone="orange" battleStates={activeMatch?.battleStates} />
+              <div className="flex items-center justify-center text-4xl font-black text-[var(--BeaconVie-primary)]">VS</div>
+              <TeamColumn title="Ð?i B" participants={teamB} tone="blue" battleStates={activeMatch?.battleStates} />
             </div>
 
             {room.gameMode === "SOLO_1V1" && room.status === "PLAYING" && matchReady && (
-              <div className="mt-6 rounded-[26px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-5">
+              <div className="mt-6 rounded-[26px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Power-up</p>
+                  <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--BeaconVie-primary)]">Power-up</p>
                   {isFrozenByOpponent && (
-                    <span className="rounded-full bg-[var(--lumiverse-primary-soft)] px-3 py-1 text-xs font-black text-[var(--lumiverse-primary)]">
-                      ❄️ Bạn đang bị đóng băng!
+                    <span className="rounded-full bg-[var(--BeaconVie-primary-soft)] px-3 py-1 text-xs font-black text-[var(--BeaconVie-primary)]">
+                      ?? B?n dang b? dóng bang!
                     </span>
                   )}
                 </div>
@@ -545,44 +545,44 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
                         type="button"
                         onClick={() => usePowerUp(powerUp.type)}
                         disabled={disabled}
-                        aria-label={`${label.name}: ${label.description}. Còn ${powerUp.remainingUses} lượt.`}
+                        aria-label={`${label.name}: ${label.description}. Còn ${powerUp.remainingUses} lu?t.`}
                         className={`rounded-2xl border px-4 py-3 text-left transition ${
                           disabled
-                            ? "cursor-not-allowed border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] opacity-60"
-                            : "border-[var(--lumiverse-primary)] bg-[var(--lumiverse-card)] hover:shadow-md"
+                            ? "cursor-not-allowed border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] opacity-60"
+                            : "border-[var(--BeaconVie-primary)] bg-[var(--BeaconVie-card)] hover:shadow-md"
                         }`}
                       >
                         <div className="text-2xl">{label.icon}</div>
-                        <div className="mt-1 text-sm font-black text-[var(--lumiverse-ink)]">{label.name}</div>
-                        <div className="text-xs font-bold text-[var(--lumiverse-muted)]">
-                          {onCooldown ? "Đang hồi chiêu" : `Còn ${powerUp.remainingUses} lượt`}
+                        <div className="mt-1 text-sm font-black text-[var(--BeaconVie-ink)]">{label.name}</div>
+                        <div className="text-xs font-bold text-[var(--BeaconVie-muted)]">
+                          {onCooldown ? "Ðang h?i chiêu" : `Còn ${powerUp.remainingUses} lu?t`}
                         </div>
                       </button>
                     );
                   })}
                   {!room.myPowerUps?.length && (
-                    <div className="text-sm font-bold text-[var(--lumiverse-muted)]">Không có power-up khả dụng.</div>
+                    <div className="text-sm font-bold text-[var(--BeaconVie-muted)]">Không có power-up kh? d?ng.</div>
                   )}
                 </div>
               </div>
             )}
 
-            <div className="mt-8 rounded-[26px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-5 shadow-sm">
+            <div className="mt-8 rounded-[26px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-5 shadow-sm">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Câu hỏi trận đấu</p>
-                  <h2 className="mt-1 text-xl font-black text-[var(--lumiverse-ink)]">
-                    {currentQuestion ? `Câu ${currentQuestion.order}: ${currentQuestion.skill}` : "Chưa có câu hỏi"}
+                  <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--BeaconVie-primary)]">Câu h?i tr?n d?u</p>
+                  <h2 className="mt-1 text-xl font-black text-[var(--BeaconVie-ink)]">
+                    {currentQuestion ? `Câu ${currentQuestion.order}: ${currentQuestion.skill}` : "Chua có câu h?i"}
                   </h2>
                 </div>
-                <span className="rounded-full bg-[var(--lumiverse-primary-soft)] px-3 py-1 text-xs font-black text-[var(--lumiverse-primary)]">
+                <span className="rounded-full bg-[var(--BeaconVie-primary-soft)] px-3 py-1 text-xs font-black text-[var(--BeaconVie-primary)]">
                   {activeMatch?.questions?.length || 0} câu
                 </span>
               </div>
 
               {currentQuestion ? (
                 <div className="mt-4">
-                  <p className="rounded-2xl bg-[var(--lumiverse-card)] p-4 font-bold leading-7 text-[var(--lumiverse-ink)]">
+                  <p className="rounded-2xl bg-[var(--BeaconVie-card)] p-4 font-bold leading-7 text-[var(--BeaconVie-ink)]">
                     {currentQuestion.prompt}
                   </p>
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -598,9 +598,9 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
                           className={`rounded-2xl border px-4 py-3 text-left font-extrabold transition ${
                             chosen
                               ? correct
-                                ? "border-[var(--lumiverse-success)] bg-[var(--lumiverse-success-soft)] text-[var(--lumiverse-success)]"
-                                : "border-[var(--lumiverse-danger)]/50 bg-[var(--lumiverse-danger-soft)] text-[var(--lumiverse-danger)]"
-                              : "border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] text-[var(--lumiverse-ink)] hover:border-[var(--lumiverse-primary)] disabled:opacity-60"
+                                ? "border-[var(--BeaconVie-success)] bg-[var(--BeaconVie-success-soft)] text-[var(--BeaconVie-success)]"
+                                : "border-[var(--BeaconVie-danger)]/50 bg-[var(--BeaconVie-danger-soft)] text-[var(--BeaconVie-danger)]"
+                              : "border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] text-[var(--BeaconVie-ink)] hover:border-[var(--BeaconVie-primary)] disabled:opacity-60"
                           }`}
                         >
                           {option}
@@ -609,67 +609,67 @@ export default function ArenaRoomPage({ roomId }: { roomId: string }) {
                     })}
                   </div>
                   {currentAnswers.length > 0 && currentQuestion.answer && (
-                    <div className="mt-4 rounded-2xl bg-[var(--lumiverse-primary-soft)] p-4 text-sm font-bold leading-6 text-[var(--lumiverse-ink)]">
-                      Có {currentAnswers.length} lượt trả lời câu này. Đáp án đúng: {currentQuestion.answer}.
+                    <div className="mt-4 rounded-2xl bg-[var(--BeaconVie-primary-soft)] p-4 text-sm font-bold leading-6 text-[var(--BeaconVie-ink)]">
+                      Có {currentAnswers.length} lu?t tr? l?i câu này. Ðáp án dúng: {currentQuestion.answer}.
                       {currentQuestion.explanation ? ` ${currentQuestion.explanation}` : ""}
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="mt-4 rounded-2xl border border-dashed border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-6 text-center font-bold text-[var(--lumiverse-muted)]">
+                <div className="mt-4 rounded-2xl border border-dashed border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-6 text-center font-bold text-[var(--BeaconVie-muted)]">
                   {room.status === "WAITING"
-                    ? "Khi tất cả người chơi bấm sẵn sàng, trận đấu sẽ tự động bắt đầu."
+                    ? "Khi t?t c? ngu?i choi b?m s?n sàng, tr?n d?u s? t? d?ng b?t d?u."
                     : countdownLeft > 0
-                      ? "Đang đếm ngược. Câu hỏi sẽ mở ngay sau khi hết 5 giây."
-                      : "Bạn đã hoàn thành bộ câu hỏi hiện tại hoặc trận chưa có câu hỏi."}
+                      ? "Ðang d?m ngu?c. Câu h?i s? m? ngay sau khi h?t 5 giây."
+                      : "B?n dã hoàn thành b? câu h?i hi?n t?i ho?c tr?n chua có câu h?i."}
                 </div>
               )}
             </div>
 
-            <div className="mt-8 rounded-[26px] bg-[var(--lumiverse-card)] p-5">
-              <h2 className="text-xl font-black text-[var(--lumiverse-ink)]">Luồng trận đấu</h2>
-              <p className="mt-2 text-sm font-bold leading-6 text-[var(--lumiverse-muted)]">
-                Cả hai người chơi bấm sẵn sàng, hệ thống tự đếm ngược 5 giây, mở câu hỏi và tự thông báo đội thắng khi mọi người trả lời xong.
+            <div className="mt-8 rounded-[26px] bg-[var(--BeaconVie-card)] p-5">
+              <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">Lu?ng tr?n d?u</h2>
+              <p className="mt-2 text-sm font-bold leading-6 text-[var(--BeaconVie-muted)]">
+                C? hai ngu?i choi b?m s?n sàng, h? th?ng t? d?m ngu?c 5 giây, m? câu h?i và t? thông báo d?i th?ng khi m?i ngu?i tr? l?i xong.
               </p>
             </div>
           </section>
 
           <aside className="space-y-6">
-            <section className="rounded-[30px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
-              <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Emoji & Ping</p>
+            <section className="rounded-[30px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
+              <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--BeaconVie-primary)]">Emoji & Ping</p>
               <div className="mt-4 grid grid-cols-3 gap-2">
                 {EMOJIS.map((emoji) => (
-                  <button key={emoji} onClick={() => sendEvent("EMOJI", { emoji })} className="rounded-2xl bg-[var(--lumiverse-primary-soft)] px-3 py-3 text-2xl">
+                  <button key={emoji} onClick={() => sendEvent("EMOJI", { emoji })} className="rounded-2xl bg-[var(--BeaconVie-primary-soft)] px-3 py-3 text-2xl">
                     {emoji}
                   </button>
                 ))}
               </div>
               <div className="mt-4 grid gap-2">
                 {PINGS.map((ping) => (
-                  <button key={ping} onClick={() => sendEvent("PING", { ping })} className="rounded-2xl border border-[var(--lumiverse-border)] px-4 py-3 text-left text-sm font-black text-[var(--lumiverse-ink)]">
-                    📍 {ping}
+                  <button key={ping} onClick={() => sendEvent("PING", { ping })} className="rounded-2xl border border-[var(--BeaconVie-border)] px-4 py-3 text-left text-sm font-black text-[var(--BeaconVie-ink)]">
+                    ?? {ping}
                   </button>
                 ))}
               </div>
             </section>
 
-            <section className="rounded-[30px] border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
-              <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--lumiverse-primary)]">Room Feed</p>
-              <div className="mt-4 max-h-80 space-y-3 overflow-y-auto rounded-2xl bg-[var(--lumiverse-card)] p-3">
+            <section className="rounded-[30px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
+              <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--BeaconVie-primary)]">Room Feed</p>
+              <div className="mt-4 max-h-80 space-y-3 overflow-y-auto rounded-2xl bg-[var(--BeaconVie-card)] p-3">
                 {room.events.length ? room.events.map((event) => (
-                  <div key={event.id} className="rounded-2xl bg-[var(--lumiverse-card)] px-4 py-3 text-sm font-bold text-[var(--lumiverse-ink)] shadow-sm">
-                    <span className="text-[var(--lumiverse-primary)]">{event.user?.fullname || "Player"}</span>{" "}
-                    {event.type === "EMOJI" && <>thả {event.payload?.emoji}</>}
+                  <div key={event.id} className="rounded-2xl bg-[var(--BeaconVie-card)] px-4 py-3 text-sm font-bold text-[var(--BeaconVie-ink)] shadow-sm">
+                    <span className="text-[var(--BeaconVie-primary)]">{event.user?.fullname || "Player"}</span>{" "}
+                    {event.type === "EMOJI" && <>th? {event.payload?.emoji}</>}
                     {event.type === "PING" && <>ping: {event.payload?.ping}</>}
                     {event.type === "CHAT" && <>nói: {event.payload?.text}</>}
-                    {event.type === "HOST_CHANGED" && <>thông báo: {event.payload?.newHostName || "người chơi khác"} là chủ phòng mới</>}
-                    {event.type === "PLAYER_LEFT" && <>thông báo: {event.payload?.name || "một người chơi"} đã rời phòng</>}
+                    {event.type === "HOST_CHANGED" && <>thông báo: {event.payload?.newHostName || "ngu?i choi khác"} là ch? phòng m?i</>}
+                    {event.type === "PLAYER_LEFT" && <>thông báo: {event.payload?.name || "m?t ngu?i choi"} dã r?i phòng</>}
                   </div>
-                )) : <div className="text-sm font-bold text-[var(--lumiverse-muted)]">Chưa có tín hiệu nào.</div>}
+                )) : <div className="text-sm font-bold text-[var(--BeaconVie-muted)]">Chua có tín hi?u nào.</div>}
               </div>
               <div className="mt-3 flex gap-2">
-                <input value={chat} onChange={(e) => setChat(e.target.value)} placeholder="Chat nhanh..." className="min-h-11 flex-1 rounded-2xl border border-[var(--lumiverse-border)] px-3 font-bold outline-none" />
-                <button onClick={() => chat.trim() && sendEvent("CHAT", { text: chat.trim() })} className="rounded-2xl bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] px-4 font-black text-white">Gửi</button>
+                <input value={chat} onChange={(e) => setChat(e.target.value)} placeholder="Chat nhanh..." className="min-h-11 flex-1 rounded-2xl border border-[var(--BeaconVie-border)] px-3 font-bold outline-none" />
+                <button onClick={() => chat.trim() && sendEvent("CHAT", { text: chat.trim() })} className="rounded-2xl bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] px-4 font-black text-white">G?i</button>
               </div>
             </section>
           </aside>
@@ -690,8 +690,8 @@ function TeamColumn({
   tone: "orange" | "blue";
   battleStates?: ArenaBattleState[];
 }) {
-  const bg = tone === "orange" ? "bg-[var(--lumiverse-warning-soft)]" : "bg-[var(--lumiverse-primary-soft)]";
-  const text = tone === "orange" ? "text-[var(--lumiverse-warning)]" : "text-[var(--lumiverse-primary)]";
+  const bg = tone === "orange" ? "bg-[var(--BeaconVie-warning-soft)]" : "bg-[var(--BeaconVie-primary-soft)]";
+  const text = tone === "orange" ? "text-[var(--BeaconVie-warning)]" : "text-[var(--BeaconVie-primary)]";
   return (
     <div className={`rounded-[26px] ${bg} p-5`}>
       <h2 className={`text-xl font-black ${text}`}>{title}</h2>
@@ -699,27 +699,27 @@ function TeamColumn({
         {participants.length ? participants.map((participant) => {
           const battle = battleStates?.find((state) => state.participantId === participant.id);
           return (
-            <div key={participant.id} className="rounded-2xl bg-[var(--lumiverse-card)] px-4 py-3 shadow-sm">
+            <div key={participant.id} className="rounded-2xl bg-[var(--BeaconVie-card)] px-4 py-3 shadow-sm">
               <div className="flex items-center justify-between gap-2">
-                <div className="font-black text-[var(--lumiverse-ink)]">{participant.user?.fullname || "Player"}</div>
-                <span className={`rounded-full px-2 py-1 text-[10px] font-black ${participant.ready ? "bg-[var(--lumiverse-success-soft)] text-[var(--lumiverse-success)]" : "bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]"}`}>
-                  {participant.ready ? "READY" : "CHỜ"}
+                <div className="font-black text-[var(--BeaconVie-ink)]">{participant.user?.fullname || "Player"}</div>
+                <span className={`rounded-full px-2 py-1 text-[10px] font-black ${participant.ready ? "bg-[var(--BeaconVie-success-soft)] text-[var(--BeaconVie-success)]" : "bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]"}`}>
+                  {participant.ready ? "READY" : "CH?"}
                 </span>
               </div>
-              <div className="text-xs font-bold text-[var(--lumiverse-muted)]">Score {participant.score} · Đúng {participant.correct} · Sai {participant.wrong}</div>
+              <div className="text-xs font-bold text-[var(--BeaconVie-muted)]">Score {participant.score} · Ðúng {participant.correct} · Sai {participant.wrong}</div>
               {battle && battle.combo > 0 && (
                 <div className="mt-1 flex items-center gap-2">
-                  <span className="rounded-full bg-[var(--lumiverse-warning-soft)] px-2 py-1 text-[10px] font-black text-[var(--lumiverse-warning)]">
-                    🔥 Combo x{battle.combo}
+                  <span className="rounded-full bg-[var(--BeaconVie-warning-soft)] px-2 py-1 text-[10px] font-black text-[var(--BeaconVie-warning)]">
+                    ?? Combo x{battle.combo}
                   </span>
-                  <span className="text-[10px] font-black text-[var(--lumiverse-muted)]">
+                  <span className="text-[10px] font-black text-[var(--BeaconVie-muted)]">
                     Nhân {(battle.multiplierBasisPoints / 10000).toFixed(2)}x
                   </span>
                 </div>
               )}
             </div>
           );
-        }) : <div className="rounded-2xl border border-dashed border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] px-4 py-6 text-center font-bold text-[var(--lumiverse-muted)]">Đang chờ người chơi</div>}
+        }) : <div className="rounded-2xl border border-dashed border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] px-4 py-6 text-center font-bold text-[var(--BeaconVie-muted)]">Ðang ch? ngu?i choi</div>}
       </div>
     </div>
   );
@@ -727,8 +727,8 @@ function TeamColumn({
 
 function ArenaModal({ children }: { children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--lumiverse-overlay)] px-4 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-[30px] bg-[var(--lumiverse-card)] p-7 text-center shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--BeaconVie-overlay)] px-4 backdrop-blur-sm">
+      <div className="w-full max-w-lg rounded-[30px] bg-[var(--BeaconVie-card)] p-7 text-center shadow-2xl">
         {children}
       </div>
     </div>
@@ -736,5 +736,5 @@ function ArenaModal({ children }: { children: React.ReactNode }) {
 }
 
 function Badge({ active, children }: { active: boolean; children: React.ReactNode }) {
-  return <span className={`rounded-full px-4 py-2 text-xs font-black ${active ? "bg-emerald-400 text-[var(--lumiverse-ink)]" : "bg-white/10 text-white/60"}`}>{children}</span>;
+  return <span className={`rounded-full px-4 py-2 text-xs font-black ${active ? "bg-emerald-400 text-[var(--BeaconVie-ink)]" : "bg-white/10 text-white/60"}`}>{children}</span>;
 }

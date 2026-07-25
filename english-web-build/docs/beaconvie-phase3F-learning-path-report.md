@@ -1,8 +1,8 @@
-# Lumiverse Phase 3F Report: Learning Path
+﻿# BeaconVie Phase 3F Report: Learning Path
 
 ## Summary
 
-Phase 3F redesigns the Learning Path as a Lumiverse Journey timeline while preserving all existing path, lock, unlock, progress, lesson start, route, and access-gate logic.
+Phase 3F redesigns the Learning Path as a BeaconVie Journey timeline while preserving all existing path, lock, unlock, progress, lesson start, route, and access-gate logic.
 
 No backend, database, Prisma, auth, API contract, or routing behavior was changed.
 
@@ -55,7 +55,7 @@ Existing flow preserved:
 - Available and current lesson nodes use real buttons.
 - Completed nodes use real links.
 - Locked nodes use non-clickable labelled elements with `aria-disabled`.
-- Progress bars expose Lumiverse progress semantics.
+- Progress bars expose BeaconVie progress semantics.
 - Timeline is rendered as ordered list content.
 - Touch targets are large enough for mobile.
 

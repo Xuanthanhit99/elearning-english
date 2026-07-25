@@ -1,4 +1,4 @@
-# Profile Feature Audit And Fix Report
+﻿# Profile Feature Audit And Fix Report
 
 Ngay cap nhat: 2026-07-20
 
@@ -56,9 +56,9 @@ Ngay cap nhat: 2026-07-20
 - Them loading skeleton, error state co nut thu lai, empty state cho learning stats/achievements.
 - Them edit Profile dung DTO gon gom `fullname`, `username`, `bio`, `goal`, `phone`, `englishLevel`, `learningGoal`; khong gui `id`, `userId`, `role`, `status`, `createdAt`, `updatedAt`.
 - Dong bo Auth store sau khi luu thanh cong.
-- Dung `LumiverseDialog` chung cho edit modal va companion modal, co focus management, Escape va outside click theo dialog hien co.
+- Dung `BeaconVieDialog` chung cho edit modal va companion modal, co focus management, Escape va outside click theo dialog hien co.
 - Khu "Ban dong hanh hoc tap" chuyen sang card "Sap ra mat"; chi mo modal thong bao khi nguoi dung bam.
-- Ly do: Profile khong con demo/fake data, khong phu thuoc pet selection va phu hop design token Lumiverse.
+- Ly do: Profile khong con demo/fake data, khong phu thuoc pet selection va phu hop design token BeaconVie.
 
 ### `english-web-build/src/i18n/types.ts`
 
@@ -118,7 +118,7 @@ Ngay cap nhat: 2026-07-20
 - Prisma migrate status: PASS, database schema up to date.
   - Lenh: `npx prisma migrate status`
 - Responsive desktop/tablet/mobile: duoc bao phu bang CSS grid responsive va build thanh cong; chua thuc hien visual QA bang browser screenshot trong phien nay.
-- Light/dark mode: Profile dung `lumiverse-*` token va `Lumiverse` components; chua thuc hien visual QA bang screenshot trong phien nay.
+- Light/dark mode: Profile dung `beaconvie-*` token va `BeaconVie` components; chua thuc hien visual QA bang screenshot trong phien nay.
 
 ## 6. Van De Con Lai
 

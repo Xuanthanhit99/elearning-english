@@ -1,4 +1,4 @@
-import { LeaderboardResponse } from '../types/leaderboard';
+﻿import { LeaderboardResponse } from '../types/leaderboard';
 import { api } from './axios';
 
 const unwrap = <T>(response: any): T => response.data?.data ?? response.data;

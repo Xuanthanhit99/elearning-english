@@ -1,8 +1,8 @@
-# Lumiverse Phase 3E Report: Placement Result
+﻿# BeaconVie Phase 3E Report: Placement Result
 
 ## Summary
 
-Phase 3E redesigns the Placement Result screen using Lumiverse UI and only backend-provided result data.
+Phase 3E redesigns the Placement Result screen using BeaconVie UI and only backend-provided result data.
 
 No backend, database, Prisma, auth, API contract, or routing behavior was changed.
 
@@ -23,7 +23,7 @@ Existing flow preserved:
 ## Implemented
 
 - Rebuilt result hero with CEFR level, score, optional confidence, optional percentile, and completion date.
-- Rebuilt skill breakdown as accessible Lumiverse cards.
+- Rebuilt skill breakdown as accessible BeaconVie cards.
 - Added empty backend-data states instead of invented strengths or recommendations.
 - Added learning path preview using returned phases.
 - Added certificate section that only shows download when `certificate.url` exists.

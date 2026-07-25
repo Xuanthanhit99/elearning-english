@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import SpeakingResultPage from './SpeakingResultPage';
 

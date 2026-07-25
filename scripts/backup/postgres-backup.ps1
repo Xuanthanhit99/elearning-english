@@ -1,4 +1,4 @@
-param(
+﻿param(
   [string]$ContainerName = "english_platform_postgres",
   [string]$Database = $env:POSTGRES_DB,
   [string]$User = $env:POSTGRES_USER,
@@ -7,8 +7,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-if (-not $Database) { $Database = "poppylingo" }
-if (-not $User) { $User = "poppylingo" }
+if (-not $Database) { $Database = "beaconvie" }
+if (-not $User) { $User = "beaconvie" }
 
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"

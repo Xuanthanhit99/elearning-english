@@ -1,4 +1,4 @@
-import type { ApiEnvelope } from "./listening.types";
+﻿import type { ApiEnvelope } from "./listening.types";
 
 export function unwrap<T>(value: T | ApiEnvelope<T>): T {
   if (

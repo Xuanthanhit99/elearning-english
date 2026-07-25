@@ -1,7 +1,7 @@
-{
-  "name": "Lumiverse",
-  "short_name": "Lumiverse",
-  "description": "Lumiverse - Learn. Explore. Grow. Together.",
+﻿{
+  "name": "BeaconVie",
+  "short_name": "BeaconVie",
+  "description": "BeaconVie - há»c tiáº¿ng Anh cÃ¡ nhÃ¢n hÃ³a cÃ¹ng AI.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#01031c",

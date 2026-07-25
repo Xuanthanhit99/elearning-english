@@ -1,4 +1,4 @@
-import { NotificationEventType } from '../contracts/notification-event-type';
+﻿import { NotificationEventType } from '../contracts/notification-event-type';
 import { JsonValue } from '../contracts/notification-context';
 import { NotificationActionUrlBuilder } from './notification-action-url.builder';
 import {
@@ -340,7 +340,7 @@ export function createNotificationTemplateRegistry(
           body: getText(
             metadata,
             'message',
-            'Ban co mot cap nhat moi tu PoppyLingo.',
+            'Ban co mot cap nhat moi tu BeaconVie.',
           ),
           actionUrl: getInternalHref(urls, metadata, urls.notifications()),
         }),

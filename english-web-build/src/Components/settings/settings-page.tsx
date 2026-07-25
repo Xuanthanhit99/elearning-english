@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -16,7 +16,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { Field, SectionCard, Select, Toggle } from './ui';
-import { LumiverseState } from '@/src/Components/UI/Lumiverse';
+import { BeaconVieState } from '@/src/Components/UI/BeaconVie';
 import { DeviceSession, Settings } from '@/src/lib/settings-types';
 import { settingsApi, twoFactorApi } from '@/src/lib/settings-api';
 import { useTranslation } from '@/src/hooks/useTranslation';
@@ -104,10 +104,10 @@ export default function SettingsPage() {
   if (loadError) {
     return (
       <div className="grid min-h-[60vh] place-items-center px-4">
-        <LumiverseState
-          title="Không tải được cài đặt"
-          description="Đã xảy ra lỗi khi tải cài đặt tài khoản. Vui lòng thử lại."
-          actionLabel="Thử lại"
+        <BeaconVieState
+          title="KhÃ´ng táº£i Ä‘Æ°á»£c cÃ i Ä‘áº·t"
+          description="ÄÃ£ xáº£y ra lá»—i khi táº£i cÃ i Ä‘áº·t tÃ i khoáº£n. Vui lÃ²ng thá»­ láº¡i."
+          actionLabel="Thá»­ láº¡i"
           onAction={loadSettings}
           tone="error"
         />
@@ -118,7 +118,7 @@ export default function SettingsPage() {
   if (!settings) {
     return (
       <div className="grid min-h-[60vh] place-items-center">
-        <div className="text-sm font-semibold text-[var(--lumiverse-muted)]">{t('common.loading')}</div>
+        <div className="text-sm font-semibold text-[var(--BeaconVie-muted)]">{t('common.loading')}</div>
       </div>
     );
   }
@@ -186,7 +186,7 @@ export default function SettingsPage() {
       setTwoFactorOtp('');
       setTwoFactorRecoveryCodes([]);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Không khởi tạo được 2FA.');
+      setMessage(error instanceof Error ? error.message : 'KhÃ´ng khá»Ÿi táº¡o Ä‘Æ°á»£c 2FA.');
     } finally {
       setTwoFactorBusy(false);
     }
@@ -194,7 +194,7 @@ export default function SettingsPage() {
 
   const confirmTwoFactor = async () => {
     if (twoFactorOtp.trim().length !== 6) {
-      setMessage('Vui lòng nhập mã OTP gồm 6 số.');
+      setMessage('Vui lÃ²ng nháº­p mÃ£ OTP gá»“m 6 sá»‘.');
       return;
     }
 
@@ -204,9 +204,9 @@ export default function SettingsPage() {
       const result = await twoFactorApi.confirm(twoFactorOtp.trim());
       setTwoFactorRecoveryCodes(result.recoveryCodes);
       await refreshSettings();
-      setMessage('Đã bật xác thực hai bước.');
+      setMessage('ÄÃ£ báº­t xÃ¡c thá»±c hai bÆ°á»›c.');
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Mã OTP không đúng.');
+      setMessage(error instanceof Error ? error.message : 'MÃ£ OTP khÃ´ng Ä‘Ãºng.');
     } finally {
       setTwoFactorBusy(false);
     }
@@ -224,9 +224,9 @@ export default function SettingsPage() {
       setTwoFactorDisableOpen(false);
       setTwoFactorDisablePayload({ password: '', otp: '', recoveryCode: '' });
       await refreshSettings();
-      setMessage('Đã tắt xác thực hai bước.');
+      setMessage('ÄÃ£ táº¯t xÃ¡c thá»±c hai bÆ°á»›c.');
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Không thể tắt 2FA.');
+      setMessage(error instanceof Error ? error.message : 'KhÃ´ng thá»ƒ táº¯t 2FA.');
     } finally {
       setTwoFactorBusy(false);
     }
@@ -236,32 +236,32 @@ export default function SettingsPage() {
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[var(--lumiverse-primary)]">
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[var(--BeaconVie-primary)]">
             <SlidersHorizontal className="h-4 w-4" />
             {t('settings.badge')}
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-[var(--lumiverse-ink)]">
+          <h1 className="text-3xl font-black tracking-tight text-[var(--BeaconVie-ink)]">
             {t('settings.title')}
           </h1>
-          <p className="mt-2 font-semibold text-[var(--lumiverse-muted)]">
+          <p className="mt-2 font-semibold text-[var(--BeaconVie-muted)]">
             {t('settings.subtitle')}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           {message && (
-            <span className="text-sm font-semibold text-[var(--lumiverse-muted)]">{message}</span>
+            <span className="text-sm font-semibold text-[var(--BeaconVie-muted)]">{message}</span>
           )}
           <button
             onClick={reset}
-            className="lumiverse-button-soft px-4 py-2 text-sm font-semibold"
+            className="BeaconVie-button-soft px-4 py-2 text-sm font-semibold"
           >
             {t('settings.reset')}
           </button>
           <button
             onClick={save}
             disabled={saving}
-            className="lumiverse-button-primary px-5 py-2 text-sm disabled:opacity-60"
+            className="BeaconVie-button-primary px-5 py-2 text-sm disabled:opacity-60"
           >
             {saving ? t('settings.saving') : t('settings.save')}
           </button>
@@ -270,7 +270,7 @@ export default function SettingsPage() {
 
       <div className="grid gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
         <aside className="lg:sticky lg:top-6 lg:self-start">
-          <div className="lumiverse-card flex gap-2 overflow-x-auto p-2 lg:flex-col">
+          <div className="BeaconVie-card flex gap-2 overflow-x-auto p-2 lg:flex-col">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const active = activeTab === tab.id;
@@ -280,8 +280,8 @@ export default function SettingsPage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex shrink-0 items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition ${
                     active
-                      ? 'bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]'
-                      : 'text-[var(--lumiverse-muted)] hover:bg-[var(--lumiverse-hover-tint)]'
+                      ? 'bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]'
+                      : 'text-[var(--BeaconVie-muted)] hover:bg-[var(--BeaconVie-hover-tint)]'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -296,26 +296,26 @@ export default function SettingsPage() {
           {activeTab === 'learning' && (
             <>
               <SectionCard
-                title="Mục tiêu học tập"
-                description="Dùng để ưu tiên nội dung trên Dashboard và tạo lộ trình."
+                title="Má»¥c tiÃªu há»c táº­p"
+                description="DÃ¹ng Ä‘á»ƒ Æ°u tiÃªn ná»™i dung trÃªn Dashboard vÃ  táº¡o lá»™ trÃ¬nh."
               >
-                <Field label="Mục tiêu chính">
+                <Field label="Má»¥c tiÃªu chÃ­nh">
                   <Select
                     value={settings.learningGoal}
                     onChange={(value) => patch('learningGoal', value)}
                     options={[
-                      ['DAILY_ENGLISH', 'Giao tiếp hằng ngày'],
+                      ['DAILY_ENGLISH', 'Giao tiáº¿p háº±ng ngÃ y'],
                       ['IELTS', 'IELTS'],
                       ['TOEIC', 'TOEIC'],
                       ['SPEAKING', 'Speaking'],
-                      ['BUSINESS_ENGLISH', 'Tiếng Anh công việc'],
-                      ['TRAVEL', 'Du lịch'],
-                      ['GRAMMAR', 'Ngữ pháp'],
-                      ['VOCABULARY', 'Từ vựng'],
+                      ['BUSINESS_ENGLISH', 'Tiáº¿ng Anh cÃ´ng viá»‡c'],
+                      ['TRAVEL', 'Du lá»‹ch'],
+                      ['GRAMMAR', 'Ngá»¯ phÃ¡p'],
+                      ['VOCABULARY', 'Tá»« vá»±ng'],
                     ].map(([value, label]) => ({ value, label }))}
                   />
                 </Field>
-                <Field label="Thời lượng mỗi ngày">
+                <Field label="Thá»i lÆ°á»£ng má»—i ngÃ y">
                   <Select
                     value={settings.dailyStudyMinutes}
                     onChange={(value) =>
@@ -323,11 +323,11 @@ export default function SettingsPage() {
                     }
                     options={[10, 20, 30, 45, 60].map((value) => ({
                       value,
-                      label: `${value} phút`,
+                      label: `${value} phÃºt`,
                     }))}
                   />
                 </Field>
-                <Field label="Trình độ hiện tại">
+                <Field label="TrÃ¬nh Ä‘á»™ hiá»‡n táº¡i">
                   <Select
                     value={settings.currentLevel}
                     onChange={(value) => patch('currentLevel', value)}
@@ -337,8 +337,8 @@ export default function SettingsPage() {
                   />
                 </Field>
                 <Field
-                  label="Tự động đánh giá trình độ"
-                  description="Điều chỉnh độ khó từ kết quả Placement Test và tiến độ."
+                  label="Tá»± Ä‘á»™ng Ä‘Ã¡nh giÃ¡ trÃ¬nh Ä‘á»™"
+                  description="Äiá»u chá»‰nh Ä‘á»™ khÃ³ tá»« káº¿t quáº£ Placement Test vÃ  tiáº¿n Ä‘á»™."
                 >
                   <Toggle
                     checked={settings.autoDetectLevel}
@@ -349,8 +349,8 @@ export default function SettingsPage() {
                 </Field>
               </SectionCard>
 
-              <SectionCard title="Lịch học">
-                <Field label="Mục tiêu số ngày mỗi tuần">
+              <SectionCard title="Lá»‹ch há»c">
+                <Field label="Má»¥c tiÃªu sá»‘ ngÃ y má»—i tuáº§n">
                   <Select
                     value={settings.weeklyTargetDays}
                     onChange={(value) =>
@@ -358,23 +358,23 @@ export default function SettingsPage() {
                     }
                     options={[3, 4, 5, 6, 7].map((value) => ({
                       value,
-                      label: `${value} ngày`,
+                      label: `${value} ngÃ y`,
                     }))}
                   />
                 </Field>
-                <Field label="Giờ học ưa thích">
+                <Field label="Giá» há»c Æ°a thÃ­ch">
                   <input
                     type="time"
                     value={settings.preferredStudyTime}
                     onChange={(e) =>
                       patch('preferredStudyTime', e.target.value)
                     }
-                    className="lumiverse-input w-full px-3 py-2"
+                    className="BeaconVie-input w-full px-3 py-2"
                   />
                 </Field>
                 <Field
-                  label="AI tự sắp lịch"
-                  description="Tự đề xuất khung giờ phù hợp dựa trên Learning DNA."
+                  label="AI tá»± sáº¯p lá»‹ch"
+                  description="Tá»± Ä‘á» xuáº¥t khung giá» phÃ¹ há»£p dá»±a trÃªn Learning DNA."
                 >
                   <Toggle
                     checked={settings.autoSchedule}
@@ -388,9 +388,9 @@ export default function SettingsPage() {
           {activeTab === 'ai' && (
             <SectionCard
               title="AI Teacher"
-              description="Cá nhân hóa phong cách phản hồi và sửa lỗi."
+              description="CÃ¡ nhÃ¢n hÃ³a phong cÃ¡ch pháº£n há»“i vÃ  sá»­a lá»—i."
             >
-              <Field label="Giáo viên AI">
+              <Field label="GiÃ¡o viÃªn AI">
                 <Select
                   value={settings.aiTeacher}
                   onChange={(value) => patch('aiTeacher', value)}
@@ -399,38 +399,38 @@ export default function SettingsPage() {
                   )}
                 />
               </Field>
-              <Field label="Tính cách AI">
+              <Field label="TÃ­nh cÃ¡ch AI">
                 <Select
                   value={settings.aiPersonality}
                   onChange={(value) => patch('aiPersonality', value)}
                   options={[
-                    ['TEACHER', 'Giáo viên'],
-                    ['COACH', 'Huấn luyện viên'],
-                    ['FRIEND', 'Bạn đồng hành'],
-                    ['STRICT_MENTOR', 'Người hướng dẫn nghiêm túc'],
+                    ['TEACHER', 'GiÃ¡o viÃªn'],
+                    ['COACH', 'Huáº¥n luyá»‡n viÃªn'],
+                    ['FRIEND', 'Báº¡n Ä‘á»“ng hÃ nh'],
+                    ['STRICT_MENTOR', 'NgÆ°á»i hÆ°á»›ng dáº«n nghiÃªm tÃºc'],
                   ].map(([value, label]) => ({ value, label }))}
                 />
               </Field>
-              <Field label="Chế độ sửa lỗi">
+              <Field label="Cháº¿ Ä‘á»™ sá»­a lá»—i">
                 <Select
                   value={settings.correctionMode}
                   onChange={(value) => patch('correctionMode', value)}
                   options={[
-                    ['MAJOR_ONLY', 'Chỉ sửa lỗi quan trọng'],
-                    ['CORRECT_EVERYTHING', 'Sửa mọi lỗi'],
-                    ['EXPLAIN_GRAMMAR', 'Giải thích ngữ pháp'],
-                    ['NATIVE_EXPRESSION', 'Gợi ý cách nói tự nhiên'],
+                    ['MAJOR_ONLY', 'Chá»‰ sá»­a lá»—i quan trá»ng'],
+                    ['CORRECT_EVERYTHING', 'Sá»­a má»i lá»—i'],
+                    ['EXPLAIN_GRAMMAR', 'Giáº£i thÃ­ch ngá»¯ phÃ¡p'],
+                    ['NATIVE_EXPRESSION', 'Gá»£i Ã½ cÃ¡ch nÃ³i tá»± nhiÃªn'],
                   ].map(([value, label]) => ({ value, label }))}
                 />
               </Field>
-              <Field label="Dịch nghĩa">
+              <Field label="Dá»‹ch nghÄ©a">
                 <Select
                   value={settings.translationMode}
                   onChange={(value) => patch('translationMode', value)}
                   options={[
-                    ['ALWAYS', 'Luôn hiển thị'],
-                    ['ON_REQUEST', 'Khi yêu cầu'],
-                    ['NEVER', 'Không hiển thị'],
+                    ['ALWAYS', 'LuÃ´n hiá»ƒn thá»‹'],
+                    ['ON_REQUEST', 'Khi yÃªu cáº§u'],
+                    ['NEVER', 'KhÃ´ng hiá»ƒn thá»‹'],
                   ].map(([value, label]) => ({ value, label }))}
                 />
               </Field>
@@ -438,20 +438,20 @@ export default function SettingsPage() {
           )}
 
           {activeTab === 'speaking' && (
-            <SectionCard title="Speaking và phát âm">
-              <Field label="Giọng đọc">
+            <SectionCard title="Speaking vÃ  phÃ¡t Ã¢m">
+              <Field label="Giá»ng Ä‘á»c">
                 <Select
                   value={settings.accent}
                   onChange={(value) => patch('accent', value)}
                   options={[
-                    ['AMERICAN', 'Mỹ'],
+                    ['AMERICAN', 'Má»¹'],
                     ['BRITISH', 'Anh'],
-                    ['AUSTRALIAN', 'Úc'],
+                    ['AUSTRALIAN', 'Ãšc'],
                     ['CANADIAN', 'Canada'],
                   ].map(([value, label]) => ({ value, label }))}
                 />
               </Field>
-              <Field label={`Độ nhạy microphone: ${settings.micSensitivity}%`}>
+              <Field label={`Äá»™ nháº¡y microphone: ${settings.micSensitivity}%`}>
                 <input
                   type="range"
                   min="0"
@@ -463,7 +463,7 @@ export default function SettingsPage() {
                   className="w-full"
                 />
               </Field>
-              <Field label="Tự dừng khi im lặng">
+              <Field label="Tá»± dá»«ng khi im láº·ng">
                 <Select
                   value={settings.autoStopSeconds ?? 0}
                   onChange={(value) =>
@@ -473,14 +473,14 @@ export default function SettingsPage() {
                     )
                   }
                   options={[
-                    { value: 3, label: '3 giây' },
-                    { value: 5, label: '5 giây' },
-                    { value: 10, label: '10 giây' },
-                    { value: 0, label: 'Không tự dừng' },
+                    { value: 3, label: '3 giÃ¢y' },
+                    { value: 5, label: '5 giÃ¢y' },
+                    { value: 10, label: '10 giÃ¢y' },
+                    { value: 0, label: 'KhÃ´ng tá»± dá»«ng' },
                   ]}
                 />
               </Field>
-              <Field label="Phụ đề">
+              <Field label="Phá»¥ Ä‘á»">
                 <Toggle
                   checked={settings.captionsEnabled}
                   onChange={(value) => patch('captionsEnabled', value)}
@@ -490,8 +490,8 @@ export default function SettingsPage() {
           )}
 
           {activeTab === 'notifications' && (
-            <SectionCard title="Thông báo">
-              <Field label="Nhắc học hằng ngày">
+            <SectionCard title="ThÃ´ng bÃ¡o">
+              <Field label="Nháº¯c há»c háº±ng ngÃ y">
                 <Toggle
                   checked={settings.dailyReminderEnabled}
                   onChange={(value) =>
@@ -499,7 +499,7 @@ export default function SettingsPage() {
                   }
                 />
               </Field>
-              <Field label="Giờ nhắc học">
+              <Field label="Giá» nháº¯c há»c">
                 <input
                   type="time"
                   disabled={!settings.dailyReminderEnabled}
@@ -507,14 +507,14 @@ export default function SettingsPage() {
                   onChange={(e) =>
                     patch('dailyReminderTime', e.target.value)
                   }
-                  className="lumiverse-input w-full px-3 py-2 disabled:opacity-50"
+                  className="BeaconVie-input w-full px-3 py-2 disabled:opacity-50"
                 />
               </Field>
               {[
-                ['missionReminder', 'Nhiệm vụ'],
-                ['clubNotification', 'Hoạt động Club'],
-                ['leaderboardNotification', 'Bảng xếp hạng'],
-                ['aiFeedbackNotification', 'AI chấm bài xong'],
+                ['missionReminder', 'Nhiá»‡m vá»¥'],
+                ['clubNotification', 'Hoáº¡t Ä‘á»™ng Club'],
+                ['leaderboardNotification', 'Báº£ng xáº¿p háº¡ng'],
+                ['aiFeedbackNotification', 'AI cháº¥m bÃ i xong'],
                 ['pushNotification', 'Push notification'],
                 ['emailNotification', 'Email'],
               ].map(([key, label]) => (
@@ -531,31 +531,31 @@ export default function SettingsPage() {
           )}
 
           {activeTab === 'community' && (
-            <SectionCard title="Cộng đồng">
-              <Field label="Biệt danh">
+            <SectionCard title="Cá»™ng Ä‘á»“ng">
+              <Field label="Biá»‡t danh">
                 <input
                   value={settings.communityNickname ?? ''}
                   onChange={(e) =>
                     patch('communityNickname', e.target.value || null)
                   }
-                  placeholder="Tên hiển thị trong Community"
-                  className="lumiverse-input w-full px-3 py-2"
+                  placeholder="TÃªn hiá»ƒn thá»‹ trong Community"
+                  className="BeaconVie-input w-full px-3 py-2"
                 />
               </Field>
-              <Field label="Ai có thể nhắn tin">
+              <Field label="Ai cÃ³ thá»ƒ nháº¯n tin">
                 <Select
                   value={settings.messagePermission}
                   onChange={(value) =>
                     patch('messagePermission', value)
                   }
                   options={[
-                    ['EVERYONE', 'Mọi người'],
-                    ['FRIENDS', 'Bạn bè'],
-                    ['NOBODY', 'Không ai'],
+                    ['EVERYONE', 'Má»i ngÆ°á»i'],
+                    ['FRIENDS', 'Báº¡n bÃ¨'],
+                    ['NOBODY', 'KhÃ´ng ai'],
                   ].map(([value, label]) => ({ value, label }))}
                 />
               </Field>
-              <Field label="Tự tham gia voice room">
+              <Field label="Tá»± tham gia voice room">
                 <Toggle
                   checked={settings.autoJoinVoiceRoom}
                   onChange={(value) =>
@@ -630,17 +630,17 @@ export default function SettingsPage() {
           )}
 
           {activeTab === 'privacy' && (
-            <SectionCard title="Quyền riêng tư">
+            <SectionCard title="Quyá»n riÃªng tÆ°">
               {[
-                ['publicProfile', 'Hồ sơ công khai'],
-                ['showStreak', 'Hiển thị streak'],
-                ['showAchievements', 'Hiển thị thành tích'],
-                ['allowFriendRequests', 'Cho phép kết bạn'],
-                ['allowClubInvites', 'Cho phép mời vào Club'],
-                ['showOnlineStatus', 'Hiển thị đang online'],
-                ['showLastSeen', 'Hiển thị lần hoạt động cuối'],
-                ['dataPersonalization', 'Cá nhân hóa bằng dữ liệu học'],
-                ['analyticsConsent', 'Cho phép phân tích sử dụng'],
+                ['publicProfile', 'Há»“ sÆ¡ cÃ´ng khai'],
+                ['showStreak', 'Hiá»ƒn thá»‹ streak'],
+                ['showAchievements', 'Hiá»ƒn thá»‹ thÃ nh tÃ­ch'],
+                ['allowFriendRequests', 'Cho phÃ©p káº¿t báº¡n'],
+                ['allowClubInvites', 'Cho phÃ©p má»i vÃ o Club'],
+                ['showOnlineStatus', 'Hiá»ƒn thá»‹ Ä‘ang online'],
+                ['showLastSeen', 'Hiá»ƒn thá»‹ láº§n hoáº¡t Ä‘á»™ng cuá»‘i'],
+                ['dataPersonalization', 'CÃ¡ nhÃ¢n hÃ³a báº±ng dá»¯ liá»‡u há»c'],
+                ['analyticsConsent', 'Cho phÃ©p phÃ¢n tÃ­ch sá»­ dá»¥ng'],
               ].map(([key, label]) => (
                 <Field key={key} label={label}>
                   <Toggle
@@ -658,8 +658,8 @@ export default function SettingsPage() {
             <>
               <ChangePasswordCard />
 
-              <SectionCard title="Bảo mật tài khoản">
-                <Field label="Xác thực hai bước">
+              <SectionCard title="Báº£o máº­t tÃ i khoáº£n">
+                <Field label="XÃ¡c thá»±c hai bÆ°á»›c">
                   <Toggle
                     checked={settings.twoFactorEnabled}
                     disabled={twoFactorBusy}
@@ -672,48 +672,48 @@ export default function SettingsPage() {
                     }}
                   />
                 </Field>
-                <Field label="Xuất dữ liệu cài đặt">
+                <Field label="Xuáº¥t dá»¯ liá»‡u cÃ i Ä‘áº·t">
                   <a
                     href={settingsApi.exportUrl}
-                    className="inline-flex lumiverse-button-soft px-4 py-2 text-sm font-semibold"
+                    className="inline-flex BeaconVie-button-soft px-4 py-2 text-sm font-semibold"
                   >
-                    Tải JSON
+                    Táº£i JSON
                   </a>
                 </Field>
               </SectionCard>
 
-              <SectionCard title="Thiết bị đăng nhập">
+              <SectionCard title="Thiáº¿t bá»‹ Ä‘Äƒng nháº­p">
                 {devices.length === 0 && (
-                  <p className="text-sm font-semibold text-[var(--lumiverse-muted)]">
-                    Chưa có dữ liệu thiết bị.
+                  <p className="text-sm font-semibold text-[var(--BeaconVie-muted)]">
+                    ChÆ°a cÃ³ dá»¯ liá»‡u thiáº¿t bá»‹.
                   </p>
                 )}
                 {devices?.map((device) => (
                   <div
                     key={device.id}
-                    className="flex flex-col gap-3 rounded-2xl border border-[var(--lumiverse-border)] p-4 sm:flex-row sm:items-center sm:justify-between"
+                    className="flex flex-col gap-3 rounded-2xl border border-[var(--BeaconVie-border)] p-4 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div>
                       <div className="font-semibold">
                         {device.deviceName}
                         {device.current && (
                           <span className="ml-2 text-xs text-emerald-600">
-                            Thiết bị này
+                            Thiáº¿t bá»‹ nÃ y
                           </span>
                         )}
                       </div>
-                      <div className="mt-1 text-sm font-semibold text-[var(--lumiverse-muted)]">
+                      <div className="mt-1 text-sm font-semibold text-[var(--BeaconVie-muted)]">
                         {[device.browser, device.os, device.ipAddress]
                           .filter(Boolean)
-                          .join(' · ')}
+                          .join(' Â· ')}
                       </div>
                     </div>
                     {!device.current && (
                       <button
-                        className="rounded-xl border border-[var(--lumiverse-danger)]/30 px-3 py-2 text-sm font-semibold text-[var(--lumiverse-danger)]"
+                        className="rounded-xl border border-[var(--BeaconVie-danger)]/30 px-3 py-2 text-sm font-semibold text-[var(--BeaconVie-danger)]"
                         onClick={async () => {
                           const confirmed = window.confirm(
-                            `Đăng xuất thiết bị "${device.deviceName}"? Thiết bị này sẽ cần đăng nhập lại.`,
+                            `ÄÄƒng xuáº¥t thiáº¿t bá»‹ "${device.deviceName}"? Thiáº¿t bá»‹ nÃ y sáº½ cáº§n Ä‘Äƒng nháº­p láº¡i.`,
                           );
                           if (!confirmed) return;
                           try {
@@ -722,11 +722,11 @@ export default function SettingsPage() {
                               current.filter((item) => item.id !== device.id),
                             );
                           } catch {
-                            setMessage('Không đăng xuất được thiết bị này. Vui lòng thử lại.');
+                            setMessage('KhÃ´ng Ä‘Äƒng xuáº¥t Ä‘Æ°á»£c thiáº¿t bá»‹ nÃ y. Vui lÃ²ng thá»­ láº¡i.');
                           }
                         }}
                       >
-                        Đăng xuất
+                        ÄÄƒng xuáº¥t
                       </button>
                     )}
                   </div>
@@ -737,12 +737,12 @@ export default function SettingsPage() {
 
           {activeTab === 'advanced' && (
             <SectionCard
-              title="Tính năng thông minh"
-              description="Những đề xuất giúp Lumiverse khác biệt với web học thông thường."
+              title="TÃ­nh nÄƒng thÃ´ng minh"
+              description="Nhá»¯ng Ä‘á» xuáº¥t giÃºp BeaconVie khÃ¡c biá»‡t vá»›i web há»c thÃ´ng thÆ°á»ng."
             >
               <Field
                 label="Learning DNA"
-                description="Phân tích thời điểm học tốt nhất, kỹ năng mạnh/yếu và khả năng ghi nhớ."
+                description="PhÃ¢n tÃ­ch thá»i Ä‘iá»ƒm há»c tá»‘t nháº¥t, ká»¹ nÄƒng máº¡nh/yáº¿u vÃ  kháº£ nÄƒng ghi nhá»›."
               >
                 <Toggle
                   checked={settings.learningDnaEnabled}
@@ -753,7 +753,7 @@ export default function SettingsPage() {
               </Field>
               <Field
                 label="Focus Mode"
-                description="Ẩn hoạt động cộng đồng, bảng xếp hạng và thông báo gây xao nhãng."
+                description="áº¨n hoáº¡t Ä‘á»™ng cá»™ng Ä‘á»“ng, báº£ng xáº¿p háº¡ng vÃ  thÃ´ng bÃ¡o gÃ¢y xao nhÃ£ng."
               >
                 <Toggle
                   checked={settings.focusMode}
@@ -762,7 +762,7 @@ export default function SettingsPage() {
               </Field>
               <Field
                 label="Energy Mode"
-                description="Tự giảm độ khó khi hiệu suất học giảm hoặc học vào khung giờ muộn."
+                description="Tá»± giáº£m Ä‘á»™ khÃ³ khi hiá»‡u suáº¥t há»c giáº£m hoáº·c há»c vÃ o khung giá» muá»™n."
               >
                 <Toggle
                   checked={settings.energyMode}
@@ -770,8 +770,8 @@ export default function SettingsPage() {
                 />
               </Field>
               <Field
-                label="Dashboard thích nghi"
-                description="Tự ưu tiên kỹ năng và bài học theo mục tiêu hiện tại."
+                label="Dashboard thÃ­ch nghi"
+                description="Tá»± Æ°u tiÃªn ká»¹ nÄƒng vÃ  bÃ i há»c theo má»¥c tiÃªu hiá»‡n táº¡i."
               >
                 <Toggle
                   checked={settings.adaptiveDashboard}
@@ -786,27 +786,27 @@ export default function SettingsPage() {
       </div>
 
       {twoFactorSetup && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-[var(--lumiverse-overlay)] p-4">
-          <div className="lumiverse-card w-full max-w-lg p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 grid place-items-center bg-[var(--BeaconVie-overlay)] p-4">
+          <div className="BeaconVie-card w-full max-w-lg p-6 shadow-2xl">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-xl font-black text-[var(--lumiverse-ink)]">
-                  Bật xác thực hai bước
+                <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">
+                  Báº­t xÃ¡c thá»±c hai bÆ°á»›c
                 </h2>
-                <p className="mt-1 text-sm font-semibold text-[var(--lumiverse-muted)]">
-                  Quét mã QR bằng Google Authenticator, Authy hoặc ứng dụng OTP tương tự.
+                <p className="mt-1 text-sm font-semibold text-[var(--BeaconVie-muted)]">
+                  QuÃ©t mÃ£ QR báº±ng Google Authenticator, Authy hoáº·c á»©ng dá»¥ng OTP tÆ°Æ¡ng tá»±.
                 </p>
               </div>
               <button
-                className="lumiverse-button-soft px-3 py-1 text-sm font-semibold"
+                className="BeaconVie-button-soft px-3 py-1 text-sm font-semibold"
                 onClick={() => setTwoFactorSetup(null)}
               >
-                Đóng
+                ÄÃ³ng
               </button>
             </div>
 
             <div className="mt-5 grid gap-5 sm:grid-cols-[180px_minmax(0,1fr)]">
-              <div className="rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] p-3">
+              <div className="rounded-2xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-3">
                 <Image
                   src={twoFactorSetup.qrCodeDataUrl}
                   alt="2FA QR code"
@@ -818,23 +818,23 @@ export default function SettingsPage() {
               </div>
               <div className="space-y-4">
                 <div>
-                  <div className="text-sm font-semibold text-[var(--lumiverse-ink)]">
-                    Mã nhập thủ công
+                  <div className="text-sm font-semibold text-[var(--BeaconVie-ink)]">
+                    MÃ£ nháº­p thá»§ cÃ´ng
                   </div>
-                  <code className="mt-2 block break-all rounded-xl bg-[var(--lumiverse-card-soft)] p-3 text-xs">
+                  <code className="mt-2 block break-all rounded-xl bg-[var(--BeaconVie-card-soft)] p-3 text-xs">
                     {twoFactorSetup.manualEntryKey}
                   </code>
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-[var(--lumiverse-ink)]">
-                    Nhập mã OTP 6 số
+                  <label className="text-sm font-semibold text-[var(--BeaconVie-ink)]">
+                    Nháº­p mÃ£ OTP 6 sá»‘
                   </label>
                   <input
                     value={twoFactorOtp}
                     onChange={(event) => setTwoFactorOtp(event.target.value)}
                     maxLength={6}
                     inputMode="numeric"
-                    className="mt-2 lumiverse-input w-full px-3 py-2"
+                    className="mt-2 BeaconVie-input w-full px-3 py-2"
                     placeholder="123456"
                   />
                 </div>
@@ -843,7 +843,7 @@ export default function SettingsPage() {
 
             {twoFactorRecoveryCodes.length > 0 && (
               <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-                <div className="font-bold">Recovery codes - chỉ hiển thị một lần</div>
+                <div className="font-bold">Recovery codes - chá»‰ hiá»ƒn thá»‹ má»™t láº§n</div>
                 <div className="mt-2 grid gap-2 sm:grid-cols-2">
                   {twoFactorRecoveryCodes.map((code) => (
                     <code key={code} className="rounded-lg bg-white px-2 py-1">
@@ -856,17 +856,17 @@ export default function SettingsPage() {
 
             <div className="mt-6 flex justify-end gap-3">
               <button
-                className="lumiverse-button-soft px-4 py-2 text-sm font-semibold"
+                className="BeaconVie-button-soft px-4 py-2 text-sm font-semibold"
                 onClick={() => setTwoFactorSetup(null)}
               >
-                Để sau
+                Äá»ƒ sau
               </button>
               <button
                 disabled={twoFactorBusy || twoFactorRecoveryCodes.length > 0}
-                className="lumiverse-button-primary px-5 py-2 text-sm disabled:opacity-60"
+                className="BeaconVie-button-primary px-5 py-2 text-sm disabled:opacity-60"
                 onClick={confirmTwoFactor}
               >
-                {twoFactorBusy ? 'Đang xác minh...' : 'Xác nhận bật 2FA'}
+                {twoFactorBusy ? 'Äang xÃ¡c minh...' : 'XÃ¡c nháº­n báº­t 2FA'}
               </button>
             </div>
           </div>
@@ -874,19 +874,19 @@ export default function SettingsPage() {
       )}
 
       {twoFactorDisableOpen && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-[var(--lumiverse-overlay)] p-4">
-          <div className="lumiverse-card w-full max-w-md p-6 shadow-2xl">
-            <h2 className="text-xl font-black text-[var(--lumiverse-ink)]">
-              Tắt xác thực hai bước
+        <div className="fixed inset-0 z-50 grid place-items-center bg-[var(--BeaconVie-overlay)] p-4">
+          <div className="BeaconVie-card w-full max-w-md p-6 shadow-2xl">
+            <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">
+              Táº¯t xÃ¡c thá»±c hai bÆ°á»›c
             </h2>
-            <p className="mt-1 text-sm font-semibold text-[var(--lumiverse-muted)]">
-              Nhập mật khẩu, mã OTP hoặc recovery code để xác minh.
+            <p className="mt-1 text-sm font-semibold text-[var(--BeaconVie-muted)]">
+              Nháº­p máº­t kháº©u, mÃ£ OTP hoáº·c recovery code Ä‘á»ƒ xÃ¡c minh.
             </p>
 
             <div className="mt-5 space-y-3">
               <input
                 type="password"
-                placeholder="Mật khẩu"
+                placeholder="Máº­t kháº©u"
                 value={twoFactorDisablePayload.password}
                 onChange={(event) =>
                   setTwoFactorDisablePayload((current) => ({
@@ -894,10 +894,10 @@ export default function SettingsPage() {
                     password: event.target.value,
                   }))
                 }
-                className="lumiverse-input w-full px-3 py-2"
+                className="BeaconVie-input w-full px-3 py-2"
               />
               <input
-                placeholder="Mã OTP"
+                placeholder="MÃ£ OTP"
                 maxLength={6}
                 inputMode="numeric"
                 value={twoFactorDisablePayload.otp}
@@ -907,7 +907,7 @@ export default function SettingsPage() {
                     otp: event.target.value,
                   }))
                 }
-                className="lumiverse-input w-full px-3 py-2"
+                className="BeaconVie-input w-full px-3 py-2"
               />
               <input
                 placeholder="Recovery code"
@@ -918,23 +918,23 @@ export default function SettingsPage() {
                     recoveryCode: event.target.value,
                   }))
                 }
-                className="lumiverse-input w-full px-3 py-2"
+                className="BeaconVie-input w-full px-3 py-2"
               />
             </div>
 
             <div className="mt-6 flex justify-end gap-3">
               <button
-                className="lumiverse-button-soft px-4 py-2 text-sm font-semibold"
+                className="BeaconVie-button-soft px-4 py-2 text-sm font-semibold"
                 onClick={() => setTwoFactorDisableOpen(false)}
               >
-                Hủy
+                Há»§y
               </button>
               <button
                 disabled={twoFactorBusy}
-                className="rounded-xl bg-[var(--lumiverse-danger)] px-5 py-2 text-sm font-bold text-white disabled:opacity-60"
+                className="rounded-xl bg-[var(--BeaconVie-danger)] px-5 py-2 text-sm font-bold text-white disabled:opacity-60"
                 onClick={disableTwoFactor}
               >
-                {twoFactorBusy ? 'Đang tắt...' : 'Tắt 2FA'}
+                {twoFactorBusy ? 'Äang táº¯t...' : 'Táº¯t 2FA'}
               </button>
             </div>
           </div>
@@ -963,7 +963,7 @@ function getRequestErrorMessage(error: unknown, fallback: string) {
 
 /**
  * Changing a password revokes every session for the account (see
- * AuthService.changePassword's comment — the access-token payload carries no
+ * AuthService.changePassword's comment â€” the access-token payload carries no
  * session id, so there's no safe way to tell "this device" apart from any
  * other live session), including the one making this request. A successful
  * change therefore always ends in a redirect to /login, not a toast.
@@ -983,11 +983,11 @@ function ChangePasswordCard() {
     setError('');
 
     if (newPassword.length < 6) {
-      setError('Mật khẩu mới phải có ít nhất 6 ký tự.');
+      setError('Máº­t kháº©u má»›i pháº£i cÃ³ Ã­t nháº¥t 6 kÃ½ tá»±.');
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError('Mật khẩu xác nhận không khớp.');
+      setError('Máº­t kháº©u xÃ¡c nháº­n khÃ´ng khá»›p.');
       return;
     }
 
@@ -997,7 +997,7 @@ function ChangePasswordCard() {
       setDone(true);
       setTimeout(() => router.replace('/login'), 2000);
     } catch (err) {
-      setError(getRequestErrorMessage(err, 'Không đổi được mật khẩu. Vui lòng thử lại.'));
+      setError(getRequestErrorMessage(err, 'KhÃ´ng Ä‘á»•i Ä‘Æ°á»£c máº­t kháº©u. Vui lÃ²ng thá»­ láº¡i.'));
     } finally {
       setSubmitting(false);
     }
@@ -1005,34 +1005,34 @@ function ChangePasswordCard() {
 
   if (done) {
     return (
-      <SectionCard title="Đổi mật khẩu">
-        <p className="text-sm font-semibold text-[var(--lumiverse-muted)]">
-          Đổi mật khẩu thành công. Mọi phiên đăng nhập đã bị đăng xuất — đang
-          chuyển đến trang đăng nhập...
+      <SectionCard title="Äá»•i máº­t kháº©u">
+        <p className="text-sm font-semibold text-[var(--BeaconVie-muted)]">
+          Äá»•i máº­t kháº©u thÃ nh cÃ´ng. Má»i phiÃªn Ä‘Äƒng nháº­p Ä‘Ã£ bá»‹ Ä‘Äƒng xuáº¥t â€” Ä‘ang
+          chuyá»ƒn Ä‘áº¿n trang Ä‘Äƒng nháº­p...
         </p>
       </SectionCard>
     );
   }
 
   return (
-    <SectionCard title="Đổi mật khẩu">
+    <SectionCard title="Äá»•i máº­t kháº©u">
       <form className="space-y-3" onSubmit={handleSubmit}>
         <label className="block">
-          <span className="text-sm font-semibold text-[var(--lumiverse-muted)]">
-            Mật khẩu hiện tại
+          <span className="text-sm font-semibold text-[var(--BeaconVie-muted)]">
+            Máº­t kháº©u hiá»‡n táº¡i
           </span>
           <input
             type="password"
             required
             value={currentPassword}
             onChange={(event) => setCurrentPassword(event.target.value)}
-            className="lumiverse-input mt-1 w-full px-3 py-2"
+            className="BeaconVie-input mt-1 w-full px-3 py-2"
           />
         </label>
 
         <label className="block">
-          <span className="text-sm font-semibold text-[var(--lumiverse-muted)]">
-            Mật khẩu mới
+          <span className="text-sm font-semibold text-[var(--BeaconVie-muted)]">
+            Máº­t kháº©u má»›i
           </span>
           <input
             type="password"
@@ -1040,13 +1040,13 @@ function ChangePasswordCard() {
             minLength={6}
             value={newPassword}
             onChange={(event) => setNewPassword(event.target.value)}
-            className="lumiverse-input mt-1 w-full px-3 py-2"
+            className="BeaconVie-input mt-1 w-full px-3 py-2"
           />
         </label>
 
         <label className="block">
-          <span className="text-sm font-semibold text-[var(--lumiverse-muted)]">
-            Xác nhận mật khẩu mới
+          <span className="text-sm font-semibold text-[var(--BeaconVie-muted)]">
+            XÃ¡c nháº­n máº­t kháº©u má»›i
           </span>
           <input
             type="password"
@@ -1054,12 +1054,12 @@ function ChangePasswordCard() {
             minLength={6}
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
-            className="lumiverse-input mt-1 w-full px-3 py-2"
+            className="BeaconVie-input mt-1 w-full px-3 py-2"
           />
         </label>
 
         {error && (
-          <p className="text-sm font-semibold text-[var(--lumiverse-danger)]" role="alert">
+          <p className="text-sm font-semibold text-[var(--BeaconVie-danger)]" role="alert">
             {error}
           </p>
         )}
@@ -1068,9 +1068,9 @@ function ChangePasswordCard() {
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-xl bg-[var(--lumiverse-primary)] px-5 py-2 text-sm font-bold text-white disabled:opacity-60"
+            className="rounded-xl bg-[var(--BeaconVie-primary)] px-5 py-2 text-sm font-bold text-white disabled:opacity-60"
           >
-            {submitting ? 'Đang đổi...' : 'Đổi mật khẩu'}
+            {submitting ? 'Äang Ä‘á»•i...' : 'Äá»•i máº­t kháº©u'}
           </button>
         </div>
       </form>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import confetti from "canvas-confetti";
@@ -17,7 +17,7 @@ type CelebrationState =
 function fireConfetti() {
   // canvas-confetti and framer-motion were both already installed dependencies
   // with zero real usage anywhere in the app (per the achievement-production
-  // audit) — reused here rather than hand-rolling another bespoke CSS confetti
+  // audit) â€” reused here rather than hand-rolling another bespoke CSS confetti
   // effect like the two pre-existing, non-reusable ones in Listening/Vocabulary.
   confetti({
     particleCount: 120,
@@ -31,7 +31,7 @@ function fireConfetti() {
  * Client-only "new achievement" / "level up" celebration. Deliberately
  * requires no backend schema change: it diffs the Dashboard's existing
  * `recentAchievements`/level data against a localStorage-tracked "last seen"
- * marker, so only genuinely-new-since-last-visit events celebrate — not
+ * marker, so only genuinely-new-since-last-visit events celebrate â€” not
  * every achievement the user has ever earned on first-ever page load.
  */
 export function AchievementCelebration({ data }: { data: DashboardData | null }) {
@@ -46,7 +46,7 @@ export function AchievementCelebration({ data }: { data: DashboardData | null })
       checkAchievements(data, setCelebration);
       checkLevelUp(data, setCelebration);
     } catch {
-      // localStorage can throw in some privacy modes — celebration is
+      // localStorage can throw in some privacy modes â€” celebration is
       // cosmetic, never worth breaking the dashboard over.
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -71,8 +71,8 @@ export function AchievementCelebration({ data }: { data: DashboardData | null })
           role="status"
           aria-live="polite"
         >
-          <div className="flex items-start gap-3 rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-4 shadow-[0_24px_70px_rgba(31,42,68,0.18)] dark:shadow-black/40">
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] text-white">
+          <div className="flex items-start gap-3 rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-4 shadow-[0_24px_70px_rgba(31,42,68,0.18)] dark:shadow-black/40">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] text-white">
               {celebration.kind === "level-up" ? (
                 <Sparkles aria-hidden className="h-5 w-5" />
               ) : (
@@ -82,20 +82,20 @@ export function AchievementCelebration({ data }: { data: DashboardData | null })
             <div className="min-w-0 flex-1">
               {celebration.kind === "level-up" ? (
                 <>
-                  <p className="font-black text-[var(--lumiverse-ink)]">Level Up!</p>
-                  <p className="mt-0.5 text-sm font-semibold text-[var(--lumiverse-muted)]">
+                  <p className="font-black text-[var(--BeaconVie-ink)]">Level Up!</p>
+                  <p className="mt-0.5 text-sm font-semibold text-[var(--BeaconVie-muted)]">
                     You&apos;ve reached level {celebration.level}. Keep it up!
                   </p>
                 </>
               ) : (
                 <>
-                  <p className="font-black text-[var(--lumiverse-ink)]">
+                  <p className="font-black text-[var(--BeaconVie-ink)]">
                     Achievement unlocked!
                   </p>
-                  <p className="mt-0.5 truncate text-sm font-semibold text-[var(--lumiverse-muted)]">
+                  <p className="mt-0.5 truncate text-sm font-semibold text-[var(--BeaconVie-muted)]">
                     {celebration.title}
-                    {celebration.xp > 0 ? ` · +${celebration.xp} XP` : ""}
-                    {celebration.coins > 0 ? ` · +${celebration.coins} coins` : ""}
+                    {celebration.xp > 0 ? ` Â· +${celebration.xp} XP` : ""}
+                    {celebration.coins > 0 ? ` Â· +${celebration.coins} coins` : ""}
                   </p>
                 </>
               )}
@@ -104,7 +104,7 @@ export function AchievementCelebration({ data }: { data: DashboardData | null })
               type="button"
               aria-label="Dismiss"
               onClick={() => setCelebration(null)}
-              className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[var(--lumiverse-muted)] transition hover:bg-[var(--lumiverse-card-soft)] hover:text-[var(--lumiverse-ink)]"
+              className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[var(--BeaconVie-muted)] transition hover:bg-[var(--BeaconVie-card-soft)] hover:text-[var(--BeaconVie-ink)]"
             >
               <X aria-hidden className="h-4 w-4" />
             </button>
@@ -127,7 +127,7 @@ function checkAchievements(
   const latestTime = new Date(latest.earnedAt).getTime();
 
   if (!lastSeenRaw) {
-    // First-ever dashboard visit with achievement data — establish the
+    // First-ever dashboard visit with achievement data â€” establish the
     // baseline silently instead of celebrating the user's entire history.
     window.localStorage.setItem(ACHIEVEMENT_SEEN_KEY, latest.earnedAt);
     return;
@@ -164,7 +164,7 @@ function checkLevelUp(
 
   window.localStorage.setItem(LEVEL_SEEN_KEY, String(currentLevel));
   // Achievement unlocks take visual priority if both happen on the same
-  // load — level-up only celebrates when nothing else already claimed the
+  // load â€” level-up only celebrates when nothing else already claimed the
   // slot, since setCelebration below would otherwise overwrite it.
   setCelebration((current) => current ?? { kind: "level-up", level: currentLevel });
 }

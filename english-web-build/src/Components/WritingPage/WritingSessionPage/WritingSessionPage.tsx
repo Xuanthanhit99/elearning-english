@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { api } from "@/src/lib/axios";
 import {
@@ -92,7 +92,7 @@ export default function WritingSessionPage() {
       setTimeSpent(res.data.session.timeSpentSeconds || 0);
     } catch (err) {
       console.error(err);
-      setError("Không tải được phiên luyện viết.");
+      setError("KhÃ´ng táº£i Ä‘Æ°á»£c phiÃªn luyá»‡n viáº¿t.");
     }
   }
 
@@ -109,7 +109,7 @@ export default function WritingSessionPage() {
       });
     } catch (err) {
       console.error(err);
-      setError("Không lưu được bài viết.");
+      setError("KhÃ´ng lÆ°u Ä‘Æ°á»£c bÃ i viáº¿t.");
     } finally {
       setSaving(false);
     }
@@ -119,12 +119,12 @@ export default function WritingSessionPage() {
     if (submitting || saving) return;
 
     if (!content.trim()) {
-      setError("Bạn cần nhập bài viết trước khi nộp.");
+      setError("Báº¡n cáº§n nháº­p bÃ i viáº¿t trÆ°á»›c khi ná»™p.");
       return;
     }
 
     if (data && wordCount < data.lesson.minWords) {
-      setError(`Bài viết cần tối thiểu ${data.lesson.minWords} từ.`);
+      setError(`BÃ i viáº¿t cáº§n tá»‘i thiá»ƒu ${data.lesson.minWords} tá»«.`);
       return;
     }
 
@@ -147,7 +147,7 @@ export default function WritingSessionPage() {
       );
     } catch (err) {
       console.error(err);
-      setError("Không thể nộp bài viết lúc này.");
+      setError("KhÃ´ng thá»ƒ ná»™p bÃ i viáº¿t lÃºc nÃ y.");
     } finally {
       setSubmitting(false);
     }
@@ -184,7 +184,7 @@ export default function WritingSessionPage() {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 p-10 text-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-violet-100 border-t-violet-600" />
-        <p className="font-semibold text-[#09083f]">Đang tải bài viết của bạn...</p>
+        <p className="font-semibold text-[#09083f]">Äang táº£i bÃ i viáº¿t cá»§a báº¡n...</p>
       </div>
     );
   }
@@ -197,13 +197,13 @@ export default function WritingSessionPage() {
           onClick={loadData}
           className="mt-4 rounded-xl bg-violet-600 px-5 py-3 font-bold text-white"
         >
-          Thử lại
+          Thá»­ láº¡i
         </button>
       </div>
     );
   }
 
-  if (!data) return <div className="p-10">Không có dữ liệu phiên viết.</div>;
+  if (!data) return <div className="p-10">KhÃ´ng cÃ³ dá»¯ liá»‡u phiÃªn viáº¿t.</div>;
 
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
@@ -269,7 +269,7 @@ export default function WritingSessionPage() {
                     className="flex h-12 items-center gap-2 rounded-xl border border-slate-300 bg-white px-7 font-bold text-violet-600 disabled:opacity-50"
                   >
                     <Save className="h-5 w-5" />
-                    {saving ? "Saving..." : "Save Draft"}
+                    {saving ? "Đang lưu..." : "Lưu bản nháp"}
                   </button>
 
                   <button
@@ -277,7 +277,7 @@ export default function WritingSessionPage() {
                     disabled={submitting || saving}
                     className="flex h-12 items-center gap-2 rounded-xl bg-violet-600 px-7 font-bold text-white disabled:opacity-50"
                   >
-                    {submitting ? "Checking with AI..." : "Submit & Check AI"}
+                    {submitting ? "AI đang kiểm tra..." : "Nộp bài và kiểm tra AI"}
                     <ChevronRight className="h-5 w-5" />
                   </button>
                 </div>
@@ -317,7 +317,7 @@ function Breadcrumb({
   return (
     <div className="flex items-center gap-3 text-sm font-bold text-slate-400">
       <Home className="h-4 w-4" />
-      <span>Writing</span>
+      <span>Luyện viết</span>
       <ChevronRight className="h-4 w-4" />
       <span>{topic}</span>
       <ChevronRight className="h-4 w-4" />
@@ -344,14 +344,14 @@ function LessonTitle({ data }: { data: SessionData }) {
             {formatType(data.lesson.type)}
           </span>
 
-          <span>•</span>
+          <span>â€¢</span>
           <span>{data.lesson.level} Level</span>
 
-          <span>•</span>
-          <span>{data.lesson.duration}–25 min</span>
+          <span>â€¢</span>
+          <span>{data.lesson.duration}â€“25 min</span>
 
-          <span>•</span>
-          <span>~{data.lesson.maxWords} words</span>
+          <span>â€¢</span>
+          <span>~{data.lesson.maxWords} từ</span>
         </div>
       </div>
     </div>
@@ -360,10 +360,10 @@ function LessonTitle({ data }: { data: SessionData }) {
 
 function StepBar() {
   const steps = [
-    { label: "Prompt", done: true },
-    { label: "Write", active: true },
-    { label: "Review" },
-    { label: "Submit" },
+    { label: "Đề bài", done: true },
+    { label: "Viết", active: true },
+    { label: "Ôn lại" },
+    { label: "Nộp bài" },
   ];
 
   return (
@@ -412,7 +412,7 @@ function PromptBox({
     <div className="mt-6 rounded-xl border border-violet-100 bg-violet-50 p-7">
       <div className="flex gap-5">
         <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-violet-100 text-3xl">
-          💡
+          ðŸ’¡
         </div>
 
         <div className="flex-1">
@@ -430,7 +430,7 @@ function PromptBox({
               className="mt-6 flex items-center gap-2 font-bold text-violet-600"
             >
               <Eye className="h-4 w-4" />
-              {showSample ? "Hide sample essay" : "Show sample essay"}
+              {showSample ? "Ẩn bài mẫu" : "Xem bài mẫu"}
             </button>
           )}
 
@@ -462,11 +462,11 @@ function EditorBox({
     <div className="mt-6 overflow-hidden rounded-xl border border-slate-200 bg-white">
       <div className="flex h-14 items-center justify-between border-b border-slate-200 px-5">
         <div className="flex items-center gap-5 text-slate-600">
-          <span className="text-xl">↶</span>
-          <span className="text-xl">↷</span>
+          <span className="text-xl">â†¶</span>
+          <span className="text-xl">â†·</span>
 
           <select className="rounded-lg border-none bg-transparent text-sm font-semibold outline-none">
-            <option>Paragraph</option>
+            <option>Đoạn văn</option>
             <option>Heading</option>
           </select>
 
@@ -474,14 +474,14 @@ function EditorBox({
           <span className="text-xl italic text-[#09083f]">I</span>
           <span className="text-xl underline text-[#09083f]">U</span>
 
-          <span className="text-xl">≡</span>
-          <span className="text-xl">☷</span>
-          <span className="text-xl">🔗</span>
+          <span className="text-xl">â‰¡</span>
+          <span className="text-xl">â˜·</span>
+          <span className="text-xl">ðŸ”—</span>
         </div>
 
         <div className="flex items-center gap-4">
           <span className="text-sm font-medium text-slate-500">
-            Word count: {wordCount}
+            Số từ: {wordCount}
           </span>
 
           <button
@@ -489,7 +489,7 @@ function EditorBox({
             className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm font-bold"
           >
             <Save className="h-4 w-4" />
-            {saving ? "Saving..." : "Save"}
+            {saving ? "Đang lưu..." : "Lưu"}
           </button>
         </div>
       </div>
@@ -497,7 +497,7 @@ function EditorBox({
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="Start writing your essay here..."
+        placeholder="Bắt đầu viết bài tại đây..."
         className="h-[420px] w-full resize-none p-6 text-base leading-8 text-slate-700 outline-none"
       />
 
@@ -518,7 +518,7 @@ function ProgressCard({
 }) {
   return (
     <div className="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-100">
-      <h2 className="text-xl font-extrabold">Your Progress</h2>
+      <h2 className="text-xl font-extrabold">Tiến độ của bạn</h2>
 
       <div className="mt-7 flex items-center gap-6">
         <div className="grid h-36 w-36 place-items-center rounded-full bg-violet-100">
@@ -527,7 +527,7 @@ function ProgressCard({
               <p className="text-3xl font-extrabold">
                 {data.progress.overall}%
               </p>
-              <p className="text-xs text-slate-500">Overall</p>
+              <p className="text-xs text-slate-500">Tổng thể</p>
             </div>
           </div>
         </div>
@@ -535,15 +535,15 @@ function ProgressCard({
         <div className="space-y-5">
           <ProgressItem
             value={`${data.progress.completed} / ${data.progress.totalLessons}`}
-            label="Lessons Completed"
+            label="Bài đã hoàn thành"
           />
           <ProgressItem
             value={String(data.progress.inProgress)}
-            label="In Progress"
+            label="Đang học"
           />
           <ProgressItem
             value={String(data.progress.notStarted)}
-            label="Not Started"
+            label="Chưa bắt đầu"
           />
         </div>
       </div>
@@ -571,7 +571,7 @@ function ProgressItem({ value, label }: { value: string; label: string }) {
 function TipsCard({ tips }: { tips: SessionData["tips"] }) {
   return (
     <div className="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-100">
-      <h2 className="text-xl font-extrabold">Writing Tips</h2>
+      <h2 className="text-xl font-extrabold">Mẹo luyện viết</h2>
 
       <div className="mt-6 space-y-6">
         {tips.map((tip, index) => (
@@ -622,7 +622,7 @@ function TimeTracker({
         className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-violet-500 font-bold text-violet-600"
       >
         <Play className="h-5 w-5" />
-        {running ? "Pause Timer" : "Start Timer"}
+        {running ? "Tạm dừng" : "Bắt đầu tính giờ"}
       </button>
     </div>
   );
@@ -638,15 +638,18 @@ function formatTime(seconds: number) {
 
 function formatType(type: string) {
   const map: Record<string, string> = {
-    SENTENCE: "Sentence Writing",
-    PARAGRAPH: "Paragraph",
-    ESSAY: "Essay Writing",
+    SENTENCE: "Viết câu",
+    PARAGRAPH: "Đoạn văn",
+    ESSAY: "Viết luận",
     EMAIL: "Email",
-    OPINION: "Opinion",
-    STORY: "Story",
+    OPINION: "Ý kiến",
+    STORY: "Câu chuyện",
     IELTS_TASK_1: "IELTS Task 1",
     IELTS_TASK_2: "IELTS Task 2",
   };
 
   return map[type] ?? type;
 }
+
+
+

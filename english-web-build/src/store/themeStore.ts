@@ -1,4 +1,4 @@
-import { create } from "zustand";
+﻿import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export type ThemeChoice = "LIGHT" | "DARK" | "SYSTEM";
@@ -21,7 +21,7 @@ export const useThemeStore = create<ThemeState>()(
       setTheme: (theme) => set({ theme }),
     }),
     {
-      name: "poppylingo-theme",
+      name: "BeaconVie-theme",
     },
   ),
 );

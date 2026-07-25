@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   ArrowRight,
@@ -65,7 +65,7 @@ export function CommunityClubsView() {
       setError(
         e instanceof Error
           ? e.message
-          : 'Không thể tải danh sách câu lạc bộ',
+          : 'KhÃ´ng thá»ƒ táº£i danh sÃ¡ch cÃ¢u láº¡c bá»™',
       );
     } finally {
       setLoading(false);
@@ -74,7 +74,7 @@ export function CommunityClubsView() {
 
   useEffect(() => {
     void load();
-    // Chỉ tải lần đầu. Tìm kiếm được gọi thủ công.
+    // Chá»‰ táº£i láº§n Ä‘áº§u. TÃ¬m kiáº¿m Ä‘Æ°á»£c gá»i thá»§ cÃ´ng.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -105,7 +105,7 @@ export function CommunityClubsView() {
       setError(
         e instanceof Error
           ? e.message
-          : 'Không thể tạo câu lạc bộ',
+          : 'KhÃ´ng thá»ƒ táº¡o cÃ¢u láº¡c bá»™',
       );
     } finally {
       setCreatingClub(false);
@@ -164,7 +164,7 @@ export function CommunityClubsView() {
       setError(
         e instanceof Error
           ? e.message
-          : 'Không thể cập nhật trạng thái câu lạc bộ',
+          : 'KhÃ´ng thá»ƒ cáº­p nháº­t tráº¡ng thÃ¡i cÃ¢u láº¡c bá»™',
       );
     } finally {
       setChangingClubId(null);
@@ -181,10 +181,10 @@ export function CommunityClubsView() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-extrabold text-slate-950">
-              Câu lạc bộ
+              CÃ¢u láº¡c bá»™
             </h2>
             <p className="mt-1 text-sm font-medium text-slate-600">
-              Tham gia nhóm theo mục tiêu, cấp độ hoặc sở thích.
+              Tham gia nhÃ³m theo má»¥c tiÃªu, cáº¥p Ä‘á»™ hoáº·c sá»Ÿ thÃ­ch.
             </p>
           </div>
 
@@ -194,7 +194,7 @@ export function CommunityClubsView() {
             className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 font-bold text-white shadow-sm transition hover:bg-indigo-700"
           >
             {creating ? <X size={18} /> : <Plus size={18} />}
-            {creating ? 'Đóng biểu mẫu' : 'Tạo câu lạc bộ'}
+            {creating ? 'ÄÃ³ng biá»ƒu máº«u' : 'Táº¡o cÃ¢u láº¡c bá»™'}
           </button>
         </div>
 
@@ -211,7 +211,7 @@ export function CommunityClubsView() {
               onKeyDown={(event) => {
                 if (event.key === 'Enter') void load();
               }}
-              placeholder="Tìm câu lạc bộ theo tên, mô tả hoặc hashtag..."
+              placeholder="TÃ¬m cÃ¢u láº¡c bá»™ theo tÃªn, mÃ´ táº£ hoáº·c hashtag..."
               className="w-full rounded-xl border-2 border-slate-200 py-3 pl-10 pr-4 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500"
             />
           </div>
@@ -222,7 +222,7 @@ export function CommunityClubsView() {
             disabled={loading}
             className="rounded-xl border-2 border-slate-200 px-5 font-bold text-slate-700 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 disabled:opacity-50"
           >
-            {loading ? 'Đang tìm...' : 'Tìm'}
+            {loading ? 'Äang tÃ¬m...' : 'TÃ¬m'}
           </button>
         </div>
       </section>
@@ -236,18 +236,18 @@ export function CommunityClubsView() {
       {creating && (
         <section className="rounded-3xl border-2 border-indigo-200 bg-white p-5 shadow-md">
           <h3 className="text-lg font-extrabold text-slate-950">
-            Tạo câu lạc bộ mới
+            Táº¡o cÃ¢u láº¡c bá»™ má»›i
           </h3>
 
           <p className="mt-1 text-sm text-slate-600">
-            Sau khi tạo, bạn sẽ là chủ câu lạc bộ và có thể quản lý
-            thành viên, bài viết, chat nhóm, thử thách và tài liệu.
+            Sau khi táº¡o, báº¡n sáº½ lÃ  chá»§ cÃ¢u láº¡c bá»™ vÃ  cÃ³ thá»ƒ quáº£n lÃ½
+            thÃ nh viÃªn, bÃ i viáº¿t, chat nhÃ³m, thá»­ thÃ¡ch vÃ  tÃ i liá»‡u.
           </p>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <label className="block">
               <span className="mb-1.5 block text-sm font-bold text-slate-700">
-                Tên câu lạc bộ *
+                TÃªn cÃ¢u láº¡c bá»™ *
               </span>
               <input
                 value={form.name}
@@ -257,7 +257,7 @@ export function CommunityClubsView() {
                     name: event.target.value,
                   }))
                 }
-                placeholder="Ví dụ: IELTS Warriors"
+                placeholder="VÃ­ dá»¥: IELTS Warriors"
                 maxLength={80}
                 className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 outline-none focus:border-indigo-500"
               />
@@ -265,7 +265,7 @@ export function CommunityClubsView() {
 
             <label className="block">
               <span className="mb-1.5 block text-sm font-bold text-slate-700">
-                Danh mục
+                Danh má»¥c
               </span>
               <input
                 value={form.category}
@@ -282,7 +282,7 @@ export function CommunityClubsView() {
 
             <label className="block sm:col-span-2">
               <span className="mb-1.5 block text-sm font-bold text-slate-700">
-                Mô tả
+                MÃ´ táº£
               </span>
               <textarea
                 value={form.description}
@@ -292,7 +292,7 @@ export function CommunityClubsView() {
                     description: event.target.value,
                   }))
                 }
-                placeholder="Mục tiêu, nội quy và nội dung chính của câu lạc bộ..."
+                placeholder="Má»¥c tiÃªu, ná»™i quy vÃ  ná»™i dung chÃ­nh cá»§a cÃ¢u láº¡c bá»™..."
                 rows={4}
                 maxLength={2000}
                 className="w-full resize-none rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 outline-none focus:border-indigo-500"
@@ -318,7 +318,7 @@ export function CommunityClubsView() {
 
             <label className="block">
               <span className="mb-1.5 block text-sm font-bold text-slate-700">
-                Quyền riêng tư
+                Quyá»n riÃªng tÆ°
               </span>
               <select
                 value={form.privacy}
@@ -333,17 +333,17 @@ export function CommunityClubsView() {
                 className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 outline-none focus:border-indigo-500"
               >
                 <option value="PUBLIC">
-                  Công khai — tham gia ngay
+                  CÃ´ng khai â€” tham gia ngay
                 </option>
                 <option value="PRIVATE">
-                  Riêng tư — cần quản trị viên duyệt
+                  RiÃªng tÆ° â€” cáº§n quáº£n trá»‹ viÃªn duyá»‡t
                 </option>
               </select>
             </label>
 
             <label className="block">
               <span className="mb-1.5 block text-sm font-bold text-slate-700">
-                URL ảnh bìa
+                URL áº£nh bÃ¬a
               </span>
               <input
                 value={form.coverUrl}
@@ -360,7 +360,7 @@ export function CommunityClubsView() {
 
             <label className="block">
               <span className="mb-1.5 block text-sm font-bold text-slate-700">
-                URL biểu tượng
+                URL biá»ƒu tÆ°á»£ng
               </span>
               <input
                 value={form.iconUrl}
@@ -385,7 +385,7 @@ export function CommunityClubsView() {
               }}
               className="rounded-xl px-4 py-2.5 font-bold text-slate-700 hover:bg-slate-100"
             >
-              Hủy
+              Há»§y
             </button>
 
             <button
@@ -397,7 +397,7 @@ export function CommunityClubsView() {
               {creatingClub && (
                 <Loader2 size={18} className="animate-spin" />
               )}
-              {creatingClub ? 'Đang tạo...' : 'Tạo câu lạc bộ'}
+              {creatingClub ? 'Äang táº¡o...' : 'Táº¡o cÃ¢u láº¡c bá»™'}
             </button>
           </div>
         </section>
@@ -411,10 +411,10 @@ export function CommunityClubsView() {
         <div className="rounded-3xl border-2 border-dashed border-slate-300 bg-white px-5 py-14 text-center">
           <Users size={30} className="mx-auto text-slate-400" />
           <h3 className="mt-3 font-extrabold text-slate-900">
-            Chưa tìm thấy câu lạc bộ
+            ChÆ°a tÃ¬m tháº¥y cÃ¢u láº¡c bá»™
           </h3>
           <p className="mt-1 text-sm text-slate-500">
-            Hãy thay đổi từ khóa hoặc tạo câu lạc bộ đầu tiên.
+            HÃ£y thay Ä‘á»•i tá»« khÃ³a hoáº·c táº¡o cÃ¢u láº¡c bá»™ Ä‘áº§u tiÃªn.
           </p>
         </div>
       ) : (
@@ -437,7 +437,7 @@ export function CommunityClubsView() {
                 {club.coverUrl ? (
                   <img
                     src={club.coverUrl}
-                    alt={`Ảnh bìa ${club.name}`}
+                    alt={`áº¢nh bÃ¬a ${club.name}`}
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -447,8 +447,8 @@ export function CommunityClubsView() {
                 <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-slate-950/70 px-3 py-1 text-xs font-bold text-white backdrop-blur-sm">
                   {club.privacy === 'PRIVATE' && <Lock size={12} />}
                   {club.privacy === 'PRIVATE'
-                    ? 'Riêng tư'
-                    : 'Công khai'}
+                    ? 'RiÃªng tÆ°'
+                    : 'CÃ´ng khai'}
                 </span>
               </div>
 
@@ -458,7 +458,7 @@ export function CommunityClubsView() {
                     {club.iconUrl ? (
                       <img
                         src={club.iconUrl}
-                        alt={`Biểu tượng ${club.name}`}
+                        alt={`Biá»ƒu tÆ°á»£ng ${club.name}`}
                         className="h-full w-full object-cover"
                       />
                     ) : (
@@ -473,16 +473,16 @@ export function CommunityClubsView() {
 
                     <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-slate-600">
                       <Users size={13} />
-                      {club.memberCount} thành viên
+                      {club.memberCount} thÃ nh viÃªn
                       {club.postCount !== undefined && (
-                        <> · {club.postCount} bài viết</>
+                        <> Â· {club.postCount} bÃ i viáº¿t</>
                       )}
                     </p>
                   </div>
                 </div>
 
                 <p className="mt-4 line-clamp-3 min-h-[72px] text-sm leading-6 text-slate-700">
-                  {club.description || 'Chưa có mô tả.'}
+                  {club.description || 'ChÆ°a cÃ³ mÃ´ táº£.'}
                 </p>
 
                 {club.tags.length > 0 && (
@@ -515,7 +515,7 @@ export function CommunityClubsView() {
                     {changingClubId === club.id && (
                       <Loader2 size={17} className="animate-spin" />
                     )}
-                    {club.joined ? 'Rời câu lạc bộ' : 'Tham gia'}
+                    {club.joined ? 'Rá»i cÃ¢u láº¡c bá»™' : 'Tham gia'}
                   </button>
 
                   <button

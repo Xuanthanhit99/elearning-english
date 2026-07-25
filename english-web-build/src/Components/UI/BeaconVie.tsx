@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Loader2, RefreshCcw, Sparkles, X } from "lucide-react";
 import {
@@ -15,19 +15,19 @@ function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
 }
 
-export function LumiverseCard({
+export function BeaconVieCard({
   className,
   children,
   ...props
 }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cx("lumiverse-card", className)} {...props}>
+    <div className={cx("BeaconVie-card", className)} {...props}>
       {children}
     </div>
   );
 }
 
-export function LumiverseSectionHeader({
+export function BeaconVieSectionHeader({
   eyebrow,
   title,
   description,
@@ -43,12 +43,12 @@ export function LumiverseSectionHeader({
   return (
     <div className={cx("mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between", className)}>
       <div className="min-w-0">
-        {eyebrow ? <LumiverseBadge>{eyebrow}</LumiverseBadge> : null}
-        <h2 className="mt-2 text-xl font-black tracking-tight text-[var(--lumiverse-ink)] sm:text-2xl">
+        {eyebrow ? <BeaconVieBadge>{eyebrow}</BeaconVieBadge> : null}
+        <h2 className="mt-2 text-xl font-black tracking-tight text-[var(--BeaconVie-ink)] sm:text-2xl">
           {title}
         </h2>
         {description ? (
-          <p className="mt-1 max-w-2xl text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+          <p className="mt-1 max-w-2xl text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
             {description}
           </p>
         ) : null}
@@ -58,7 +58,7 @@ export function LumiverseSectionHeader({
   );
 }
 
-export function LumiverseStatCard({
+export function BeaconVieStatCard({
   icon,
   label,
   value,
@@ -72,18 +72,18 @@ export function LumiverseStatCard({
   className?: string;
 }) {
   return (
-    <LumiverseCard className={cx("p-4", className)}>
-      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]">
+    <BeaconVieCard className={cx("p-4", className)}>
+      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]">
         {icon}
       </div>
-      <p className="text-2xl font-black text-[var(--lumiverse-ink)]">{value}</p>
-      <p className="mt-1 text-sm font-bold text-[var(--lumiverse-muted)]">{label}</p>
-      {detail ? <p className="mt-2 text-xs font-bold text-[var(--lumiverse-muted)]">{detail}</p> : null}
-    </LumiverseCard>
+      <p className="text-2xl font-black text-[var(--BeaconVie-ink)]">{value}</p>
+      <p className="mt-1 text-sm font-bold text-[var(--BeaconVie-muted)]">{label}</p>
+      {detail ? <p className="mt-2 text-xs font-bold text-[var(--BeaconVie-muted)]">{detail}</p> : null}
+    </BeaconVieCard>
   );
 }
 
-export function LumiverseButton({
+export function BeaconVieButton({
   className,
   tone = "primary",
   loading = false,
@@ -96,12 +96,12 @@ export function LumiverseButton({
 }) {
   const toneClass =
     tone === "primary"
-      ? "lumiverse-button-primary"
+      ? "BeaconVie-button-primary"
       : tone === "danger"
-        ? "inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-[var(--lumiverse-danger)] px-4 py-3 font-black text-white shadow-[0_16px_34px_rgba(225,29,72,0.22)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+        ? "inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-[var(--BeaconVie-danger)] px-4 py-3 font-black text-white shadow-[0_16px_34px_rgba(225,29,72,0.22)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
         : tone === "ghost"
-          ? "inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl px-4 py-3 font-black text-[var(--lumiverse-muted)] transition hover:bg-[var(--lumiverse-hover-tint)] hover:text-[var(--lumiverse-primary)] disabled:cursor-not-allowed disabled:opacity-60"
-          : "lumiverse-button-soft";
+          ? "inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl px-4 py-3 font-black text-[var(--BeaconVie-muted)] transition hover:bg-[var(--BeaconVie-hover-tint)] hover:text-[var(--BeaconVie-primary)] disabled:cursor-not-allowed disabled:opacity-60"
+          : "BeaconVie-button-soft";
 
   return (
     <button
@@ -115,7 +115,7 @@ export function LumiverseButton({
   );
 }
 
-export function LumiverseBadge({
+export function BeaconVieBadge({
   className,
   children,
 }: {
@@ -125,7 +125,7 @@ export function LumiverseBadge({
   return (
     <span
       className={cx(
-        "inline-flex items-center gap-1.5 rounded-full border border-[var(--lumiverse-border)] bg-white/70 px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-[var(--lumiverse-primary)] dark:bg-white/8",
+        "inline-flex items-center gap-1.5 rounded-full border border-[var(--BeaconVie-border)] bg-white/70 px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-primary)] dark:bg-white/8",
         className,
       )}
     >
@@ -135,7 +135,7 @@ export function LumiverseBadge({
   );
 }
 
-export function LumiverseProgress({
+export function BeaconVieProgress({
   value,
   className,
 }: {
@@ -143,7 +143,7 @@ export function LumiverseProgress({
   className?: string;
 }) {
   return (
-    <div className={cx("lumiverse-progress h-3", className)} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={value}>
+    <div className={cx("BeaconVie-progress h-3", className)} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={value}>
       <div className="h-full" style={{ width: `${Math.max(0, Math.min(value, 100))}%` }} />
     </div>
   );
@@ -151,12 +151,12 @@ export function LumiverseProgress({
 
 /**
  * Spinner + status text for a full-section loading state (page still
- * waiting on its first response). Distinct from LumiverseSkeleton (a
- * placeholder shape with no text) and LumiverseState (empty/error, with a
- * retry action) — this is the "Loading lesson...", "Generating...",
+ * waiting on its first response). Distinct from BeaconVieSkeleton (a
+ * placeholder shape with no text) and BeaconVieState (empty/error, with a
+ * retry action) â€” this is the "Loading lesson...", "Generating...",
  * "Saving...", "Retrying..." case.
  */
-export function LumiverseLoadingState({
+export function BeaconVieLoadingState({
   label,
   className,
 }: {
@@ -167,25 +167,25 @@ export function LumiverseLoadingState({
     <div
       role="status"
       className={cx(
-        "lumiverse-card flex items-center justify-center gap-3 p-10 text-[var(--lumiverse-primary)]",
+        "BeaconVie-card flex items-center justify-center gap-3 p-10 text-[var(--BeaconVie-primary)]",
         className,
       )}
     >
       <Loader2 aria-hidden className="h-5 w-5 animate-spin" />
-      <span className="font-black text-[var(--lumiverse-ink)]">{label}</span>
+      <span className="font-black text-[var(--BeaconVie-ink)]">{label}</span>
     </div>
   );
 }
 
-export function LumiverseSkeleton({
+export function BeaconVieSkeleton({
   className,
 }: {
   className?: string;
 }) {
-  return <div className={cx("lumiverse-card lumiverse-shimmer", className)} />;
+  return <div className={cx("BeaconVie-card BeaconVie-shimmer", className)} />;
 }
 
-export function LumiverseState({
+export function BeaconVieState({
   title,
   description,
   actionLabel,
@@ -199,25 +199,25 @@ export function LumiverseState({
   tone?: "soft" | "error" | "empty";
 }) {
   return (
-    <section className="lumiverse-card p-6 text-center">
+    <section className="BeaconVie-card p-6 text-center">
       <div
         className={cx(
           "mx-auto flex h-14 w-14 items-center justify-center rounded-2xl",
-          tone === "error" ? "bg-[var(--lumiverse-danger-soft)] text-[var(--lumiverse-danger)]" : "bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]",
+          tone === "error" ? "bg-[var(--BeaconVie-danger-soft)] text-[var(--BeaconVie-danger)]" : "bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]",
         )}
       >
         <RefreshCcw aria-hidden className="h-6 w-6" />
       </div>
-      <h2 className="mt-4 text-xl font-black text-[var(--lumiverse-ink)]">{title}</h2>
+      <h2 className="mt-4 text-xl font-black text-[var(--BeaconVie-ink)]">{title}</h2>
       {description ? (
-        <p className="mx-auto mt-2 max-w-xl text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+        <p className="mx-auto mt-2 max-w-xl text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
           {description}
         </p>
       ) : null}
       {actionLabel && onAction ? (
-        <LumiverseButton className="mt-5" tone={tone === "error" ? "danger" : "primary"} onClick={onAction}>
+        <BeaconVieButton className="mt-5" tone={tone === "error" ? "danger" : "primary"} onClick={onAction}>
           {actionLabel}
-        </LumiverseButton>
+        </BeaconVieButton>
       ) : null}
     </section>
   );
@@ -226,7 +226,7 @@ export function LumiverseState({
 const FOCUSABLE_SELECTOR =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-export function LumiverseDialog({
+export function BeaconVieDialog({
   open,
   onClose,
   titleId,
@@ -290,7 +290,7 @@ export function LumiverseDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--lumiverse-overlay)] p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--BeaconVie-overlay)] p-4 backdrop-blur-sm"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -302,7 +302,7 @@ export function LumiverseDialog({
         aria-labelledby={labelledBy ?? titleId}
         tabIndex={-1}
         className={cx(
-          "lumiverse-card w-full max-w-lg p-7 outline-none",
+          "BeaconVie-card w-full max-w-lg p-7 outline-none",
           className,
         )}
       >
@@ -312,9 +312,9 @@ export function LumiverseDialog({
   );
 }
 
-export function LumiverseDialogCloseButton({
+export function BeaconVieDialogCloseButton({
   onClose,
-  label = "Close",
+  label = "Đóng",
 }: {
   onClose: () => void;
   label?: string;
@@ -324,7 +324,7 @@ export function LumiverseDialogCloseButton({
       type="button"
       onClick={onClose}
       aria-label={label}
-      className="rounded-full p-2 text-[var(--lumiverse-muted)] transition hover:bg-[var(--lumiverse-hover-tint)] hover:text-[var(--lumiverse-primary)]"
+      className="rounded-full p-2 text-[var(--BeaconVie-muted)] transition hover:bg-[var(--BeaconVie-hover-tint)] hover:text-[var(--BeaconVie-primary)]"
     >
       <X aria-hidden className="h-5 w-5" />
     </button>

@@ -1,4 +1,4 @@
-import WritingResultPage from "@/src/Components/WritingPage/WritingResultPage/WritingResultPage";
+﻿import WritingResultPage from "@/src/Components/WritingPage/WritingResultPage/WritingResultPage";
 
 export default async function WritingSessionIdResult({
   params,
@@ -9,3 +9,5 @@ export default async function WritingSessionIdResult({
 
   return <WritingResultPage />;
 }
+
+

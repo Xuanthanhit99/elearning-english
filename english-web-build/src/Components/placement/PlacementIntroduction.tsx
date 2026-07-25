@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ArrowLeft,
@@ -28,12 +28,12 @@ import {
   startPlacementTest,
 } from "@/src/lib/placement-api";
 import {
-  LumiverseBadge,
-  LumiverseButton,
-  LumiverseCard,
-  LumiverseSkeleton,
-  LumiverseState,
-} from "@/src/Components/UI/Lumiverse";
+  BeaconVieBadge,
+  BeaconVieButton,
+  BeaconVieCard,
+  BeaconVieSkeleton,
+  BeaconVieState,
+} from "@/src/Components/UI/BeaconVie";
 
 const readinessChecklist = [
   { icon: Wifi, text: "Stable internet connection" },
@@ -54,12 +54,12 @@ const stepIcons: Record<PlacementStepKey, typeof Type> = {
 };
 
 const skillLabels: Record<string, string> = {
-  VOCABULARY: "Vocabulary",
-  GRAMMAR: "Grammar",
-  LISTENING: "Listening",
-  READING: "Reading",
-  SPEAKING: "Speaking",
-  WRITING: "Writing",
+  VOCABULARY: "Từ vựng",
+  GRAMMAR: "Ngữ pháp",
+  LISTENING: "Luyện nghe",
+  READING: "Luyện đọc",
+  SPEAKING: "Luyện nói",
+  WRITING: "Luyện viết",
 };
 
 export default function PlacementIntroduction() {
@@ -113,10 +113,10 @@ export default function PlacementIntroduction() {
   if (loading) {
     return (
       <main className="min-h-screen px-3 py-5" aria-busy="true" aria-live="polite">
-        <span className="sr-only">Loading placement preparation…</span>
+        <span className="sr-only">Đang tải phần chuẩn bị kiểm tra trình độ...</span>
         <div className="mx-auto grid max-w-7xl gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
-          <LumiverseSkeleton className="h-[680px]" />
-          <LumiverseSkeleton className="h-[680px]" />
+          <BeaconVieSkeleton className="h-[680px]" />
+          <BeaconVieSkeleton className="h-[680px]" />
         </div>
       </main>
     );
@@ -124,7 +124,7 @@ export default function PlacementIntroduction() {
 
   if (!data) {
     return (
-      <LumiverseState
+      <BeaconVieState
         title="Preparation is unavailable"
         description={error}
         actionLabel="Try again"
@@ -137,9 +137,9 @@ export default function PlacementIntroduction() {
   return (
     <main className="min-h-screen px-3 py-5 sm:px-4 lg:px-6">
       <div className="mx-auto grid max-w-7xl gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
-        <LumiverseCard className="p-5">
-          <LumiverseBadge>Checklist</LumiverseBadge>
-          <h2 className="mt-4 text-xl font-black text-[var(--lumiverse-ink)]">
+        <BeaconVieCard className="p-5">
+          <BeaconVieBadge>Checklist</BeaconVieBadge>
+          <h2 className="mt-4 text-xl font-black text-[var(--BeaconVie-ink)]">
             Test flow
           </h2>
           <ol className="mt-5 space-y-4">
@@ -156,7 +156,7 @@ export default function PlacementIntroduction() {
                       completed
                         ? "bg-emerald-100 text-emerald-700"
                         : active
-                          ? "bg-blue-100 text-[var(--lumiverse-primary)]"
+                          ? "bg-blue-100 text-[var(--BeaconVie-primary)]"
                           : "bg-slate-100 text-slate-500",
                     ].join(" ")}
                   >
@@ -167,10 +167,10 @@ export default function PlacementIntroduction() {
                     )}
                   </span>
                   <div>
-                    <p className="font-black text-[var(--lumiverse-ink)]">
+                    <p className="font-black text-[var(--BeaconVie-ink)]">
                       {step.title}
                     </p>
-                    <p className="mt-1 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+                    <p className="mt-1 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
                       {step.subtitle}
                     </p>
                   </div>
@@ -178,28 +178,28 @@ export default function PlacementIntroduction() {
               );
             })}
           </ol>
-        </LumiverseCard>
+        </BeaconVieCard>
 
         <section className="space-y-5">
-          <LumiverseCard className="p-6 lg:p-8">
+          <BeaconVieCard className="p-6 lg:p-8">
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
               <div>
-                <LumiverseBadge>{data.test.mode.replace("_", " ")} mode</LumiverseBadge>
-                <h1 className="mt-4 max-w-3xl text-3xl font-black tracking-tight text-[var(--lumiverse-ink)] sm:text-5xl">
+                <BeaconVieBadge>{data.test.mode.replace("_", " ")} mode</BeaconVieBadge>
+                <h1 className="mt-4 max-w-3xl text-3xl font-black tracking-tight text-[var(--BeaconVie-ink)] sm:text-5xl">
                   {data.content.title}
                 </h1>
-                <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-[var(--lumiverse-muted)]">
+                <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-[var(--BeaconVie-muted)]">
                   {data.content.description}
                 </p>
 
                 <div className="mt-6 rounded-3xl border border-blue-100 bg-blue-50/55 p-5">
                   <div className="flex gap-4">
-                    <Target aria-hidden className="h-8 w-8 shrink-0 text-[var(--lumiverse-primary)]" />
+                    <Target aria-hidden className="h-8 w-8 shrink-0 text-[var(--BeaconVie-primary)]" />
                     <div>
-                      <h2 className="font-black text-[var(--lumiverse-ink)]">
+                      <h2 className="font-black text-[var(--BeaconVie-ink)]">
                         {data.content.adaptive.title}
                       </h2>
-                      <p className="mt-1 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+                      <p className="mt-1 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
                         {data.content.adaptive.description}
                       </p>
                     </div>
@@ -207,22 +207,22 @@ export default function PlacementIntroduction() {
                 </div>
               </div>
 
-              <LumiverseCard className="border-slate-100 bg-white/75 p-5">
-                <h2 className="text-lg font-black text-[var(--lumiverse-ink)]">
+              <BeaconVieCard className="border-slate-100 bg-white/75 p-5">
+                <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">
                   Readiness checklist
                 </h2>
                 <ul className="mt-4 space-y-3">
                   {readinessChecklist.map((item) => (
                     <li key={item.text} className="flex items-center gap-3 rounded-2xl bg-white/75 p-3">
                       <CheckCircle2 aria-hidden className="h-5 w-5 shrink-0 text-emerald-600" />
-                      <span className="text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+                      <span className="text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
                         {item.text}
                       </span>
                     </li>
                   ))}
                 </ul>
 
-                <h2 className="mt-6 text-lg font-black text-[var(--lumiverse-ink)]">
+                <h2 className="mt-6 text-lg font-black text-[var(--BeaconVie-ink)]">
                   Before you begin
                 </h2>
                 <div className="mt-4 space-y-3">
@@ -232,13 +232,13 @@ export default function PlacementIntroduction() {
                   <PrepItem icon={Flag} text="Flag saves a question for review when the backend supports it." />
                   <PrepItem icon={ShieldCheck} text={data.content.autosaveMessage} />
                 </div>
-              </LumiverseCard>
+              </BeaconVieCard>
             </div>
-          </LumiverseCard>
+          </BeaconVieCard>
 
           <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
-            <LumiverseCard className="p-6">
-              <h2 className="text-xl font-black text-[var(--lumiverse-ink)]">
+            <BeaconVieCard className="p-6">
+              <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">
                 Skills in this test
               </h2>
               <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -247,31 +247,31 @@ export default function PlacementIntroduction() {
                   return (
                     <div
                       key={skill}
-                      className="flex items-center gap-3 rounded-2xl border border-[var(--lumiverse-border)] bg-white/70 p-4"
+                      className="flex items-center gap-3 rounded-2xl border border-[var(--BeaconVie-border)] bg-white/70 p-4"
                     >
-                      <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-[var(--lumiverse-primary)]">
+                      <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-[var(--BeaconVie-primary)]">
                         <Icon aria-hidden className="h-5 w-5" />
                       </span>
-                      <span className="font-black text-[var(--lumiverse-ink)]">
+                      <span className="font-black text-[var(--BeaconVie-ink)]">
                         {skillLabels[skill] ?? skill}
                       </span>
                     </div>
                   );
                 })}
               </div>
-            </LumiverseCard>
+            </BeaconVieCard>
 
-            <LumiverseCard className="p-6">
-              <h2 className="text-xl font-black text-[var(--lumiverse-ink)]">
+            <BeaconVieCard className="p-6">
+              <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">
                 Session status
               </h2>
               {data.test.hasActiveSession ? (
                 <div className="mt-4 rounded-2xl bg-amber-50 p-4">
                   <RotateCcw aria-hidden className="h-6 w-6 text-amber-600" />
-                  <p className="mt-3 font-black text-[var(--lumiverse-ink)]">
+                  <p className="mt-3 font-black text-[var(--BeaconVie-ink)]">
                     Active test found
                   </p>
-                  <p className="mt-1 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+                  <p className="mt-1 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
                     {data.test.answeredQuestions} answered questions. Current
                     step: {data.test.currentStep}.
                   </p>
@@ -283,7 +283,7 @@ export default function PlacementIntroduction() {
                   </div>
                 </div>
               ) : (
-                <p className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+                <p className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
                   No active session yet. The session is created only after you
                   press the start button.
                 </p>
@@ -296,15 +296,15 @@ export default function PlacementIntroduction() {
               ) : null}
 
               <div className="mt-6 flex flex-col gap-3">
-                <LumiverseButton
+                <BeaconVieButton
                   loading={starting}
                   onClick={() => void handleStart()}
                   className="w-full"
                 >
-                  {data.test.hasActiveSession ? "Resume test" : "Start test"}
+                  {data.test.hasActiveSession ? "Tiếp tục bài kiểm tra" : "Bắt đầu bài kiểm tra"}
                   <ArrowRight aria-hidden className="h-4 w-4" />
-                </LumiverseButton>
-                <LumiverseButton
+                </BeaconVieButton>
+                <BeaconVieButton
                   tone="ghost"
                   disabled={starting}
                   onClick={() => router.push("/placement")}
@@ -312,9 +312,9 @@ export default function PlacementIntroduction() {
                 >
                   <ArrowLeft aria-hidden className="h-4 w-4" />
                   Back
-                </LumiverseButton>
+                </BeaconVieButton>
               </div>
-            </LumiverseCard>
+            </BeaconVieCard>
           </section>
         </section>
       </div>
@@ -331,8 +331,8 @@ function PrepItem({
 }) {
   return (
     <div className="flex gap-3 rounded-2xl bg-white/75 p-3">
-      <Icon aria-hidden className="mt-0.5 h-5 w-5 shrink-0 text-[var(--lumiverse-primary)]" />
-      <p className="text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+      <Icon aria-hidden className="mt-0.5 h-5 w-5 shrink-0 text-[var(--BeaconVie-primary)]" />
+      <p className="text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
         {text}
       </p>
     </div>

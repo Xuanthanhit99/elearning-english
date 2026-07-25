@@ -1,4 +1,4 @@
-import WritingTopicDetailPage from "@/src/Components/WritingPage/WritingTopicDetailPage/WritingTopicDetailPage";
+﻿import WritingTopicDetailPage from "@/src/Components/WritingPage/WritingTopicDetailPage/WritingTopicDetailPage";
 
 export default async function WritingTopicSlug({
   params,

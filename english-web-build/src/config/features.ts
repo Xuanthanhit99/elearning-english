@@ -1,3 +1,3 @@
-export const features = {
+﻿export const features = {
   languageSwitcher: false,
 } as const;

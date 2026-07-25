@@ -1,4 +1,4 @@
-export type ApiEnvelope<T> = { success?: boolean; data: T; message?: string };
+﻿export type ApiEnvelope<T> = { success?: boolean; data: T; message?: string };
 
 export type SpeakingPracticeDetail = {
   session: { id: string; status: string; durationSeconds?: number };

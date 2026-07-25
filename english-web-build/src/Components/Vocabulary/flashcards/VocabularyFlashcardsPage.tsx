@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -71,7 +71,7 @@ const buildWordSvg = (word: string) => {
   const bg = isFood ? "#f7e79a" : isNature ? "#dcfce7" : isTech ? "#dbeafe" : "#efe9ff";
   const fg = isFood ? "#f59e0b" : isNature ? "#16a34a" : isTech ? "#2563eb" : "#6d35ff";
   const initial = escapeSvg((word || "V").slice(0, 1).toUpperCase());
-  const label = escapeSvg(word || "Vocabulary");
+  const label = escapeSvg(word || "Từ vựng");
   const icon = isNature
     ? `<path d="M112 148c28-76 94-120 176-111 3 85-45 144-129 156 17-28 44-56 83-81-50 16-87 45-130 36Z" fill="${fg}"/><path d="M116 162c46-39 86-64 136-82" stroke="#065f46" stroke-width="10" stroke-linecap="round"/>`
     : isFood
@@ -142,7 +142,7 @@ export default function VocabularyFlashcardsPage() {
       setActiveIndex(0);
       setFlipped(false);
     } catch {
-      setMessage("Không tải được flashcard hôm nay. Hãy đăng nhập lại rồi thử lại.");
+      setMessage("KhÃ´ng táº£i Ä‘Æ°á»£c flashcard hÃ´m nay. HÃ£y Ä‘Äƒng nháº­p láº¡i rá»“i thá»­ láº¡i.");
     } finally {
       setLoading(false);
     }
@@ -206,7 +206,7 @@ export default function VocabularyFlashcardsPage() {
     if (activeIndex < cards.length - 1) {
       goNext();
     } else {
-      setMessage("Bạn đã ôn hết bộ flashcard hôm nay.");
+      setMessage("Báº¡n Ä‘Ã£ Ã´n háº¿t bá»™ flashcard hÃ´m nay.");
     }
   };
 
@@ -225,14 +225,14 @@ export default function VocabularyFlashcardsPage() {
                     className="inline-flex items-center gap-2 text-sm font-black text-[#4f5790]"
                   >
                     <AppIcon name="chevronLeft" bare size={18} />
-                    Quay lại
+                    Quay láº¡i
                   </Link>
                   <h1 className="mt-7 text-3xl font-black">
-                    Flashcard - {session?.topic?.name || today?.topic?.name || "Từ vựng"}{" "}
+                    Flashcard - {session?.topic?.name || today?.topic?.name || "Tá»« vá»±ng"}{" "}
                     <AppIcon name="leaf" tone="emerald" />
                   </h1>
                   <p className="mt-3 text-sm font-bold text-[#69708b]">
-                    Học từ vựng hiệu quả hơn với flashcard
+                    Há»c tá»« vá»±ng hiá»‡u quáº£ hÆ¡n vá»›i flashcard
                   </p>
                 </div>
 
@@ -242,7 +242,7 @@ export default function VocabularyFlashcardsPage() {
                     className="inline-flex items-center gap-2 rounded-xl border border-[#e8e9f5] bg-white px-5 py-3 text-sm font-black text-[#4f5790]"
                   >
                     <AppIcon name="sparkles" bare size={16} />
-                    Trộn thẻ
+                    Trá»™n tháº»
                   </button>
                   <button className="grid h-12 w-12 place-items-center rounded-xl border border-[#e8e9f5] bg-white text-[#4f5790]">
                     <AppIcon name="settings" bare size={18} />
@@ -252,7 +252,7 @@ export default function VocabularyFlashcardsPage() {
 
               {today?.locked ? (
                 <div className="mt-8 rounded-2xl border border-orange-100 bg-orange-50 p-6 font-bold text-orange-700">
-                  {today.reason || "Bạn cần mở khóa bài học hôm nay trước."}
+                  {today.reason || "Báº¡n cáº§n má»Ÿ khÃ³a bÃ i há»c hÃ´m nay trÆ°á»›c."}
                 </div>
               ) : (
                 <div className="mt-8">
@@ -289,32 +289,32 @@ export default function VocabularyFlashcardsPage() {
                   </div>
 
                   <p className="mt-5 text-center text-sm font-bold text-[#69708b]">
-                    <span className="text-amber-500">💡</span> Nhấn vào thẻ để xem
-                    nghĩa và ví dụ
+                    <span className="text-amber-500">ðŸ’¡</span> Nháº¥n vÃ o tháº» Ä‘á»ƒ xem
+                    nghÄ©a vÃ  vÃ­ dá»¥
                   </p>
 
                   <div className="mt-8 grid gap-4 md:grid-cols-4">
                     <RatingButton
-                      label="Không nhớ"
-                      sub="Sẽ ôn lại sau"
+                      label="KhÃ´ng nhá»›"
+                      sub="Sáº½ Ã´n láº¡i sau"
                       tone="red"
                       onClick={() => reviewCard("AGAIN")}
                     />
                     <RatingButton
-                      label="Khó nhớ"
-                      sub="Ôn lại sau"
+                      label="KhÃ³ nhá»›"
+                      sub="Ã”n láº¡i sau"
                       tone="orange"
                       onClick={() => reviewCard("HARD")}
                     />
                     <RatingButton
-                      label="Dễ nhớ"
-                      sub="Ôn lại sau"
+                      label="Dá»… nhá»›"
+                      sub="Ã”n láº¡i sau"
                       tone="green"
                       onClick={() => reviewCard("GOOD")}
                     />
                     <RatingButton
-                      label="Rất dễ nhớ"
-                      sub="Không cần ôn lại"
+                      label="Ráº¥t dá»… nhá»›"
+                      sub="KhÃ´ng cáº§n Ã´n láº¡i"
                       tone="purple"
                       onClick={() => reviewCard("EASY")}
                     />
@@ -370,7 +370,7 @@ function FlashcardView({
   if (loading) {
     return (
       <div className="grid min-h-[620px] place-items-center rounded-[28px] border border-[#e8e9f5] bg-white font-bold text-[#69708b] shadow-sm">
-        Đang tải flashcard...
+        Äang táº£i flashcard...
       </div>
     );
   }
@@ -378,7 +378,7 @@ function FlashcardView({
   if (!card) {
     return (
       <div className="grid min-h-[620px] place-items-center rounded-[28px] border border-[#e8e9f5] bg-white font-bold text-[#69708b] shadow-sm">
-        Chưa có flashcard cho hôm nay.
+        ChÆ°a cÃ³ flashcard cho hÃ´m nay.
       </div>
     );
   }
@@ -397,7 +397,7 @@ function FlashcardView({
           <span
             role="button"
             tabIndex={0}
-            aria-label="Nghe phát âm"
+            aria-label="Nghe phÃ¡t Ã¢m"
             onClick={(event) => {
               event.stopPropagation();
               onSpeak();
@@ -427,10 +427,10 @@ function FlashcardView({
               ({card.partOfSpeech || "word"})
             </p>
             <p className="mt-4 text-2xl font-bold text-[#4f5790]">
-              {card.back || "Chưa có nghĩa"}
+              {card.back || "ChÆ°a cÃ³ nghÄ©a"}
             </p>
             <p className="mt-5 rounded-2xl bg-[#f8f6ff] p-4 text-sm font-bold leading-6 text-[#69708b]">
-              {card.example || "Hãy thử đặt một câu với từ này."}
+              {card.example || "HÃ£y thá»­ Ä‘áº·t má»™t cÃ¢u vá»›i tá»« nÃ y."}
             </p>
           </div>
         ) : (
@@ -439,7 +439,7 @@ function FlashcardView({
               ({card.partOfSpeech || "word"})
             </p>
             <p className="mt-4 text-xl font-bold text-[#4f5790]">
-              Nhấn vào thẻ để xem nghĩa
+              Nháº¥n vÃ o tháº» Ä‘á»ƒ xem nghÄ©a
             </p>
           </div>
         )}
@@ -448,7 +448,7 @@ function FlashcardView({
           <div className="grid h-56 w-72 place-items-center rounded-[30px] bg-[#f6e89f] p-8 shadow-inner">
             <img
               src={imageUrl}
-              alt={`Ảnh minh họa ${card.front}`}
+              alt={`áº¢nh minh há»a ${card.front}`}
               className="h-40 w-52 object-contain drop-shadow-[0_18px_18px_rgba(107,67,12,0.22)]"
             />
           </div>
@@ -476,10 +476,10 @@ function RatingButton({
     purple: "border-violet-200 bg-violet-50 text-[#6d35ff]",
   };
   const faces = {
-    red: "😞",
-    orange: "🤔",
-    green: "😊",
-    purple: "🙂",
+    red: "ðŸ˜ž",
+    orange: "ðŸ¤”",
+    green: "ðŸ˜Š",
+    purple: "ðŸ™‚",
   };
   return (
     <button
@@ -507,7 +507,7 @@ function ProgressPanel({
   total: number;
 }) {
   return (
-    <Panel title="Tiến độ học">
+    <Panel title="Tiáº¿n Ä‘á»™ há»c">
       <div className="grid gap-5 sm:grid-cols-[150px_1fr] xl:grid-cols-1 2xl:grid-cols-[150px_1fr]">
         <div
           className="grid h-36 w-36 place-items-center rounded-full"
@@ -519,16 +519,16 @@ function ProgressPanel({
             <span>
               <span className="block text-3xl font-black">{Math.min(percent, 100)}%</span>
               <span className="block text-xs font-bold text-[#69708b]">
-                Đã hoàn thành
+                ÄÃ£ hoÃ n thÃ nh
               </span>
             </span>
           </div>
         </div>
         <div className="space-y-4 text-sm font-bold text-[#59627f]">
-          <Legend color="#22c55e" label="Đã học" value={String(completed)} />
-          <Legend color="#6d35ff" label="Còn lại" value={String(remaining)} />
-          <Legend color="#f97316" label="Ôn lại hôm nay" value={String(reviewToday)} />
-          <Legend color="#8b91aa" label="Tổng thẻ" value={String(total)} />
+          <Legend color="#22c55e" label="ÄÃ£ há»c" value={String(completed)} />
+          <Legend color="#6d35ff" label="CÃ²n láº¡i" value={String(remaining)} />
+          <Legend color="#f97316" label="Ã”n láº¡i hÃ´m nay" value={String(reviewToday)} />
+          <Legend color="#8b91aa" label="Tá»•ng tháº»" value={String(total)} />
         </div>
       </div>
     </Panel>
@@ -537,18 +537,18 @@ function ProgressPanel({
 
 function TopicPanel({ topic, total }: { topic?: string; total: number }) {
   return (
-    <Panel title="Chủ đề hiện tại">
+    <Panel title="Chá»§ Ä‘á» hiá»‡n táº¡i">
       <div className="flex items-center gap-4">
         <AppIcon name="leaf" tone="emerald" className="h-14 w-14" size={28} />
         <div className="min-w-0 flex-1">
-          <p className="font-black">{topic || "Vocabulary"}</p>
-          <p className="mt-1 text-sm font-bold text-[#69708b]">{total} từ vựng</p>
+          <p className="font-black">{topic || "Từ vựng"}</p>
+          <p className="mt-1 text-sm font-bold text-[#69708b]">{total} tá»« vá»±ng</p>
         </div>
         <Link
           href="/vocabulary"
           className="rounded-xl border border-[#e8e9f5] px-4 py-2 text-sm font-black text-[#6d35ff]"
         >
-          Đổi chủ đề
+          Äá»•i chá»§ Ä‘á»
         </Link>
       </div>
     </Panel>
@@ -557,11 +557,11 @@ function TopicPanel({ topic, total }: { topic?: string; total: number }) {
 
 function StatsPanel({ total }: { total: number }) {
   return (
-    <Panel title="Thống kê">
+    <Panel title="Thá»‘ng kÃª">
       <div className="grid grid-cols-3 gap-3 text-center">
-        <MiniStat icon="calendar" label="Ngày học" value="12" />
-        <MiniStat icon="target" label="Từ đã học" value={String(total * 2)} />
-        <MiniStat icon="trophy" label="Chuỗi ngày" value="5" />
+        <MiniStat icon="calendar" label="NgÃ y há»c" value="12" />
+        <MiniStat icon="target" label="Tá»« Ä‘Ã£ há»c" value={String(total * 2)} />
+        <MiniStat icon="trophy" label="Chuá»—i ngÃ y" value="5" />
       </div>
     </Panel>
   );
@@ -569,13 +569,13 @@ function StatsPanel({ total }: { total: number }) {
 
 function TipsPanel() {
   return (
-    <Panel title="Mẹo học flashcard">
+    <Panel title="Máº¹o há»c flashcard">
       <div className="space-y-3 text-sm font-bold text-[#69708b]">
         {[
-          "Học mỗi ngày một ít để ghi nhớ lâu hơn",
-          "Sử dụng âm thanh để phát âm chuẩn",
-          "Ôn tập thường xuyên để củng cố trí nhớ",
-          "Kết hợp với ví dụ để hiểu sâu hơn",
+          "Há»c má»—i ngÃ y má»™t Ã­t Ä‘á»ƒ ghi nhá»› lÃ¢u hÆ¡n",
+          "Sá»­ dá»¥ng Ã¢m thanh Ä‘á»ƒ phÃ¡t Ã¢m chuáº©n",
+          "Ã”n táº­p thÆ°á»ng xuyÃªn Ä‘á»ƒ cá»§ng cá»‘ trÃ­ nhá»›",
+          "Káº¿t há»£p vá»›i vÃ­ dá»¥ Ä‘á»ƒ hiá»ƒu sÃ¢u hÆ¡n",
         ].map((item) => (
           <p key={item} className="flex items-center gap-2">
             <AppIcon name="check" bare size={15} className="text-[#6d35ff]" />
@@ -589,14 +589,14 @@ function TipsPanel() {
 
 function ShortcutsPanel() {
   return (
-    <Panel title="Phím tắt">
+    <Panel title="PhÃ­m táº¯t">
       <div className="space-y-3 text-sm font-bold text-[#69708b]">
-        <Shortcut keys="← →" label="Chuyển thẻ" />
-        <Shortcut keys="Space" label="Lật thẻ" />
-        <Shortcut keys="1" label="Không nhớ" />
-        <Shortcut keys="2" label="Khó nhớ" />
-        <Shortcut keys="3" label="Dễ nhớ" />
-        <Shortcut keys="4" label="Rất dễ nhớ" />
+        <Shortcut keys="â† â†’" label="Chuyá»ƒn tháº»" />
+        <Shortcut keys="Space" label="Láº­t tháº»" />
+        <Shortcut keys="1" label="KhÃ´ng nhá»›" />
+        <Shortcut keys="2" label="KhÃ³ nhá»›" />
+        <Shortcut keys="3" label="Dá»… nhá»›" />
+        <Shortcut keys="4" label="Ráº¥t dá»… nhá»›" />
       </div>
     </Panel>
   );

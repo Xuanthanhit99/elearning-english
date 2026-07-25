@@ -1,31 +1,39 @@
 import type { Metadata } from "next";
 import HomePage from "@/src/Components/HomePage/HomePage";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://Beaconvie.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://beaconvie.com";
 
 export const metadata: Metadata = {
-  title: "Beaconvie - Học tiếng Anh với lộ trình AI cá nhân hóa",
+  metadataBase: new URL(siteUrl),
+  title: "BeaconVie - Nền tảng học tiếng Anh ứng dụng AI",
   description:
-    "Beaconvie giúp bạn học tiếng Anh theo lộ trình AI: placement test, vocabulary SRS, listening, speaking, writing feedback, mission và dashboard tiến bộ.",
+    "Học thông minh hơn với AI, xây dựng thói quen mỗi ngày, kết nối cộng đồng và theo dõi sự tiến bộ của bạn trên một nền tảng duy nhất.",
   alternates: {
     canonical: siteUrl,
   },
   openGraph: {
-    title: "Beaconvie - Học tiếng Anh với lộ trình AI cá nhân hóa",
+    title: "BeaconVie - Nền tảng học tiếng Anh ứng dụng AI",
     description:
-      "Bắt đầu miễn phí với placement test, nhận lộ trình AI và luyện đủ kỹ năng tiếng Anh mỗi ngày.",
+      "BeaconVie dẫn đường cho hành trình học tiếng Anh hiện đại: kiểm tra trình độ, lộ trình cá nhân hóa, gia sư AI, nhiệm vụ hằng ngày và cộng đồng học tập.",
     url: siteUrl,
-    siteName: "Beaconvie",
+    siteName: "BeaconVie",
     locale: "vi_VN",
     type: "website",
-    images: [{ url: "/loho/og-image.png", width: 1200, height: 630, alt: "Beaconvie" }],
+    images: [
+      {
+        url: "/brand/beaconvie-hero-banner.png",
+        width: 1200,
+        height: 630,
+        alt: "BeaconVie",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Beaconvie - Học tiếng Anh với AI",
+    title: "BeaconVie - Học tiếng Anh cùng AI",
     description:
-      "Học tiếng Anh cá nhân hóa với AI coach, SRS, mission, leaderboard và dashboard tiến bộ.",
-    images: ["/loho/og-image.png"],
+      "Cá nhân hóa lộ trình, luyện tập mỗi ngày, kết nối cộng đồng và phát triển bản thân cùng BeaconVie.",
+    images: ["/brand/beaconvie-hero-banner.png"],
   },
 };
 
@@ -33,11 +41,11 @@ export default function Home() {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "Beaconvie",
+    name: "BeaconVie",
     applicationCategory: "EducationalApplication",
     operatingSystem: "Web",
     description:
-      "Nền tảng học tiếng Anh AI với placement test, lộ trình cá nhân hóa, SRS và phản hồi AI.",
+      "Nền tảng học tiếng Anh ứng dụng AI với bài kiểm tra trình độ, lộ trình cá nhân hóa, gia sư AI, nhiệm vụ hằng ngày và cộng đồng học tập.",
     offers: {
       "@type": "Offer",
       price: "0",
@@ -49,7 +57,6 @@ export default function Home() {
     <>
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <HomePage />

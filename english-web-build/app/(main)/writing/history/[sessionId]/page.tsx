@@ -1,4 +1,4 @@
-import WritingHistoryDetailPage from "@/src/Components/WritingPage/WritingHistoryDetailPage/WritingHistoryDetailPage";
+﻿import WritingHistoryDetailPage from "@/src/Components/WritingPage/WritingHistoryDetailPage/WritingHistoryDetailPage";
 
 export default async function WritingSessionId({
   params,

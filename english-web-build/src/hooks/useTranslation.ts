@@ -1,4 +1,4 @@
-import { dictionaries } from "@/src/i18n";
+﻿import { dictionaries } from "@/src/i18n";
 import { useLanguageStore } from "@/src/store/languageStore";
 
 function getPath(source: unknown, path: string): unknown {

@@ -1,8 +1,8 @@
-# Lumiverse Phase 2 Report: Dashboard and App Shell
+﻿# BeaconVie Phase 2 Report: Dashboard and App Shell
 
 ## Summary
 
-Phase 2 applies the Lumiverse design system to the shared application shell, homepage, and authenticated dashboard while preserving the existing backend, database, API contracts, httpOnly-cookie authentication flow, and business logic.
+Phase 2 applies the BeaconVie design system to the shared application shell, homepage, and authenticated dashboard while preserving the existing backend, database, API contracts, httpOnly-cookie authentication flow, and business logic.
 
 No backend routes, database schemas, authentication behavior, or API response shapes were changed.
 
@@ -45,8 +45,8 @@ The Phase 2 route check covered these paths:
 ## New Files
 
 - `src/Components/Layout/MobileNavigation.tsx`
-- `src/Components/UI/Lumiverse.tsx`
-- `docs/lumiverse-phase2-dashboard-shell-report.md`
+- `src/Components/UI/BeaconVie.tsx`
+- `docs/beaconvie-phase2-dashboard-shell-report.md`
 
 ## Modified Files
 
@@ -78,7 +78,7 @@ Related Phase 1 design-system files already present in the working tree:
 - Existing layout structure remains in place through `AppShell`, `AppHeader`, and `AppSidebar`.
 - Existing navigation routes are preserved and reorganized visually.
 - Existing image assets are reused on the homepage.
-- New Lumiverse primitives provide shared cards, buttons, badges, progress, empty states, section headers, and stat cards for consistent reuse in later phases.
+- New BeaconVie primitives provide shared cards, buttons, badges, progress, empty states, section headers, and stat cards for consistent reuse in later phases.
 
 ## Responsive Strategy
 
@@ -98,9 +98,9 @@ Related Phase 1 design-system files already present in the working tree:
 ## Loading, Error, Empty States
 
 - Dashboard panels render only real API-backed data.
-- Missing optional arrays show Lumiverse empty states instead of placeholder mock content.
+- Missing optional arrays show BeaconVie empty states instead of placeholder mock content.
 - Homepage avoids fake user metrics, fake testimonials, and fake dashboard previews.
-- Existing global loading/error surfaces remain aligned with the Lumiverse visual language.
+- Existing global loading/error surfaces remain aligned with the BeaconVie visual language.
 
 ## Verification
 
@@ -109,7 +109,7 @@ Related Phase 1 design-system files already present in the working tree:
 Passed for the Phase 2 surface:
 
 ```text
-npx eslint app/layout.tsx app/loading.tsx app/error.tsx src/Components/Layout/AppShell.tsx src/Components/Layout/AppHeader.tsx src/Components/Layout/AppSidebar.tsx src/Components/Layout/LanguageSwitcher.tsx src/Components/Layout/ThemeToggle.tsx src/Components/Layout/MobileNavigation.tsx src/Components/UI/AppLogo.tsx src/Components/UI/ResponsiveContainer.tsx src/Components/UI/Lumiverse.tsx src/Components/Dashboard/DashboardPage.tsx src/Components/HomePage/HomePage.tsx
+npx eslint app/layout.tsx app/loading.tsx app/error.tsx src/Components/Layout/AppShell.tsx src/Components/Layout/AppHeader.tsx src/Components/Layout/AppSidebar.tsx src/Components/Layout/LanguageSwitcher.tsx src/Components/Layout/ThemeToggle.tsx src/Components/Layout/MobileNavigation.tsx src/Components/UI/AppLogo.tsx src/Components/UI/ResponsiveContainer.tsx src/Components/UI/BeaconVie.tsx src/Components/Dashboard/DashboardPage.tsx src/Components/HomePage/HomePage.tsx
 ```
 
 ### Typecheck
@@ -158,7 +158,7 @@ Recommended manual QA before production merge:
 ## Acceptance Criteria
 
 - Backend/API/auth/database unchanged.
-- Homepage uses Lumiverse visual language and real routes only.
+- Homepage uses BeaconVie visual language and real routes only.
 - Dashboard uses `getDashboard()` data and no mock datasets.
 - Shared shell has responsive desktop/sidebar and mobile/bottom navigation.
 - Phase 2 files pass scoped lint.
@@ -168,7 +168,7 @@ Recommended manual QA before production merge:
 
 ## Phase 3 Proposal
 
-Phase 3 should apply Lumiverse screen-by-screen to the learning modules:
+Phase 3 should apply BeaconVie screen-by-screen to the learning modules:
 
 1. Placement and learning path.
 2. Learn hub and lesson entry states.

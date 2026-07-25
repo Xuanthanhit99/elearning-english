@@ -1,27 +1,27 @@
-import type {
+﻿import type {
   LeaderboardEntry,
   LeaderboardZone,
   LeagueTier,
 } from '@/src/types/leaderboard';
 
 export const leagueLabels: Record<LeagueTier, string> = {
-  BRONZE: 'Đồng',
-  SILVER: 'Bạc',
-  GOLD: 'Vàng',
-  PLATINUM: 'Bạch kim',
-  DIAMOND: 'Kim cương',
-  MASTER: 'Bậc thầy',
-  LEGEND: 'Huyền thoại',
+  BRONZE: 'Äá»“ng',
+  SILVER: 'Báº¡c',
+  GOLD: 'VÃ ng',
+  PLATINUM: 'Báº¡ch kim',
+  DIAMOND: 'Kim cÆ°Æ¡ng',
+  MASTER: 'Báº­c tháº§y',
+  LEGEND: 'Huyá»n thoáº¡i',
 };
 
 export const leagueIcons: Record<LeagueTier, string> = {
-  BRONZE: '🥉',
-  SILVER: '🥈',
-  GOLD: '🥇',
-  PLATINUM: '🛡️',
-  DIAMOND: '💎',
-  MASTER: '👑',
-  LEGEND: '🏆',
+  BRONZE: 'ðŸ¥‰',
+  SILVER: 'ðŸ¥ˆ',
+  GOLD: 'ðŸ¥‡',
+  PLATINUM: 'ðŸ›¡ï¸',
+  DIAMOND: 'ðŸ’Ž',
+  MASTER: 'ðŸ‘‘',
+  LEGEND: 'ðŸ†',
 };
 
 export function movementLabel(entry: LeaderboardEntry) {
@@ -29,7 +29,7 @@ export function movementLabel(entry: LeaderboardEntry) {
     entry.previousRank == null ||
     entry.previousRank === entry.rank
   ) {
-    return { text: '—', direction: 'same' as const };
+    return { text: 'â€”', direction: 'same' as const };
   }
 
   if (entry.rank < entry.previousRank) {
@@ -46,9 +46,9 @@ export function movementLabel(entry: LeaderboardEntry) {
 }
 
 export function zoneLabel(zone?: LeaderboardZone) {
-  if (zone === 'PROMOTION') return 'Vùng thăng hạng';
-  if (zone === 'RELEGATION') return 'Vùng xuống hạng';
-  return 'Vùng an toàn';
+  if (zone === 'PROMOTION') return 'VÃ¹ng thÄƒng háº¡ng';
+  if (zone === 'RELEGATION') return 'VÃ¹ng xuá»‘ng háº¡ng';
+  return 'VÃ¹ng an toÃ n';
 }
 
 export function formatXp(value: number) {

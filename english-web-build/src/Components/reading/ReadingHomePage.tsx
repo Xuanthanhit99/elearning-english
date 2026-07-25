@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   BookOpen,
@@ -60,7 +60,7 @@ export default function ReadingHomePage() {
 
       setData(unwrap(response.data));
     } catch {
-      setError("Không tải được trang Reading.");
+      setError("KhÃ´ng táº£i Ä‘Æ°á»£c trang Reading.");
     } finally {
       setLoading(false);
     }
@@ -104,13 +104,13 @@ export default function ReadingHomePage() {
   }
 
   if (loading) {
-    return <PageState text="Đang tải Reading..." />;
+    return <PageState text="Äang táº£i Reading..." />;
   }
 
   if (error || !data) {
     return (
       <PageState
-        text={error || "Không có dữ liệu Reading."}
+        text={error || "KhÃ´ng cÃ³ dá»¯ liá»‡u Reading."}
         action={load}
       />
     );
@@ -118,17 +118,17 @@ export default function ReadingHomePage() {
 
   const stats = [
     {
-      label: "Bài hoàn thành",
+      label: "BÃ i hoÃ n thÃ nh",
       value: data.stats.completedArticles,
       icon: CheckCircle2,
     },
     {
-      label: "Độ chính xác",
+      label: "Äá»™ chÃ­nh xÃ¡c",
       value: `${data.stats.averageAccuracy}%`,
       icon: Target,
     },
     {
-      label: "Thời gian đọc",
+      label: "Thá»i gian Ä‘á»c",
       value: data.stats.totalReadingTimeText,
       icon: Clock,
     },
@@ -156,18 +156,18 @@ export default function ReadingHomePage() {
           <input
             value={keyword}
             onChange={(event) => setKeyword(event.target.value)}
-            placeholder="Tìm bài đọc hoặc chủ đề..."
+            placeholder="TÃ¬m bÃ i Ä‘á»c hoáº·c chá»§ Ä‘á»..."
             className="h-12 w-full rounded-xl bg-slate-50 pl-12 pr-24 text-sm outline-none focus:ring-2 focus:ring-violet-200"
           />
           <button className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-bold text-white">
-            Tìm
+            TÃ¬m
           </button>
         </form>
 
         <div className="flex items-center gap-5 text-sm font-bold">
           <span className="flex items-center gap-2">
             <Flame className="text-orange-500" size={18} />
-            {data.streak.currentStreak} ngày
+            {data.streak.currentStreak} ngÃ y
           </span>
           <span className="flex items-center gap-2">
             <Trophy className="text-violet-600" size={18} />
@@ -186,11 +186,11 @@ export default function ReadingHomePage() {
                   AI LEARNING PATH
                 </div>
                 <h1 className="text-3xl font-black md:text-4xl">
-                  Tiếp tục luyện đọc hôm nay
+                  Tiáº¿p tá»¥c luyá»‡n Ä‘á»c hÃ´m nay
                 </h1>
                 <p className="mt-3 max-w-2xl text-white/80">
-                  Hoàn thành bài đọc, quiz và thời gian học để
-                  cập nhật nhiệm vụ tự động.
+                  HoÃ n thÃ nh bÃ i Ä‘á»c, quiz vÃ  thá»i gian há»c Ä‘á»ƒ
+                  cáº­p nháº­t nhiá»‡m vá»¥ tá»± Ä‘á»™ng.
                 </p>
 
                 <button
@@ -205,8 +205,8 @@ export default function ReadingHomePage() {
                   className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-black text-violet-700 disabled:opacity-50"
                 >
                   {continueArticle?.isStarted
-                    ? "Tiếp tục bài đang đọc"
-                    : "Bắt đầu bài được đề xuất"}
+                    ? "Tiáº¿p tá»¥c bÃ i Ä‘ang Ä‘á»c"
+                    : "Báº¯t Ä‘áº§u bÃ i Ä‘Æ°á»£c Ä‘á» xuáº¥t"}
                   <ChevronRight size={18} />
                 </button>
               </div>
@@ -221,7 +221,7 @@ export default function ReadingHomePage() {
                     className="h-36 w-full rounded-xl object-cover"
                   />
                   <p className="mt-3 text-xs font-bold text-white/70">
-                    {continueArticle.categoryName} ·{" "}
+                    {continueArticle.categoryName} Â·{" "}
                     {continueArticle.difficultyText}
                   </p>
                   <h2 className="mt-1 font-black">
@@ -263,17 +263,17 @@ export default function ReadingHomePage() {
             <div className="mb-5 flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-black">
-                  Bài đọc nổi bật
+                  BÃ i Ä‘á»c ná»•i báº­t
                 </h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Danh sách từ API Reading hiện tại.
+                  Danh sÃ¡ch tá»« API Reading hiá»‡n táº¡i.
                 </p>
               </div>
               <button
                 onClick={() => router.push("/reading/articles")}
                 className="font-bold text-violet-600"
               >
-                Xem tất cả
+                Xem táº¥t cáº£
               </button>
             </div>
 
@@ -304,7 +304,7 @@ export default function ReadingHomePage() {
                       {article.title}
                     </h3>
                     <p className="mt-2 text-sm text-slate-500">
-                      {article.readTimeText} · {article.questionCount} câu
+                      {article.readTimeText} Â· {article.questionCount} cÃ¢u
                     </p>
                   </div>
                 </button>
@@ -315,13 +315,13 @@ export default function ReadingHomePage() {
           <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-xl font-black">
-                Chủ đề Reading
+                Chá»§ Ä‘á» Reading
               </h2>
               <button
                 onClick={() => router.push("/reading/categories")}
                 className="font-bold text-violet-600"
               >
-                Xem tất cả
+                Xem táº¥t cáº£
               </button>
             </div>
 
@@ -342,7 +342,7 @@ export default function ReadingHomePage() {
                   <div>
                     <h3 className="font-black">{category.name}</h3>
                     <p className="text-sm text-slate-500">
-                      {category.articleCount} bài ·{" "}
+                      {category.articleCount} bÃ i Â·{" "}
                       {category.difficultyText}
                     </p>
                   </div>
@@ -354,20 +354,20 @@ export default function ReadingHomePage() {
 
         <aside className="space-y-6">
           <MissionCard
-            title="Nhiệm vụ Reading hôm nay"
+            title="Nhiá»‡m vá»¥ Reading hÃ´m nay"
             loading={missionLoading}
             mission={dailyMission}
           />
 
           <MissionCard
-            title="Mục tiêu Reading tuần"
+            title="Má»¥c tiÃªu Reading tuáº§n"
             loading={missionLoading}
             mission={weeklyMission}
           />
 
           <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-black">
-              Tiến độ tổng thể
+              Tiáº¿n Ä‘á»™ tá»•ng thá»ƒ
             </h2>
             <div className="mt-5 h-3 rounded-full bg-slate-100">
               <div
@@ -379,7 +379,7 @@ export default function ReadingHomePage() {
             </div>
             <p className="mt-3 text-sm font-bold text-slate-600">
               {data.progress.completedArticles}/
-              {data.progress.totalArticles} bài hoàn thành
+              {data.progress.totalArticles} bÃ i hoÃ n thÃ nh
             </p>
           </section>
         </aside>
@@ -408,7 +408,7 @@ function MissionCard({
 
       {loading ? (
         <p className="mt-5 text-sm text-slate-500">
-          Đang tải nhiệm vụ...
+          Äang táº£i nhiá»‡m vá»¥...
         </p>
       ) : mission ? (
         <>
@@ -436,7 +436,7 @@ function MissionCard({
         </>
       ) : (
         <p className="mt-5 text-sm text-slate-500">
-          Chưa có nhiệm vụ Reading trong kỳ hiện tại.
+          ChÆ°a cÃ³ nhiá»‡m vá»¥ Reading trong ká»³ hiá»‡n táº¡i.
         </p>
       )}
     </section>
@@ -459,7 +459,7 @@ function PageState({
             onClick={action}
             className="mt-4 rounded-xl bg-violet-600 px-5 py-2 font-bold text-white"
           >
-            Tải lại
+            Táº£i láº¡i
           </button>
         )}
       </div>

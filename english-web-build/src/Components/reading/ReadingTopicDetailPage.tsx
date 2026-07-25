@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -109,7 +109,7 @@ export default function ReadingTopicDetailPage({
 
       setData(payload);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Có lỗi xảy ra");
+      setError(err instanceof Error ? err.message : "CÃ³ lá»—i xáº£y ra");
     } finally {
       setLoading(false);
     }
@@ -124,7 +124,7 @@ export default function ReadingTopicDetailPage({
       <div className="grid min-h-screen place-items-center bg-[#fbfbff]">
         <div className="rounded-2xl bg-white px-8 py-6 text-center shadow-sm">
           <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-violet-200 border-t-violet-600" />
-          <p className="font-bold text-slate-700">Đang tải chủ đề...</p>
+          <p className="font-bold text-slate-700">Äang táº£i chá»§ Ä‘á»...</p>
         </div>
       </div>
     );
@@ -139,7 +139,7 @@ export default function ReadingTopicDetailPage({
             onClick={fetchTopicDetail}
             className="rounded-xl bg-violet-600 px-5 py-2 text-sm font-bold text-white"
           >
-            Tải lại
+            Táº£i láº¡i
           </button>
         </div>
       </div>
@@ -162,10 +162,10 @@ export default function ReadingTopicDetailPage({
           <div className="grid grid-cols-[1fr_470px] gap-7 p-8">
             <section className="space-y-6">
               <div className="flex items-center gap-2 text-sm font-semibold text-slate-500">
-                <button onClick={() => router.push("/reading")}>Đọc hiểu</button>
+                <button onClick={() => router.push("/reading")}>Äá»c hiá»ƒu</button>
                 <ChevronRight size={16} />
                 <button onClick={() => router.push("/reading/categories")}>
-                  Danh sách chủ đề
+                  Danh sÃ¡ch chá»§ Ä‘á»
                 </button>
                 <ChevronRight size={16} />
                 <span className="text-slate-900">{data.category.name}</span>
@@ -180,7 +180,7 @@ export default function ReadingTopicDetailPage({
 
                 <div className="flex-1 py-1">
                   <div className="mb-2 inline-flex rounded-lg bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-600">
-                    Chủ đề
+                    Chá»§ Ä‘á»
                   </div>
 
                   <div className="flex items-center gap-3">
@@ -191,13 +191,13 @@ export default function ReadingTopicDetailPage({
                   </div>
 
                   <p className="mt-4 text-slate-500">
-                    {data.category.description || "Chủ đề luyện đọc hiểu tiếng Anh."}
+                    {data.category.description || "Chá»§ Ä‘á» luyá»‡n Ä‘á»c hiá»ƒu tiáº¿ng Anh."}
                   </p>
 
                   <div className="mt-5 flex flex-wrap gap-3">
                     <InfoPill
                       icon={<BookOpen size={17} />}
-                      text={`${data.category.articleCount} bài đọc`}
+                      text={`${data.category.articleCount} bÃ i Ä‘á»c`}
                     />
                     <InfoPill
                       icon={<BarChart3 size={17} />}
@@ -224,13 +224,13 @@ export default function ReadingTopicDetailPage({
                     >
                       <Play size={18} />
                       {nextArticle?.status === "learning"
-                        ? "Tiếp tục học"
-                        : "Bắt đầu học"}
+                        ? "Tiáº¿p tá»¥c há»c"
+                        : "Báº¯t Ä‘áº§u há»c"}
                     </button>
 
                     <button className="flex h-14 items-center gap-3 rounded-xl border border-violet-300 px-8 text-sm font-bold text-violet-600">
                       <Target size={18} />
-                      Luyện tập chủ đề
+                      Luyá»‡n táº­p chá»§ Ä‘á»
                     </button>
                   </div>
                 </div>
@@ -238,10 +238,10 @@ export default function ReadingTopicDetailPage({
 
               <div className="flex border-b border-slate-100">
                 {[
-                  "Tổng quan",
-                  `Bài đọc (${data.category.articleCount})`,
-                  `Từ vựng (${data.featuredVocabulary.length})`,
-                  "Thành tích",
+                  "Tá»•ng quan",
+                  `BÃ i Ä‘á»c (${data.category.articleCount})`,
+                  `Tá»« vá»±ng (${data.featuredVocabulary.length})`,
+                  "ThÃ nh tÃ­ch",
                 ].map((tab, index) => (
                   <button
                     key={tab}
@@ -258,12 +258,12 @@ export default function ReadingTopicDetailPage({
 
               <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
                 <h2 className="mb-5 text-lg font-extrabold">
-                  Danh sách bài đọc
+                  Danh sÃ¡ch bÃ i Ä‘á»c
                 </h2>
 
                 {data.articles.length === 0 ? (
                   <div className="rounded-2xl bg-slate-50 p-8 text-center text-sm font-bold text-slate-500">
-                    Chủ đề này chưa có bài đọc.
+                    Chá»§ Ä‘á» nÃ y chÆ°a cÃ³ bÃ i Ä‘á»c.
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -292,55 +292,55 @@ export default function ReadingTopicDetailPage({
                 )}
 
                 <button className="mt-5 w-full rounded-xl bg-slate-50 py-3 text-sm font-bold text-violet-600">
-                  Xem tất cả {data.category.articleCount} bài đọc⌄
+                  Xem táº¥t cáº£ {data.category.articleCount} bÃ i Ä‘á»câŒ„
                 </button>
               </div>
             </section>
 
             <aside className="space-y-6">
-              <RightCard title="Tiến độ chủ đề">
+              <RightCard title="Tiáº¿n Ä‘á»™ chá»§ Ä‘á»">
                 <div className="flex items-center gap-8">
                   <div className="grid h-44 w-44 place-items-center rounded-full border-[12px] border-violet-600">
                     <div className="text-center">
                       <p className="text-4xl font-extrabold">
                         {data.progress.percent}%
                       </p>
-                      <p className="text-sm text-slate-500">Hoàn thành</p>
+                      <p className="text-sm text-slate-500">HoÃ n thÃ nh</p>
                     </div>
                   </div>
 
                   <div className="space-y-5">
                     <ProgressItem
                       value={String(data.progress.completedArticles)}
-                      label="Bài đã hoàn thành"
+                      label="BÃ i Ä‘Ã£ hoÃ n thÃ nh"
                     />
                     <ProgressItem
                       value={String(data.progress.learningArticles)}
-                      label="Bài đang học"
+                      label="BÃ i Ä‘ang há»c"
                     />
                     <ProgressItem
                       value={String(data.progress.notStartedArticles)}
-                      label="Bài chưa học"
+                      label="BÃ i chÆ°a há»c"
                     />
                   </div>
                 </div>
 
                 <p className="mt-4 text-center text-sm font-semibold text-slate-500">
-                  Tổng: {data.progress.totalArticles} bài đọc
+                  Tá»•ng: {data.progress.totalArticles} bÃ i Ä‘á»c
                 </p>
               </RightCard>
 
               <RightCard
-                title="Từ vựng nổi bật"
+                title="Tá»« vá»±ng ná»•i báº­t"
                 action={
                   <button className="text-sm font-bold text-violet-600">
-                    Xem tất cả
+                    Xem táº¥t cáº£
                   </button>
                 }
               >
                 {data.featuredVocabulary.length === 0 ? (
                   <p className="text-sm font-semibold text-slate-500">
-                    Chưa có từ vựng nổi bật.
+                    ChÆ°a cÃ³ tá»« vá»±ng ná»•i báº­t.
                   </p>
                 ) : (
                   <div className="space-y-4">
@@ -369,7 +369,7 @@ export default function ReadingTopicDetailPage({
                 )}
               </RightCard>
 
-              <RightCard title="Thành tích">
+              <RightCard title="ThÃ nh tÃ­ch">
                 <div className="grid grid-cols-3 gap-5 text-center">
                   {data.achievements.map((item, index) => (
                     <Achievement
@@ -387,10 +387,10 @@ export default function ReadingTopicDetailPage({
               </RightCard>
 
               <RightCard
-                title="Gợi ý cho bạn"
+                title="Gá»£i Ã½ cho báº¡n"
                 action={
                   <button className="text-sm font-bold text-violet-600">
-                    Xem thêm
+                    Xem thÃªm
                   </button>
                 }
               >
@@ -430,7 +430,7 @@ export default function ReadingTopicDetailPage({
                   </button>
                 ) : (
                   <p className="text-sm font-semibold text-slate-500">
-                    Chưa có gợi ý phù hợp.
+                    ChÆ°a cÃ³ gá»£i Ã½ phÃ¹ há»£p.
                   </p>
                 )}
               </RightCard>
@@ -506,12 +506,12 @@ function ArticleRow({
         {article.status === "completed" ? (
           <div className="mb-4 flex items-center justify-end gap-2 text-sm font-bold text-emerald-600">
             <CheckCircle2 size={17} />
-            Đã hoàn thành
+            ÄÃ£ hoÃ n thÃ nh
           </div>
         ) : (
           <>
             <div className="mb-2 flex justify-between text-sm font-bold text-slate-500">
-              <span>{article.progress > 0 ? "Tiến độ" : "0%"}</span>
+              <span>{article.progress > 0 ? "Tiáº¿n Ä‘á»™" : "0%"}</span>
               {article.progress > 0 && <span>{article.progress}%</span>}
             </div>
             <div className="h-2 rounded-full bg-slate-100">
@@ -541,8 +541,8 @@ function ArticleRow({
 }
 
 function getDifficultyBadge(level: string) {
-  if (level === "Dễ") return "bg-emerald-100 text-emerald-600";
-  if (level === "Trung bình") return "bg-blue-100 text-blue-600";
+  if (level === "Dá»…") return "bg-emerald-100 text-emerald-600";
+  if (level === "Trung bÃ¬nh") return "bg-blue-100 text-blue-600";
   return "bg-orange-100 text-orange-600";
 }
 

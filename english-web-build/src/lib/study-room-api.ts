@@ -1,4 +1,4 @@
-import { api } from "@/src/lib/axios";
+﻿import { api } from "@/src/lib/axios";
 
 export type StudyRoomVisibility = "PUBLIC" | "PRIVATE" | "INVITE_ONLY";
 export type StudyRoomStatus = "WAITING" | "IN_SESSION" | "ENDED";

@@ -1,8 +1,8 @@
-export type Locale = "vi" | "en" | "zh" | "de";
+﻿export type Locale = "vi" | "en" | "zh" | "de";
 
-export const DEFAULT_LOCALE: Locale = "en";
+export const DEFAULT_LOCALE: Locale = "vi";
 
-export const LOCALES: Locale[] = ["vi", "en", "zh", "de"];
+export const LOCALES: Locale[] = ["vi"];
 
 export function isLocale(value: unknown): value is Locale {
   return typeof value === "string" && LOCALES.includes(value as Locale);
@@ -10,18 +10,17 @@ export function isLocale(value: unknown): value is Locale {
 
 export const LOCALE_LABELS: Record<Locale, string> = {
   vi: "Tiếng Việt",
-  en: "English",
-  zh: "中文",
-  de: "Deutsch",
+  en: "Tiếng Việt",
+  zh: "Tiếng Việt",
+  de: "Tiếng Việt",
 };
 
 export const LOCALE_FLAGS: Record<Locale, string> = {
-  vi: "🇻🇳",
-  en: "🇬🇧",
-  zh: "🇨🇳",
-  de: "🇩🇪",
+  vi: "VN",
+  en: "VN",
+  zh: "VN",
+  de: "VN",
 };
-
 export type Dictionary = {
   common: {
     appName: string;
@@ -190,8 +189,8 @@ export type Dictionary = {
     premiumTitle: string;
     premiumFeatures: string[];
     premiumCta: string;
-    foxyTitle: string;
-    foxySubtitle: string;
+    beaconTitle: string;
+    beaconSubtitle: string;
     heroBrandLine: string;
     heroTitle: string;
     heroSubtitle: string;

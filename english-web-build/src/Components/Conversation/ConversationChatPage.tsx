@@ -1,16 +1,16 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Send, Square, RotateCcw } from "lucide-react";
 import {
-  LumiverseBadge,
-  LumiverseButton,
-  LumiverseCard,
-  LumiverseSkeleton,
-  LumiverseState,
-} from "@/src/Components/UI/Lumiverse";
+  BeaconVieBadge,
+  BeaconVieButton,
+  BeaconVieCard,
+  BeaconVieSkeleton,
+  BeaconVieState,
+} from "@/src/Components/UI/BeaconVie";
 import {
   ConversationFinishResult,
   ConversationMessage,
@@ -75,7 +75,7 @@ export default function ConversationChatPage() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, streamingText]);
 
-  // Ctrl/Cmd+Enter also sends; Escape cancels an in-flight generation —
+  // Ctrl/Cmd+Enter also sends; Escape cancels an in-flight generation â€”
   // matches Part 9's "keyboard shortcuts" requirement without hijacking
   // plain Enter (which stays newline-in-textarea, Shift+Enter free too).
   useEffect(() => {
@@ -117,7 +117,7 @@ export default function ConversationChatPage() {
       });
     } catch (error) {
       if ((error as Error)?.name === "AbortError") {
-        // Cancelled — whatever streamed so far is still shown as a (marked)
+        // Cancelled â€” whatever streamed so far is still shown as a (marked)
         // partial reply rather than silently discarded.
         setStreamingText((partial) => {
           if (partial) {
@@ -176,8 +176,8 @@ export default function ConversationChatPage() {
   if (state.status === "loading") {
     return (
       <div className="mx-auto flex h-[calc(100dvh-4rem)] max-w-3xl flex-col gap-4 px-4 py-6">
-        <LumiverseSkeleton className="h-14" />
-        <LumiverseSkeleton className="flex-1" />
+        <BeaconVieSkeleton className="h-14" />
+        <BeaconVieSkeleton className="flex-1" />
       </div>
     );
   }
@@ -185,10 +185,10 @@ export default function ConversationChatPage() {
   if (state.status === "error") {
     return (
       <div className="mx-auto max-w-3xl px-4 py-6">
-        <LumiverseState
+        <BeaconVieState
           title="Couldn't load this conversation"
           description="It may not exist, or you may not have access to it."
-          actionLabel="Retry"
+          actionLabel="Thử lại"
           onAction={loadSession}
           tone="error"
         />
@@ -200,26 +200,26 @@ export default function ConversationChatPage() {
 
   return (
     <div className="mx-auto flex h-[calc(100dvh-4rem)] max-w-3xl flex-col px-4 py-4 sm:py-6">
-      <header className="mb-3 flex items-center gap-3 border-b border-[var(--lumiverse-border)] pb-3">
+      <header className="mb-3 flex items-center gap-3 border-b border-[var(--BeaconVie-border)] pb-3">
         <Link
           href="/conversation"
           aria-label="Back to conversation topics"
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[var(--lumiverse-border)] text-[var(--lumiverse-muted)] transition hover:bg-[var(--lumiverse-hover-tint)]"
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[var(--BeaconVie-border)] text-[var(--BeaconVie-muted)] transition hover:bg-[var(--BeaconVie-hover-tint)]"
         >
           <ArrowLeft aria-hidden className="h-4 w-4" />
         </Link>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-lg font-black text-[var(--lumiverse-ink)]">
+          <h1 className="truncate text-lg font-black text-[var(--BeaconVie-ink)]">
             {session.scenario?.title ?? "Free Conversation"}
           </h1>
-          <p className="text-xs font-bold text-[var(--lumiverse-muted)]">
-            {session.difficulty} · {session.mode.replace("_", " ")}
+          <p className="text-xs font-bold text-[var(--BeaconVie-muted)]">
+            {session.difficulty} Â· {session.mode.replace("_", " ")}
           </p>
         </div>
         {session.status === "ACTIVE" && !result && (
-          <LumiverseButton tone="soft" onClick={handleFinish} loading={finishing}>
+          <BeaconVieButton tone="soft" onClick={handleFinish} loading={finishing}>
             Finish & get feedback
-          </LumiverseButton>
+          </BeaconVieButton>
         )}
       </header>
 
@@ -283,20 +283,20 @@ export default function ConversationChatPage() {
               placeholder="Type your reply in English... (Ctrl+Enter to send)"
               rows={2}
               disabled={isStreaming || session.status !== "ACTIVE"}
-              className="lumiverse-input min-h-[52px] flex-1 resize-none rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] px-4 py-3 text-sm font-semibold text-[var(--lumiverse-ink)] outline-none focus:border-[var(--lumiverse-primary)]"
+              className="BeaconVie-input min-h-[52px] flex-1 resize-none rounded-2xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] px-4 py-3 text-sm font-semibold text-[var(--BeaconVie-ink)] outline-none focus:border-[var(--BeaconVie-primary)]"
             />
             {isStreaming ? (
-              <LumiverseButton type="button" tone="danger" onClick={handleCancel} aria-label="Stop generating">
+              <BeaconVieButton type="button" tone="danger" onClick={handleCancel} aria-label="Stop generating">
                 <Square aria-hidden className="h-4 w-4" />
-              </LumiverseButton>
+              </BeaconVieButton>
             ) : (
-              <LumiverseButton
+              <BeaconVieButton
                 type="submit"
                 disabled={!input.trim() || session.status !== "ACTIVE"}
                 aria-label="Send message"
               >
                 <Send aria-hidden className="h-4 w-4" />
-              </LumiverseButton>
+              </BeaconVieButton>
             )}
           </form>
         </>
@@ -318,8 +318,8 @@ function MessageBubble({
       <div
         className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm font-semibold leading-6 sm:max-w-[75%] ${
           isUser
-            ? "bg-[var(--lumiverse-primary)] text-white"
-            : "border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] text-[var(--lumiverse-ink)]"
+            ? "bg-[var(--BeaconVie-primary)] text-white"
+            : "border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] text-[var(--BeaconVie-ink)]"
         }`}
       >
         {typing ? (
@@ -345,53 +345,53 @@ function ConversationResultView({ result }: { result: ConversationFinishResult }
   const scores: Array<[string, number | null]> = [
     ["Overall", result.overallScore],
     ["Fluency", result.fluencyScore],
-    ["Grammar", result.grammarScore],
-    ["Vocabulary", result.vocabularyScore],
+    ["Ngữ pháp", result.grammarScore],
+    ["Từ vựng", result.vocabularyScore],
     ["Naturalness", result.naturalnessScore],
     ["Confidence", result.confidenceScore],
   ];
 
   return (
     <div className="flex-1 space-y-4 overflow-y-auto pb-6">
-      <LumiverseCard className="p-6 text-center">
-        <LumiverseBadge>Session complete</LumiverseBadge>
-        <p className="mt-3 text-5xl font-black text-[var(--lumiverse-primary)]">
-          {result.overallScore ?? "—"}
+      <BeaconVieCard className="p-6 text-center">
+        <BeaconVieBadge>Session complete</BeaconVieBadge>
+        <p className="mt-3 text-5xl font-black text-[var(--BeaconVie-primary)]">
+          {result.overallScore ?? "â€”"}
         </p>
-        <p className="mt-2 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+        <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
           {result.feedback}
         </p>
-      </LumiverseCard>
+      </BeaconVieCard>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {scores.map(([label, value]) => (
-          <LumiverseCard key={label} className="p-4 text-center">
-            <p className="text-2xl font-black text-[var(--lumiverse-ink)]">{value ?? "—"}</p>
-            <p className="mt-1 text-xs font-bold text-[var(--lumiverse-muted)]">{label}</p>
-          </LumiverseCard>
+          <BeaconVieCard key={label} className="p-4 text-center">
+            <p className="text-2xl font-black text-[var(--BeaconVie-ink)]">{value ?? "â€”"}</p>
+            <p className="mt-1 text-xs font-bold text-[var(--BeaconVie-muted)]">{label}</p>
+          </BeaconVieCard>
         ))}
       </div>
 
       {result.grammarCorrections.length > 0 && (
-        <LumiverseCard className="p-5">
-          <h3 className="mb-3 text-sm font-black uppercase tracking-wide text-[var(--lumiverse-muted)]">
+        <BeaconVieCard className="p-5">
+          <h3 className="mb-3 text-sm font-black uppercase tracking-wide text-[var(--BeaconVie-muted)]">
             Grammar corrections
           </h3>
           <ul className="space-y-3">
             {result.grammarCorrections.map((c, i) => (
-              <li key={i} className="rounded-xl border border-[var(--lumiverse-border)] p-3 text-sm">
+              <li key={i} className="rounded-xl border border-[var(--BeaconVie-border)] p-3 text-sm">
                 <p className="font-semibold text-rose-600 line-through">{c.original}</p>
                 <p className="font-black text-emerald-600">{c.corrected}</p>
-                <p className="mt-1 text-xs font-semibold text-[var(--lumiverse-muted)]">{c.explanation}</p>
+                <p className="mt-1 text-xs font-semibold text-[var(--BeaconVie-muted)]">{c.explanation}</p>
               </li>
             ))}
           </ul>
-        </LumiverseCard>
+        </BeaconVieCard>
       )}
 
       {(result.recommendedVocabulary.length > 0 || result.vocabularySuggestions.length > 0) && (
-        <LumiverseCard className="p-5">
-          <h3 className="mb-3 text-sm font-black uppercase tracking-wide text-[var(--lumiverse-muted)]">
+        <BeaconVieCard className="p-5">
+          <h3 className="mb-3 text-sm font-black uppercase tracking-wide text-[var(--BeaconVie-muted)]">
             Vocabulary to review
           </h3>
           <div className="flex flex-wrap gap-2">
@@ -399,36 +399,36 @@ function ConversationResultView({ result }: { result: ConversationFinishResult }
               (word) => (
                 <span
                   key={word}
-                  className="rounded-full border border-[var(--lumiverse-border)] px-3 py-1 text-xs font-bold text-[var(--lumiverse-ink)]"
+                  className="rounded-full border border-[var(--BeaconVie-border)] px-3 py-1 text-xs font-bold text-[var(--BeaconVie-ink)]"
                 >
                   {word}
                 </span>
               ),
             )}
           </div>
-        </LumiverseCard>
+        </BeaconVieCard>
       )}
 
       {result.recommendedGrammar.length > 0 && (
-        <LumiverseCard className="p-5">
-          <h3 className="mb-3 text-sm font-black uppercase tracking-wide text-[var(--lumiverse-muted)]">
+        <BeaconVieCard className="p-5">
+          <h3 className="mb-3 text-sm font-black uppercase tracking-wide text-[var(--BeaconVie-muted)]">
             Grammar focus
           </h3>
           <div className="flex flex-wrap gap-2">
             {result.recommendedGrammar.map((item) => (
               <span
                 key={item}
-                className="rounded-full border border-[var(--lumiverse-border)] px-3 py-1 text-xs font-bold text-[var(--lumiverse-ink)]"
+                className="rounded-full border border-[var(--BeaconVie-border)] px-3 py-1 text-xs font-bold text-[var(--BeaconVie-ink)]"
               >
                 {item}
               </span>
             ))}
           </div>
-        </LumiverseCard>
+        </BeaconVieCard>
       )}
 
       <div className="flex gap-3">
-        <Link href="/conversation" className="lumiverse-button-primary flex-1 text-center">
+        <Link href="/conversation" className="BeaconVie-button-primary flex-1 text-center">
           Start another conversation
         </Link>
       </div>

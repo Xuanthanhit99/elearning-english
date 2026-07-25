@@ -1,15 +1,15 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MessageCircle, Sparkles } from "lucide-react";
 import {
-  LumiverseButton,
-  LumiverseCard,
-  LumiverseSectionHeader,
-  LumiverseSkeleton,
-  LumiverseState,
-} from "@/src/Components/UI/Lumiverse";
+  BeaconVieButton,
+  BeaconVieCard,
+  BeaconVieSectionHeader,
+  BeaconVieSkeleton,
+  BeaconVieState,
+} from "@/src/Components/UI/BeaconVie";
 import {
   ConversationMode,
   ConversationScenario,
@@ -77,15 +77,15 @@ export default function ConversationHubPage() {
 
   return (
     <div className="space-y-6 px-4 py-6 lg:px-8">
-      <LumiverseSectionHeader
+      <BeaconVieSectionHeader
         eyebrow="AI Conversation Partner"
         title="Practice speaking English with an AI partner"
-        description="Pick a scenario, roleplay, interview, or just chat freely — every conversation is scored and counts toward your Speaking skill, XP, and achievements."
+        description="Pick a scenario, roleplay, interview, or just chat freely â€” every conversation is scored and counts toward your Speaking skill, XP, and achievements."
         action={
-          <LumiverseButton onClick={() => handleStart(undefined, "FREE")} loading={startingCode === "free"}>
+          <BeaconVieButton onClick={() => handleStart(undefined, "FREE")} loading={startingCode === "free"}>
             <Sparkles aria-hidden className="h-4 w-4" />
             Start free conversation
-          </LumiverseButton>
+          </BeaconVieButton>
         }
       />
 
@@ -103,8 +103,8 @@ export default function ConversationHubPage() {
             onClick={() => setFilter(key)}
             className={`rounded-full px-4 py-2 text-sm font-black transition ${
               filter === key
-                ? "bg-[var(--lumiverse-primary)] text-white"
-                : "border border-[var(--lumiverse-border)] text-[var(--lumiverse-muted)] hover:bg-[var(--lumiverse-hover-tint)]"
+                ? "bg-[var(--BeaconVie-primary)] text-white"
+                : "border border-[var(--BeaconVie-border)] text-[var(--BeaconVie-muted)] hover:bg-[var(--BeaconVie-hover-tint)]"
             }`}
           >
             {key === "ALL" ? "All" : MODE_LABELS[key]}
@@ -115,23 +115,23 @@ export default function ConversationHubPage() {
       {state.status === "loading" && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <LumiverseSkeleton key={i} className="h-40" />
+            <BeaconVieSkeleton key={i} className="h-40" />
           ))}
         </div>
       )}
 
       {state.status === "error" && (
-        <LumiverseState
+        <BeaconVieState
           title="Couldn't load conversation scenarios"
           description="Something went wrong while loading the scenario list."
-          actionLabel="Retry"
+          actionLabel="Thử lại"
           onAction={load}
           tone="error"
         />
       )}
 
       {state.status === "ready" && filtered.length === 0 && (
-        <LumiverseState
+        <BeaconVieState
           title="No scenarios in this category yet"
           description="Try a different filter, or start a free conversation instead."
           actionLabel="Start free conversation"
@@ -142,38 +142,38 @@ export default function ConversationHubPage() {
       {state.status === "ready" && filtered.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((scenario) => (
-            <LumiverseCard key={scenario.code} className="flex flex-col p-5">
+            <BeaconVieCard key={scenario.code} className="flex flex-col p-5">
               <div className="mb-3 flex items-center justify-between gap-2">
-                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]">
+                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]">
                   <MessageCircle aria-hidden className="h-5 w-5" />
                 </span>
-                <span className="rounded-full border border-[var(--lumiverse-border)] px-3 py-1 text-[10px] font-black uppercase tracking-wide text-[var(--lumiverse-muted)]">
+                <span className="rounded-full border border-[var(--BeaconVie-border)] px-3 py-1 text-[10px] font-black uppercase tracking-wide text-[var(--BeaconVie-muted)]">
                   {scenario.difficulty}
                 </span>
               </div>
-              <h3 className="text-lg font-black text-[var(--lumiverse-ink)]">{scenario.title}</h3>
-              <p className="mt-1 flex-1 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+              <h3 className="text-lg font-black text-[var(--BeaconVie-ink)]">{scenario.title}</h3>
+              <p className="mt-1 flex-1 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
                 {scenario.description}
               </p>
               {scenario.goals.length > 0 && (
-                <ul className="mt-3 space-y-1 text-xs font-bold text-[var(--lumiverse-muted)]">
+                <ul className="mt-3 space-y-1 text-xs font-bold text-[var(--BeaconVie-muted)]">
                   {scenario.goals.slice(0, 2).map((goal) => (
                     <li key={goal} className="flex items-start gap-1.5">
-                      <span aria-hidden>•</span>
+                      <span aria-hidden>â€¢</span>
                       {goal}
                     </li>
                   ))}
                 </ul>
               )}
-              <LumiverseButton
+              <BeaconVieButton
                 className="mt-4 w-full"
                 tone="soft"
                 loading={startingCode === scenario.code}
                 onClick={() => handleStart(scenario.code)}
               >
                 Start conversation
-              </LumiverseButton>
-            </LumiverseCard>
+              </BeaconVieButton>
+            </BeaconVieCard>
           ))}
         </div>
       )}

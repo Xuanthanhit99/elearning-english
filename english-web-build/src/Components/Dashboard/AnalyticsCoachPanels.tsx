@@ -1,16 +1,16 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { RefreshCcw, Sparkles, TrendingUp } from "lucide-react";
 import {
-  LumiverseBadge,
-  LumiverseButton,
-  LumiverseCard,
-  LumiverseSectionHeader,
-  LumiverseSkeleton,
-  LumiverseState,
-} from "@/src/Components/UI/Lumiverse";
+  BeaconVieBadge,
+  BeaconVieButton,
+  BeaconVieCard,
+  BeaconVieSectionHeader,
+  BeaconVieSkeleton,
+  BeaconVieState,
+} from "@/src/Components/UI/BeaconVie";
 import {
   AnalyticsSkill,
   CoachAdvice,
@@ -55,7 +55,7 @@ function basisLabel(basis: string) {
   return "No data yet";
 }
 
-/** Skill Radar — recency-weighted, not a lifetime flat average. */
+/** Skill Radar â€” recency-weighted, not a lifetime flat average. */
 export function SkillRadarPanel() {
   const [state, setState] = useState<
     | { status: "loading" }
@@ -88,14 +88,14 @@ export function SkillRadarPanel() {
   }, []);
 
   if (state.status === "loading") {
-    return <LumiverseSkeleton className="h-[360px]" />;
+    return <BeaconVieSkeleton className="h-[360px]" />;
   }
   if (state.status === "error") {
     return (
-      <LumiverseState
+      <BeaconVieState
         title="Couldn't load your skill radar"
         description="Something went wrong while analyzing your recent performance."
-        actionLabel="Retry"
+        actionLabel="Thử lại"
         onAction={load}
         tone="error"
       />
@@ -110,8 +110,8 @@ export function SkillRadarPanel() {
   const points = radarPoints(orderedSkills.map((item) => item.score));
 
   return (
-    <LumiverseCard className="p-6">
-      <LumiverseSectionHeader
+    <BeaconVieCard className="p-6">
+      <BeaconVieSectionHeader
         eyebrow="Skill Radar"
         title="How you're doing lately"
         description={`Weighted toward your last ${data.windowDays} days, not your all-time average.`}
@@ -133,17 +133,17 @@ export function SkillRadarPanel() {
                 })
                 .join(" ")}
               fill="none"
-              stroke="var(--lumiverse-border)"
+              stroke="var(--BeaconVie-border)"
             />
           ))}
           <polygon
             points={points}
             fill="rgba(23,70,255,0.16)"
-            stroke="var(--lumiverse-primary)"
+            stroke="var(--BeaconVie-primary)"
             strokeWidth="3"
           />
-          <circle cx="110" cy="110" r="28" fill="var(--lumiverse-card)" />
-          <text x="110" y="106" textAnchor="middle" fontSize="11" fill="var(--lumiverse-muted)">
+          <circle cx="110" cy="110" r="28" fill="var(--BeaconVie-card)" />
+          <text x="110" y="106" textAnchor="middle" fontSize="11" fill="var(--BeaconVie-muted)">
             Overall
           </text>
           <text
@@ -152,7 +152,7 @@ export function SkillRadarPanel() {
             textAnchor="middle"
             fontSize="20"
             fontWeight="800"
-            fill="var(--lumiverse-primary)"
+            fill="var(--BeaconVie-primary)"
           >
             {data.overall}
           </text>
@@ -162,14 +162,14 @@ export function SkillRadarPanel() {
           {orderedSkills.map((item) => (
             <li
               key={item.skill}
-              className="flex items-center justify-between gap-3 rounded-xl border border-[var(--lumiverse-border)] px-3 py-2"
+              className="flex items-center justify-between gap-3 rounded-xl border border-[var(--BeaconVie-border)] px-3 py-2"
             >
-              <span className="font-bold text-[var(--lumiverse-ink)]">{item.label}</span>
+              <span className="font-bold text-[var(--BeaconVie-ink)]">{item.label}</span>
               <span className="flex items-center gap-2">
-                <span className="text-sm font-black text-[var(--lumiverse-primary)]">
+                <span className="text-sm font-black text-[var(--BeaconVie-primary)]">
                   {item.score}
                 </span>
-                <span className="text-[10px] font-bold uppercase tracking-wide text-[var(--lumiverse-muted)]">
+                <span className="text-[10px] font-bold uppercase tracking-wide text-[var(--BeaconVie-muted)]">
                   {basisLabel(item.basis)}
                 </span>
               </span>
@@ -177,11 +177,11 @@ export function SkillRadarPanel() {
           ))}
         </ul>
       </div>
-    </LumiverseCard>
+    </BeaconVieCard>
   );
 }
 
-/** Study Heatmap — a GitHub-style contribution grid built from real Progress Timeline days. */
+/** Study Heatmap â€” a GitHub-style contribution grid built from real Progress Timeline days. */
 export function StudyHeatmapPanel() {
   const [state, setState] = useState<
     | { status: "loading" }
@@ -211,13 +211,13 @@ export function StudyHeatmapPanel() {
   }, []);
 
   if (state.status === "loading") {
-    return <LumiverseSkeleton className="h-[180px]" />;
+    return <BeaconVieSkeleton className="h-[180px]" />;
   }
   if (state.status === "error") {
     return (
-      <LumiverseState
+      <BeaconVieState
         title="Couldn't load your study heatmap"
-        actionLabel="Retry"
+        actionLabel="Thử lại"
         onAction={load}
         tone="error"
       />
@@ -239,17 +239,17 @@ export function StudyHeatmapPanel() {
   }
 
   const intensity = (minutes: number) => {
-    if (minutes <= 0) return "bg-[var(--lumiverse-border)]";
+    if (minutes <= 0) return "bg-[var(--BeaconVie-border)]";
     const ratio = minutes / maxMinutes;
-    if (ratio > 0.75) return "bg-[var(--lumiverse-primary)]";
-    if (ratio > 0.45) return "bg-[var(--lumiverse-primary)]/70";
-    if (ratio > 0.15) return "bg-[var(--lumiverse-primary)]/45";
-    return "bg-[var(--lumiverse-primary)]/20";
+    if (ratio > 0.75) return "bg-[var(--BeaconVie-primary)]";
+    if (ratio > 0.45) return "bg-[var(--BeaconVie-primary)]/70";
+    if (ratio > 0.15) return "bg-[var(--BeaconVie-primary)]/45";
+    return "bg-[var(--BeaconVie-primary)]/20";
   };
 
   return (
-    <LumiverseCard className="p-6">
-      <LumiverseSectionHeader
+    <BeaconVieCard className="p-6">
+      <BeaconVieSectionHeader
         eyebrow="Study Heatmap"
         title="Last 90 days"
         description="Darker squares mean more study minutes that day."
@@ -273,7 +273,7 @@ export function StudyHeatmapPanel() {
           </div>
         ))}
       </div>
-    </LumiverseCard>
+    </BeaconVieCard>
   );
 }
 
@@ -281,7 +281,7 @@ function sourceBadgeLabel(source: CoachAdvice["source"]) {
   return source === "GEMINI" ? "AI Coach" : "Coach (basic)";
 }
 
-/** AI Learning Coach — grounded entirely in the metrics the API already computed, never invented client-side. */
+/** AI Learning Coach â€” grounded entirely in the metrics the API already computed, never invented client-side. */
 export function AiCoachPanel() {
   const [state, setState] = useState<
     | { status: "loading" }
@@ -318,14 +318,14 @@ export function AiCoachPanel() {
   }, []);
 
   if (state.status === "loading") {
-    return <LumiverseSkeleton className="h-[280px]" />;
+    return <BeaconVieSkeleton className="h-[280px]" />;
   }
   if (state.status === "error") {
     return (
-      <LumiverseState
+      <BeaconVieState
         title="Your AI Coach is unavailable right now"
         description="Please try again in a moment."
-        actionLabel="Retry"
+        actionLabel="Thử lại"
         onAction={() => load(false)}
         tone="error"
       />
@@ -338,10 +338,10 @@ export function AiCoachPanel() {
     : null;
 
   return (
-    <LumiverseCard className="p-6">
+    <BeaconVieCard className="p-6">
       <div className="mb-4 flex items-start justify-between gap-3">
-        <LumiverseBadge>{sourceBadgeLabel(data.source)}</LumiverseBadge>
-        <LumiverseButton
+        <BeaconVieBadge>{sourceBadgeLabel(data.source)}</BeaconVieBadge>
+        <BeaconVieButton
           tone="ghost"
           className="!min-h-9 !px-3 !py-2 text-xs"
           loading={refreshing}
@@ -349,12 +349,12 @@ export function AiCoachPanel() {
           aria-label="Refresh AI Coach advice"
         >
           <RefreshCcw aria-hidden className="h-3.5 w-3.5" />
-        </LumiverseButton>
+        </BeaconVieButton>
       </div>
 
-      <h3 className="text-lg font-black text-[var(--lumiverse-ink)]">{data.headline}</h3>
+      <h3 className="text-lg font-black text-[var(--BeaconVie-ink)]">{data.headline}</h3>
       {data.whyThisLesson ? (
-        <p className="mt-2 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+        <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
           {data.whyThisLesson}
         </p>
       ) : null}
@@ -362,29 +362,29 @@ export function AiCoachPanel() {
       {data.recommendedFocus ? (
         <Link
           href={focusHref ?? "/dashboard"}
-          className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-[var(--lumiverse-primary)]/30 bg-[var(--lumiverse-primary-soft)] px-4 py-3 transition hover:-translate-y-0.5"
+          className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-[var(--BeaconVie-primary)]/30 bg-[var(--BeaconVie-primary-soft)] px-4 py-3 transition hover:-translate-y-0.5"
         >
           <span className="min-w-0">
-            <span className="block text-xs font-black uppercase tracking-wide text-[var(--lumiverse-primary)]">
-              {data.recommendedFocus.skill} · {data.recommendedFocus.topic}
+            <span className="block text-xs font-black uppercase tracking-wide text-[var(--BeaconVie-primary)]">
+              {data.recommendedFocus.skill} Â· {data.recommendedFocus.topic}
             </span>
-            <span className="mt-0.5 block truncate text-sm font-semibold text-[var(--lumiverse-ink)]">
+            <span className="mt-0.5 block truncate text-sm font-semibold text-[var(--BeaconVie-ink)]">
               {data.recommendedFocus.reason}
             </span>
           </span>
-          <Sparkles aria-hidden className="h-5 w-5 shrink-0 text-[var(--lumiverse-primary)]" />
+          <Sparkles aria-hidden className="h-5 w-5 shrink-0 text-[var(--BeaconVie-primary)]" />
         </Link>
       ) : null}
 
       {data.whatsNext.length > 0 ? (
         <div className="mt-4">
-          <p className="text-xs font-black uppercase tracking-wide text-[var(--lumiverse-muted)]">
+          <p className="text-xs font-black uppercase tracking-wide text-[var(--BeaconVie-muted)]">
             What&apos;s next
           </p>
           <ul className="mt-2 space-y-1.5">
             {data.whatsNext.map((item, index) => (
-              <li key={index} className="flex gap-2 text-sm font-semibold text-[var(--lumiverse-ink)]">
-                <TrendingUp aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-[var(--lumiverse-primary)]" />
+              <li key={index} className="flex gap-2 text-sm font-semibold text-[var(--BeaconVie-ink)]">
+                <TrendingUp aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-[var(--BeaconVie-primary)]" />
                 {item}
               </li>
             ))}
@@ -394,13 +394,13 @@ export function AiCoachPanel() {
 
       {data.weeklyPlan.length > 0 ? (
         <div className="mt-4">
-          <p className="text-xs font-black uppercase tracking-wide text-[var(--lumiverse-muted)]">
+          <p className="text-xs font-black uppercase tracking-wide text-[var(--BeaconVie-muted)]">
             This week
           </p>
           <ul className="mt-2 space-y-1.5">
             {data.weeklyPlan.map((item, index) => (
-              <li key={index} className="text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
-                • {item}
+              <li key={index} className="text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
+                â€¢ {item}
               </li>
             ))}
           </ul>
@@ -410,28 +410,28 @@ export function AiCoachPanel() {
       {data.examPrepTip || data.dailyHabitTip ? (
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {data.examPrepTip ? (
-            <div className="rounded-xl border border-[var(--lumiverse-border)] p-3">
-              <p className="text-[10px] font-black uppercase tracking-wide text-[var(--lumiverse-muted)]">
+            <div className="rounded-xl border border-[var(--BeaconVie-border)] p-3">
+              <p className="text-[10px] font-black uppercase tracking-wide text-[var(--BeaconVie-muted)]">
                 Exam prep
               </p>
-              <p className="mt-1 text-sm font-semibold text-[var(--lumiverse-ink)]">
+              <p className="mt-1 text-sm font-semibold text-[var(--BeaconVie-ink)]">
                 {data.examPrepTip}
               </p>
             </div>
           ) : null}
           {data.dailyHabitTip ? (
-            <div className="rounded-xl border border-[var(--lumiverse-border)] p-3">
-              <p className="text-[10px] font-black uppercase tracking-wide text-[var(--lumiverse-muted)]">
+            <div className="rounded-xl border border-[var(--BeaconVie-border)] p-3">
+              <p className="text-[10px] font-black uppercase tracking-wide text-[var(--BeaconVie-muted)]">
                 Daily habit
               </p>
-              <p className="mt-1 text-sm font-semibold text-[var(--lumiverse-ink)]">
+              <p className="mt-1 text-sm font-semibold text-[var(--BeaconVie-ink)]">
                 {data.dailyHabitTip}
               </p>
             </div>
           ) : null}
         </div>
       ) : null}
-    </LumiverseCard>
+    </BeaconVieCard>
   );
 }
 

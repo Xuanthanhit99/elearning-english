@@ -1,4 +1,4 @@
-import LearningPathGate from "@/src/Components/learning-path/LearningPathGate";
+﻿import LearningPathGate from "@/src/Components/learning-path/LearningPathGate";
 import LearningPathScreen from "@/src/Components/learning-path/LearningPathScreen";
 
 export default function LearningPathPlacementPage() {

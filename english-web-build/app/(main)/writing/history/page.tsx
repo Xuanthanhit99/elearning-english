@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { api } from '@/src/lib/axios';
 import {
@@ -82,7 +82,7 @@ export default function WritingHistoryPage() {
       setData(res.data);
     } catch (err) {
       console.error(err);
-      setError('Không tải được lịch sử Writing.');
+      setError('Không tải được lịch sử luyện viết.');
     } finally {
       setLoading(false);
     }
@@ -106,7 +106,7 @@ export default function WritingHistoryPage() {
     router.push(`/writing/topics/${item.topicSlug}`);
   }
 
-  if (loading && !data) return <div className="p-10">Loading...</div>;
+  if (loading && !data) return <div className="p-10">Đang tải...</div>;
 
   if (error && !data) {
     return (
@@ -116,13 +116,13 @@ export default function WritingHistoryPage() {
           onClick={loadHistory}
           className="mt-4 rounded-xl bg-violet-600 px-5 py-3 font-bold text-white"
         >
-          Thử lại
+          Thá»­ láº¡i
         </button>
       </div>
     );
   }
 
-  if (!data) return <div className="p-10">Không có dữ liệu lịch sử.</div>;
+  if (!data) return <div className="p-10">KhÃ´ng cÃ³ dá»¯ liá»‡u lá»‹ch sá»­.</div>;
 
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
@@ -131,7 +131,7 @@ export default function WritingHistoryPage() {
         <main className="min-h-screen flex-1">
 
           <div className="px-10 py-8">
-            <h1 className="text-3xl font-extrabold">Writing History</h1>
+            <h1 className="text-3xl font-extrabold">Lịch sử luyện viết</h1>
             <p className="mt-2 text-lg text-slate-600">
               Review your past writing practice and track your improvement.
             </p>
@@ -140,7 +140,7 @@ export default function WritingHistoryPage() {
               <StatCard
                 icon={<FileText className="h-8 w-8 text-violet-600" />}
                 value={data.stats.totalEssays}
-                title="Total Essays"
+                title="Total Bài luậns"
                 subtitle="All time"
                 bg="bg-violet-100"
               />
@@ -148,7 +148,7 @@ export default function WritingHistoryPage() {
               <StatCard
                 icon={<CheckCircle2 className="h-8 w-8 text-green-600" />}
                 value={data.stats.completed}
-                title="Completed"
+                title="Hoàn thành"
                 subtitle={`${data.stats.completedPercent}%`}
                 bg="bg-green-100"
               />
@@ -156,7 +156,7 @@ export default function WritingHistoryPage() {
               <StatCard
                 icon={<Clock className="h-8 w-8 text-orange-500" />}
                 value={data.stats.inProgress}
-                title="In Progress"
+                title="Đang học"
                 subtitle={`${data.stats.inProgressPercent}%`}
                 bg="bg-orange-100"
               />
@@ -164,7 +164,7 @@ export default function WritingHistoryPage() {
               <StatCard
                 icon={<X className="h-8 w-8 text-red-500" />}
                 value={data.stats.notStarted}
-                title="Not Started"
+                title="Chưa bắt đầu"
                 subtitle={`${data.stats.notStartedPercent}%`}
                 bg="bg-red-100"
               />
@@ -172,8 +172,8 @@ export default function WritingHistoryPage() {
               <StatCard
                 icon={<BarChart3 className="h-8 w-8 text-blue-600" />}
                 value={data.stats.averageScore}
-                title="Average Score"
-                subtitle="Good"
+                title="Điểm trung bình"
+                subtitle="Tốt"
                 bg="bg-blue-100"
               />
             </div>
@@ -188,7 +188,7 @@ export default function WritingHistoryPage() {
                   }}
                   className="h-12 w-[200px] rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold outline-none"
                 >
-                  <option value="ALL">All Topics</option>
+                  <option value="ALL">Tất cả chủ đề</option>
                   <option value="technology">Technology</option>
                   <option value="business">Business</option>
                   <option value="education">Education</option>
@@ -204,13 +204,13 @@ export default function WritingHistoryPage() {
                   }}
                   className="h-12 w-[200px] rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold outline-none"
                 >
-                  <option value="ALL">All Types</option>
-                  <option value="SENTENCE">Sentence</option>
-                  <option value="PARAGRAPH">Paragraph</option>
-                  <option value="ESSAY">Essay</option>
+                  <option value="ALL">Tất cả dạng bài</option>
+                  <option value="SENTENCE">Câu</option>
+                  <option value="PARAGRAPH">Đoạn văn</option>
+                  <option value="ESSAY">Bài luận</option>
                   <option value="EMAIL">Email</option>
                   <option value="OPINION">Opinion</option>
-                  <option value="STORY">Story</option>
+                  <option value="STORY">Câu chuyện</option>
                   <option value="IELTS_TASK_1">IELTS Task 1</option>
                   <option value="IELTS_TASK_2">IELTS Task 2</option>
                 </select>
@@ -240,16 +240,16 @@ export default function WritingHistoryPage() {
                   className="h-12 w-[200px] rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold outline-none"
                 >
                   <option value="ALL">All Status</option>
-                  <option value="COMPLETED">Completed</option>
-                  <option value="IN_PROGRESS">In Progress</option>
-                  <option value="NOT_STARTED">Not Started</option>
+                  <option value="COMPLETED">Hoàn thành</option>
+                  <option value="IN_PROGRESS">Đang học</option>
+                  <option value="NOT_STARTED">Chưa bắt đầu</option>
                 </select>
               </div>
 
               <div className="flex gap-4">
                 <button className="flex h-12 items-center gap-3 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold">
                   <Calendar className="h-5 w-5 text-slate-500" />
-                  Tất cả thời gian
+                  Táº¥t cáº£ thá»i gian
                 </button>
 
                 <button
@@ -270,18 +270,18 @@ export default function WritingHistoryPage() {
 
             <div className="mt-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
               <div className="grid grid-cols-[2.2fr_1fr_1fr_0.8fr_0.9fr_1.2fr_1.2fr] bg-violet-50 px-6 py-4 text-sm font-extrabold text-slate-600">
-                <div>Essay</div>
+                <div>Bài luận</div>
                 <div>Topic</div>
                 <div>Type</div>
                 <div>Level</div>
                 <div>Score</div>
                 <div>Status</div>
-                <div>Completed At</div>
+                <div>Hoàn thành At</div>
               </div>
 
               {data.items.length === 0 && (
                 <div className="px-6 py-10 text-center text-sm font-semibold text-slate-500">
-                  Chưa có lịch sử Writing phù hợp.
+                  Chưa có lịch sử luyện viết phù hợp.
                 </div>
               )}
 
@@ -376,7 +376,7 @@ function HistoryRow({
               <span className="text-xs">/100</span>
             </p>
             <p className="mt-1 text-xs text-slate-500">
-              {item.score >= 80 ? 'Very Good' : item.score >= 70 ? 'Good' : 'Fair'}
+              {item.score >= 80 ? 'Very Tốt' : item.score >= 70 ? 'Tốt' : 'Fair'}
             </p>
           </>
         ) : (
@@ -406,7 +406,7 @@ function HistoryRow({
             ? 'View Report'
             : item.status === 'IN_PROGRESS'
               ? 'Continue'
-              : 'Start'}
+              : 'Bắt đầu'}
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
@@ -445,9 +445,9 @@ function StatusBadge({ status }: { status: HistoryStatus }) {
   };
 
   const label: Record<HistoryStatus, string> = {
-    COMPLETED: 'Completed',
-    IN_PROGRESS: 'In Progress',
-    NOT_STARTED: 'Not Started',
+    COMPLETED: 'Hoàn thành',
+    IN_PROGRESS: 'Đang học',
+    NOT_STARTED: 'Chưa bắt đầu',
   };
 
   return (
@@ -519,12 +519,12 @@ function Pagination({
 
 function formatType(type: string) {
   const map: Record<string, string> = {
-    SENTENCE: 'Sentence',
-    PARAGRAPH: 'Paragraph',
-    ESSAY: 'Essay',
+    SENTENCE: 'Câu',
+    PARAGRAPH: 'Đoạn văn',
+    ESSAY: 'Bài luận',
     EMAIL: 'Email',
     OPINION: 'Opinion',
-    STORY: 'Story',
+    STORY: 'Câu chuyện',
     IELTS_TASK_1: 'IELTS Task 1',
     IELTS_TASK_2: 'IELTS Task 2',
   };
@@ -543,3 +543,6 @@ function formatDate(value: string) {
     minute: '2-digit',
   });
 }
+
+
+

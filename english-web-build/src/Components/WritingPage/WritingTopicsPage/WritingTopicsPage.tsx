@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { api } from "@/src/lib/axios";
 import {
@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { LumiverseLoadingState } from "@/src/Components/UI/Lumiverse";
+import { BeaconVieLoadingState } from "@/src/Components/UI/BeaconVie";
 
 type Topic = {
   id: string;
@@ -71,7 +71,7 @@ export default function WritingTopicsPage() {
       setData(res.data);
     } catch (err) {
       console.error(err);
-      setError("Không tải được danh sách chủ đề.");
+      setError("KhÃ´ng táº£i Ä‘Æ°á»£c danh sÃ¡ch chá»§ Ä‘á».");
     } finally {
       setLoading(false);
     }
@@ -97,9 +97,9 @@ export default function WritingTopicsPage() {
         <main className="min-h-screen flex-1">
           <div className="px-10 py-8">
             <div>
-              <h1 className="text-3xl font-extrabold">All Writing Topics</h1>
+              <h1 className="text-3xl font-extrabold">Tất cả chủ đề luyện viết</h1>
               <p className="mt-2 text-sm font-medium text-slate-600">
-                Explore topics and improve your writing skills step by step.
+                Khám phá chủ đề và cải thiện kỹ năng viết từng bước cùng BeaconVie.
               </p>
             </div>
 
@@ -108,7 +108,7 @@ export default function WritingTopicsPage() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search topics..."
+                  placeholder="Tìm chủ đề..."
                   className="h-12 w-full rounded-xl border border-slate-200 bg-white px-5 pr-12 text-sm outline-none focus:border-violet-400"
                 />
                 <button type="submit">
@@ -124,10 +124,10 @@ export default function WritingTopicsPage() {
                 }}
                 className="h-12 w-[210px] rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-600 outline-none"
               >
-                <option value="ALL">All Difficulties</option>
-                <option value="BEGINNER">Beginner</option>
-                <option value="INTERMEDIATE">Intermediate</option>
-                <option value="ADVANCED">Advanced</option>
+                <option value="ALL">Tất cả trình độ</option>
+                <option value="BEGINNER">Cơ bản</option>
+                <option value="INTERMEDIATE">Trung cấp</option>
+                <option value="ADVANCED">Nâng cao</option>
               </select>
 
               <select
@@ -138,12 +138,12 @@ export default function WritingTopicsPage() {
                 }}
                 className="h-12 w-[190px] rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-600 outline-none"
               >
-                <option value="ALL">All Types</option>
-                <option value="SENTENCE">Sentence</option>
-                <option value="PARAGRAPH">Paragraph</option>
-                <option value="ESSAY">Essay</option>
+                <option value="ALL">Tất cả dạng bài</option>
+                <option value="SENTENCE">Câu</option>
+                <option value="PARAGRAPH">Đoạn văn</option>
+                <option value="ESSAY">Bài luận</option>
                 <option value="EMAIL">Email</option>
-                <option value="STORY">Story</option>
+                <option value="STORY">Câu chuyện</option>
                 <option value="IELTS_TASK_1">IELTS Task 1</option>
                 <option value="IELTS_TASK_2">IELTS Task 2</option>
               </select>
@@ -156,10 +156,10 @@ export default function WritingTopicsPage() {
                 }}
                 className="h-12 w-[210px] rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-600 outline-none"
               >
-                <option value="ALL">All Progress</option>
-                <option value="NOT_STARTED">Not Started</option>
-                <option value="IN_PROGRESS">In Progress</option>
-                <option value="COMPLETED">Completed</option>
+                <option value="ALL">Tất cả tiến độ</option>
+                <option value="NOT_STARTED">Chưa bắt đầu</option>
+                <option value="IN_PROGRESS">Đang học</option>
+                <option value="COMPLETED">Hoàn thành</option>
               </select>
 
               <select
@@ -170,9 +170,9 @@ export default function WritingTopicsPage() {
                 }}
                 className="h-12 w-[210px] rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-600 outline-none"
               >
-                <option value="popular">Sort by: Popular</option>
-                <option value="newest">Sort by: Newest</option>
-                <option value="progress">Sort by: Progress</option>
+                <option value="popular">Sắp xếp: Phổ biến</option>
+                <option value="newest">Sắp xếp: Mới nhất</option>
+                <option value="progress">Sắp xếp: Tiến độ</option>
               </select>
 
               <button
@@ -199,9 +199,9 @@ export default function WritingTopicsPage() {
             </div>
 
             {loading && (
-              <LumiverseLoadingState
+              <BeaconVieLoadingState
                 className="mt-8"
-                label="Đang tải chủ đề luyện viết..."
+                label="Äang táº£i chá»§ Ä‘á» luyá»‡n viáº¿t..."
               />
             )}
 
@@ -213,7 +213,7 @@ export default function WritingTopicsPage() {
 
             {!loading && !error && data?.items.length === 0 && (
               <div className="mt-8 rounded-xl bg-white p-8 text-center text-slate-500 shadow-sm">
-                Không tìm thấy chủ đề phù hợp.
+                KhÃ´ng tÃ¬m tháº¥y chá»§ Ä‘á» phÃ¹ há»£p.
               </div>
             )}
 
@@ -292,7 +292,7 @@ function TopicCard({ topic, onClick }: { topic: Topic; onClick: () => void }) {
         <div className="mt-5 flex items-center justify-between">
           <p className="flex items-center gap-2 text-sm font-medium text-slate-500">
             <BookOpen className="h-4 w-4" />
-            {topic.lessonCount} Lessons
+            {topic.lessonCount} Bài học
           </p>
 
           <DifficultyBadge difficulty={topic.difficulty} />
@@ -312,9 +312,9 @@ function DifficultyBadge({ difficulty }: { difficulty: string }) {
   };
 
   const label: Record<string, string> = {
-    BEGINNER: "Beginner",
-    INTERMEDIATE: "Intermediate",
-    ADVANCED: "Advanced",
+    BEGINNER: "Cơ bản",
+    INTERMEDIATE: "Trung cấp",
+    ADVANCED: "Nâng cao",
   };
 
   return (
@@ -387,3 +387,5 @@ function Pagination({
     </div>
   );
 }
+
+

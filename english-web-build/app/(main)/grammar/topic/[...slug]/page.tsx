@@ -1,4 +1,4 @@
-
+﻿
 import GrammarDetailPage from "@/src/Components/Grammar/GrammarDetailPage";
 
 export default async function GrammarDetail({

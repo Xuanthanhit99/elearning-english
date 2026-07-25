@@ -1,4 +1,4 @@
-// Single source of truth for the initial `/auth/me` session check.
+﻿// Single source of truth for the initial `/auth/me` session check.
 // Both AuthInitializer (root layout, every page) and AppShell (main-app
 // layout, protected pages) used to call `/auth/me` independently, causing a
 // duplicate network request and a race writing the same auth-store keys on

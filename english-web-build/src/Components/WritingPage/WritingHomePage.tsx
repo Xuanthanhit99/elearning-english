@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { api } from '@/src/lib/axios';
 import {
@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { LumiverseLoadingState } from '@/src/Components/UI/Lumiverse';
+import { BeaconVieLoadingState } from '@/src/Components/UI/BeaconVie';
 
 type WritingHome = {
   user: {
@@ -90,7 +90,7 @@ export default function WritingHomePage() {
       setData(res.data);
     } catch (error) {
       console.error(error);
-      setError("Không tải được trang Writing.");
+      setError("Không tải được trang luyện viết.");
     } finally {
       setLoading(false);
     }
@@ -122,7 +122,7 @@ async function handleStartWriting(type: string) {
       router.push(`/writing/sessions/${res.data.sessionId}`);
     } catch (error) {
       console.error(error);
-      setError("Không mở được bài Writing lúc này.");
+      setError("Không mở được bài luyện viết lúc này.");
     }
   }
 
@@ -131,7 +131,7 @@ async function handleStartWriting(type: string) {
   }, []);
 
   if (loading) {
-    return <LumiverseLoadingState className="m-10" label="Đang tải Writing..." />;
+    return <BeaconVieLoadingState className="m-10" label="Đang tải trang luyện viết..." />;
   }
 
   if (!data) {
@@ -142,11 +142,11 @@ async function handleStartWriting(type: string) {
           onClick={loadData}
           className="mt-4 rounded-xl bg-violet-600 px-5 py-3 font-bold text-white"
         >
-          Thử lại
+          Thá»­ láº¡i
         </button>
       </div>
     ) : (
-      <div className="p-10">Không tải được dữ liệu.</div>
+      <div className="p-10">KhÃ´ng táº£i Ä‘Æ°á»£c dá»¯ liá»‡u.</div>
     );
   }
 
@@ -204,7 +204,7 @@ return (
                   onClick={() => router.push('/writing/topics')}
                   className="font-semibold text-violet-600"
                 >
-                  View all topics →
+                  Xem tất cả topics â†’
                 </button>
               </div>
 
@@ -260,14 +260,14 @@ function Header({ data }: { data: WritingHome }) {
           placeholder="Search lessons, topics, or skills..."
         />
         <span className="absolute right-4 top-1/2 -translate-y-1/2 rounded-lg bg-white px-2 py-1 text-xs font-bold text-slate-400">
-          ⌘ K
+          âŒ˜ K
         </span>
       </div>
 
       <div className="flex items-center gap-7">
         <TopStat icon={<Flame className="h-7 w-7 text-red-500" />} value="18" label="Streak" />
         <TopStat icon={<Star className="h-7 w-7 fill-yellow-400 text-yellow-400" />} value="2,450" label="XP Today" />
-        <TopStat icon={<span className="text-2xl">💎</span>} value="5,230" label="Gems" />
+        <TopStat icon={<span className="text-2xl">ðŸ’Ž</span>} value="5,230" label="Gems" />
 
         <div className="grid h-10 w-10 place-items-center rounded-full bg-violet-50">
           <Gift className="h-5 w-5 text-violet-600" />
@@ -282,7 +282,7 @@ function Header({ data }: { data: WritingHome }) {
 
         <div className="flex items-center gap-3">
           <div className="grid h-11 w-11 place-items-center rounded-full bg-blue-100 text-2xl">
-            🧑‍🎓
+            ðŸ§‘â€ðŸŽ“
           </div>
           <div>
             <p className="text-sm font-bold">{data.user.name}</p>
@@ -323,45 +323,45 @@ function Sidebar() {
     'Listening',
     'Speaking',
     'Reading',
-    'Writing',
+    'Luyện viết',
     'Flashcards',
   ];
 
   return (
     <aside className="h-screen w-[245px] border-r border-slate-100 bg-white px-5 py-6">
       <div className="mb-10 flex items-center gap-3">
-        {/* <div className="text-3xl">🦊</div> */}
+        {/* <div className="text-3xl">ðŸ¦Š</div> */}
         <h1 className="text-2xl font-extrabold">
           Study<span className="text-violet-600">Arena</span>
         </h1>
       </div>
 
       <nav className="space-y-2 text-sm font-semibold">
-        <MenuItem label="Home" active={false} />
+        <MenuItem label="Trang chủ" active={false} />
 
         <p className="px-2 pt-6 text-xs font-bold uppercase tracking-widest text-slate-400">
-          Learn
+          Học tập
         </p>
 
         {learn.map((item) => (
-          <MenuItem key={item} label={item} active={item === 'Writing'} />
+          <MenuItem key={item} label={item} active={item === 'Luyện viết'} />
         ))}
 
         <p className="px-2 pt-6 text-xs font-bold uppercase tracking-widest text-slate-400">
-          Community
+          Cộng đồng
         </p>
 
-        <MenuItem label="Community" />
+        <MenuItem label="Cộng đồng" />
         <MenuItem label="Q&A" />
-        <MenuItem label="Achievements" />
+        <MenuItem label="Thành tích" />
 
         <p className="px-2 pt-6 text-xs font-bold uppercase tracking-widest text-slate-400">
-          More
+          Thêm
         </p>
 
-        <MenuItem label="Courses" />
+        <MenuItem label="Khóa học" />
         <MenuItem label="Shop" />
-        <MenuItem label="Settings" />
+        <MenuItem label="Cài đặt" />
       </nav>
 
       <div className="mt-8 rounded-2xl bg-violet-50 p-4">
@@ -370,10 +370,10 @@ function Sidebar() {
           Premium
         </p>
         <p className="mt-4 text-xs leading-5 text-slate-500">
-          Unlock all features and learn without limits.
+          Mở khóa đầy đủ tính năng và học không giới hạn.
         </p>
         <button className="mt-4 rounded-xl bg-violet-600 px-4 py-3 text-xs font-bold text-white">
-          Upgrade Now
+          Nâng cấp ngay
         </button>
       </div>
     </aside>
@@ -404,22 +404,22 @@ function Hero({ data }: { data: WritingHome }) {
 
           <div>
             <h1 className="text-3xl font-extrabold">
-              Welcome back, {data.user.name}! 👋
+              Chào mừng trở lại, {data.user.name}! ðŸ‘‹
             </h1>
             <p className="mt-2 font-medium text-slate-600">
-              Let&apos;s write and express your ideas clearly.
+              Hãy luyện viết để diễn đạt ý tưởng rõ ràng hơn.
             </p>
           </div>
         </div>
 
         <div className="mt-7 flex w-[560px] items-center rounded-2xl bg-white p-5 shadow-sm">
-          <HeroStat value={data.stats.essaysWritten} label="Essays Written" />
-          <HeroStat value={`${data.stats.avgScore}%`} label="Avg. Score" />
-          <HeroStat value={data.stats.dayStreak} label="Day Streak" />
+          <HeroStat value={data.stats.essaysWritten} label="Bài luậns Written" />
+          <HeroStat value={`${data.stats.avgScore}%`} label="Điểm TB" />
+          <HeroStat value={data.stats.dayStreak} label="Chuỗi ngày" />
         </div>
       </div>
 
-      <div className="absolute bottom-0 right-16 text-[160px] leading-none">🦊</div>
+      <div className="absolute bottom-0 right-16 text-[160px] leading-none">ðŸ¦Š</div>
     </section>
   );
 }
@@ -468,7 +468,7 @@ function PracticeCard({
         onClick={onClick}
         className="mt-5 flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-violet-500 font-bold text-violet-600"
       >
-        {item.key === 'PROGRESS' ? 'View Progress' : 'Start Writing'}
+        {item.key === 'PROGRESS' ? 'Xem tiến độ' : 'Bắt đầu viết'}
         <ChevronRight className="h-4 w-4" />
       </button>
     </div>
@@ -504,11 +504,11 @@ function RecommendationCard({
 
         <h3 className="mt-3 font-extrabold">{item.title}</h3>
         <p className="mt-1 text-xs text-slate-500">
-          {item.level} • {formatType(item.type)}
+          {item.level} â€¢ {formatType(item.type)}
         </p>
 
         <div className="mt-5 flex items-center justify-between">
-          <p className="text-xs text-slate-500">👥 {item.writers} writers</p>
+          <p className="text-xs text-slate-500">ðŸ‘¥ {item.writers} writers</p>
           <button
             onClick={onStart}
             className="grid h-9 w-9 place-items-center rounded-lg border border-violet-200 text-violet-600"
@@ -558,7 +558,7 @@ function DailyGoal({
         onClick={onContinue}
         className="rounded-xl bg-violet-600 px-6 py-3 font-bold text-white"
       >
-        Continue Writing
+        Tiếp tục viết
       </button>
     </div>
   );
@@ -583,14 +583,14 @@ function ProgressCard({
 
   return (
     <div className="rounded-3xl bg-white p-7 shadow-sm ring-1 ring-slate-100">
-      <h2 className="text-xl font-extrabold">Writing Progress</h2>
+      <h2 className="text-xl font-extrabold">Tiến độ luyện viết</h2>
 
       <div className="mt-8 flex items-center gap-7">
         <div className="grid h-40 w-40 place-items-center rounded-full bg-violet-100">
           <div className="grid h-28 w-28 place-items-center rounded-full bg-white">
             <div className="text-center">
               <p className="text-3xl font-extrabold">{overall}%</p>
-              <p className="text-xs text-slate-500">Overall</p>
+              <p className="text-xs text-slate-500">Tổng thể</p>
             </div>
           </div>
         </div>
@@ -598,17 +598,17 @@ function ProgressCard({
         <div className="space-y-5 text-sm">
           <ProgressLabel
             color="bg-violet-600"
-            title="Excellent"
+            title="Xuất sắc"
             value={`${excellent} (${percent(excellent)}%)`}
           />
           <ProgressLabel
             color="bg-green-500"
-            title="Good"
+            title="Tốt"
             value={`${good} (${percent(good)}%)`}
           />
           <ProgressLabel
             color="bg-yellow-400"
-            title="Needs Improvement"
+            title="Cần cải thiện"
             value={`${needsImprovement} (${percent(needsImprovement)}%)`}
           />
         </div>
@@ -618,7 +618,7 @@ function ProgressCard({
         onClick={onViewReport}
         className="mt-8 h-12 w-full rounded-xl border border-violet-500 font-bold text-violet-600"
       >
-        View Detailed Report
+        Xem báo cáo chi tiết
       </button>
     </div>
   );
@@ -656,16 +656,16 @@ function HistoryCard({
   return (
     <div className="rounded-3xl bg-white p-7 shadow-sm ring-1 ring-slate-100">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-extrabold">Recent History</h2>
+        <h2 className="text-xl font-extrabold">Lịch sử gần đây</h2>
         <button onClick={onViewAll} className="font-bold text-violet-600">
-          View all →
+          Xem tất cả â†’
         </button>
       </div>
 
       <div className="mt-6 space-y-4">
         {items.length === 0 && (
           <div className="rounded-xl bg-slate-50 p-5 text-sm text-slate-500">
-            Chưa có lịch sử luyện viết.
+            ChÆ°a cÃ³ lá»‹ch sá»­ luyá»‡n viáº¿t.
           </div>
         )}
 
@@ -682,7 +682,7 @@ function HistoryCard({
             <div className="flex-1">
               <p className="font-extrabold">{item.title}</p>
               <p className="mt-1 text-xs text-slate-500">
-                {formatType(item.type)} • {item.level}
+                {formatType(item.type)} â€¢ {item.level}
               </p>
             </div>
 
@@ -699,7 +699,7 @@ function HistoryCard({
         onClick={onViewAll}
         className="mt-6 h-12 w-full rounded-xl border border-violet-500 font-bold text-violet-600"
       >
-        Go to History
+        Đến lịch sử
       </button>
     </div>
   );
@@ -707,10 +707,10 @@ function HistoryCard({
 
 function formatType(type: string) {
   const map: Record<string, string> = {
-    ESSAY: 'Essay',
+    ESSAY: 'Bài luận',
     EMAIL: 'Email',
-    STORY: 'Story',
-    SENTENCE: 'Sentence',
+    STORY: 'Câu chuyện',
+    SENTENCE: 'Câu',
   };
 
   return map[type] ?? type;
@@ -725,9 +725,9 @@ function WritingPathSection({
 }) {
   return (
     <section className="mt-8">
-      <h2 className="text-2xl font-bold">Writing Path</h2>
+      <h2 className="text-2xl font-bold">Lộ trình luyện viết</h2>
       <p className="mt-1 text-sm text-slate-500">
-        Follow the path to improve your writing step by step
+        Đi theo lộ trình để cải thiện kỹ năng viết từng bước
       </p>
 
       <div className="mt-5 grid grid-cols-5 gap-5">
@@ -750,7 +750,7 @@ function WritingPathSection({
               </p>
 
               <div className="mt-4 flex items-center font-bold text-violet-600">
-                Start
+                Bắt đầu
                 <ChevronRight className="ml-1 h-4 w-4" />
               </div>
             </button>
@@ -759,3 +759,6 @@ function WritingPathSection({
     </section>
   );
 }
+
+
+

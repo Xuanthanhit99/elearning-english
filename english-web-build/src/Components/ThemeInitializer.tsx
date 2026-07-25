@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 import { resolveIsDark, useThemeStore } from "@/src/store/themeStore";
@@ -35,7 +35,7 @@ export default function ThemeInitializer() {
 export const themeAntiFlashScript = `
 (function () {
   try {
-    var raw = localStorage.getItem('poppylingo-theme');
+    var raw = localStorage.getItem('BeaconVie-theme');
     var theme = raw ? (JSON.parse(raw).state || {}).theme : 'SYSTEM';
     var isDark = theme === 'DARK' ||
       ((!theme || theme === 'SYSTEM') &&

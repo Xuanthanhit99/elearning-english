@@ -1,4 +1,4 @@
-# Lumiverse Home/Profile/Auth Redesign Review Report
+﻿# BeaconVie Home/Profile/Auth Redesign Review Report
 
 Ngay cap nhat: 2026-07-21
 
@@ -27,7 +27,7 @@ Ngay cap nhat: 2026-07-21
 - App Shell phan biet auth bootstrap 5xx/network error voi unauthenticated:
   - 5xx hien retry state, khong logout nham.
   - 401/session invalid van de axios refresh flow xu ly va redirect login.
-- Khôi phuc type cast trong `backend/src/modules/writing/writing-ai-evaluation.service.ts` vi lint `--fix` da lam backend build fail.
+- KhÃ´i phuc type cast trong `backend/src/modules/writing/writing-ai-evaluation.service.ts` vi lint `--fix` da lam backend build fail.
 
 ### Rui ro da loai bo
 

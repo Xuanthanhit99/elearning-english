@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -15,23 +15,23 @@ import {
 
 const typeOptions: Array<{ label: string; value: SearchResultType | "ALL" }> = [
   { label: "All content", value: "ALL" },
-  { label: "Vocabulary", value: "VOCABULARY_WORD" },
+  { label: "Từ vựng", value: "VOCABULARY_WORD" },
   { label: "Grammar lessons", value: "GRAMMAR_LESSON" },
   { label: "Reading articles", value: "READING_ARTICLE" },
-  { label: "Listening", value: "LISTENING_CONTENT" },
-  { label: "Speaking", value: "SPEAKING_TOPIC" },
-  { label: "Writing", value: "WRITING_TOPIC" },
-  { label: "Community", value: "COMMUNITY_POST" },
+  { label: "Luyện nghe", value: "LISTENING_CONTENT" },
+  { label: "Luyện nói", value: "SPEAKING_TOPIC" },
+  { label: "Luyện viết", value: "WRITING_TOPIC" },
+  { label: "Cộng đồng", value: "COMMUNITY_POST" },
 ];
 
 const skillOptions: Array<{ label: string; value: LearningSkill | "ALL" }> = [
   { label: "All skills", value: "ALL" },
-  { label: "Vocabulary", value: "VOCABULARY" },
-  { label: "Grammar", value: "GRAMMAR" },
-  { label: "Reading", value: "READING" },
-  { label: "Listening", value: "LISTENING" },
-  { label: "Speaking", value: "SPEAKING" },
-  { label: "Writing", value: "WRITING" },
+  { label: "Từ vựng", value: "VOCABULARY" },
+  { label: "Ngữ pháp", value: "GRAMMAR" },
+  { label: "Luyện đọc", value: "READING" },
+  { label: "Luyện nghe", value: "LISTENING" },
+  { label: "Luyện nói", value: "SPEAKING" },
+  { label: "Luyện viết", value: "WRITING" },
 ];
 
 const levelOptions: Array<CefrLevel | "ALL"> = ["ALL", "A1", "A2", "B1", "B2", "C1", "C2"];
@@ -40,10 +40,10 @@ function ResultCard({ item }: { item: UnifiedSearchResult }) {
   return (
     <Link
       href={item.href}
-      className="group block rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-[var(--lumiverse-primary)]/25 hover:bg-[var(--lumiverse-hover-tint)]"
+      className="group block rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-[var(--BeaconVie-primary)]/25 hover:bg-[var(--BeaconVie-hover-tint)]"
     >
       <div className="flex gap-4">
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[var(--lumiverse-primary-soft)] text-sm font-black text-[var(--lumiverse-primary)]">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[var(--BeaconVie-primary-soft)] text-sm font-black text-[var(--BeaconVie-primary)]">
           {item.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
@@ -60,7 +60,7 @@ function ResultCard({ item }: { item: UnifiedSearchResult }) {
               </span>
             )}
             {item.skill && (
-              <span className="rounded-full bg-[var(--lumiverse-primary-soft)] px-2 py-0.5 text-xs font-black text-[var(--lumiverse-primary)]">
+              <span className="rounded-full bg-[var(--BeaconVie-primary-soft)] px-2 py-0.5 text-xs font-black text-[var(--BeaconVie-primary)]">
                 {item.skill}
               </span>
             )}
@@ -79,7 +79,7 @@ function ResultCard({ item }: { item: UnifiedSearchResult }) {
             ))}
           </div>
         </div>
-        <ArrowRight className="mt-1 shrink-0 text-slate-300 transition group-hover:text-[var(--lumiverse-primary)]" size={20} />
+        <ArrowRight className="mt-1 shrink-0 text-slate-300 transition group-hover:text-[var(--BeaconVie-primary)]" size={20} />
       </div>
     </Link>
   );
@@ -176,7 +176,7 @@ export default function SearchPage() {
 
   return (
     <div className="space-y-6 pb-10">
-      <section className="rounded-[2rem] bg-[linear-gradient(135deg,var(--lumiverse-primary),var(--lumiverse-violet))] p-6 text-white shadow-lg shadow-violet-100">
+      <section className="rounded-[2rem] bg-[linear-gradient(135deg,var(--BeaconVie-primary),var(--BeaconVie-violet))] p-6 text-white shadow-lg shadow-violet-100">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-black">
@@ -188,7 +188,7 @@ export default function SearchPage() {
               Search vocabulary, grammar, reading, listening, speaking, writing and community content.
             </p>
           </div>
-          <Link href="/discover" className="rounded-2xl bg-white px-5 py-3 font-black text-[var(--lumiverse-primary)]">
+          <Link href="/discover" className="rounded-2xl bg-white px-5 py-3 font-black text-[var(--BeaconVie-primary)]">
             Explore discovery
           </Link>
         </div>
@@ -203,8 +203,8 @@ export default function SearchPage() {
               resetForNewSearch(event.target.value);
               setQ(event.target.value);
             }}
-            placeholder="Search lessons, words, topics..."
-            className="h-13 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-12 pr-4 text-base font-bold outline-none focus:border-[var(--lumiverse-primary)] focus:bg-white"
+            placeholder="Tìm bài học, từ vựng, chủ đề..."
+            className="h-13 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-12 pr-4 text-base font-bold outline-none focus:border-[var(--BeaconVie-primary)] focus:bg-white"
             aria-label="Search content"
           />
         </label>
@@ -247,8 +247,8 @@ export default function SearchPage() {
           </div>
           {items.map((item) => <ResultCard key={`${item.type}:${item.id}`} item={item} />)}
           {nextOffset !== null && (
-            <button type="button" onClick={() => load(nextOffset)} disabled={loadingMore} className="w-full rounded-2xl border border-[var(--lumiverse-primary)]/25 bg-white px-5 py-3 font-black text-[var(--lumiverse-primary)] disabled:opacity-60">
-              {loadingMore ? "Loading..." : "Load more"}
+            <button type="button" onClick={() => load(nextOffset)} disabled={loadingMore} className="w-full rounded-2xl border border-[var(--BeaconVie-primary)]/25 bg-white px-5 py-3 font-black text-[var(--BeaconVie-primary)] disabled:opacity-60">
+              {loadingMore ? "Đang tải..." : "Load more"}
             </button>
           )}
         </section>

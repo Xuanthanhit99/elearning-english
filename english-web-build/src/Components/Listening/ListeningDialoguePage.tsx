@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import ListeningTopicPage from "./ListeningTopicPage";
 
 /*
- * Backend hiện dùng cùng engine ListeningQuestion A/B/C/D cho
- * hội thoại và bài nói. Vì vậy màn "Nghe hiểu đoạn" dùng chung
- * flow chọn level/topic và start practice.
+ * Backend hiá»‡n dÃ¹ng cÃ¹ng engine ListeningQuestion A/B/C/D cho
+ * há»™i thoáº¡i vÃ  bÃ i nÃ³i. VÃ¬ váº­y mÃ n "Nghe hiá»ƒu Ä‘oáº¡n" dÃ¹ng chung
+ * flow chá»n level/topic vÃ  start practice.
  */
 export default function ListeningDialoguePage() {
   return <ListeningTopicPage />;

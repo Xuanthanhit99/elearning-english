@@ -4320,7 +4320,7 @@ Rules:
       },
       completedMissionsV2ThisWeek.length > 0 && {
         key: 'mission-v2-week',
-        title: 'Nhiệm vụ PoppyLingo',
+        title: 'Nhiệm vụ BeaconVie',
         description: `Hoàn thành ${completedMissionsV2ThisWeek.length} nhiệm vụ mới trong tuần.`,
         tag: 'Mission V2',
         category: 'challenge',

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /* eslint-disable @next/next/no-img-element */
 
@@ -30,17 +30,17 @@ import { DashboardData, getDashboard } from "@/src/lib/dashboard-api";
 import { useTranslation } from "@/src/hooks/useTranslation";
 import { useAuthStore } from "@/src/store/authStore";
 import {
-  LumiverseBadge,
-  LumiverseButton,
-  LumiverseCard,
-  LumiverseDialog,
-  LumiverseDialogCloseButton,
-  LumiverseProgress,
-  LumiverseSectionHeader,
-  LumiverseSkeleton,
-  LumiverseState,
-  LumiverseStatCard,
-} from "@/src/Components/UI/Lumiverse";
+  BeaconVieBadge,
+  BeaconVieButton,
+  BeaconVieCard,
+  BeaconVieDialog,
+  BeaconVieDialogCloseButton,
+  BeaconVieProgress,
+  BeaconVieSectionHeader,
+  BeaconVieSkeleton,
+  BeaconVieState,
+  BeaconVieStatCard,
+} from "@/src/Components/UI/BeaconVie";
 
 type ProfileUser = {
   id: string;
@@ -111,7 +111,7 @@ function formatDate(value: string | null | undefined, locale: string) {
 }
 
 function initials(name?: string | null) {
-  return (name || "Lumiverse")
+  return (name || "BeaconVie")
     .trim()
     .split(/\s+/)
     .filter(Boolean)
@@ -139,7 +139,7 @@ function toAuthUser(user: ProfileUser) {
 }
 
 // Fields the backend allows to be explicitly cleared (no MinLength on the
-// DTO) — an empty string here must still reach the server so "delete my
+// DTO) â€” an empty string here must still reach the server so "delete my
 // bio" actually persists, instead of being silently dropped and leaving the
 // old value in place. `fullname`/`username` intentionally keep the
 // omit-when-empty behavior (they're required-ish fields with a MinLength on
@@ -173,7 +173,7 @@ type FieldErrors = Partial<Record<keyof UpdateProfilePayload, string>>;
 const USERNAME_PATTERN = /^[a-zA-Z0-9_]+$/;
 const VN_PHONE_PATTERN = /^(\+84|0)[0-9]{9,10}$/;
 
-/** Validate phía client khớp với `UpdateProfileDto` (backend) — chỉ báo lỗi khi field có giá trị, vì mọi field ngoài `fullname` đều optional. */
+/** Validate phÃ­a client khá»›p vá»›i `UpdateProfileDto` (backend) â€” chá»‰ bÃ¡o lá»—i khi field cÃ³ giÃ¡ trá»‹, vÃ¬ má»i field ngoÃ i `fullname` Ä‘á»u optional. */
 function validateProfilePayload(payload: Partial<UpdateProfilePayload>, t: (key: string) => string): FieldErrors {
   const errors: FieldErrors = {};
 
@@ -206,7 +206,7 @@ function validateProfilePayload(payload: Partial<UpdateProfilePayload>, t: (key:
   return errors;
 }
 
-/** Map message lỗi từ ValidationPipe backend (vd. "phone must be a valid phone number", "Username đã được sử dụng") về đúng field trong form. */
+/** Map message lá»—i tá»« ValidationPipe backend (vd. "phone must be a valid phone number", "Username Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng") vá» Ä‘Ãºng field trong form. */
 function mapBackendErrorsToFields(messages: string[]): FieldErrors {
   const fieldKeys: (keyof UpdateProfilePayload)[] = [
     "fullname",
@@ -239,15 +239,15 @@ function getValidationMessages(error: unknown): string[] | null {
 function ProfileSkeleton() {
   return (
     <div className="space-y-6 pb-10">
-      <LumiverseSkeleton className="h-64 rounded-[2rem]" />
+      <BeaconVieSkeleton className="h-64 rounded-[2rem]" />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }).map((_, index) => (
-          <LumiverseSkeleton key={index} className="h-36 rounded-3xl" />
+          <BeaconVieSkeleton key={index} className="h-36 rounded-3xl" />
         ))}
       </div>
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
-        <LumiverseSkeleton className="h-96 rounded-3xl" />
-        <LumiverseSkeleton className="h-96 rounded-3xl" />
+        <BeaconVieSkeleton className="h-96 rounded-3xl" />
+        <BeaconVieSkeleton className="h-96 rounded-3xl" />
       </div>
     </div>
   );
@@ -407,7 +407,7 @@ export default function ProfilePage() {
   }
 
   async function saveProfile() {
-    if (saving) return; // chặn spam click submit
+    if (saving) return; // cháº·n spam click submit
 
     const payload = cleanProfilePayload(form);
     const validationErrors = validateProfilePayload(payload, t);
@@ -479,7 +479,7 @@ export default function ProfilePage() {
 
   if (error || !profile) {
     return (
-      <LumiverseState
+      <BeaconVieState
         title={t("profile.loadError")}
         description={t("profile.loadErrorDescription")}
         actionLabel={t("profile.retry")}
@@ -491,7 +491,7 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6 pb-10">
-      <section className="lumiverse-gradient overflow-hidden rounded-[2rem] p-5 text-white shadow-[0_28px_80px_rgba(23,70,255,0.22)] sm:p-7">
+      <section className="BeaconVie-gradient overflow-hidden rounded-[2rem] p-5 text-white shadow-[0_28px_80px_rgba(23,70,255,0.22)] sm:p-7">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
             <div className="relative h-28 w-28 shrink-0">
@@ -526,15 +526,15 @@ export default function ProfilePage() {
                 disabled={avatarUploading}
                 aria-label={t("profile.changeAvatar")}
                 title={t("profile.changeAvatar")}
-                className="absolute -bottom-1.5 -right-1.5 flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--lumiverse-primary-strong)] shadow-lg ring-4 ring-[var(--lumiverse-primary)]/20 transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-70"
+                className="absolute -bottom-1.5 -right-1.5 flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--BeaconVie-primary-strong)] shadow-lg ring-4 ring-[var(--BeaconVie-primary)]/20 transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {avatarUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
               </button>
             </div>
             <div className="min-w-0">
-              <LumiverseBadge className="border-white/20 bg-white/12 text-white">
+              <BeaconVieBadge className="border-white/20 bg-white/12 text-white">
                 {t("profile.badge")}
-              </LumiverseBadge>
+              </BeaconVieBadge>
               <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl">
                 {profile.fullname}
               </h1>
@@ -549,37 +549,37 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <LumiverseButton className="bg-white text-[var(--lumiverse-primary-strong)] hover:bg-white" onClick={startEditing}>
+          <BeaconVieButton className="bg-white text-[var(--BeaconVie-primary-strong)] hover:bg-white" onClick={startEditing}>
             <Edit3 aria-hidden className="h-4 w-4" />
             {t("profile.edit")}
-          </LumiverseButton>
+          </BeaconVieButton>
         </div>
       </section>
 
       <section aria-label={t("profile.quickStats")} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <LumiverseStatCard icon={<Zap className="h-5 w-5" />} label={t("profile.totalXp")} value={totalXp.toLocaleString(localeMap[locale] ?? "vi-VN")} />
-        <LumiverseStatCard icon={<Trophy className="h-5 w-5" />} label={t("profile.level")} value={level} detail={placementLevel ?? undefined} />
-        <LumiverseStatCard icon={<Flame className="h-5 w-5" />} label={t("profile.streak")} value={currentStreak} detail={t("profile.days")} />
-        <LumiverseStatCard icon={<BookOpenCheck className="h-5 w-5" />} label={t("profile.completedLessons")} value={completedLessons} detail={`${studyMinutes} ${t("profile.minutes")}`} />
+        <BeaconVieStatCard icon={<Zap className="h-5 w-5" />} label={t("profile.totalXp")} value={totalXp.toLocaleString(localeMap[locale] ?? "vi-VN")} />
+        <BeaconVieStatCard icon={<Trophy className="h-5 w-5" />} label={t("profile.level")} value={level} detail={placementLevel ?? undefined} />
+        <BeaconVieStatCard icon={<Flame className="h-5 w-5" />} label={t("profile.streak")} value={currentStreak} detail={t("profile.days")} />
+        <BeaconVieStatCard icon={<BookOpenCheck className="h-5 w-5" />} label={t("profile.completedLessons")} value={completedLessons} detail={`${studyMinutes} ${t("profile.minutes")}`} />
       </section>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
         <div className="space-y-6">
-          <LumiverseCard className="p-5">
-            <LumiverseSectionHeader title={t("profile.personalInformation")} description={t("profile.personalInformationDescription")} />
+          <BeaconVieCard className="p-5">
+            <BeaconVieSectionHeader title={t("profile.personalInformation")} description={t("profile.personalInformationDescription")} />
             {personalRows.length > 0 ? (
               <div className="grid gap-3 sm:grid-cols-2">
                 {personalRows.map((item) => {
                   const Icon = item.icon;
                   return (
-                    <div key={item.label} className="rounded-2xl border border-[var(--lumiverse-border)] bg-white/54 p-4 dark:bg-white/6">
+                    <div key={item.label} className="rounded-2xl border border-[var(--BeaconVie-border)] bg-white/54 p-4 dark:bg-white/6">
                       <div className="flex items-center gap-3">
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]">
                           <Icon className="h-5 w-5" />
                         </span>
                         <span className="min-w-0">
-                          <span className="block text-xs font-black uppercase tracking-[0.12em] text-[var(--lumiverse-muted)]">{item.label}</span>
-                          <span className="block truncate font-black text-[var(--lumiverse-ink)]">{item.value}</span>
+                          <span className="block text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-muted)]">{item.label}</span>
+                          <span className="block truncate font-black text-[var(--BeaconVie-ink)]">{item.value}</span>
                         </span>
                       </div>
                     </div>
@@ -587,43 +587,43 @@ export default function ProfilePage() {
                 })}
               </div>
             ) : (
-              <LumiverseState title={t("profile.noPersonalInfo")} tone="empty" />
+              <BeaconVieState title={t("profile.noPersonalInfo")} tone="empty" />
             )}
-          </LumiverseCard>
+          </BeaconVieCard>
 
-          <LumiverseCard className="p-5">
-            <LumiverseSectionHeader title={t("profile.learningProgress")} description={t("profile.learningProgressDescription")} />
+          <BeaconVieCard className="p-5">
+            <BeaconVieSectionHeader title={t("profile.learningProgress")} description={t("profile.learningProgressDescription")} />
             {dashboard ? (
               <div className="space-y-5">
-                <div className="rounded-3xl bg-[var(--lumiverse-primary-soft)] p-5">
+                <div className="rounded-3xl bg-[var(--BeaconVie-primary-soft)] p-5">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--lumiverse-primary)]">
+                      <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--BeaconVie-primary)]">
                         {t("profile.learningPath")}
                       </p>
-                      <h2 className="mt-1 text-2xl font-black text-[var(--lumiverse-ink)]">
+                      <h2 className="mt-1 text-2xl font-black text-[var(--BeaconVie-ink)]">
                         {dashboard.learningPath?.currentPhase?.title ?? t("profile.notDetermined")}
                       </h2>
                     </div>
-                    <span className="text-2xl font-black text-[var(--lumiverse-primary)]">{learningProgress}%</span>
+                    <span className="text-2xl font-black text-[var(--BeaconVie-primary)]">{learningProgress}%</span>
                   </div>
-                  <LumiverseProgress value={learningProgress} className="mt-4" />
+                  <BeaconVieProgress value={learningProgress} className="mt-4" />
                 </div>
 
                 {dashboard.skillProgress.length > 0 ? (
                   <div className="grid gap-3 sm:grid-cols-2">
                     {dashboard.skillProgress.map((skill) => (
-                      <div key={skill.key} className="rounded-2xl border border-[var(--lumiverse-border)] bg-white/54 p-4 dark:bg-white/6">
+                      <div key={skill.key} className="rounded-2xl border border-[var(--BeaconVie-border)] bg-white/54 p-4 dark:bg-white/6">
                         <div className="mb-3 flex items-center justify-between gap-3">
-                          <span className="font-black text-[var(--lumiverse-ink)]">{skill.label}</span>
-                          <span className="text-sm font-black text-[var(--lumiverse-primary)]">{skill.percent}%</span>
+                          <span className="font-black text-[var(--BeaconVie-ink)]">{skill.label}</span>
+                          <span className="text-sm font-black text-[var(--BeaconVie-primary)]">{skill.percent}%</span>
                         </div>
-                        <LumiverseProgress value={skill.percent} className="h-2" />
+                        <BeaconVieProgress value={skill.percent} className="h-2" />
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <LumiverseState title={t("profile.noSkillProgress")} description={t("profile.noSkillProgressDescription")} tone="empty" />
+                  <BeaconVieState title={t("profile.noSkillProgress")} description={t("profile.noSkillProgressDescription")} tone="empty" />
                 )}
 
                 {skillBreakdown ? (
@@ -638,48 +638,48 @@ export default function ProfilePage() {
                 ) : null}
               </div>
             ) : (
-              <LumiverseState title={t("profile.noLearningStats")} description={t("profile.noLearningStatsDescription")} tone="empty" />
+              <BeaconVieState title={t("profile.noLearningStats")} description={t("profile.noLearningStatsDescription")} tone="empty" />
             )}
-          </LumiverseCard>
+          </BeaconVieCard>
         </div>
 
         <aside className="space-y-6">
           <button type="button" className="block w-full text-left" onClick={() => setCompanionOpen(true)}>
-            <LumiverseCard className="p-5 transition hover:-translate-y-0.5 hover:border-blue-200">
+            <BeaconVieCard className="p-5 transition hover:-translate-y-0.5 hover:border-blue-200">
               <div className="flex items-start justify-between gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]">
                   <PawPrint className="h-7 w-7" />
                 </div>
                 <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-amber-700 dark:bg-amber-400/12 dark:text-amber-200">
                   {t("profile.companion.badge")}
                 </span>
               </div>
-              <h2 className="mt-5 text-2xl font-black text-[var(--lumiverse-ink)]">
+              <h2 className="mt-5 text-2xl font-black text-[var(--BeaconVie-ink)]">
                 {t("profile.companion.title")}
               </h2>
-              <p className="mt-2 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+              <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
                 {t("profile.companion.description")}
               </p>
-              <span className="lumiverse-button-soft mt-5 w-full">
+              <span className="BeaconVie-button-soft mt-5 w-full">
                 <Sparkles className="h-4 w-4" />
                 {t("profile.companion.viewInformation")}
               </span>
-            </LumiverseCard>
+            </BeaconVieCard>
           </button>
 
-          <LumiverseCard className="p-5">
-            <LumiverseSectionHeader title={t("profile.achievements")} description={t("profile.achievementsDescription")} />
+          <BeaconVieCard className="p-5">
+            <BeaconVieSectionHeader title={t("profile.achievements")} description={t("profile.achievementsDescription")} />
             {achievementRecent.length > 0 ? (
               <div className="space-y-3">
                 {achievementRecent.slice(0, 4).map((item) => (
-                  <div key={"key" in item ? item.key : item.id} className="rounded-2xl border border-[var(--lumiverse-border)] bg-white/54 p-4 dark:bg-white/6">
+                  <div key={"key" in item ? item.key : item.id} className="rounded-2xl border border-[var(--BeaconVie-border)] bg-white/54 p-4 dark:bg-white/6">
                     <div className="flex items-start gap-3">
                       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-white/8">
                         <Award className="h-5 w-5" />
                       </span>
                       <div className="min-w-0">
-                        <p className="truncate font-black text-[var(--lumiverse-ink)]">{item.title}</p>
-                        <p className="mt-1 line-clamp-2 text-xs font-bold text-[var(--lumiverse-muted)]">{item.description}</p>
+                        <p className="truncate font-black text-[var(--BeaconVie-ink)]">{item.title}</p>
+                        <p className="mt-1 line-clamp-2 text-xs font-bold text-[var(--BeaconVie-muted)]">{item.description}</p>
                       </div>
                     </div>
                   </div>
@@ -688,43 +688,43 @@ export default function ProfilePage() {
             ) : achievementGoals.length > 0 ? (
               <div className="space-y-3">
                 {achievementGoals.slice(0, 4).map((goal) => (
-                  <div key={goal.key} className="rounded-2xl border border-[var(--lumiverse-border)] bg-white/54 p-4 dark:bg-white/6">
+                  <div key={goal.key} className="rounded-2xl border border-[var(--BeaconVie-border)] bg-white/54 p-4 dark:bg-white/6">
                     <div className="mb-3 flex items-center justify-between gap-3">
-                      <p className="truncate font-black text-[var(--lumiverse-ink)]">{goal.title}</p>
-                      <span className="text-sm font-black text-[var(--lumiverse-primary)]">{goal.progressPercent}%</span>
+                      <p className="truncate font-black text-[var(--BeaconVie-ink)]">{goal.title}</p>
+                      <span className="text-sm font-black text-[var(--BeaconVie-primary)]">{goal.progressPercent}%</span>
                     </div>
-                    <LumiverseProgress value={goal.progressPercent} className="h-2" />
+                    <BeaconVieProgress value={goal.progressPercent} className="h-2" />
                   </div>
                 ))}
               </div>
             ) : (
-              <LumiverseState title={t("profile.noAchievements")} description={t("profile.noAchievementsDescription")} tone="empty" />
+              <BeaconVieState title={t("profile.noAchievements")} description={t("profile.noAchievementsDescription")} tone="empty" />
             )}
-          </LumiverseCard>
+          </BeaconVieCard>
         </aside>
       </div>
 
-      <LumiverseDialog
+      <BeaconVieDialog
         open={editing}
         onClose={() => setEditing(false)}
         titleId="profile-edit-title"
         className="flex max-h-[90dvh] w-full max-w-2xl flex-col overflow-hidden"
       >
-        <div className="-mx-7 -mt-7 flex items-start justify-between gap-4 border-b border-[var(--lumiverse-border)] px-7 pb-5 pt-6">
+        <div className="-mx-7 -mt-7 flex items-start justify-between gap-4 border-b border-[var(--BeaconVie-border)] px-7 pb-5 pt-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]">
               <Edit3 className="h-4.5 w-4.5" />
             </div>
             <div>
-              <h2 id="profile-edit-title" className="text-lg font-black leading-tight text-[var(--lumiverse-ink)] sm:text-xl">
+              <h2 id="profile-edit-title" className="text-lg font-black leading-tight text-[var(--BeaconVie-ink)] sm:text-xl">
                 {t("profile.edit")}
               </h2>
-              <p className="mt-0.5 text-xs font-semibold text-[var(--lumiverse-muted)]">
+              <p className="mt-0.5 text-xs font-semibold text-[var(--BeaconVie-muted)]">
                 {t("profile.editDescription")}
               </p>
             </div>
           </div>
-          <LumiverseDialogCloseButton onClose={() => setEditing(false)} label={t("common.close")} />
+          <BeaconVieDialogCloseButton onClose={() => setEditing(false)} label={t("common.close")} />
         </div>
 
         <div className="-mx-7 min-h-0 flex-1 overflow-y-auto px-7 py-5">
@@ -736,27 +736,27 @@ export default function ProfilePage() {
             <ProfileInput className="sm:col-span-2" icon={Target} label={t("profile.learningGoal")} value={form.learningGoal ?? ""} onChange={(value) => updateForm("learningGoal", value)} error={fieldErrors.learningGoal} />
           </FieldGroup>
 
-          <FieldGroup icon={Sparkles} title={t("profile.groupAbout")} className="mt-5 border-t border-[var(--lumiverse-border)] pt-5">
+          <FieldGroup icon={Sparkles} title={t("profile.groupAbout")} className="mt-5 border-t border-[var(--BeaconVie-border)] pt-5">
             <ProfileTextarea label={t("profile.bio")} value={form.bio ?? ""} onChange={(value) => updateForm("bio", value)} error={fieldErrors.bio} maxLength={160} />
             <ProfileTextarea label={t("profile.goal")} value={form.goal ?? ""} onChange={(value) => updateForm("goal", value)} error={fieldErrors.goal} maxLength={120} />
           </FieldGroup>
         </div>
 
-        <div className="-mx-7 -mb-7 flex flex-col-reverse gap-3 border-t border-[var(--lumiverse-border)] px-7 pb-6 pt-4 sm:flex-row sm:justify-end">
-          <LumiverseButton type="button" tone="soft" onClick={() => setEditing(false)}>
+        <div className="-mx-7 -mb-7 flex flex-col-reverse gap-3 border-t border-[var(--BeaconVie-border)] px-7 pb-6 pt-4 sm:flex-row sm:justify-end">
+          <BeaconVieButton type="button" tone="soft" onClick={() => setEditing(false)}>
             <X className="h-4 w-4" />
             {t("common.cancel")}
-          </LumiverseButton>
-          <LumiverseButton type="button" loading={saving} onClick={saveProfile}>
+          </BeaconVieButton>
+          <BeaconVieButton type="button" loading={saving} onClick={saveProfile}>
             <Save className="h-4 w-4" />
             {saving ? t("common.saving") : t("common.save")}
-          </LumiverseButton>
+          </BeaconVieButton>
         </div>
-      </LumiverseDialog>
+      </BeaconVieDialog>
 
       {avatarPreviewOpen && profile.avatar ? (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-[var(--lumiverse-overlay)] p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-[var(--BeaconVie-overlay)] p-4 backdrop-blur-sm"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) setAvatarPreviewOpen(false);
           }}
@@ -771,7 +771,7 @@ export default function ProfilePage() {
               type="button"
               onClick={() => setAvatarPreviewOpen(false)}
               aria-label={t("common.close")}
-              className="absolute -top-3 -right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--lumiverse-ink)] shadow-lg transition hover:scale-105"
+              className="absolute -top-3 -right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--BeaconVie-ink)] shadow-lg transition hover:scale-105"
             >
               <X className="h-4 w-4" />
             </button>
@@ -779,26 +779,26 @@ export default function ProfilePage() {
         </div>
       ) : null}
 
-      <LumiverseDialog open={companionOpen} onClose={() => setCompanionOpen(false)} titleId="profile-companion-title">
+      <BeaconVieDialog open={companionOpen} onClose={() => setCompanionOpen(false)} titleId="profile-companion-title">
         <div className="flex items-start justify-between gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]">
             <PawPrint className="h-6 w-6" />
           </div>
-          <LumiverseDialogCloseButton onClose={() => setCompanionOpen(false)} label={t("common.close")} />
+          <BeaconVieDialogCloseButton onClose={() => setCompanionOpen(false)} label={t("common.close")} />
         </div>
-        <h2 id="profile-companion-title" className="mt-5 text-2xl font-black text-[var(--lumiverse-ink)]">
+        <h2 id="profile-companion-title" className="mt-5 text-2xl font-black text-[var(--BeaconVie-ink)]">
           {t("profile.companion.modalTitle")}
         </h2>
-        <p className="mt-3 text-sm font-semibold leading-7 text-[var(--lumiverse-muted)]">
+        <p className="mt-3 text-sm font-semibold leading-7 text-[var(--BeaconVie-muted)]">
           {t("profile.companion.modalDescription")}
         </p>
-        <LumiverseButton className="mt-6 w-full" onClick={() => setCompanionOpen(false)}>
+        <BeaconVieButton className="mt-6 w-full" onClick={() => setCompanionOpen(false)}>
           {t("profile.companion.confirm")}
-        </LumiverseButton>
-      </LumiverseDialog>
+        </BeaconVieButton>
+      </BeaconVieDialog>
 
       {notice ? (
-        <div className="fixed bottom-6 left-1/2 z-50 max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-2xl bg-[var(--lumiverse-ink)] px-5 py-3 text-sm font-black text-[var(--background)] shadow-2xl">
+        <div className="fixed bottom-6 left-1/2 z-50 max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-2xl bg-[var(--BeaconVie-ink)] px-5 py-3 text-sm font-black text-[var(--background)] shadow-2xl">
           {notice}
           <button type="button" className="ml-4 underline" onClick={() => setNotice(null)}>
             {t("common.close")}
@@ -822,7 +822,7 @@ function FieldGroup({
 }) {
   return (
     <div className={className}>
-      <div className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-[var(--lumiverse-primary)]">
+      <div className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-[var(--BeaconVie-primary)]">
         <Icon className="h-3.5 w-3.5" />
         {title}
       </div>
@@ -833,9 +833,9 @@ function FieldGroup({
 
 function MiniMetric({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-2xl border border-[var(--lumiverse-border)] bg-white/54 p-4 dark:bg-white/6">
-      <p className="text-2xl font-black text-[var(--lumiverse-ink)]">{value}</p>
-      <p className="mt-1 text-sm font-bold text-[var(--lumiverse-muted)]">{label}</p>
+    <div className="rounded-2xl border border-[var(--BeaconVie-border)] bg-white/54 p-4 dark:bg-white/6">
+      <p className="text-2xl font-black text-[var(--BeaconVie-ink)]">{value}</p>
+      <p className="mt-1 text-sm font-bold text-[var(--BeaconVie-muted)]">{label}</p>
     </div>
   );
 }
@@ -861,10 +861,10 @@ function ProfileInput({
 }) {
   return (
     <label className={className}>
-      <span className="text-xs font-black text-[var(--lumiverse-muted)]">{label}</span>
+      <span className="text-xs font-black text-[var(--BeaconVie-muted)]">{label}</span>
       <div className="relative mt-1.5">
         {Icon ? (
-          <Icon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--lumiverse-muted)]" />
+          <Icon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--BeaconVie-muted)]" />
         ) : null}
         <input
           value={value}
@@ -872,7 +872,7 @@ function ProfileInput({
           maxLength={maxLength}
           placeholder={placeholder}
           aria-invalid={!!error}
-          className={`lumiverse-input min-h-11 w-full font-bold outline-none ${Icon ? "pl-10 pr-4" : "px-4"} ${error ? "border-rose-400 focus:border-rose-400" : ""}`}
+          className={`BeaconVie-input min-h-11 w-full font-bold outline-none ${Icon ? "pl-10 pr-4" : "px-4"} ${error ? "border-rose-400 focus:border-rose-400" : ""}`}
         />
       </div>
       {error ? <span className="mt-1.5 block text-xs font-bold text-rose-500">{error}</span> : null}
@@ -898,9 +898,9 @@ function ProfileTextarea({
   return (
     <label className={className}>
       <div className="flex items-baseline justify-between gap-2">
-        <span className="text-xs font-black text-[var(--lumiverse-muted)]">{label}</span>
+        <span className="text-xs font-black text-[var(--BeaconVie-muted)]">{label}</span>
         {maxLength ? (
-          <span className="text-[10px] font-bold text-[var(--lumiverse-muted)]">
+          <span className="text-[10px] font-bold text-[var(--BeaconVie-muted)]">
             {value.length}/{maxLength}
           </span>
         ) : null}
@@ -911,7 +911,7 @@ function ProfileTextarea({
         onChange={(event) => onChange(event.target.value)}
         maxLength={maxLength}
         aria-invalid={!!error}
-        className={`lumiverse-input mt-1.5 w-full resize-none px-4 py-3 font-bold outline-none ${error ? "border-rose-400 focus:border-rose-400" : ""}`}
+        className={`BeaconVie-input mt-1.5 w-full resize-none px-4 py-3 font-bold outline-none ${error ? "border-rose-400 focus:border-rose-400" : ""}`}
       />
       {error ? <span className="mt-1.5 block text-xs font-bold text-rose-500">{error}</span> : null}
     </label>

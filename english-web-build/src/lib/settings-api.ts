@@ -1,4 +1,4 @@
-import { api } from './axios';
+﻿import { api } from './axios';
 import { DeviceSession, Settings } from './settings-types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';

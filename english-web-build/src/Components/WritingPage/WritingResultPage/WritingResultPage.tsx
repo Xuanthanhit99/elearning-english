@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { api } from "@/src/lib/axios";
 import {
@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LumiverseLoadingState } from "@/src/Components/UI/Lumiverse";
+import { BeaconVieLoadingState } from "@/src/Components/UI/BeaconVie";
 
 type ResultData = {
   session: {
@@ -92,7 +92,7 @@ export default function WritingResultPage() {
       setData(res.data);
     } catch (err) {
       console.error(err);
-      setError("Không tải được kết quả bài viết.");
+      setError("KhÃ´ng táº£i Ä‘Æ°á»£c káº¿t quáº£ bÃ i viáº¿t.");
     } finally {
       setLoading(false);
     }
@@ -107,7 +107,7 @@ export default function WritingResultPage() {
       router.push(`/writing/sessions/${res.data.sessionId}`);
     } catch (err) {
       console.error(err);
-      setError("Không tạo được bài luyện lại lúc này.");
+      setError("KhÃ´ng táº¡o Ä‘Æ°á»£c bÃ i luyá»‡n láº¡i lÃºc nÃ y.");
     } finally {
       setRetrying(false);
     }
@@ -119,7 +119,7 @@ export default function WritingResultPage() {
 
   if (loading)
     return (
-      <LumiverseLoadingState className="m-10" label="Đang tải kết quả bài viết..." />
+      <BeaconVieLoadingState className="m-10" label="Äang táº£i káº¿t quáº£ bÃ i viáº¿t..." />
     );
 
   if (error) {
@@ -130,13 +130,13 @@ export default function WritingResultPage() {
           onClick={loadData}
           className="mt-4 rounded-xl bg-violet-600 px-5 py-3 font-bold text-white"
         >
-          Thử lại
+          Thá»­ láº¡i
         </button>
       </div>
     );
   }
 
-  if (!data) return <div className="p-10">Không có dữ liệu.</div>;
+  if (!data) return <div className="p-10">KhÃ´ng cÃ³ dá»¯ liá»‡u.</div>;
 
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
@@ -155,7 +155,7 @@ export default function WritingResultPage() {
                   className="flex h-11 items-center gap-2 rounded-xl border border-violet-500 px-5 text-sm font-bold text-violet-600"
                 >
                   <PenLine className="h-4 w-4" />
-                  Review My Essay
+                  Review My Bài luận
                 </button>
               </div>
 
@@ -166,13 +166,13 @@ export default function WritingResultPage() {
                   active={tab === "ESSAY"}
                   onClick={() => setTab("ESSAY")}
                 >
-                  Your Essay
+                  Your Bài luận
                 </TabButton>
                 <TabButton
                   active={tab === "DETAIL"}
                   onClick={() => setTab("DETAIL")}
                 >
-                  Detailed Feedback
+                  Nhận xét chi tiết
                 </TabButton>
                 <TabButton
                   active={tab === "CORRECTIONS"}
@@ -184,7 +184,7 @@ export default function WritingResultPage() {
                   active={tab === "SAMPLE"}
                   onClick={() => setTab("SAMPLE")}
                 >
-                  Sample Essay
+                  Bài mẫu
                 </TabButton>
               </div>
 
@@ -221,7 +221,7 @@ export default function WritingResultPage() {
                   }
                   className="flex h-12 items-center gap-2 rounded-xl border border-violet-500 px-7 font-bold text-violet-600"
                 >
-                  ← Back to Lessons
+                  â† Back to Bài học
                 </button>
 
                 <button
@@ -230,7 +230,7 @@ export default function WritingResultPage() {
                   className="flex h-12 items-center gap-2 rounded-xl bg-violet-600 px-7 font-bold text-white disabled:opacity-50"
                 >
                   <RefreshCcw className="h-5 w-5" />
-                  {retrying ? "Creating..." : "Try Another Essay"}
+                  {retrying ? "Đang tạo..." : "Luyện bài khác"}
                 </button>
               </div>
             </div>
@@ -254,7 +254,7 @@ function Breadcrumb({ data }: { data: ResultData }) {
   return (
     <div className="flex items-center gap-3 text-sm font-bold text-slate-400">
       <Home className="h-4 w-4" />
-      <span>Writing</span>
+      <span>Luyện viết</span>
       <ChevronRight className="h-4 w-4" />
       <span>{data.topic.title}</span>
       <ChevronRight className="h-4 w-4" />
@@ -262,7 +262,7 @@ function Breadcrumb({ data }: { data: ResultData }) {
       <ChevronRight className="h-4 w-4" />
       <span>{data.lesson.title}</span>
       <ChevronRight className="h-4 w-4" />
-      <span className="text-[#09083f]">Result</span>
+      <span className="text-[#09083f]">Kết quả</span>
     </div>
   );
 }
@@ -278,13 +278,13 @@ function ResultTitle({ data }: { data: ResultData }) {
         <div className="flex items-center gap-3">
           <h1 className="text-3xl font-extrabold">{data.lesson.title}</h1>
           <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-600">
-            Completed
+            Hoàn thành
           </span>
         </div>
 
         <p className="mt-2 text-sm font-semibold text-slate-500">
-          {formatType(data.lesson.type)} • {data.lesson.level} Level •{" "}
-          {formatDate(data.session.submittedAt)} • ~{data.lesson.maxWords} words
+          {formatType(data.lesson.type)} â€¢ {data.lesson.level} Level â€¢{" "}
+          {formatDate(data.session.submittedAt)} â€¢ ~{data.lesson.maxWords} từ
         </p>
       </div>
     </div>
@@ -294,22 +294,22 @@ function ResultTitle({ data }: { data: ResultData }) {
 function ScoreOverview({ data }: { data: ResultData }) {
   const scores = [
     {
-      title: "Task Achievement",
+      title: "Hoàn thành yêu cầu",
       score: data.result.taskAchievement,
       color: "bg-green-500",
     },
     {
-      title: "Coherence & Cohesion",
+      title: "Mạch lạc và liên kết",
       score: data.result.coherence,
       color: "bg-blue-500",
     },
     {
-      title: "Lexical Resource",
+      title: "Từ vựng",
       score: data.result.lexicalResource,
       color: "bg-orange-500",
     },
     {
-      title: "Grammar Range",
+      title: "Ngữ pháp",
       score: data.result.grammar,
       color: "bg-violet-600",
     },
@@ -330,10 +330,9 @@ function ScoreOverview({ data }: { data: ResultData }) {
             </div>
           </div>
 
-          <p className="mt-4 font-extrabold">Good Job! 🎉</p>
+          <p className="mt-4 font-extrabold">Tốt Job! ðŸŽ‰</p>
           <p className="mt-2 text-sm leading-6 text-slate-500">
-            You did better than {data.result.overallScore}% of learners in your
-            level.
+            Bạn làm tốt hơn {data.result.overallScore}% người học ở cùng trình độ.
           </p>
         </div>
 
@@ -354,7 +353,7 @@ function ScoreOverview({ data }: { data: ResultData }) {
             </p>
 
             <p className="mt-3 text-sm text-slate-500">
-              {item.score >= 70 ? "Good" : "Fair"}
+              {item.score >= 70 ? "Tốt" : "Cần cố gắng"}
             </p>
 
             <div className="mt-5 h-1.5 rounded-full bg-slate-200">
@@ -368,7 +367,7 @@ function ScoreOverview({ data }: { data: ResultData }) {
       </div>
 
       <div className="mt-5 rounded-xl bg-violet-50 p-5">
-        <p className="font-extrabold text-violet-700">Overall Feedback</p>
+        <p className="font-extrabold text-violet-700">Nhận xét tổng thể</p>
         <p className="mt-2 text-sm leading-6 text-slate-600">
           {data.result.feedback}
         </p>
@@ -386,14 +385,14 @@ function EssayCard({
 }) {
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
-      <h3 className="font-extrabold">Your Essay</h3>
+      <h3 className="font-extrabold">Your Bài luận</h3>
 
       <p className="mt-6 whitespace-pre-line text-sm leading-8 text-slate-700">
         {content}
       </p>
 
       <p className="mt-6 text-sm text-slate-500">
-        Word count: {wordCount} words
+        Số từ: {wordCount} từ
       </p>
     </div>
   );
@@ -406,7 +405,7 @@ function DetailedFeedbackCard({
 }) {
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
-      <h3 className="font-extrabold">Detailed Feedback</h3>
+      <h3 className="font-extrabold">Nhận xét chi tiết</h3>
 
       <div className="mt-6 space-y-5">
         {items.map((item) => (
@@ -437,7 +436,7 @@ function ResultSummary({
 }) {
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
-      <h2 className="text-lg font-extrabold">Your Result</h2>
+      <h2 className="text-lg font-extrabold">Kết quả của bạn</h2>
 
       <div className="mt-5 flex items-end justify-between">
         <div>
@@ -445,7 +444,7 @@ function ResultSummary({
             {data.result.overallScore}
             <span className="text-lg">/100</span>
           </p>
-          <p className="text-sm text-slate-500">Overall Score</p>
+          <p className="text-sm text-slate-500">Tổng thể Score</p>
         </div>
 
         <p className="text-xl font-extrabold text-green-600">
@@ -454,9 +453,9 @@ function ResultSummary({
       </div>
 
       <div className="mt-6 space-y-5 border-t border-slate-100 pt-5 text-sm">
-        <p>⏱ Time spent: {formatTime(data.session.timeSpentSeconds)}</p>
-        <p>📝 Words: {data.session.wordCount}</p>
-        <p>📅 Date: {formatDate(data.session.submittedAt)}</p>
+        <p>â± Thời gian: {formatTime(data.session.timeSpentSeconds)}</p>
+        <p>ðŸ“ Số từ: {data.session.wordCount}</p>
+        <p>ðŸ“… Ngày: {formatDate(data.session.submittedAt)}</p>
       </div>
 
       <button
@@ -519,11 +518,11 @@ function VocabularyCard({
     <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-extrabold">Top Vocabulary Suggestions</h2>
-        <button className="font-bold text-violet-600">View all</button>
+        <button className="font-bold text-violet-600">Xem tất cả</button>
       </div>
 
       {items.length === 0 && (
-        <p className="mt-5 text-sm text-slate-500">Chưa có gợi ý từ vựng.</p>
+        <p className="mt-5 text-sm text-slate-500">ChÆ°a cÃ³ gá»£i Ã½ tá»« vá»±ng.</p>
       )}
 
       <div className="mt-5 divide-y divide-slate-100">
@@ -533,7 +532,7 @@ function VocabularyCard({
             className="grid grid-cols-[1fr_30px_1fr] py-3 text-sm"
           >
             <span>{item.original}</span>
-            <span className="text-slate-400">→</span>
+            <span className="text-slate-400">â†’</span>
             <span className="font-bold text-green-600">{item.suggestion}</span>
           </div>
         ))}
@@ -567,12 +566,12 @@ function TabButton({
 
 function formatType(type: string) {
   const map: Record<string, string> = {
-    SENTENCE: "Sentence Writing",
-    PARAGRAPH: "Paragraph",
-    ESSAY: "Essay Writing",
+    SENTENCE: "Viết câu",
+    PARAGRAPH: "Đoạn văn",
+    ESSAY: "Viết luận",
     EMAIL: "Email",
-    OPINION: "Opinion",
-    STORY: "Story",
+    OPINION: "Ý kiến",
+    STORY: "Câu chuyện",
     IELTS_TASK_1: "IELTS Task 1",
     IELTS_TASK_2: "IELTS Task 2",
   };
@@ -610,7 +609,7 @@ function CorrectionsCard({
       <h3 className="font-extrabold">Corrections</h3>
 
       {corrections.length === 0 && (
-        <p className="mt-5 text-sm text-slate-500">Không có lỗi cần sửa.</p>
+        <p className="mt-5 text-sm text-slate-500">KhÃ´ng cÃ³ lá»—i cáº§n sá»­a.</p>
       )}
 
       <div className="mt-5 divide-y divide-slate-100">
@@ -623,7 +622,7 @@ function CorrectionsCard({
               {item.wrong}
             </span>
 
-            <span className="text-slate-400">→</span>
+            <span className="text-slate-400">â†’</span>
 
             <span className="font-bold text-green-600">{item.correct}</span>
 
@@ -642,7 +641,7 @@ function CorrectionsCard({
 function SampleEssayCard({ suggestedVersion }: { suggestedVersion: string }) {
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
-      <h3 className="font-extrabold">Improved Version</h3>
+      <h3 className="font-extrabold">Phiên bản cải thiện</h3>
 
       {suggestedVersion ? (
         <p className="mt-6 whitespace-pre-line text-sm leading-8 text-slate-700">
@@ -650,7 +649,7 @@ function SampleEssayCard({ suggestedVersion }: { suggestedVersion: string }) {
         </p>
       ) : (
         <p className="mt-5 text-sm text-slate-500">
-          Chưa có bản viết cải thiện từ AI.
+          ChÆ°a cÃ³ báº£n viáº¿t cáº£i thiá»‡n tá»« AI.
         </p>
       )}
     </div>
@@ -663,7 +662,7 @@ function AICoachCard({ data }: { data: ResultData }) {
       <h3 className="font-extrabold text-violet-700">AI Coach</h3>
 
       <p className="mt-4 text-sm leading-6 text-slate-600">
-        {data.aiCoachTask || "AI chưa có nhiệm vụ luyện lại cho bài này."}
+        {data.aiCoachTask || "AI chÆ°a cÃ³ nhiá»‡m vá»¥ luyá»‡n láº¡i cho bÃ i nÃ y."}
       </p>
 
       {data.nextPracticeSuggestion && (
@@ -681,7 +680,7 @@ function AICoachCard({ data }: { data: ResultData }) {
         <div className="mt-5 space-y-3">
           {data.learningTips.map((tip, index) => (
             <p key={index} className="text-sm text-slate-600">
-              • {tip}
+              â€¢ {tip}
             </p>
           ))}
         </div>
@@ -689,3 +688,6 @@ function AICoachCard({ data }: { data: ResultData }) {
     </div>
   );
 }
+
+
+

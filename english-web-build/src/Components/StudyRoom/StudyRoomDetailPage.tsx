@@ -1,16 +1,16 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Crown, LogOut, Play, Square, Users, History } from "lucide-react";
 import { useAuthStore } from "@/src/store/authStore";
 import {
-  LumiverseButton,
-  LumiverseBadge,
-  LumiverseCard,
-  LumiverseLoadingState,
-  LumiverseState,
-} from "@/src/Components/UI/Lumiverse";
+  BeaconVieButton,
+  BeaconVieBadge,
+  BeaconVieCard,
+  BeaconVieLoadingState,
+  BeaconVieState,
+} from "@/src/Components/UI/BeaconVie";
 import {
   StudyRoomDetail,
   StudyRoomMember,
@@ -32,9 +32,9 @@ import {
 } from "@/src/lib/study-room-socket";
 
 const STATUS_LABEL: Record<string, string> = {
-  WAITING: "Đang chờ",
-  IN_SESSION: "Đang học",
-  ENDED: "Đã kết thúc",
+  WAITING: "Äang chá»",
+  IN_SESSION: "Äang há»c",
+  ENDED: "ÄÃ£ káº¿t thÃºc",
 };
 
 export default function StudyRoomDetailPage() {
@@ -59,7 +59,7 @@ export default function StudyRoomDetailPage() {
         setRoom(data);
         setState({ status: "ready" });
       })
-      .catch(() => setState({ status: "error", message: "Không thể tải phòng học này." }));
+      .catch(() => setState({ status: "error", message: "KhÃ´ng thá»ƒ táº£i phÃ²ng há»c nÃ y." }));
   }, [roomId]);
 
   useEffect(() => {
@@ -126,11 +126,11 @@ export default function StudyRoomDetailPage() {
       socket.off("study-room:removed", onRemoved);
     };
     // Deliberately not disconnecting the shared socket singleton on
-    // unmount (mirrors arena-socket.ts's lifecycle) — only this room's
+    // unmount (mirrors arena-socket.ts's lifecycle) â€” only this room's
     // listeners and socket-room membership are torn down.
   }, [roomId, loadRoom, router, currentUserId]);
 
-  // 1s tick just for the countdown display — no network calls.
+  // 1s tick just for the countdown display â€” no network calls.
   useEffect(() => {
     if (!room?.activeSession) return;
     const interval = setInterval(() => setNowTick(Date.now()), 1000);
@@ -140,17 +140,17 @@ export default function StudyRoomDetailPage() {
   if (state.status === "loading") {
     return (
       <div className="px-4 py-10">
-        <LumiverseLoadingState label="Đang tải phòng học..." />
+        <BeaconVieLoadingState label="Äang táº£i phÃ²ng há»c..." />
       </div>
     );
   }
   if (state.status === "error" || !room) {
     return (
       <div className="px-4 py-10">
-        <LumiverseState
-          title="Không tìm thấy phòng học"
+        <BeaconVieState
+          title="KhÃ´ng tÃ¬m tháº¥y phÃ²ng há»c"
           description={state.status === "error" ? state.message : undefined}
-          actionLabel="Về danh sách phòng"
+          actionLabel="Vá» danh sÃ¡ch phÃ²ng"
           onAction={() => router.push("/study-rooms")}
           tone="error"
         />
@@ -206,7 +206,7 @@ function RoomBody({
       await fn();
       reload();
     } catch {
-      setActionError("Thao tác thất bại. Vui lòng thử lại.");
+      setActionError("Thao tÃ¡c tháº¥t báº¡i. Vui lÃ²ng thá»­ láº¡i.");
     } finally {
       setBusy(false);
     }
@@ -223,15 +223,15 @@ function RoomBody({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-black text-[var(--lumiverse-ink)] sm:text-2xl">{room.name}</h1>
-            <LumiverseBadge>{STATUS_LABEL[room.status] ?? room.status}</LumiverseBadge>
+            <h1 className="text-xl font-black text-[var(--BeaconVie-ink)] sm:text-2xl">{room.name}</h1>
+            <BeaconVieBadge>{STATUS_LABEL[room.status] ?? room.status}</BeaconVieBadge>
           </div>
-          {room.topic && <p className="mt-1 text-sm font-semibold text-[var(--lumiverse-muted)]">{room.topic}</p>}
+          {room.topic && <p className="mt-1 text-sm font-semibold text-[var(--BeaconVie-muted)]">{room.topic}</p>}
           {room.inviteCode && (
-            <p className="mt-1 text-xs font-bold text-[var(--lumiverse-muted)]">Mã mời: {room.inviteCode}</p>
+            <p className="mt-1 text-xs font-bold text-[var(--BeaconVie-muted)]">MÃ£ má»i: {room.inviteCode}</p>
           )}
         </div>
-        <LumiverseButton
+        <BeaconVieButton
           tone="ghost"
           onClick={() =>
             withBusy(async () => {
@@ -241,8 +241,8 @@ function RoomBody({
           }
         >
           <LogOut aria-hidden className="h-4 w-4" />
-          Rời phòng
-        </LumiverseButton>
+          Rá»i phÃ²ng
+        </BeaconVieButton>
       </div>
 
       {actionError && (
@@ -252,56 +252,56 @@ function RoomBody({
       )}
 
       {room.activeSession && (
-        <LumiverseCard className="p-5">
+        <BeaconVieCard className="p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-wide text-[var(--lumiverse-muted)]">Buổi học đang diễn ra</p>
-              <p className="mt-1 text-3xl font-black tabular-nums text-[var(--lumiverse-primary)]">
+              <p className="text-xs font-black uppercase tracking-wide text-[var(--BeaconVie-muted)]">Buá»•i há»c Ä‘ang diá»…n ra</p>
+              <p className="mt-1 text-3xl font-black tabular-nums text-[var(--BeaconVie-primary)]">
                 {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, "0")}
               </p>
             </div>
             {viewerIsHost && (
-              <LumiverseButton
+              <BeaconVieButton
                 tone="danger"
                 loading={busy}
                 onClick={() => withBusy(async () => { await endStudySession(room.id); })}
               >
                 <Square aria-hidden className="h-4 w-4" />
-                Kết thúc buổi học
-              </LumiverseButton>
+                Káº¿t thÃºc buá»•i há»c
+              </BeaconVieButton>
             )}
           </div>
-        </LumiverseCard>
+        </BeaconVieCard>
       )}
 
       {!room.activeSession && room.status === "WAITING" && myMembership && (
-        <LumiverseCard className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <BeaconVieCard className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="font-black text-[var(--lumiverse-ink)]">Sẵn sàng bắt đầu?</p>
-            <p className="text-sm font-semibold text-[var(--lumiverse-muted)]">
-              Mọi thành viên cần bấm &quot;Sẵn sàng&quot; trước khi chủ phòng có thể bắt đầu buổi học {room.goalMinutes} phút.
+            <p className="font-black text-[var(--BeaconVie-ink)]">Sáºµn sÃ ng báº¯t Ä‘áº§u?</p>
+            <p className="text-sm font-semibold text-[var(--BeaconVie-muted)]">
+              Má»i thÃ nh viÃªn cáº§n báº¥m &quot;Sáºµn sÃ ng&quot; trÆ°á»›c khi chá»§ phÃ²ng cÃ³ thá»ƒ báº¯t Ä‘áº§u buá»•i há»c {room.goalMinutes} phÃºt.
             </p>
           </div>
           <div className="flex gap-2">
             <ReadyToggle roomId={room.id} initialReady={myMembership.ready} onChanged={reload} />
             {viewerIsHost && (
-              <LumiverseButton
+              <BeaconVieButton
                 disabled={!allReady}
                 loading={busy}
                 onClick={() => withBusy(async () => { await startStudySession(room.id); })}
               >
                 <Play aria-hidden className="h-4 w-4" />
-                Bắt đầu
-              </LumiverseButton>
+                Báº¯t Ä‘áº§u
+              </BeaconVieButton>
             )}
           </div>
-        </LumiverseCard>
+        </BeaconVieCard>
       )}
 
-      <LumiverseCard className="p-5">
-        <div className="mb-3 flex items-center gap-2 text-sm font-black text-[var(--lumiverse-ink)]">
+      <BeaconVieCard className="p-5">
+        <div className="mb-3 flex items-center gap-2 text-sm font-black text-[var(--BeaconVie-ink)]">
           <Users aria-hidden className="h-4 w-4" />
-          Thành viên ({activeMembers.length}/{room.maxMembers})
+          ThÃ nh viÃªn ({activeMembers.length}/{room.maxMembers})
         </div>
         <ul className="space-y-2">
           {room.members
@@ -317,23 +317,23 @@ function RoomBody({
               />
             ))}
         </ul>
-      </LumiverseCard>
+      </BeaconVieCard>
 
       {history.length > 0 && (
-        <LumiverseCard className="p-5">
-          <div className="mb-3 flex items-center gap-2 text-sm font-black text-[var(--lumiverse-ink)]">
+        <BeaconVieCard className="p-5">
+          <div className="mb-3 flex items-center gap-2 text-sm font-black text-[var(--BeaconVie-ink)]">
             <History aria-hidden className="h-4 w-4" />
-            Lịch sử buổi học
+            Lá»‹ch sá»­ buá»•i há»c
           </div>
-          <ul className="space-y-2 text-sm font-semibold text-[var(--lumiverse-muted)]">
+          <ul className="space-y-2 text-sm font-semibold text-[var(--BeaconVie-muted)]">
             {history.map((session) => (
-              <li key={session.id} className="flex items-center justify-between border-b border-[var(--lumiverse-border)] py-2 last:border-0">
+              <li key={session.id} className="flex items-center justify-between border-b border-[var(--BeaconVie-border)] py-2 last:border-0">
                 <span>{new Date(session.startedAt).toLocaleString()}</span>
-                <span>{session.summary ?? `${session.participantCount} thành viên`}</span>
+                <span>{session.summary ?? `${session.participantCount} thÃ nh viÃªn`}</span>
               </li>
             ))}
           </ul>
-        </LumiverseCard>
+        </BeaconVieCard>
       )}
     </div>
   );
@@ -353,32 +353,32 @@ function MemberRow({
   onBan: () => void;
 }) {
   return (
-    <li className="flex items-center justify-between rounded-xl border border-[var(--lumiverse-border)] px-3 py-2">
+    <li className="flex items-center justify-between rounded-xl border border-[var(--BeaconVie-border)] px-3 py-2">
       <div className="flex items-center gap-2">
         <span
-          className={`h-2.5 w-2.5 rounded-full ${online ? "bg-emerald-500" : "bg-[var(--lumiverse-border)]"}`}
-          aria-label={online ? "Đang online" : "Ngoại tuyến"}
+          className={`h-2.5 w-2.5 rounded-full ${online ? "bg-emerald-500" : "bg-[var(--BeaconVie-border)]"}`}
+          aria-label={online ? "Äang online" : "Ngoáº¡i tuyáº¿n"}
         />
-        <span className="font-bold text-[var(--lumiverse-ink)]">
-          {member.user?.fullname || member.user?.username || "Học viên"}
+        <span className="font-bold text-[var(--BeaconVie-ink)]">
+          {member.user?.fullname || member.user?.username || "Há»c viÃªn"}
         </span>
         {member.role === "HOST" && <Crown aria-hidden className="h-4 w-4 text-amber-500" />}
         {member.ready && member.status === "ACTIVE" && (
-          <LumiverseBadge className="text-[10px]">Sẵn sàng</LumiverseBadge>
+          <BeaconVieBadge className="text-[10px]">Sáºµn sÃ ng</BeaconVieBadge>
         )}
-        {member.status === "MUTED" && <LumiverseBadge className="text-[10px]">Đã tắt tiếng</LumiverseBadge>}
+        {member.status === "MUTED" && <BeaconVieBadge className="text-[10px]">ÄÃ£ táº¯t tiáº¿ng</BeaconVieBadge>}
       </div>
       {showModeration && (
         <div className="flex gap-2">
           <button
             type="button"
-            className="text-xs font-black text-[var(--lumiverse-muted)] hover:text-[var(--lumiverse-danger)]"
+            className="text-xs font-black text-[var(--BeaconVie-muted)] hover:text-[var(--BeaconVie-danger)]"
             onClick={onKick}
           >
-            Đuổi
+            Äuá»•i
           </button>
-          <button type="button" className="text-xs font-black text-[var(--lumiverse-danger)]" onClick={onBan}>
-            Cấm
+          <button type="button" className="text-xs font-black text-[var(--BeaconVie-danger)]" onClick={onBan}>
+            Cáº¥m
           </button>
         </div>
       )}
@@ -404,7 +404,7 @@ function ReadyToggle({
   }, [initialReady]);
 
   return (
-    <LumiverseButton
+    <BeaconVieButton
       tone="soft"
       loading={pending}
       onClick={async () => {
@@ -418,7 +418,7 @@ function ReadyToggle({
         setPending(false);
       }}
     >
-      {ready ? "Đã sẵn sàng" : "Sẵn sàng"}
-    </LumiverseButton>
+      {ready ? "ÄÃ£ sáºµn sÃ ng" : "Sáºµn sÃ ng"}
+    </BeaconVieButton>
   );
 }

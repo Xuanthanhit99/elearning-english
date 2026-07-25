@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Check, FileText, Keyboard } from "lucide-react";
 import { PlacementOption } from "@/src/lib/placement-api";

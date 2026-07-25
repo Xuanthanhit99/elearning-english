@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   CheckCircle2,
@@ -68,11 +68,11 @@ export default function ListeningPracticePage({
       setError("");
 
       /*
-       * Backend resume bằng POST start theo level/topic,
-       * nhưng frontend route đã có sessionId. Endpoint result chỉ
-       * dành cho completed. Do backend chưa có GET session detail,
-       * ta dùng Home để lấy level/topic rồi POST start; backend sẽ
-       * trả lại session IN_PROGRESS hiện có.
+       * Backend resume báº±ng POST start theo level/topic,
+       * nhÆ°ng frontend route Ä‘Ã£ cÃ³ sessionId. Endpoint result chá»‰
+       * dÃ nh cho completed. Do backend chÆ°a cÃ³ GET session detail,
+       * ta dÃ¹ng Home Ä‘á»ƒ láº¥y level/topic rá»“i POST start; backend sáº½
+       * tráº£ láº¡i session IN_PROGRESS hiá»‡n cÃ³.
        */
       const homeResponse = await api.get<any>("/listening/home");
       const home = unwrap<any>(homeResponse.data);
@@ -104,7 +104,7 @@ export default function ListeningPracticePage({
       setError(
         getApiErrorMessage(
           requestError,
-          "Không tải được phiên luyện nghe.",
+          "KhÃ´ng táº£i Ä‘Æ°á»£c phiÃªn luyá»‡n nghe.",
         ),
       );
     } finally {
@@ -142,7 +142,7 @@ export default function ListeningPracticePage({
   function playAudio() {
     if (!audioRef.current || !currentQuestion?.audioUrl) {
       setError(
-        "Câu hỏi chưa có audio. Hãy kiểm tra cấu hình Google TTS.",
+        "CÃ¢u há»i chÆ°a cÃ³ audio. HÃ£y kiá»ƒm tra cáº¥u hÃ¬nh Google TTS.",
       );
       return;
     }
@@ -158,7 +158,7 @@ export default function ListeningPracticePage({
         setListenedCount((value) => value + 1);
       })
       .catch(() => {
-        setError("Trình duyệt không phát được audio.");
+        setError("TrÃ¬nh duyá»‡t khÃ´ng phÃ¡t Ä‘Æ°á»£c audio.");
       });
   }
 
@@ -221,7 +221,7 @@ export default function ListeningPracticePage({
       setError(
         getApiErrorMessage(
           requestError,
-          "Không lưu được đáp án.",
+          "KhÃ´ng lÆ°u Ä‘Æ°á»£c Ä‘Ã¡p Ã¡n.",
         ),
       );
     } finally {
@@ -280,7 +280,7 @@ export default function ListeningPracticePage({
       setError(
         getApiErrorMessage(
           requestError,
-          "Không bỏ qua được câu hỏi.",
+          "KhÃ´ng bá» qua Ä‘Æ°á»£c cÃ¢u há»i.",
         ),
       );
     } finally {
@@ -315,7 +315,7 @@ export default function ListeningPracticePage({
         },
       );
     } catch {
-      setError("Chưa lưu được đánh dấu.");
+      setError("ChÆ°a lÆ°u Ä‘Æ°á»£c Ä‘Ã¡nh dáº¥u.");
     }
   }
 
@@ -344,7 +344,7 @@ export default function ListeningPracticePage({
       setError(
         getApiErrorMessage(
           requestError,
-          "Không kết thúc được bài luyện nghe.",
+          "KhÃ´ng káº¿t thÃºc Ä‘Æ°á»£c bÃ i luyá»‡n nghe.",
         ),
       );
     } finally {
@@ -369,7 +369,7 @@ export default function ListeningPracticePage({
   }
 
   if (loading) {
-    return <PageState text="Đang tải bài luyện nghe..." />;
+    return <PageState text="Äang táº£i bÃ i luyá»‡n nghe..." />;
   }
 
   if (error && !practice) {
@@ -377,7 +377,7 @@ export default function ListeningPracticePage({
   }
 
   if (!practice || !currentQuestion) {
-    return <PageState text="Không có dữ liệu luyện nghe." />;
+    return <PageState text="KhÃ´ng cÃ³ dá»¯ liá»‡u luyá»‡n nghe." />;
   }
 
   return (
@@ -412,7 +412,7 @@ export default function ListeningPracticePage({
                 disabled={submitting}
                 className="rounded-xl border bg-white px-5 py-3 font-bold disabled:opacity-50"
               >
-                Kết thúc bài
+                Káº¿t thÃºc bÃ i
               </button>
             </div>
 
@@ -426,7 +426,7 @@ export default function ListeningPracticePage({
               <section className="rounded-3xl border border-violet-100 bg-white p-7 shadow-sm">
                 <div className="flex flex-wrap gap-3">
                   <Badge>
-                    Câu {currentIndex + 1}/
+                    CÃ¢u {currentIndex + 1}/
                     {practice.questions.length}
                   </Badge>
                   <Badge>{practice.level}</Badge>
@@ -483,7 +483,7 @@ export default function ListeningPracticePage({
                       {currentQuestion.question}
                     </h1>
                     <p className="mt-2 text-slate-500">
-                      Nghe audio và chọn đáp án đúng nhất.
+                      Nghe audio vÃ  chá»n Ä‘Ã¡p Ã¡n Ä‘Ãºng nháº¥t.
                     </p>
                   </div>
 
@@ -544,7 +544,7 @@ export default function ListeningPracticePage({
                 {currentQuestion.answered &&
                   currentQuestion.explanation && (
                     <div className="mt-6 rounded-2xl bg-blue-50 p-5 text-sm leading-6 text-blue-700">
-                      <strong>Giải thích:</strong>{" "}
+                      <strong>Giáº£i thÃ­ch:</strong>{" "}
                       {currentQuestion.explanation}
                     </div>
                   )}
@@ -559,8 +559,8 @@ export default function ListeningPracticePage({
                         className="font-bold text-violet-600"
                       >
                         {showTranscript
-                          ? "Ẩn lời thoại"
-                          : "Xem lời thoại"}
+                          ? "áº¨n lá»i thoáº¡i"
+                          : "Xem lá»i thoáº¡i"}
                       </button>
 
                       {showTranscript && (
@@ -581,7 +581,7 @@ export default function ListeningPracticePage({
                     }
                     className="rounded-xl border px-6 py-3 font-bold disabled:opacity-40"
                   >
-                    Câu trước
+                    CÃ¢u trÆ°á»›c
                   </button>
 
                   <div className="flex gap-3">
@@ -594,7 +594,7 @@ export default function ListeningPracticePage({
                       className="inline-flex items-center gap-2 rounded-xl border px-5 py-3 font-bold disabled:opacity-40"
                     >
                       <SkipForward size={17} />
-                      Bỏ qua
+                      Bá» qua
                     </button>
 
                     <button
@@ -609,9 +609,9 @@ export default function ListeningPracticePage({
                       {currentQuestion.answered
                         ? currentIndex ===
                           practice.questions.length - 1
-                          ? "Hoàn thành"
-                          : "Câu tiếp theo"
-                        : "Nộp đáp án"}
+                          ? "HoÃ n thÃ nh"
+                          : "CÃ¢u tiáº¿p theo"
+                        : "Ná»™p Ä‘Ã¡p Ã¡n"}
                       <ChevronRight size={18} />
                     </button>
                   </div>
@@ -622,7 +622,7 @@ export default function ListeningPracticePage({
                 {dailyMission && (
                   <section className="rounded-3xl bg-gradient-to-br from-violet-700 to-indigo-600 p-6 text-white">
                     <p className="text-xs font-black text-white/70">
-                      NHIỆM VỤ LISTENING
+                      NHIá»†M Vá»¤ LISTENING
                     </p>
                     <h2 className="mt-2 font-black">
                       {dailyMission.title}
@@ -647,7 +647,7 @@ export default function ListeningPracticePage({
 
                 <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
                   <h2 className="font-black">
-                    Tiến độ bài học
+                    Tiáº¿n Ä‘á»™ bÃ i há»c
                   </h2>
                   <div className="mt-5 h-3 rounded-full bg-slate-100">
                     <div
@@ -661,7 +661,7 @@ export default function ListeningPracticePage({
                   <div className="mt-5 grid grid-cols-3 gap-2 text-center">
                     <ProgressItem
                       value={progress.correct}
-                      label="Đúng"
+                      label="ÄÃºng"
                       tone="green"
                     />
                     <ProgressItem
@@ -671,7 +671,7 @@ export default function ListeningPracticePage({
                     />
                     <ProgressItem
                       value={progress.skipped}
-                      label="Bỏ qua"
+                      label="Bá» qua"
                       tone="gray"
                     />
                   </div>
@@ -679,7 +679,7 @@ export default function ListeningPracticePage({
 
                 <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
                   <h2 className="font-black">
-                    Danh sách câu
+                    Danh sÃ¡ch cÃ¢u
                   </h2>
                   <div className="mt-4 grid grid-cols-5 gap-2">
                     {practice.questions.map(
@@ -713,10 +713,10 @@ export default function ListeningPracticePage({
                     <Headphones className="text-violet-600" />
                     <div>
                       <p className="font-black">
-                        Lượt nghe câu này
+                        LÆ°á»£t nghe cÃ¢u nÃ y
                       </p>
                       <p className="text-sm text-slate-500">
-                        {listenedCount} lượt
+                        {listenedCount} lÆ°á»£t
                       </p>
                     </div>
                   </div>
@@ -786,7 +786,7 @@ function PageState({
             onClick={action}
             className="mt-4 rounded-xl bg-violet-600 px-5 py-2 font-bold text-white"
           >
-            Tải lại
+            Táº£i láº¡i
           </button>
         )}
       </div>

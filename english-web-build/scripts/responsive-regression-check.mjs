@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 /**
  * Minimal responsive regression check for the duplicate-navigation defect
  * class fixed in docs/frontend-responsive-audit-report.md.
@@ -10,7 +10,7 @@
  *
  * Usage: node scripts/responsive-regression-check.mjs
  *
- * Not wired into `npm run build` or CI — run manually against a live dev
+ * Not wired into `npm run build` or CI â€” run manually against a live dev
  * server when touching AppShell, AppSidebar, AppHeader, MobileNavigation,
  * or any page-level layout shell.
  */
@@ -57,7 +57,7 @@ async function main() {
     const page = await context.newPage();
     await page.setViewportSize({ width: check.vp.w, height: check.vp.h });
     await page.goto(FRONTEND_URL + check.route, { waitUntil: "domcontentloaded", timeout: 25000 });
-    await page.waitForSelector(".lumiverse-shell", { timeout: 15000 }).catch(() => null);
+    await page.waitForSelector(".beaconvie-shell", { timeout: 15000 }).catch(() => null);
     await page.waitForTimeout(300);
 
     const result = await page.evaluate(() => {

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { Globe } from "lucide-react";
@@ -49,14 +49,14 @@ export default function LanguageSwitcher({
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
-        className="lumiverse-button-soft h-11 gap-1.5 px-2.5 text-sm"
+        className="BeaconVie-button-soft h-11 gap-1.5 px-2.5 text-sm"
       >
-        <Globe aria-hidden size={17} className="text-[var(--lumiverse-primary)]" />
+        <Globe aria-hidden size={17} className="text-[var(--BeaconVie-primary)]" />
         <span className="hidden sm:inline">{LOCALE_FLAGS[locale]}</span>
       </button>
 
       {open && (
-        <div className="lumiverse-surface absolute right-0 top-14 z-50 w-44 rounded-3xl p-1.5" role="menu">
+        <div className="BeaconVie-surface absolute right-0 top-14 z-50 w-44 rounded-3xl p-1.5" role="menu">
           {LOCALES.map((option) => (
             <button
               key={option}
@@ -66,8 +66,8 @@ export default function LanguageSwitcher({
               onClick={() => choose(option)}
               className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-bold transition ${
                 option === locale
-                  ? "bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]"
-                  : "text-[var(--lumiverse-muted)] hover:bg-[var(--lumiverse-hover-tint)]"
+                  ? "bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]"
+                  : "text-[var(--BeaconVie-muted)] hover:bg-[var(--BeaconVie-hover-tint)]"
               }`}
             >
               <span>{LOCALE_FLAGS[option]}</span>

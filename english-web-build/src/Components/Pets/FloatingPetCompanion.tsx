@@ -35,17 +35,17 @@ type QuickActionKey = "CHEER_UP" | "BANTER" | "QUICK_TIP";
 const PETS: Record<string, { color: string; label: string }> = {
   cat: { color: "#ff8a00", label: "mèo" },
   dog: { color: "#d97706", label: "chó" },
-  panda: { color: "#475569", label: "gấu trúc" },
+  panda: { color: "#475569", label: "g?u trúc" },
   fox: { color: "#ea580c", label: "cáo" },
-  penguin: { color: "#0284c7", label: "chim cánh cụt" },
-  rabbit: { color: "#db2777", label: "thỏ" },
+  penguin: { color: "#0284c7", label: "chim cánh c?t" },
+  rabbit: { color: "#db2777", label: "th?" },
 };
 
 const ENCOURAGEMENTS = [
-  "Bạn không cần học thật nhiều một lúc. Chỉ cần quay lại mỗi ngày là mình vui rồi.",
-  "Hôm nay mình ở đây canh streak cho bạn. Làm một nhiệm vụ nhỏ nhé?",
-  "Sai một câu không sao đâu. Sai là dấu vết của việc bạn đang thật sự học.",
-  "Nếu thấy mệt, mình đề xuất 5 phút nhẹ nhàng: một từ mới, một câu nói, một nụ cười.",
+  "B?n không c?n h?c th?t nhi?u m?t lúc. Ch? c?n quay l?i m?i ngày là mình vui r?i.",
+  "Hôm nay mình ? dây canh streak cho b?n. Làm m?t nhi?m v? nh? nhé?",
+  "Sai m?t câu không sao dâu. Sai là d?u v?t c?a vi?c b?n dang th?t s? h?c.",
+  "N?u th?y m?t, mình d? xu?t 5 phút nh? nhàng: m?t t? m?i, m?t câu nói, m?t n? cu?i.",
 ];
 
 export default function FloatingPetCompanion() {
@@ -104,8 +104,8 @@ export default function FloatingPetCompanion() {
         from: "pet",
         text:
           pet.mustChoosePet || !pet.isChosen
-            ? "Mình vẫn chưa thức tỉnh hoàn toàn. Chọn một linh thú để mình đồng hành với bạn nhé!"
-            : `Xin chào, mình là ${name}. Hôm nay mình sẽ đi theo cổ vũ bạn học tiếng Anh.`,
+            ? "Mình v?n chua th?c t?nh hoàn toàn. Ch?n m?t linh thú d? mình d?ng hành v?i b?n nhé!"
+            : `Xin chào, mình là ${name}. Hôm nay mình s? di theo c? vu b?n h?c ti?ng Anh.`,
       },
     ]);
   }, [pet, chatMessages.length]);
@@ -119,12 +119,12 @@ export default function FloatingPetCompanion() {
 
   const needsChoice = pet.mustChoosePet || !pet.isChosen;
   const petName = needsChoice ? "Linh thú" : pet.petName;
-  const bubbleTitle = needsChoice ? "Chọn linh thú" : `${petName} đang đi cùng bạn`;
+  const bubbleTitle = needsChoice ? "Ch?n linh thú" : `${petName} dang di cùng b?n`;
   const bubbleText = needsChoice
-    ? `Bạn còn ${pet.daysLeftToChoose ?? 7} ngày để chọn. Quá hạn hệ thống sẽ chọn ngẫu nhiên.`
+    ? `B?n còn ${pet.daysLeftToChoose ?? 7} ngày d? ch?n. Quá h?n h? th?ng s? ch?n ng?u nhiên.`
     : ENCOURAGEMENTS[messageIndex];
 
-  // Gọi API thật, dùng chung cho cả input tự do và quick action
+  // G?i API th?t, dùng chung cho c? input t? do và quick action
 const callPetChat = async (payload: { content?: string; quickAction?: QuickActionKey }) => {
   if (sending) return;
   setSending(true);
@@ -147,7 +147,7 @@ const callPetChat = async (payload: { content?: string; quickAction?: QuickActio
       setPet((current) => (current ? { ...current, ...data.petStatus } : current));
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Lumi đang lag xíu, thử lại sau nhé";
+    const message = error instanceof Error ? error.message : "Beacon dang lag xíu, th? l?i sau nhé";
     setChatMessages((current) => [...current, { id: Date.now() + 2, from: "pet", text: message }]);
   } finally {
     setSending(false);
@@ -179,7 +179,7 @@ const callPetChat = async (payload: { content?: string; quickAction?: QuickActio
                 type="button"
                 onClick={() => setBubbleOpen(false)}
                 className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-black text-[#5b6b85]"
-                aria-label="Ẩn lời nhắc linh thú"
+                aria-label="?n l?i nh?c linh thú"
               >
                 ×
               </button>
@@ -188,7 +188,7 @@ const callPetChat = async (payload: { content?: string; quickAction?: QuickActio
             {!needsChoice && (
               <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs font-extrabold text-[#5b6b85]">
                 <MiniStat label="Lv" value={pet.level || 1} />
-                <MiniStat label="🔥" value={pet.streak} />
+                <MiniStat label="??" value={pet.streak} />
                 <MiniStat label="HP" value={pet.hp} />
               </div>
             )}
@@ -202,7 +202,7 @@ const callPetChat = async (payload: { content?: string; quickAction?: QuickActio
               onClick={() => setModalOpen(true)}
               className="absolute -left-32 bottom-6 rounded-full bg-white px-4 py-2 text-xs font-extrabold text-[#ff6b00] shadow-lg ring-1 ring-[#ead8c2]"
             >
-              Gọi {petName}
+              G?i {petName}
             </button>
           )}
 
@@ -211,7 +211,7 @@ const callPetChat = async (payload: { content?: string; quickAction?: QuickActio
             onClick={() => setModalOpen(true)}
             className="group relative flex h-20 w-20 items-center justify-center rounded-[26px] bg-white text-5xl shadow-[0_24px_60px_rgba(31,42,68,0.22)] ring-4 ring-white transition hover:scale-105 sm:h-24 sm:w-24 sm:rounded-[30px] sm:text-6xl"
             style={{ background: `linear-gradient(145deg, white, ${petInfo.color}22)` }}
-            aria-label="Gọi linh thú đồng hành"
+            aria-label="G?i linh thú d?ng hành"
           >
             <SpiritPetAvatar
               petType={needsChoice ? "pending" : pet.petType}
@@ -220,10 +220,10 @@ const callPetChat = async (payload: { content?: string; quickAction?: QuickActio
               showLevelBadge={false}
             />
             <span className="absolute -right-1 -top-1 flex h-8 min-w-8 items-center justify-center rounded-full bg-[#ff6b00] px-2 text-xs font-black text-white shadow-lg">
-              {needsChoice ? "!" : `${pet.streak}🔥`}
+              {needsChoice ? "!" : `${pet.streak}??`}
             </span>
             <span className="absolute -bottom-2 rounded-full bg-[#1f2a44] px-3 py-1 text-xs font-extrabold text-white opacity-0 transition group-hover:opacity-100">
-              Gọi linh thú
+              G?i linh thú
             </span>
           </button>
         </div>
@@ -252,7 +252,7 @@ const callPetChat = async (payload: { content?: string; quickAction?: QuickActio
                 <h2 className="mt-5 text-center text-3xl font-black">{petName}</h2>
                 <p className="mt-2 text-center text-sm font-bold leading-6 text-white/75">
                   {needsChoice
-                    ? "Mình đang chờ bạn chọn hình dạng để thức tỉnh."
+                    ? "Mình dang ch? b?n ch?n hình d?ng d? th?c t?nh."
                     : `Lv ${pet.level || 1} · Streak ${pet.streak} ngày · HP ${pet.hp}/100`}
                 </p>
 
@@ -261,7 +261,7 @@ const callPetChat = async (payload: { content?: string; quickAction?: QuickActio
                   onClick={() => setModalOpen(false)}
                   className="mt-6 rounded-2xl bg-[#ff6b00] px-6 py-3 font-extrabold text-white shadow-lg shadow-orange-900/20"
                 >
-                  {needsChoice ? "Chọn linh thú" : "Chăm sóc linh thú"}
+                  {needsChoice ? "Ch?n linh thú" : "Cham sóc linh thú"}
                 </Link>
               </div>
 
@@ -269,17 +269,17 @@ const callPetChat = async (payload: { content?: string; quickAction?: QuickActio
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-sm font-extrabold uppercase tracking-wide text-[#ff6b00]">
-                      Góc trò chuyện
+                      Góc trò chuy?n
                     </p>
                     <h3 className="mt-1 text-2xl font-black text-[#1f2a44]">
-                      Gọi linh thú động viên bạn
+                      G?i linh thú d?ng viên b?n
                     </h3>
                   </div>
                   <button
                     type="button"
                     onClick={() => setModalOpen(false)}
                     className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-xl font-black text-[#1f2a44]"
-                    aria-label="Đóng modal linh thú"
+                    aria-label="Ðóng modal linh thú"
                   >
                     ×
                   </button>
@@ -287,17 +287,17 @@ const callPetChat = async (payload: { content?: string; quickAction?: QuickActio
 
                 <div className="mt-5 grid gap-3 sm:grid-cols-3">
                   <ActionButton
-                    label="Động viên mình"
+                    label="Ð?ng viên mình"
                     disabled={sending}
                     onClick={() => callPetChat({ quickAction: "CHEER_UP" })}
                   />
                   <ActionButton
-                    label="Nghịch một chút"
+                    label="Ngh?ch m?t chút"
                     disabled={sending}
                     onClick={() => callPetChat({ quickAction: "BANTER" })}
                   />
                   <ActionButton
-                    label="Gợi ý học nhanh"
+                    label="G?i ý h?c nhanh"
                     disabled={sending}
                     onClick={() => callPetChat({ quickAction: "QUICK_TIP" })}
                   />
@@ -321,7 +321,7 @@ const callPetChat = async (payload: { content?: string; quickAction?: QuickActio
         }}
         className="mt-2 rounded-xl bg-[#1f2a44] px-4 py-2 text-xs font-extrabold text-white hover:bg-[#2a3855]"
       >
-        {message.action.label} →
+        {message.action.label} ?
       </button>
     )}
   </div>
@@ -329,7 +329,7 @@ const callPetChat = async (payload: { content?: string; quickAction?: QuickActio
                   {sending && (
                     <div className="flex justify-start">
                       <div className="max-w-[82%] rounded-2xl bg-white px-4 py-3 text-sm font-bold text-[#5b6b85] shadow-sm">
-                        {petName} đang gõ...
+                        {petName} dang gõ...
                       </div>
                     </div>
                   )}
@@ -343,7 +343,7 @@ const callPetChat = async (payload: { content?: string; quickAction?: QuickActio
                       if (event.key === "Enter") sendMessage();
                     }}
                     disabled={sending}
-                    placeholder="Nói gì đó với linh thú..."
+                    placeholder="Nói gì dó v?i linh thú..."
                     className="min-h-12 flex-1 rounded-2xl border border-[#ead8c2] px-4 font-bold text-[#1f2a44] outline-none focus:border-[#ff6b00] disabled:opacity-60"
                   />
                   <button
@@ -352,7 +352,7 @@ const callPetChat = async (payload: { content?: string; quickAction?: QuickActio
                     disabled={sending || !chatInput.trim()}
                     className="rounded-2xl bg-[#1f2a44] px-5 py-3 font-extrabold text-white disabled:opacity-50"
                   >
-                    Gửi
+                    G?i
                   </button>
                 </div>
               </div>

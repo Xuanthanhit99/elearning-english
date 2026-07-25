@@ -1,4 +1,4 @@
-// One-off script to derive favicon/PWA/OG assets from the new Lumiverse
+﻿// One-off script to derive favicon/PWA/OG assets from the new BeaconVie
 // logo source files. Run with: node scripts/_gen-logo-assets.js
 // (temporary script, safe to delete after running)
 const path = require("path");

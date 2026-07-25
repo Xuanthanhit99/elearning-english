@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -45,7 +45,7 @@ export default function LearningPathGate({
         setError(
           err instanceof Error
             ? err.message
-            : 'Không thể kiểm tra quyền truy cập lộ trình.',
+            : 'KhÃ´ng thá»ƒ kiá»ƒm tra quyá»n truy cáº­p lá»™ trÃ¬nh.',
         );
       }
     })();
@@ -56,7 +56,7 @@ export default function LearningPathGate({
       <main className="flex min-h-[70vh] items-center justify-center p-6">
         <div className="w-full max-w-md rounded-3xl border border-red-100 bg-white p-8 text-center shadow-sm">
           <p className="font-black text-slate-900">
-            Không thể mở lộ trình học
+            KhÃ´ng thá»ƒ má»Ÿ lá»™ trÃ¬nh há»c
           </p>
           <p className="mt-3 text-sm leading-6 text-red-600">
             {error}
@@ -72,7 +72,7 @@ export default function LearningPathGate({
         <div className="text-center">
           <Loader2 className="mx-auto h-10 w-10 animate-spin text-violet-600" />
           <p className="mt-4 font-black text-slate-900">
-            Đang kiểm tra lộ trình học...
+            Äang kiá»ƒm tra lá»™ trÃ¬nh há»c...
           </p>
           {access?.message ? (
             <p className="mt-2 text-sm text-slate-500">

@@ -1,127 +1,127 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 /* Switch Tailwind's `dark:` variant from prefers-color-scheme to a
    `.dark` class on <html>, so the theme can be chosen explicitly
-   (Sáng/Tối/Theo hệ thống) instead of only following the OS. */
+   (SÃ¡ng/Tá»‘i/Theo há»‡ thá»‘ng) instead of only following the OS. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ===================================================================
    BeaconVie design tokens.
    Two themes, one continuous brand story: a lighthouse guiding a
-   learner across open water — Beacon Day (morning sky + ocean) and
+   learner across open water â€” Beacon Day (morning sky + ocean) and
    Beacon Night (deep ocean + the beacon's own light as the brightest
-   accent). Variable names keep the existing `--lumiverse-*` prefix so
+   accent). Variable names keep the existing `--BeaconVie-*` prefix so
    every consumer across the app keeps working unchanged; only the
    values and the token set were revisited for the rebrand.
    =================================================================== */
 :root {
-  /* Beacon Day — morning sky, soft ocean, sunlit horizon. */
+  /* Beacon Day â€” morning sky, soft ocean, sunlit horizon. */
   --background: #eef6ff;
   --foreground: #0d2440;
-  --lumiverse-ink: #0d2440;
-  --lumiverse-muted: #5b7291;
-  --lumiverse-primary: #1467e8;
-  --lumiverse-primary-strong: #0a3a86;
-  --lumiverse-cyan: #17b6e6;
-  --lumiverse-violet: #7c5cff;
-  --lumiverse-gold: #ffb648;
-  --lumiverse-rose: #ff5f7e;
-  --lumiverse-mint: #19c48c;
-  --lumiverse-card: rgba(255, 255, 255, 0.86);
-  --lumiverse-card-soft: rgba(255, 255, 255, 0.62);
-  --lumiverse-border: rgba(20, 103, 232, 0.16);
-  --lumiverse-ring: rgba(23, 120, 255, 0.32);
-  --lumiverse-shadow: 0 24px 70px rgba(13, 40, 90, 0.14);
-  --lumiverse-soft-shadow: 0 16px 38px rgba(13, 40, 90, 0.1);
-  --lumiverse-radius: 24px;
-  --lumiverse-radius-sm: 16px;
+  --BeaconVie-ink: #0d2440;
+  --BeaconVie-muted: #5b7291;
+  --BeaconVie-primary: #1467e8;
+  --BeaconVie-primary-strong: #0a3a86;
+  --BeaconVie-cyan: #17b6e6;
+  --BeaconVie-violet: #7c5cff;
+  --BeaconVie-gold: #ffb648;
+  --BeaconVie-rose: #ff5f7e;
+  --BeaconVie-mint: #19c48c;
+  --BeaconVie-card: rgba(255, 255, 255, 0.86);
+  --BeaconVie-card-soft: rgba(255, 255, 255, 0.62);
+  --BeaconVie-border: rgba(20, 103, 232, 0.16);
+  --BeaconVie-ring: rgba(23, 120, 255, 0.32);
+  --BeaconVie-shadow: 0 24px 70px rgba(13, 40, 90, 0.14);
+  --BeaconVie-soft-shadow: 0 16px 38px rgba(13, 40, 90, 0.1);
+  --BeaconVie-radius: 24px;
+  --BeaconVie-radius-sm: 16px;
 
   /* Semantic status tokens. */
-  --lumiverse-success: var(--lumiverse-mint);
-  --lumiverse-success-soft: rgba(25, 196, 140, 0.12);
-  --lumiverse-warning: #f5a623;
-  --lumiverse-warning-soft: rgba(245, 166, 35, 0.12);
-  --lumiverse-danger: var(--lumiverse-rose);
-  --lumiverse-danger-soft: rgba(255, 95, 126, 0.1);
+  --BeaconVie-success: var(--BeaconVie-mint);
+  --BeaconVie-success-soft: rgba(25, 196, 140, 0.12);
+  --BeaconVie-warning: #f5a623;
+  --BeaconVie-warning-soft: rgba(245, 166, 35, 0.12);
+  --BeaconVie-danger: var(--BeaconVie-rose);
+  --BeaconVie-danger-soft: rgba(255, 95, 126, 0.1);
 
   /* Interaction-state tokens. */
-  --lumiverse-focus: var(--lumiverse-ring);
-  --lumiverse-primary-soft: rgba(20, 103, 232, 0.1);
-  --lumiverse-hover-tint: rgba(20, 103, 232, 0.06);
-  --lumiverse-active-tint: rgba(20, 103, 232, 0.14);
-  --lumiverse-disabled: rgba(91, 114, 145, 0.38);
+  --BeaconVie-focus: var(--BeaconVie-ring);
+  --BeaconVie-primary-soft: rgba(20, 103, 232, 0.1);
+  --BeaconVie-hover-tint: rgba(20, 103, 232, 0.06);
+  --BeaconVie-active-tint: rgba(20, 103, 232, 0.14);
+  --BeaconVie-disabled: rgba(91, 114, 145, 0.38);
 
   /* Shell surfaces (header / sidebars / bottom nav / overlays). */
-  --lumiverse-shell-surface: rgba(255, 255, 255, 0.78);
-  --lumiverse-shell-surface-strong: rgba(255, 255, 255, 0.92);
-  --lumiverse-overlay: rgba(13, 36, 64, 0.4);
+  --BeaconVie-shell-surface: rgba(255, 255, 255, 0.78);
+  --BeaconVie-shell-surface-strong: rgba(255, 255, 255, 0.92);
+  --BeaconVie-overlay: rgba(13, 36, 64, 0.4);
 
-  /* Gamification accents — the beacon's light, applied to XP, rank, arena. */
-  --lumiverse-xp: var(--lumiverse-gold);
-  --lumiverse-ranking: #f2a93b;
-  --lumiverse-arena: var(--lumiverse-violet);
-  --lumiverse-notification: var(--lumiverse-rose);
+  /* Gamification accents â€” the beacon's light, applied to XP, rank, arena. */
+  --BeaconVie-xp: var(--BeaconVie-gold);
+  --BeaconVie-ranking: #f2a93b;
+  --BeaconVie-arena: var(--BeaconVie-violet);
+  --BeaconVie-notification: var(--BeaconVie-rose);
 
-  --lumiverse-ranking-soft: rgba(242, 169, 59, 0.12);
+  --BeaconVie-ranking-soft: rgba(242, 169, 59, 0.12);
 
   /* Qualitative chart palette (reuses brand accents for consistency). */
-  --lumiverse-chart-1: var(--lumiverse-cyan);
-  --lumiverse-chart-2: var(--lumiverse-violet);
-  --lumiverse-chart-3: var(--lumiverse-gold);
-  --lumiverse-chart-4: var(--lumiverse-mint);
-  --lumiverse-chart-5: var(--lumiverse-rose);
+  --BeaconVie-chart-1: var(--BeaconVie-cyan);
+  --BeaconVie-chart-2: var(--BeaconVie-violet);
+  --BeaconVie-chart-3: var(--BeaconVie-gold);
+  --BeaconVie-chart-4: var(--BeaconVie-mint);
+  --BeaconVie-chart-5: var(--BeaconVie-rose);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-poppins);
+  --font-mono: var(--font-poppins);
 }
 
 .dark {
-  /* Beacon Night — deep ocean navy, moonlight, the beacon's own glow.
+  /* Beacon Night â€” deep ocean navy, moonlight, the beacon's own glow.
      Deliberately navy, not black or neutral gray. */
   --background: #060f22;
   --foreground: #eaf1ff;
-  --lumiverse-ink: #eaf1ff;
-  --lumiverse-muted: #93a8d6;
-  --lumiverse-gold: #ffcf72;
-  --lumiverse-card: rgba(8, 16, 36, 0.88);
-  --lumiverse-card-soft: rgba(150, 180, 255, 0.08);
-  --lumiverse-border: rgba(150, 180, 255, 0.16);
-  --lumiverse-ring: rgba(76, 141, 255, 0.4);
-  --lumiverse-shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
-  --lumiverse-soft-shadow: 0 16px 38px rgba(0, 0, 0, 0.24);
+  --BeaconVie-ink: #eaf1ff;
+  --BeaconVie-muted: #93a8d6;
+  --BeaconVie-gold: #ffcf72;
+  --BeaconVie-card: rgba(8, 16, 36, 0.88);
+  --BeaconVie-card-soft: rgba(150, 180, 255, 0.08);
+  --BeaconVie-border: rgba(150, 180, 255, 0.16);
+  --BeaconVie-ring: rgba(76, 141, 255, 0.4);
+  --BeaconVie-shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+  --BeaconVie-soft-shadow: 0 16px 38px rgba(0, 0, 0, 0.24);
 
-  --lumiverse-success: #22d99a;
-  --lumiverse-success-soft: rgba(34, 217, 154, 0.16);
-  --lumiverse-warning: #ffb648;
-  --lumiverse-warning-soft: rgba(255, 182, 72, 0.16);
-  --lumiverse-danger: #ff6b85;
-  --lumiverse-danger-soft: rgba(255, 107, 133, 0.16);
+  --BeaconVie-success: #22d99a;
+  --BeaconVie-success-soft: rgba(34, 217, 154, 0.16);
+  --BeaconVie-warning: #ffb648;
+  --BeaconVie-warning-soft: rgba(255, 182, 72, 0.16);
+  --BeaconVie-danger: #ff6b85;
+  --BeaconVie-danger-soft: rgba(255, 107, 133, 0.16);
 
-  --lumiverse-focus: var(--lumiverse-ring);
-  --lumiverse-primary-soft: rgba(76, 141, 255, 0.16);
-  --lumiverse-hover-tint: rgba(150, 180, 255, 0.07);
-  --lumiverse-active-tint: rgba(150, 180, 255, 0.14);
-  --lumiverse-disabled: rgba(147, 168, 214, 0.32);
+  --BeaconVie-focus: var(--BeaconVie-ring);
+  --BeaconVie-primary-soft: rgba(76, 141, 255, 0.16);
+  --BeaconVie-hover-tint: rgba(150, 180, 255, 0.07);
+  --BeaconVie-active-tint: rgba(150, 180, 255, 0.14);
+  --BeaconVie-disabled: rgba(147, 168, 214, 0.32);
 
-  --lumiverse-shell-surface: rgba(6, 12, 28, 0.82);
-  --lumiverse-shell-surface-strong: rgba(6, 12, 28, 0.94);
-  --lumiverse-overlay: rgba(2, 6, 16, 0.6);
+  --BeaconVie-shell-surface: rgba(6, 12, 28, 0.82);
+  --BeaconVie-shell-surface-strong: rgba(6, 12, 28, 0.94);
+  --BeaconVie-overlay: rgba(2, 6, 16, 0.6);
 
-  --lumiverse-xp: var(--lumiverse-gold);
-  --lumiverse-ranking: #ffcf72;
-  --lumiverse-ranking-soft: rgba(255, 207, 114, 0.14);
-  --lumiverse-arena: #9b81ff;
-  --lumiverse-notification: var(--lumiverse-danger);
+  --BeaconVie-xp: var(--BeaconVie-gold);
+  --BeaconVie-ranking: #ffcf72;
+  --BeaconVie-ranking-soft: rgba(255, 207, 114, 0.14);
+  --BeaconVie-arena: #9b81ff;
+  --BeaconVie-notification: var(--BeaconVie-danger);
 
-  --lumiverse-chart-1: var(--lumiverse-cyan);
-  --lumiverse-chart-2: #9b81ff;
-  --lumiverse-chart-3: var(--lumiverse-gold);
-  --lumiverse-chart-4: var(--lumiverse-success);
-  --lumiverse-chart-5: var(--lumiverse-danger);
+  --BeaconVie-chart-1: var(--BeaconVie-cyan);
+  --BeaconVie-chart-2: #9b81ff;
+  --BeaconVie-chart-3: var(--BeaconVie-gold);
+  --BeaconVie-chart-4: var(--BeaconVie-success);
+  --BeaconVie-chart-5: var(--BeaconVie-danger);
 }
 
 body {
@@ -132,7 +132,7 @@ body {
     radial-gradient(circle at 50% 120%, rgba(255, 182, 72, 0.1), transparent 42rem),
     linear-gradient(180deg, #ffffff 0%, var(--background) 46%, #e6f2ff 100%);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-poppins), Arial, Helvetica, sans-serif;
   min-width: 320px;
   min-height: 100dvh;
 }
@@ -177,59 +177,59 @@ code {
 
 ::selection {
   background: rgba(23, 182, 230, 0.28);
-  color: var(--lumiverse-ink);
+  color: var(--BeaconVie-ink);
 }
 
 :focus-visible {
-  outline: 3px solid var(--lumiverse-focus);
+  outline: 3px solid var(--BeaconVie-focus);
   outline-offset: 2px;
 }
 
 /* Wrapped in the `components` layer (declared by `@import "tailwindcss"`
-   above) so Tailwind's own utilities — including responsive variants like
-   `lg:hidden` — always retain priority over these classes. Unlayered/plain
+   above) so Tailwind's own utilities â€” including responsive variants like
+   `lg:hidden` â€” always retain priority over these classes. Unlayered/plain
    CSS otherwise beats every layered utility regardless of source order or
    specificity, which previously made `lg:hidden`/`md:hidden` inert on any
-   element that also carried `.lumiverse-button-soft` or `.lumiverse-button-primary`
+   element that also carried `.BeaconVie-button-soft` or `.BeaconVie-button-primary`
    (both set `display: inline-flex` as plain CSS). */
 @layer components {
-  .lumiverse-shell {
-    color: var(--lumiverse-ink);
+  .BeaconVie-shell {
+    color: var(--BeaconVie-ink);
   }
 
-  .lumiverse-surface {
-    border: 1px solid var(--lumiverse-border);
-    background: var(--lumiverse-card);
-    box-shadow: var(--lumiverse-soft-shadow);
+  .BeaconVie-surface {
+    border: 1px solid var(--BeaconVie-border);
+    background: var(--BeaconVie-card);
+    box-shadow: var(--BeaconVie-soft-shadow);
     backdrop-filter: blur(18px);
   }
 
-  .lumiverse-card {
-    border: 1px solid var(--lumiverse-border);
-    background: var(--lumiverse-card);
-    border-radius: var(--lumiverse-radius);
-    box-shadow: var(--lumiverse-soft-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  .BeaconVie-card {
+    border: 1px solid var(--BeaconVie-border);
+    background: var(--BeaconVie-card);
+    border-radius: var(--BeaconVie-radius);
+    box-shadow: var(--BeaconVie-soft-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.5);
   }
 
-  .dark .lumiverse-card {
-    box-shadow: var(--lumiverse-soft-shadow), inset 0 1px 0 rgba(150, 180, 255, 0.08);
+  .dark .BeaconVie-card {
+    box-shadow: var(--BeaconVie-soft-shadow), inset 0 1px 0 rgba(150, 180, 255, 0.08);
   }
 
-  .lumiverse-gradient {
+  .BeaconVie-gradient {
     background:
       radial-gradient(circle at 18% 16%, rgba(255, 182, 72, 0.24), transparent 18rem),
       radial-gradient(circle at 88% 10%, rgba(23, 182, 230, 0.28), transparent 18rem),
-      linear-gradient(135deg, var(--lumiverse-primary-strong), var(--lumiverse-primary) 54%, var(--lumiverse-violet));
+      linear-gradient(135deg, var(--BeaconVie-primary-strong), var(--BeaconVie-primary) 54%, var(--BeaconVie-violet));
   }
 
-  .lumiverse-button-primary {
+  .BeaconVie-button-primary {
     display: inline-flex;
     min-height: 2.75rem;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     border-radius: 1rem;
-    background: linear-gradient(135deg, var(--lumiverse-primary), var(--lumiverse-violet));
+    background: linear-gradient(135deg, var(--BeaconVie-primary), var(--BeaconVie-violet));
     padding: 0.75rem 1rem;
     font-weight: 900;
     color: white;
@@ -237,244 +237,244 @@ code {
     transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
   }
 
-  .lumiverse-button-primary:hover {
+  .BeaconVie-button-primary:hover {
     transform: translateY(-1px);
     filter: saturate(1.08);
     box-shadow: 0 20px 42px rgba(20, 103, 232, 0.3);
   }
 
-  .lumiverse-button-soft {
+  .BeaconVie-button-soft {
     display: inline-flex;
     min-height: 2.5rem;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    border: 1px solid var(--lumiverse-border);
+    border: 1px solid var(--BeaconVie-border);
     border-radius: 1rem;
     background: rgba(255, 255, 255, 0.72);
     padding: 0.65rem 0.9rem;
     font-weight: 800;
-    color: var(--lumiverse-ink);
+    color: var(--BeaconVie-ink);
     transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
   }
 
-  .dark .lumiverse-button-soft {
+  .dark .BeaconVie-button-soft {
     background: rgba(8, 16, 36, 0.72);
   }
 
-  .lumiverse-button-soft:hover {
+  .BeaconVie-button-soft:hover {
     transform: translateY(-1px);
     border-color: rgba(20, 103, 232, 0.35);
     background: rgba(255, 255, 255, 0.92);
   }
 
-  .dark .lumiverse-button-soft:hover {
+  .dark .BeaconVie-button-soft:hover {
     background: rgba(11, 21, 46, 0.92);
   }
 
-  .lumiverse-input {
-    border: 1px solid var(--lumiverse-border);
+  .BeaconVie-input {
+    border: 1px solid var(--BeaconVie-border);
     border-radius: 1rem;
     background: rgba(255, 255, 255, 0.76);
-    color: var(--lumiverse-ink);
+    color: var(--BeaconVie-ink);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.58);
   }
 
-  .dark .lumiverse-input {
+  .dark .BeaconVie-input {
     background: rgba(8, 16, 36, 0.76);
   }
 
-  .lumiverse-input:focus {
+  .BeaconVie-input:focus {
     border-color: rgba(23, 182, 230, 0.78);
     background: rgba(255, 255, 255, 0.96);
   }
 
-  .dark .lumiverse-input:focus {
+  .dark .BeaconVie-input:focus {
     background: rgba(8, 16, 36, 0.96);
   }
 }
 
 /* Dark-mode compatibility for pre-token legacy screens.
-   Scope stays inside the Lumiverse document root and only maps known
+   Scope stays inside the BeaconVie document root and only maps known
    light-only neutral surfaces/text/borders to existing semantic tokens.
    Brand and status palettes such as red/green/amber/blue/purple are
    intentionally left untouched. Prefer component tokens for new work. */
-.dark .lumiverse-theme-compat .bg-white,
-.dark .lumiverse-theme-compat [class~="bg-white"] {
-  background-color: var(--lumiverse-card);
+.dark .BeaconVie-theme-compat .bg-white,
+.dark .BeaconVie-theme-compat [class~="bg-white"] {
+  background-color: var(--BeaconVie-card);
 }
 
-.dark .lumiverse-theme-compat [class~="bg-white/95"],
-.dark .lumiverse-theme-compat [class~="bg-white/90"],
-.dark .lumiverse-theme-compat [class~="bg-white/85"],
-.dark .lumiverse-theme-compat [class~="bg-white/80"],
-.dark .lumiverse-theme-compat [class~="bg-white/75"],
-.dark .lumiverse-theme-compat [class~="bg-white/70"],
-.dark .lumiverse-theme-compat [class~="bg-white/60"],
-.dark .lumiverse-theme-compat [class~="bg-white/50"],
-.dark .lumiverse-theme-compat [class~="bg-white/40"],
-.dark .lumiverse-theme-compat [class~="bg-white/30"],
-.dark .lumiverse-theme-compat [class~="bg-white/20"],
-.dark .lumiverse-theme-compat [class~="bg-white/15"],
-.dark .lumiverse-theme-compat [class~="bg-white/12"],
-.dark .lumiverse-theme-compat [class~="bg-white/10"],
-.dark .lumiverse-theme-compat [class~="bg-white/8"],
-.dark .lumiverse-theme-compat [class~="bg-white/6"],
-.dark .lumiverse-theme-compat [class*="bg-[#fff"],
-.dark .lumiverse-theme-compat [class*="bg-[#f8"],
-.dark .lumiverse-theme-compat [class*="bg-[#f7"],
-.dark .lumiverse-theme-compat [class*="bg-[#fb"],
-.dark .lumiverse-theme-compat [class*="bg-[#faf"],
-.dark .lumiverse-theme-compat [class*="bg-[#f5"],
-.dark .lumiverse-theme-compat [class*="bg-[#f4"],
-.dark .lumiverse-theme-compat [class*="bg-[#f3"],
-.dark .lumiverse-theme-compat [class*="bg-[#f2"],
-.dark .lumiverse-theme-compat [class*="bg-[#f1"],
-.dark .lumiverse-theme-compat [class*="bg-[#efe"],
-.dark .lumiverse-theme-compat [class*="bg-[#e8"],
-.dark .lumiverse-theme-compat [class*="bg-[#ead"],
-.dark .lumiverse-theme-compat [class*="bg-[#dfe"],
-.dark .lumiverse-theme-compat [class*="bg-[#eee"] {
-  background-color: var(--lumiverse-card-soft);
+.dark .BeaconVie-theme-compat [class~="bg-white/95"],
+.dark .BeaconVie-theme-compat [class~="bg-white/90"],
+.dark .BeaconVie-theme-compat [class~="bg-white/85"],
+.dark .BeaconVie-theme-compat [class~="bg-white/80"],
+.dark .BeaconVie-theme-compat [class~="bg-white/75"],
+.dark .BeaconVie-theme-compat [class~="bg-white/70"],
+.dark .BeaconVie-theme-compat [class~="bg-white/60"],
+.dark .BeaconVie-theme-compat [class~="bg-white/50"],
+.dark .BeaconVie-theme-compat [class~="bg-white/40"],
+.dark .BeaconVie-theme-compat [class~="bg-white/30"],
+.dark .BeaconVie-theme-compat [class~="bg-white/20"],
+.dark .BeaconVie-theme-compat [class~="bg-white/15"],
+.dark .BeaconVie-theme-compat [class~="bg-white/12"],
+.dark .BeaconVie-theme-compat [class~="bg-white/10"],
+.dark .BeaconVie-theme-compat [class~="bg-white/8"],
+.dark .BeaconVie-theme-compat [class~="bg-white/6"],
+.dark .BeaconVie-theme-compat [class*="bg-[#fff"],
+.dark .BeaconVie-theme-compat [class*="bg-[#f8"],
+.dark .BeaconVie-theme-compat [class*="bg-[#f7"],
+.dark .BeaconVie-theme-compat [class*="bg-[#fb"],
+.dark .BeaconVie-theme-compat [class*="bg-[#faf"],
+.dark .BeaconVie-theme-compat [class*="bg-[#f5"],
+.dark .BeaconVie-theme-compat [class*="bg-[#f4"],
+.dark .BeaconVie-theme-compat [class*="bg-[#f3"],
+.dark .BeaconVie-theme-compat [class*="bg-[#f2"],
+.dark .BeaconVie-theme-compat [class*="bg-[#f1"],
+.dark .BeaconVie-theme-compat [class*="bg-[#efe"],
+.dark .BeaconVie-theme-compat [class*="bg-[#e8"],
+.dark .BeaconVie-theme-compat [class*="bg-[#ead"],
+.dark .BeaconVie-theme-compat [class*="bg-[#dfe"],
+.dark .BeaconVie-theme-compat [class*="bg-[#eee"] {
+  background-color: var(--BeaconVie-card-soft);
 }
 
-.dark .lumiverse-theme-compat .bg-slate-50,
-.dark .lumiverse-theme-compat .bg-slate-100,
-.dark .lumiverse-theme-compat .bg-slate-200,
-.dark .lumiverse-theme-compat .bg-gray-50,
-.dark .lumiverse-theme-compat .bg-gray-100,
-.dark .lumiverse-theme-compat .bg-gray-200,
-.dark .lumiverse-theme-compat .bg-zinc-50,
-.dark .lumiverse-theme-compat .bg-zinc-100,
-.dark .lumiverse-theme-compat .bg-zinc-200,
-.dark .lumiverse-theme-compat [class~="bg-slate-50"],
-.dark .lumiverse-theme-compat [class~="bg-slate-100"],
-.dark .lumiverse-theme-compat [class~="bg-slate-200"],
-.dark .lumiverse-theme-compat [class~="bg-gray-50"],
-.dark .lumiverse-theme-compat [class~="bg-gray-100"],
-.dark .lumiverse-theme-compat [class~="bg-gray-200"],
-.dark .lumiverse-theme-compat [class~="bg-zinc-50"],
-.dark .lumiverse-theme-compat [class~="bg-zinc-100"],
-.dark .lumiverse-theme-compat [class~="bg-zinc-200"] {
-  background-color: var(--lumiverse-card-soft);
+.dark .BeaconVie-theme-compat .bg-slate-50,
+.dark .BeaconVie-theme-compat .bg-slate-100,
+.dark .BeaconVie-theme-compat .bg-slate-200,
+.dark .BeaconVie-theme-compat .bg-gray-50,
+.dark .BeaconVie-theme-compat .bg-gray-100,
+.dark .BeaconVie-theme-compat .bg-gray-200,
+.dark .BeaconVie-theme-compat .bg-zinc-50,
+.dark .BeaconVie-theme-compat .bg-zinc-100,
+.dark .BeaconVie-theme-compat .bg-zinc-200,
+.dark .BeaconVie-theme-compat [class~="bg-slate-50"],
+.dark .BeaconVie-theme-compat [class~="bg-slate-100"],
+.dark .BeaconVie-theme-compat [class~="bg-slate-200"],
+.dark .BeaconVie-theme-compat [class~="bg-gray-50"],
+.dark .BeaconVie-theme-compat [class~="bg-gray-100"],
+.dark .BeaconVie-theme-compat [class~="bg-gray-200"],
+.dark .BeaconVie-theme-compat [class~="bg-zinc-50"],
+.dark .BeaconVie-theme-compat [class~="bg-zinc-100"],
+.dark .BeaconVie-theme-compat [class~="bg-zinc-200"] {
+  background-color: var(--BeaconVie-card-soft);
 }
 
-.dark .lumiverse-theme-compat .border-slate-100,
-.dark .lumiverse-theme-compat .border-slate-200,
-.dark .lumiverse-theme-compat .border-slate-300,
-.dark .lumiverse-theme-compat .border-gray-100,
-.dark .lumiverse-theme-compat .border-gray-200,
-.dark .lumiverse-theme-compat .border-gray-300,
-.dark .lumiverse-theme-compat .border-zinc-100,
-.dark .lumiverse-theme-compat .border-zinc-200,
-.dark .lumiverse-theme-compat .border-zinc-300,
-.dark .lumiverse-theme-compat [class*="border-[#ead"],
-.dark .lumiverse-theme-compat [class*="border-[#e8"],
-.dark .lumiverse-theme-compat [class*="border-[#d9"],
-.dark .lumiverse-theme-compat [class*="border-[#dfe"],
-.dark .lumiverse-theme-compat [class*="border-[#b99"],
-.dark .lumiverse-theme-compat [class*="border-[#bfa"] {
-  border-color: var(--lumiverse-border);
+.dark .BeaconVie-theme-compat .border-slate-100,
+.dark .BeaconVie-theme-compat .border-slate-200,
+.dark .BeaconVie-theme-compat .border-slate-300,
+.dark .BeaconVie-theme-compat .border-gray-100,
+.dark .BeaconVie-theme-compat .border-gray-200,
+.dark .BeaconVie-theme-compat .border-gray-300,
+.dark .BeaconVie-theme-compat .border-zinc-100,
+.dark .BeaconVie-theme-compat .border-zinc-200,
+.dark .BeaconVie-theme-compat .border-zinc-300,
+.dark .BeaconVie-theme-compat [class*="border-[#ead"],
+.dark .BeaconVie-theme-compat [class*="border-[#e8"],
+.dark .BeaconVie-theme-compat [class*="border-[#d9"],
+.dark .BeaconVie-theme-compat [class*="border-[#dfe"],
+.dark .BeaconVie-theme-compat [class*="border-[#b99"],
+.dark .BeaconVie-theme-compat [class*="border-[#bfa"] {
+  border-color: var(--BeaconVie-border);
 }
 
-.dark .lumiverse-theme-compat .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
-.dark .lumiverse-theme-compat .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
-.dark .lumiverse-theme-compat .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
-.dark .lumiverse-theme-compat .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
-  border-color: var(--lumiverse-border);
+.dark .BeaconVie-theme-compat .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+.dark .BeaconVie-theme-compat .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+.dark .BeaconVie-theme-compat .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.dark .BeaconVie-theme-compat .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--BeaconVie-border);
 }
 
-.dark .lumiverse-theme-compat .text-slate-950,
-.dark .lumiverse-theme-compat .text-slate-900,
-.dark .lumiverse-theme-compat .text-slate-800,
-.dark .lumiverse-theme-compat .text-slate-700,
-.dark .lumiverse-theme-compat .text-gray-950,
-.dark .lumiverse-theme-compat .text-gray-900,
-.dark .lumiverse-theme-compat .text-gray-800,
-.dark .lumiverse-theme-compat .text-gray-700,
-.dark .lumiverse-theme-compat .text-zinc-950,
-.dark .lumiverse-theme-compat .text-zinc-900,
-.dark .lumiverse-theme-compat .text-zinc-800,
-.dark .lumiverse-theme-compat .text-zinc-700,
-.dark .lumiverse-theme-compat [class*="text-[#1f2a44]"],
-.dark .lumiverse-theme-compat [class*="text-[#101733]"],
-.dark .lumiverse-theme-compat [class*="text-[#121735]"],
-.dark .lumiverse-theme-compat [class*="text-[#303956]"],
-.dark .lumiverse-theme-compat [class*="text-[#27245f]"],
-.dark .lumiverse-theme-compat [class*="text-[#09083f]"],
-.dark .lumiverse-theme-compat [class*="text-[#08083d]"],
-.dark .lumiverse-theme-compat [class*="text-[#09093f]"] {
-  color: var(--lumiverse-ink);
+.dark .BeaconVie-theme-compat .text-slate-950,
+.dark .BeaconVie-theme-compat .text-slate-900,
+.dark .BeaconVie-theme-compat .text-slate-800,
+.dark .BeaconVie-theme-compat .text-slate-700,
+.dark .BeaconVie-theme-compat .text-gray-950,
+.dark .BeaconVie-theme-compat .text-gray-900,
+.dark .BeaconVie-theme-compat .text-gray-800,
+.dark .BeaconVie-theme-compat .text-gray-700,
+.dark .BeaconVie-theme-compat .text-zinc-950,
+.dark .BeaconVie-theme-compat .text-zinc-900,
+.dark .BeaconVie-theme-compat .text-zinc-800,
+.dark .BeaconVie-theme-compat .text-zinc-700,
+.dark .BeaconVie-theme-compat [class*="text-[#1f2a44]"],
+.dark .BeaconVie-theme-compat [class*="text-[#101733]"],
+.dark .BeaconVie-theme-compat [class*="text-[#121735]"],
+.dark .BeaconVie-theme-compat [class*="text-[#303956]"],
+.dark .BeaconVie-theme-compat [class*="text-[#27245f]"],
+.dark .BeaconVie-theme-compat [class*="text-[#09083f]"],
+.dark .BeaconVie-theme-compat [class*="text-[#08083d]"],
+.dark .BeaconVie-theme-compat [class*="text-[#09093f]"] {
+  color: var(--BeaconVie-ink);
 }
 
-.dark .lumiverse-theme-compat .text-slate-600,
-.dark .lumiverse-theme-compat .text-slate-500,
-.dark .lumiverse-theme-compat .text-slate-400,
-.dark .lumiverse-theme-compat .text-gray-600,
-.dark .lumiverse-theme-compat .text-gray-500,
-.dark .lumiverse-theme-compat .text-gray-400,
-.dark .lumiverse-theme-compat .text-zinc-600,
-.dark .lumiverse-theme-compat .text-zinc-500,
-.dark .lumiverse-theme-compat .text-zinc-400,
-.dark .lumiverse-theme-compat [class*="text-[#5b6b85]"],
-.dark .lumiverse-theme-compat [class*="text-[#69708b]"],
-.dark .lumiverse-theme-compat [class*="text-[#59627f]"],
-.dark .lumiverse-theme-compat [class*="text-[#6b7280]"],
-.dark .lumiverse-theme-compat [class*="text-[#8b91aa]"],
-.dark .lumiverse-theme-compat [class*="text-[#8a94a8]"],
-.dark .lumiverse-theme-compat [class*="text-[#a6a3c4]"],
-.dark .lumiverse-theme-compat [class*="text-[#73799b]"],
-.dark .lumiverse-theme-compat [class*="text-[#4f5575]"],
-.dark .lumiverse-theme-compat [class*="text-[#555d78]"] {
-  color: var(--lumiverse-muted);
+.dark .BeaconVie-theme-compat .text-slate-600,
+.dark .BeaconVie-theme-compat .text-slate-500,
+.dark .BeaconVie-theme-compat .text-slate-400,
+.dark .BeaconVie-theme-compat .text-gray-600,
+.dark .BeaconVie-theme-compat .text-gray-500,
+.dark .BeaconVie-theme-compat .text-gray-400,
+.dark .BeaconVie-theme-compat .text-zinc-600,
+.dark .BeaconVie-theme-compat .text-zinc-500,
+.dark .BeaconVie-theme-compat .text-zinc-400,
+.dark .BeaconVie-theme-compat [class*="text-[#5b6b85]"],
+.dark .BeaconVie-theme-compat [class*="text-[#69708b]"],
+.dark .BeaconVie-theme-compat [class*="text-[#59627f]"],
+.dark .BeaconVie-theme-compat [class*="text-[#6b7280]"],
+.dark .BeaconVie-theme-compat [class*="text-[#8b91aa]"],
+.dark .BeaconVie-theme-compat [class*="text-[#8a94a8]"],
+.dark .BeaconVie-theme-compat [class*="text-[#a6a3c4]"],
+.dark .BeaconVie-theme-compat [class*="text-[#73799b]"],
+.dark .BeaconVie-theme-compat [class*="text-[#4f5575]"],
+.dark .BeaconVie-theme-compat [class*="text-[#555d78]"] {
+  color: var(--BeaconVie-muted);
 }
 
-.dark .lumiverse-theme-compat input,
-.dark .lumiverse-theme-compat textarea,
-.dark .lumiverse-theme-compat select {
-  border-color: var(--lumiverse-border);
+.dark .BeaconVie-theme-compat input,
+.dark .BeaconVie-theme-compat textarea,
+.dark .BeaconVie-theme-compat select {
+  border-color: var(--BeaconVie-border);
   background-color: rgba(9, 19, 45, 0.78);
-  color: var(--lumiverse-ink);
+  color: var(--BeaconVie-ink);
 }
 
-.dark .lumiverse-theme-compat input::placeholder,
-.dark .lumiverse-theme-compat textarea::placeholder {
+.dark .BeaconVie-theme-compat input::placeholder,
+.dark .BeaconVie-theme-compat textarea::placeholder {
   color: rgba(174, 187, 224, 0.72);
 }
 
-.dark .lumiverse-theme-compat table,
-.dark .lumiverse-theme-compat thead,
-.dark .lumiverse-theme-compat tbody,
-.dark .lumiverse-theme-compat tr,
-.dark .lumiverse-theme-compat td,
-.dark .lumiverse-theme-compat th {
-  border-color: var(--lumiverse-border);
+.dark .BeaconVie-theme-compat table,
+.dark .BeaconVie-theme-compat thead,
+.dark .BeaconVie-theme-compat tbody,
+.dark .BeaconVie-theme-compat tr,
+.dark .BeaconVie-theme-compat td,
+.dark .BeaconVie-theme-compat th {
+  border-color: var(--BeaconVie-border);
 }
 
-.dark .lumiverse-theme-compat [role="dialog"],
-.dark .lumiverse-theme-compat [aria-modal="true"] {
-  color: var(--lumiverse-ink);
+.dark .BeaconVie-theme-compat [role="dialog"],
+.dark .BeaconVie-theme-compat [aria-modal="true"] {
+  color: var(--BeaconVie-ink);
 }
 
 @layer components {
-  .lumiverse-progress {
+  .BeaconVie-progress {
     overflow: hidden;
     border-radius: 999px;
     background: rgba(96, 112, 153, 0.14);
   }
 
-  .lumiverse-progress > * {
+  .BeaconVie-progress > * {
     border-radius: inherit;
-    background: linear-gradient(90deg, var(--lumiverse-cyan), var(--lumiverse-primary), var(--lumiverse-violet));
+    background: linear-gradient(90deg, var(--BeaconVie-cyan), var(--BeaconVie-primary), var(--BeaconVie-violet));
   }
 
-  .lumiverse-shimmer {
+  .BeaconVie-shimmer {
     position: relative;
     overflow: hidden;
   }
 
-  .lumiverse-shimmer::after {
-    animation: lumiverseShimmer 1.6s infinite;
+  .BeaconVie-shimmer::after {
+    animation: BeaconVieShimmer 1.6s infinite;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.62), transparent);
     content: "";
     inset: 0;
@@ -482,23 +482,23 @@ code {
     transform: translateX(-100%);
   }
 
-  .dark .lumiverse-shimmer::after {
+  .dark .BeaconVie-shimmer::after {
     background: linear-gradient(90deg, transparent, rgba(150, 180, 255, 0.16), transparent);
   }
 
-  /* Beacon glow — a soft, restrained highlight for gamification accents
+  /* Beacon glow â€” a soft, restrained highlight for gamification accents
      (XP, streak, ranking, arena). The lighthouse's own light: barely
      there by day, the brightest thing on the page by night. */
-  .lumiverse-beacon-glow {
+  .BeaconVie-beacon-glow {
     transition: filter 200ms ease, box-shadow 200ms ease;
   }
 
-  .dark .lumiverse-beacon-glow {
+  .dark .BeaconVie-beacon-glow {
     filter: drop-shadow(0 0 6px rgba(255, 207, 114, 0.45));
   }
 }
 
-@keyframes lumiverseShimmer {
+@keyframes BeaconVieShimmer {
   100% {
     transform: translateX(100%);
   }

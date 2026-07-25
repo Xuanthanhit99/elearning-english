@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/src/lib/axios";
@@ -36,7 +36,7 @@ export function useReadingMissions() {
       setDashboard(unwrap(response.data));
     } catch {
       /*
-       * Reading vẫn hoạt động khi Missions tạm lỗi.
+       * Reading váº«n hoáº¡t Ä‘á»™ng khi Missions táº¡m lá»—i.
        */
       setDashboard(null);
     } finally {
@@ -97,9 +97,9 @@ export function useReadingMissions() {
 }
 
 export function missionStatusText(mission: MissionItem) {
-  if (mission.status === "COMPLETED") return "Có thể nhận thưởng";
-  if (mission.status === "CLAIMED") return "Đã nhận thưởng";
-  if (mission.status === "EXPIRED") return "Đã hết hạn";
-  if (mission.status === "CANCELLED") return "Đã hủy";
+  if (mission.status === "COMPLETED") return "CÃ³ thá»ƒ nháº­n thÆ°á»Ÿng";
+  if (mission.status === "CLAIMED") return "ÄÃ£ nháº­n thÆ°á»Ÿng";
+  if (mission.status === "EXPIRED") return "ÄÃ£ háº¿t háº¡n";
+  if (mission.status === "CANCELLED") return "ÄÃ£ há»§y";
   return `${mission.progress}/${mission.target}`;
 }

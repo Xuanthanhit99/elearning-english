@@ -1,4 +1,4 @@
-# Lumiverse Home, Profile, Auth Redesign Report
+﻿# BeaconVie Home, Profile, Auth Redesign Report
 
 Ngay cap nhat: 2026-07-21
 

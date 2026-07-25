@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   Bookmark,
@@ -23,13 +23,13 @@ import { CommunityFollowButton } from "../community-club/CommunityFollowButton";
 import { useAuthStore } from "@/src/store/authStore";
 
 const typeLabel: Record<string, string> = {
-  SHARE: "Chia sẻ",
-  QUESTION: "Hỏi đáp",
-  SPEAKING: "Speaking",
-  WRITING: "Writing",
-  IMAGE: "Góc học tập",
-  ACHIEVEMENT: "Thành tích",
-  POLL: "Khảo sát",
+  SHARE: "Chia sáº»",
+  QUESTION: "Há»i Ä‘Ã¡p",
+  SPEAKING: "Luyện nói",
+  WRITING: "Luyện viết",
+  IMAGE: "GÃ³c há»c táº­p",
+  ACHIEVEMENT: "ThÃ nh tÃ­ch",
+  POLL: "Kháº£o sÃ¡t",
 };
 
 type CommunityPostView = CommunityPost & {
@@ -48,7 +48,7 @@ function authorName(post: CommunityPostView) {
     post.author.fullname ||
     post.author.name ||
     post.author.username ||
-    "Người dùng"
+    "NgÆ°á»i dÃ¹ng"
   );
 }
 
@@ -123,7 +123,7 @@ export function CommunityPostCard({
 
   async function sharePost() {
     const payload = {
-      title: post.title || "Bài viết cộng đồng",
+      title: post.title || "BÃ i viáº¿t cá»™ng Ä‘á»“ng",
       text: post.content.slice(0, 180),
       url: postUrl,
     };
@@ -146,7 +146,7 @@ export function CommunityPostCard({
         <header className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 gap-3">
             <img
-              src={post.author.avatar || "/cat-home.jpg"}
+              src={post.author.avatar || "/brand/beaconvie-ai-mascot.png"}
               alt={authorName(post)}
               className="h-12 w-12 shrink-0 rounded-full border-2 border-white object-cover shadow-sm ring-1 ring-slate-300"
             />
@@ -156,7 +156,7 @@ export function CommunityPostCard({
                 {authorName(post)}
               </div>
               <div className="mt-0.5 text-xs font-medium text-slate-600">
-                Level {post.author.level ?? 1} ·{" "}
+                Level {post.author.level ?? 1} Â·{" "}
                 {new Date(post.createdAt).toLocaleString("vi-VN")}
               </div>
             </div>
@@ -259,7 +259,7 @@ export function CommunityPostCard({
           >
             {copied ? <Check size={20} /> : <Share2 size={20} />}
             <span className="hidden sm:inline">
-              {copied ? "Đã sao chép" : "Chia sẻ"}
+              {copied ? "ÄÃ£ sao chÃ©p" : "Chia sáº»"}
             </span>
           </button>
 

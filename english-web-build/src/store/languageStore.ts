@@ -1,8 +1,8 @@
-import { create } from "zustand";
+﻿import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { DEFAULT_LOCALE, isLocale, Locale } from "@/src/i18n/types";
 
-const LOCALE_COOKIE = "lumiverse-locale";
+const LOCALE_COOKIE = "BeaconVie-locale";
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 
 function readCookieLocale(): Locale {
@@ -39,7 +39,7 @@ export const useLanguageStore = create<LanguageState>()(
       },
     }),
     {
-      name: "poppylingo-locale",
+      name: "BeaconVie-locale",
       onRehydrateStorage: () => (state) => {
         if (state?.locale) writeCookieLocale(state.locale);
       },

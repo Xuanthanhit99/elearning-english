@@ -1,10 +1,10 @@
-# Lumiverse Theme + i18n Review Report
+﻿# BeaconVie Theme + i18n Review Report
 
 ## 1. Executive summary
 
-Theme before changes: Lumiverse already had a custom theme foundation using Zustand persistence, a root `ThemeInitializer`, an inline anti-flash script in `app/layout.tsx`, Tailwind `.dark` class support, and Lumiverse CSS variables in `globals.css`. This was kept.
+Theme before changes: BeaconVie already had a custom theme foundation using Zustand persistence, a root `ThemeInitializer`, an inline anti-flash script in `app/layout.tsx`, Tailwind `.dark` class support, and BeaconVie CSS variables in `globals.css`. This was kept.
 
-i18n before changes: Lumiverse already had a custom TypeScript dictionary system, `useTranslation()`, four locales (`vi`, `en`, `zh`, `de`), `LanguageSwitcher`, and a persisted language store. This was kept.
+i18n before changes: BeaconVie already had a custom TypeScript dictionary system, `useTranslation()`, four locales (`vi`, `en`, `zh`, `de`), `LanguageSwitcher`, and a persisted language store. This was kept.
 
 Kept unchanged: no new theme/i18n library was introduced; route-prefix i18n was not added; auth redirect logic was not rewritten; database schema was not changed.
 
@@ -18,15 +18,15 @@ Final status: `READY WITH KNOWN LEGACY ISSUES`.
 
 Theme provider: custom root initializer, not `next-themes`. `ThemeInitializer` applies `.dark` on `<html>`.
 
-Theme persistence: `useThemeStore` with Zustand persist key `poppylingo-theme`; source of truth on client is local store. Backend User Settings is long-term sync only.
+Theme persistence: `useThemeStore` with Zustand persist key `beaconvie-theme`; source of truth on client is local store. Backend User Settings is long-term sync only.
 
-Background system: no separate user-selectable background theme was found in the active app shell. Existing page backgrounds use Lumiverse CSS variables and dark variants.
+Background system: no separate user-selectable background theme was found in the active app shell. Existing page backgrounds use BeaconVie CSS variables and dark variants.
 
 i18n library: custom TypeScript dictionaries and `useTranslation()` hook.
 
 Locale routing: no route prefix. `/`, `/dashboard`, `/profile`, auth pages, and callbacks keep their existing route behavior.
 
-Locale persistence: Zustand persist key `poppylingo-locale`, now mirrored into cookie `lumiverse-locale`.
+Locale persistence: Zustand persist key `beaconvie-locale`, now mirrored into cookie `beaconvie-locale`.
 
 User Settings integration: backend already has `UserSettings.theme` and `UserSettings.language`, validated by Prisma enums and `UpdateSettingsDto`. Frontend now reads settings once after authenticated bootstrap and applies them locally.
 
@@ -78,11 +78,11 @@ Tests:
 | Severity | File | Issue | Cause | Fix |
 | -------- | ---- | ----- | ----- | --- |
 | P0 | `AppShell.tsx` | Auth session error text was hard-coded and ASCII-only | Previous auth hardening added local text directly | Moved to `common.authSessionError*` keys |
-| P1 | `languageStore.ts` | Locale was only localStorage-backed | Existing no-prefix i18n did not mirror locale to cookie | Added `lumiverse-locale` cookie write/read |
+| P1 | `languageStore.ts` | Locale was only localStorage-backed | Existing no-prefix i18n did not mirror locale to cookie | Added `beaconvie-locale` cookie write/read |
 | P1 | `AuthInitializer.tsx` | Saved backend theme/language were not applied during bootstrap | Settings sync only happened inside Settings page | Read settings once after authenticated `/auth/me` |
 | P1 | `LanguageSwitcher.tsx` | Dropdown lacked complete menu semantics and Escape handling | Basic custom dropdown | Added `aria-haspopup`, `role=menu`, `menuitemradio`, Escape close |
 | P1 | `ThemeToggle.tsx` | Dropdown lacked complete menu semantics and Escape handling | Basic custom dropdown | Added `aria-haspopup`, `role=menu`, `menuitemradio`, Escape close |
-| P1 | `AppHeader.tsx` | Header still had hard-coded “Search all results” and locale-neutral number formatting | Mixed translated and direct strings | Added dictionary keys and locale formatter |
+| P1 | `AppHeader.tsx` | Header still had hard-coded â€œSearch all resultsâ€ and locale-neutral number formatting | Mixed translated and direct strings | Added dictionary keys and locale formatter |
 | P1 | i18n files | No automated dictionary consistency check | Custom i18n had no guardrail | Added `npm run i18n:check` |
 
 ## 5. Files changed
@@ -145,7 +145,7 @@ P1 handled:
 - Header stat number formatting now uses current locale.
 
 Kept intentionally:
-- Brand/product names such as Lumiverse, IELTS, TOEIC, CEFR.
+- Brand/product names such as BeaconVie, IELTS, TOEIC, CEFR.
 - Backend log/test text.
 - Legacy/admin/internal module strings outside this phase.
 
@@ -159,11 +159,11 @@ Reason: converting all legacy screens would be a broad copy/i18n migration and o
 
 ## 9. Persistence behavior
 
-Guest theme: local Zustand persistence via `poppylingo-theme`; root anti-flash script applies before hydration.
+Guest theme: local Zustand persistence via `beaconvie-theme`; root anti-flash script applies before hydration.
 
 Logged-in theme: local UI applies immediately. Backend setting is read once after auth bootstrap and applied as long-term sync.
 
-Guest locale: local Zustand persistence via `poppylingo-locale`, mirrored to cookie `lumiverse-locale`.
+Guest locale: local Zustand persistence via `beaconvie-locale`, mirrored to cookie `beaconvie-locale`.
 
 Logged-in locale: local UI applies immediately. Backend setting is read once after auth bootstrap and applied to the language store/cookie.
 

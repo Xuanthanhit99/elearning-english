@@ -1,4 +1,4 @@
-import { api } from "@/src/lib/axios";
+﻿import { api } from "@/src/lib/axios";
 
 export type AnalyticsRange = "7d" | "30d" | "90d";
 
@@ -252,7 +252,7 @@ export type CoachAdvice = {
 };
 
 // DashboardPage mounts `useCoachHeadline()` (hero) and `<AiCoachPanel />` (aside)
-// at the same time, each calling this on mount — without dedup that fires two
+// at the same time, each calling this on mount â€” without dedup that fires two
 // concurrent GET /analytics/coach requests, doubling Gemini cost on a cold cache.
 // Non-refresh calls share one in-flight request; `refresh: true` (explicit user
 // action, e.g. the retry button) always issues its own request.

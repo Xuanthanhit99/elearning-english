@@ -1,17 +1,17 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Users, Plus, KeyRound } from "lucide-react";
 import {
-  LumiverseButton,
-  LumiverseCard,
-  LumiverseSectionHeader,
-  LumiverseSkeleton,
-  LumiverseState,
-  LumiverseBadge,
-  LumiverseDialog,
-} from "@/src/Components/UI/Lumiverse";
+  BeaconVieButton,
+  BeaconVieCard,
+  BeaconVieSectionHeader,
+  BeaconVieSkeleton,
+  BeaconVieState,
+  BeaconVieBadge,
+  BeaconVieDialog,
+} from "@/src/Components/UI/BeaconVie";
 import {
   StudyRoomSummary,
   StudyRoomVisibility,
@@ -23,9 +23,9 @@ import {
 } from "@/src/lib/study-room-api";
 
 const STATUS_LABEL: Record<string, string> = {
-  WAITING: "Đang chờ",
-  IN_SESSION: "Đang học",
-  ENDED: "Đã kết thúc",
+  WAITING: "Äang chá»",
+  IN_SESSION: "Äang há»c",
+  ENDED: "ÄÃ£ káº¿t thÃºc",
 };
 
 export default function StudyRoomHubPage() {
@@ -62,27 +62,27 @@ export default function StudyRoomHubPage() {
       await joinStudyRoom(roomId);
       router.push(`/study-rooms/${roomId}`);
     } catch {
-      setError("Không thể tham gia phòng này. Vui lòng thử lại.");
+      setError("KhÃ´ng thá»ƒ tham gia phÃ²ng nÃ y. Vui lÃ²ng thá»­ láº¡i.");
       setJoiningId(null);
     }
   }
 
   return (
     <div className="space-y-6 px-4 py-6 lg:px-8">
-      <LumiverseSectionHeader
+      <BeaconVieSectionHeader
         eyebrow="Study Together"
-        title="Học nhóm cùng nhau, theo thời gian thực"
-        description="Tạo hoặc tham gia một phòng học nhóm, đặt mục tiêu thời gian chung, và nhận XP nhóm khi hoàn thành buổi học."
+        title="Há»c nhÃ³m cÃ¹ng nhau, theo thá»i gian thá»±c"
+        description="Táº¡o hoáº·c tham gia má»™t phÃ²ng há»c nhÃ³m, Ä‘áº·t má»¥c tiÃªu thá»i gian chung, vÃ  nháº­n XP nhÃ³m khi hoÃ n thÃ nh buá»•i há»c."
         action={
           <div className="flex gap-2">
-            <LumiverseButton tone="soft" onClick={() => setShowJoinCode(true)}>
+            <BeaconVieButton tone="soft" onClick={() => setShowJoinCode(true)}>
               <KeyRound aria-hidden className="h-4 w-4" />
-              Nhập mã mời
-            </LumiverseButton>
-            <LumiverseButton onClick={() => setShowCreate(true)}>
+              Nháº­p mÃ£ má»i
+            </BeaconVieButton>
+            <BeaconVieButton onClick={() => setShowCreate(true)}>
               <Plus aria-hidden className="h-4 w-4" />
-              Tạo phòng học
-            </LumiverseButton>
+              Táº¡o phÃ²ng há»c
+            </BeaconVieButton>
           </div>
         }
       />
@@ -101,11 +101,11 @@ export default function StudyRoomHubPage() {
             onClick={() => setTab(key)}
             className={`rounded-full px-4 py-2 text-sm font-black transition ${
               tab === key
-                ? "bg-[var(--lumiverse-primary)] text-white"
-                : "border border-[var(--lumiverse-border)] text-[var(--lumiverse-muted)] hover:bg-[var(--lumiverse-hover-tint)]"
+                ? "bg-[var(--BeaconVie-primary)] text-white"
+                : "border border-[var(--BeaconVie-border)] text-[var(--BeaconVie-muted)] hover:bg-[var(--BeaconVie-hover-tint)]"
             }`}
           >
-            {key === "BROWSE" ? "Khám phá" : "Phòng của tôi"}
+            {key === "BROWSE" ? "KhÃ¡m phÃ¡" : "PhÃ²ng cá»§a tÃ´i"}
           </button>
         ))}
       </div>
@@ -113,26 +113,26 @@ export default function StudyRoomHubPage() {
       {state.status === "loading" && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <LumiverseSkeleton key={i} className="h-44" />
+            <BeaconVieSkeleton key={i} className="h-44" />
           ))}
         </div>
       )}
 
       {state.status === "error" && (
-        <LumiverseState
-          title="Không thể tải danh sách phòng học"
-          description="Đã có lỗi xảy ra khi tải danh sách."
-          actionLabel="Thử lại"
+        <BeaconVieState
+          title="KhÃ´ng thá»ƒ táº£i danh sÃ¡ch phÃ²ng há»c"
+          description="ÄÃ£ cÃ³ lá»—i xáº£y ra khi táº£i danh sÃ¡ch."
+          actionLabel="Thá»­ láº¡i"
           onAction={load}
           tone="error"
         />
       )}
 
       {state.status === "ready" && state.data.length === 0 && (
-        <LumiverseState
-          title={tab === "BROWSE" ? "Chưa có phòng học công khai nào" : "Bạn chưa tham gia phòng nào"}
-          description="Hãy tạo một phòng học mới để bắt đầu."
-          actionLabel="Tạo phòng học"
+        <BeaconVieState
+          title={tab === "BROWSE" ? "ChÆ°a cÃ³ phÃ²ng há»c cÃ´ng khai nÃ o" : "Báº¡n chÆ°a tham gia phÃ²ng nÃ o"}
+          description="HÃ£y táº¡o má»™t phÃ²ng há»c má»›i Ä‘á»ƒ báº¯t Ä‘áº§u."
+          actionLabel="Táº¡o phÃ²ng há»c"
           onAction={() => setShowCreate(true)}
         />
       )}
@@ -140,30 +140,30 @@ export default function StudyRoomHubPage() {
       {state.status === "ready" && state.data.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {state.data.map((room) => (
-            <LumiverseCard key={room.id} className="flex flex-col p-5">
+            <BeaconVieCard key={room.id} className="flex flex-col p-5">
               <div className="mb-3 flex items-center justify-between gap-2">
-                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]">
+                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]">
                   <Users aria-hidden className="h-5 w-5" />
                 </span>
-                <LumiverseBadge>{STATUS_LABEL[room.status] ?? room.status}</LumiverseBadge>
+                <BeaconVieBadge>{STATUS_LABEL[room.status] ?? room.status}</BeaconVieBadge>
               </div>
-              <h3 className="text-lg font-black text-[var(--lumiverse-ink)]">{room.name}</h3>
+              <h3 className="text-lg font-black text-[var(--BeaconVie-ink)]">{room.name}</h3>
               {room.topic && (
-                <p className="mt-1 text-sm font-semibold text-[var(--lumiverse-muted)]">{room.topic}</p>
+                <p className="mt-1 text-sm font-semibold text-[var(--BeaconVie-muted)]">{room.topic}</p>
               )}
-              <div className="mt-3 flex flex-wrap gap-3 text-xs font-bold text-[var(--lumiverse-muted)]">
-                <span>{room.memberCount}/{room.maxMembers} thành viên</span>
-                <span>{room.goalMinutes} phút/buổi</span>
+              <div className="mt-3 flex flex-wrap gap-3 text-xs font-bold text-[var(--BeaconVie-muted)]">
+                <span>{room.memberCount}/{room.maxMembers} thÃ nh viÃªn</span>
+                <span>{room.goalMinutes} phÃºt/buá»•i</span>
               </div>
-              <LumiverseButton
+              <BeaconVieButton
                 className="mt-4 w-full"
                 tone="soft"
                 loading={joiningId === room.id}
                 onClick={() => handleJoin(room.id)}
               >
                 Tham gia
-              </LumiverseButton>
-            </LumiverseCard>
+              </BeaconVieButton>
+            </BeaconVieCard>
           ))}
         </div>
       )}
@@ -197,7 +197,7 @@ function CreateRoomDialog({
 
   async function submit() {
     if (!name.trim()) {
-      setError("Vui lòng nhập tên phòng học.");
+      setError("Vui lÃ²ng nháº­p tÃªn phÃ²ng há»c.");
       return;
     }
     setSubmitting(true);
@@ -206,72 +206,72 @@ function CreateRoomDialog({
       const room = await createStudyRoom({ name, topic: topic || undefined, goalMinutes, maxMembers, visibility });
       onCreated(room.id);
     } catch {
-      setError("Không thể tạo phòng học. Vui lòng thử lại.");
+      setError("KhÃ´ng thá»ƒ táº¡o phÃ²ng há»c. Vui lÃ²ng thá»­ láº¡i.");
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <LumiverseDialog open={open} onClose={onClose} titleId="create-study-room-title" labelledBy="create-study-room-title">
-      <h2 id="create-study-room-title" className="text-lg font-black text-[var(--lumiverse-ink)]">
-        Tạo phòng học nhóm
+    <BeaconVieDialog open={open} onClose={onClose} titleId="create-study-room-title" labelledBy="create-study-room-title">
+      <h2 id="create-study-room-title" className="text-lg font-black text-[var(--BeaconVie-ink)]">
+        Táº¡o phÃ²ng há»c nhÃ³m
       </h2>
       <div className="mt-4 space-y-3">
         <input
-          className="w-full rounded-xl border border-[var(--lumiverse-border)] bg-transparent px-3 py-2 text-sm font-semibold"
-          placeholder="Tên phòng học"
+          className="w-full rounded-xl border border-[var(--BeaconVie-border)] bg-transparent px-3 py-2 text-sm font-semibold"
+          placeholder="TÃªn phÃ²ng há»c"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
         <input
-          className="w-full rounded-xl border border-[var(--lumiverse-border)] bg-transparent px-3 py-2 text-sm font-semibold"
-          placeholder="Chủ đề (không bắt buộc)"
+          className="w-full rounded-xl border border-[var(--BeaconVie-border)] bg-transparent px-3 py-2 text-sm font-semibold"
+          placeholder="Chá»§ Ä‘á» (khÃ´ng báº¯t buá»™c)"
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
         />
         <div className="flex gap-3">
-          <label className="flex-1 text-xs font-bold text-[var(--lumiverse-muted)]">
-            Mục tiêu (phút)
+          <label className="flex-1 text-xs font-bold text-[var(--BeaconVie-muted)]">
+            Má»¥c tiÃªu (phÃºt)
             <input
               type="number"
               min={5}
               max={180}
-              className="mt-1 w-full rounded-xl border border-[var(--lumiverse-border)] bg-transparent px-3 py-2 text-sm font-semibold"
+              className="mt-1 w-full rounded-xl border border-[var(--BeaconVie-border)] bg-transparent px-3 py-2 text-sm font-semibold"
               value={goalMinutes}
               onChange={(e) => setGoalMinutes(Number(e.target.value))}
             />
           </label>
-          <label className="flex-1 text-xs font-bold text-[var(--lumiverse-muted)]">
-            Số thành viên tối đa
+          <label className="flex-1 text-xs font-bold text-[var(--BeaconVie-muted)]">
+            Sá»‘ thÃ nh viÃªn tá»‘i Ä‘a
             <input
               type="number"
               min={2}
               max={30}
-              className="mt-1 w-full rounded-xl border border-[var(--lumiverse-border)] bg-transparent px-3 py-2 text-sm font-semibold"
+              className="mt-1 w-full rounded-xl border border-[var(--BeaconVie-border)] bg-transparent px-3 py-2 text-sm font-semibold"
               value={maxMembers}
               onChange={(e) => setMaxMembers(Number(e.target.value))}
             />
           </label>
         </div>
-        <label className="block text-xs font-bold text-[var(--lumiverse-muted)]">
-          Quyền riêng tư
+        <label className="block text-xs font-bold text-[var(--BeaconVie-muted)]">
+          Quyá»n riÃªng tÆ°
           <select
-            className="mt-1 w-full rounded-xl border border-[var(--lumiverse-border)] bg-transparent px-3 py-2 text-sm font-semibold"
+            className="mt-1 w-full rounded-xl border border-[var(--BeaconVie-border)] bg-transparent px-3 py-2 text-sm font-semibold"
             value={visibility}
             onChange={(e) => setVisibility(e.target.value as StudyRoomVisibility)}
           >
-            <option value="PUBLIC">Công khai</option>
-            <option value="PRIVATE">Riêng tư</option>
-            <option value="INVITE_ONLY">Chỉ mời</option>
+            <option value="PUBLIC">CÃ´ng khai</option>
+            <option value="PRIVATE">RiÃªng tÆ°</option>
+            <option value="INVITE_ONLY">Chá»‰ má»i</option>
           </select>
         </label>
         {error && <p className="text-sm font-bold text-rose-600">{error}</p>}
-        <LumiverseButton className="w-full" loading={submitting} onClick={submit}>
-          Tạo phòng
-        </LumiverseButton>
+        <BeaconVieButton className="w-full" loading={submitting} onClick={submit}>
+          Táº¡o phÃ²ng
+        </BeaconVieButton>
       </div>
-    </LumiverseDialog>
+    </BeaconVieDialog>
   );
 }
 
@@ -296,29 +296,29 @@ function JoinByCodeDialog({
       const room = await joinStudyRoomByCode(code.trim());
       onJoined(room.id);
     } catch {
-      setError("Mã mời không hợp lệ hoặc đã hết hạn.");
+      setError("MÃ£ má»i khÃ´ng há»£p lá»‡ hoáº·c Ä‘Ã£ háº¿t háº¡n.");
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <LumiverseDialog open={open} onClose={onClose} titleId="join-by-code-title" labelledBy="join-by-code-title">
-      <h2 id="join-by-code-title" className="text-lg font-black text-[var(--lumiverse-ink)]">
-        Tham gia bằng mã mời
+    <BeaconVieDialog open={open} onClose={onClose} titleId="join-by-code-title" labelledBy="join-by-code-title">
+      <h2 id="join-by-code-title" className="text-lg font-black text-[var(--BeaconVie-ink)]">
+        Tham gia báº±ng mÃ£ má»i
       </h2>
       <div className="mt-4 space-y-3">
         <input
-          className="w-full rounded-xl border border-[var(--lumiverse-border)] bg-transparent px-3 py-2 text-sm font-semibold uppercase"
-          placeholder="Nhập mã mời"
+          className="w-full rounded-xl border border-[var(--BeaconVie-border)] bg-transparent px-3 py-2 text-sm font-semibold uppercase"
+          placeholder="Nháº­p mÃ£ má»i"
           value={code}
           onChange={(e) => setCode(e.target.value)}
         />
         {error && <p className="text-sm font-bold text-rose-600">{error}</p>}
-        <LumiverseButton className="w-full" loading={submitting} onClick={submit}>
+        <BeaconVieButton className="w-full" loading={submitting} onClick={submit}>
           Tham gia
-        </LumiverseButton>
+        </BeaconVieButton>
       </div>
-    </LumiverseDialog>
+    </BeaconVieDialog>
   );
 }

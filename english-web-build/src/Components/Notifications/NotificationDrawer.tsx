@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { safeNotificationHref } from "@/src/lib/notification-navigation";
 import { useNotificationStore } from "@/src/store/notificationStore";
@@ -81,14 +81,14 @@ export default function NotificationDrawer({
         inert={!open}
         aria-hidden={!open}
         className={[
-          "fixed right-0 top-0 z-50 h-dvh w-full max-w-md border-l border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] shadow-2xl backdrop-blur-xl transition-transform duration-300",
+          "fixed right-0 top-0 z-50 h-dvh w-full max-w-md border-l border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] shadow-2xl backdrop-blur-xl transition-transform duration-300",
           open ? "translate-x-0" : "translate-x-full",
         ].join(" ")}
       >
-        <div className="flex h-16 items-center justify-between border-b border-[var(--lumiverse-border)] px-5">
+        <div className="flex h-16 items-center justify-between border-b border-[var(--BeaconVie-border)] px-5">
           <div>
-            <h2 className="text-lg font-black text-[var(--lumiverse-ink)]">Thong bao</h2>
-            <p className="text-xs font-bold text-[var(--lumiverse-muted)]">
+            <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">Thong bao</h2>
+            <p className="text-xs font-bold text-[var(--BeaconVie-muted)]">
               {unreadCount} chua doc
             </p>
           </div>
@@ -96,7 +96,7 @@ export default function NotificationDrawer({
             <button
               type="button"
               onClick={() => void markAllRead()}
-              className="rounded-xl bg-[var(--lumiverse-card-soft)] px-3 py-2 text-xs font-black text-[var(--lumiverse-primary)] transition hover:bg-[var(--lumiverse-hover-tint)]"
+              className="rounded-xl bg-[var(--BeaconVie-card-soft)] px-3 py-2 text-xs font-black text-[var(--BeaconVie-primary)] transition hover:bg-[var(--BeaconVie-hover-tint)]"
             >
               Doc tat ca
             </button>
@@ -104,7 +104,7 @@ export default function NotificationDrawer({
               type="button"
               aria-label="Dong thong bao"
               onClick={onClose}
-              className="grid h-9 w-9 place-items-center rounded-xl border border-[var(--lumiverse-border)] text-[var(--lumiverse-muted)] transition hover:bg-[var(--lumiverse-card-soft)] hover:text-[var(--lumiverse-ink)]"
+              className="grid h-9 w-9 place-items-center rounded-xl border border-[var(--BeaconVie-border)] text-[var(--BeaconVie-muted)] transition hover:bg-[var(--BeaconVie-card-soft)] hover:text-[var(--BeaconVie-ink)]"
             >
               <X size={18} aria-hidden />
             </button>
@@ -117,7 +117,7 @@ export default function NotificationDrawer({
               {Array.from({ length: 4 }).map((_, index) => (
                 <div
                   key={index}
-                  className="h-24 animate-pulse rounded-2xl bg-[var(--lumiverse-card-soft)]"
+                  className="h-24 animate-pulse rounded-2xl bg-[var(--BeaconVie-card-soft)]"
                 />
               ))}
             </div>
@@ -141,7 +141,7 @@ export default function NotificationDrawer({
                     key={item.id}
                     className={`rounded-2xl border p-4 transition ${
                       item.isRead
-                        ? "border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)]"
+                        ? "border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)]"
                         : "border-violet-200 bg-violet-50 dark:border-violet-400/30 dark:bg-violet-500/10"
                     }`}
                   >
@@ -158,14 +158,14 @@ export default function NotificationDrawer({
                           }}
                           className="block"
                         >
-                          <h3 className="line-clamp-1 font-black text-[var(--lumiverse-ink)]">
+                          <h3 className="line-clamp-1 font-black text-[var(--BeaconVie-ink)]">
                             {item.title}
                           </h3>
-                          <p className="mt-1 line-clamp-2 text-sm font-bold text-[var(--lumiverse-muted)]">
+                          <p className="mt-1 line-clamp-2 text-sm font-bold text-[var(--BeaconVie-muted)]">
                             {item.message}
                           </p>
                         </Link>
-                        <p className="mt-2 text-xs font-bold text-[var(--lumiverse-muted)]">
+                        <p className="mt-2 text-xs font-bold text-[var(--BeaconVie-muted)]">
                           {timeAgo(item.createdAt)}
                         </p>
                       </div>
@@ -173,7 +173,7 @@ export default function NotificationDrawer({
                         type="button"
                         aria-label="Luu tru thong bao"
                         onClick={() => void archive(item.id)}
-                        className="grid h-8 w-8 shrink-0 place-items-center rounded-xl text-[var(--lumiverse-muted)] transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-200"
+                        className="grid h-8 w-8 shrink-0 place-items-center rounded-xl text-[var(--BeaconVie-muted)] transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-200"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -184,18 +184,18 @@ export default function NotificationDrawer({
               <Link
                 href="/notifications"
                 onClick={onClose}
-                className="flex h-12 items-center justify-center rounded-2xl border border-[var(--lumiverse-border)] font-black text-[var(--lumiverse-primary)] transition hover:bg-[var(--lumiverse-card-soft)]"
+                className="flex h-12 items-center justify-center rounded-2xl border border-[var(--BeaconVie-border)] font-black text-[var(--BeaconVie-primary)] transition hover:bg-[var(--BeaconVie-card-soft)]"
               >
                 Xem tat ca
               </Link>
             </div>
           ) : (
-            <div className="rounded-3xl border border-dashed border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] p-8 text-center">
-              <Bell className="mx-auto text-[var(--lumiverse-muted)]" size={42} />
-              <h3 className="mt-4 font-black text-[var(--lumiverse-ink)]">
+            <div className="rounded-3xl border border-dashed border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-8 text-center">
+              <Bell className="mx-auto text-[var(--BeaconVie-muted)]" size={42} />
+              <h3 className="mt-4 font-black text-[var(--BeaconVie-ink)]">
                 Chua co thong bao
               </h3>
-              <p className="mt-2 text-sm font-bold text-[var(--lumiverse-muted)]">
+              <p className="mt-2 text-sm font-bold text-[var(--BeaconVie-muted)]">
                 Khi co nhiem vu, thanh tich hoac nhac hoc moi, ban se thay o day.
               </p>
             </div>

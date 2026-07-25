@@ -1,4 +1,4 @@
-import WritingPage from "@/src/Components/WritingPage/WritingPage";
+﻿import WritingPage from "@/src/Components/WritingPage/WritingPage";
 
 
 export default function WritingLog() {

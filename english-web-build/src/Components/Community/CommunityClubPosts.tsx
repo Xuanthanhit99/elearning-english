@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Loader2, Plus, Send } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -94,10 +94,10 @@ export function CommunityClubPosts({
               </span>
               <span>
                 <strong className="block text-slate-900">
-                  Đăng bài trong câu lạc bộ
+                  ÄÄƒng bÃ i trong cÃ¢u láº¡c bá»™
                 </strong>
                 <small className="text-slate-500">
-                  Chia sẻ kiến thức hoặc đặt câu hỏi cho thành viên.
+                  Chia sáº» kiáº¿n thá»©c hoáº·c Ä‘áº·t cÃ¢u há»i cho thÃ nh viÃªn.
                 </small>
               </span>
             </button>
@@ -114,8 +114,8 @@ export function CommunityClubPosts({
                   }
                   className="rounded-xl border-2 border-slate-200 px-4 py-3"
                 >
-                  <option value="SHARE">Chia sẻ</option>
-                  <option value="QUESTION">Hỏi đáp</option>
+                  <option value="SHARE">Chia sáº»</option>
+                  <option value="QUESTION">Há»i Ä‘Ã¡p</option>
                   <option value="SPEAKING">Speaking</option>
                   <option value="WRITING">Writing</option>
                 </select>
@@ -128,7 +128,7 @@ export function CommunityClubPosts({
                       title: event.target.value,
                     }))
                   }
-                  placeholder="Tiêu đề"
+                  placeholder="TiÃªu Ä‘á»"
                   className="rounded-xl border-2 border-slate-200 px-4 py-3"
                 />
               </div>
@@ -142,7 +142,7 @@ export function CommunityClubPosts({
                   }))
                 }
                 rows={5}
-                placeholder="Nội dung bài viết..."
+                placeholder="Ná»™i dung bÃ i viáº¿t..."
                 className="w-full resize-none rounded-xl border-2 border-slate-200 px-4 py-3 outline-none focus:border-indigo-500"
               />
 
@@ -154,7 +154,7 @@ export function CommunityClubPosts({
                     tags: event.target.value,
                   }))
                 }
-                placeholder="Tags, cách nhau bằng dấu phẩy"
+                placeholder="Tags, cÃ¡ch nhau báº±ng dáº¥u pháº©y"
                 className="w-full rounded-xl border-2 border-slate-200 px-4 py-3"
               />
 
@@ -164,7 +164,7 @@ export function CommunityClubPosts({
                   onClick={() => setCreating(false)}
                   className="rounded-xl px-4 py-2.5 font-bold text-slate-700"
                 >
-                  Hủy
+                  Há»§y
                 </button>
 
                 <button
@@ -178,7 +178,7 @@ export function CommunityClubPosts({
                   ) : (
                     <Send size={17} />
                   )}
-                  Đăng bài
+                  ÄÄƒng bÃ i
                 </button>
               </div>
             </div>
@@ -188,15 +188,15 @@ export function CommunityClubPosts({
 
       {loading ? (
         <div className="rounded-3xl border bg-white py-12 text-center text-slate-500">
-          Đang tải bài viết...
+          Äang táº£i bÃ i viáº¿t...
         </div>
       ) : items.length === 0 ? (
         <div className="rounded-3xl border-2 border-dashed border-slate-300 bg-white py-12 text-center">
           <p className="font-bold text-slate-800">
-            Chưa có bài viết trong câu lạc bộ
+            ChÆ°a cÃ³ bÃ i viáº¿t trong cÃ¢u láº¡c bá»™
           </p>
           <p className="mt-1 text-sm text-slate-500">
-            Hãy bắt đầu cuộc thảo luận đầu tiên.
+            HÃ£y báº¯t Ä‘áº§u cuá»™c tháº£o luáº­n Ä‘áº§u tiÃªn.
           </p>
         </div>
       ) : (
@@ -211,7 +211,7 @@ export function CommunityClubPosts({
           onClick={() => void load(false)}
           className="w-full rounded-xl border-2 border-slate-200 bg-white py-3 font-bold text-indigo-700"
         >
-          Xem thêm
+          Xem thÃªm
         </button>
       )}
     </div>

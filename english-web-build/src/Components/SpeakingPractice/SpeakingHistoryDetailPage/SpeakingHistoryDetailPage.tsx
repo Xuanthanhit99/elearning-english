@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -80,7 +80,7 @@ export default function SpeakingHistoryDetailPage() {
                 onClick={() => router.push('/speaking/history')}
                 className="mb-6 text-sm font-bold text-purple-600"
               >
-                ← Back to History
+                â† Back to History
               </button>
 
               <div className="mb-7 flex items-center justify-between">
@@ -236,7 +236,7 @@ function OverviewTab({ data }: { data: SpeakingHistoryDetailResponse }) {
       <ScoreCards data={data} />
 
       <div className="rounded-2xl border border-indigo-100 bg-white p-6">
-        <h2 className="mb-5 text-lg font-extrabold">🤖 AI Feedback</h2>
+        <h2 className="mb-5 text-lg font-extrabold">ðŸ¤– AI Feedback</h2>
 
         <div className="rounded-xl border border-indigo-100 bg-purple-50 p-5 text-sm leading-7 text-indigo-600">
           {data.aiFeedback.feedback}
@@ -245,13 +245,13 @@ function OverviewTab({ data }: { data: SpeakingHistoryDetailResponse }) {
         <div className="mt-6 grid grid-cols-2 gap-5">
           <ListBox
             title="Strengths"
-            icon="✅"
+            icon="âœ…"
             items={data.aiFeedback.strengths}
           />
 
           <ListBox
             title="Areas to Improve"
-            icon="⚠️"
+            icon="âš ï¸"
             items={data.aiFeedback.areasToImprove}
           />
         </div>
@@ -268,25 +268,25 @@ function ScoreCards({ data }: { data: SpeakingHistoryDetailResponse }) {
       title: 'Overall Score',
       score: data.scores.overallScore,
       label: data.scores.labels.overallScore,
-      icon: '◔',
+      icon: 'â—”',
     },
     {
       title: 'Fluency',
       score: data.scores.fluency,
       label: data.scores.labels.fluency,
-      icon: '🔊',
+      icon: 'ðŸ”Š',
     },
     {
       title: 'Pronunciation',
       score: data.scores.pronunciation,
       label: data.scores.labels.pronunciation,
-      icon: '🎙️',
+      icon: 'ðŸŽ™ï¸',
     },
     {
       title: 'Vocabulary',
       score: data.scores.vocabulary,
       label: data.scores.labels.vocabulary,
-      icon: '📖',
+      icon: 'ðŸ“–',
     },
     {
       title: 'Grammar',
@@ -340,7 +340,7 @@ function ListBox({
 
       <ul className="space-y-3 text-sm text-indigo-600">
         {items.map((item) => (
-          <li key={item}>● {item}</li>
+          <li key={item}>â— {item}</li>
         ))}
       </ul>
     </div>
@@ -414,10 +414,10 @@ function FeedbackTab({ data }: { data: SpeakingHistoryDetailResponse }) {
       </p>
 
       <div className="mt-6 grid grid-cols-2 gap-5">
-        <ListBox title="Strengths" icon="✅" items={data.aiFeedback.strengths} />
+        <ListBox title="Strengths" icon="âœ…" items={data.aiFeedback.strengths} />
         <ListBox
           title="Areas to Improve"
-          icon="⚠️"
+          icon="âš ï¸"
           items={data.aiFeedback.areasToImprove}
         />
       </div>
@@ -430,7 +430,7 @@ function VocabularyTab() {
     <div className="rounded-2xl border border-indigo-100 bg-white p-6">
       <h2 className="text-xl font-extrabold">Vocabulary</h2>
       <p className="mt-3 text-sm text-indigo-500">
-        Chỗ này có thể hiển thị từ vựng Gemini gợi ý sau khi chấm bài.
+        Chá»— nÃ y cÃ³ thá»ƒ hiá»ƒn thá»‹ tá»« vá»±ng Gemini gá»£i Ã½ sau khi cháº¥m bÃ i.
       </p>
     </div>
   );

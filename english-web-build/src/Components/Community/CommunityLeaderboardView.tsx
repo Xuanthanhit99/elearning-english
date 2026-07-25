@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Medal, Trophy } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -23,18 +23,18 @@ export function CommunityLeaderboardView() {
             <Trophy size={22} />
           </div>
           <div>
-            <h2 className="text-xl font-bold">Bảng xếp hạng</h2>
+            <h2 className="text-xl font-bold">Báº£ng xáº¿p háº¡ng</h2>
             <p className="text-sm text-slate-500">
-              Xếp hạng theo hoạt động trong cộng đồng.
+              Xáº¿p háº¡ng theo hoáº¡t Ä‘á»™ng trong cá»™ng Ä‘á»“ng.
             </p>
           </div>
         </div>
 
         <div className="flex rounded-xl bg-slate-100 p-1">
           {[
-            ['WEEKLY', 'Tuần'],
-            ['MONTHLY', 'Tháng'],
-            ['ALL_TIME', 'Tất cả'],
+            ['WEEKLY', 'Tuáº§n'],
+            ['MONTHLY', 'ThÃ¡ng'],
+            ['ALL_TIME', 'Táº¥t cáº£'],
           ].map(([value, label]) => (
             <button
               key={value}
@@ -79,7 +79,7 @@ export function CommunityLeaderboardView() {
               )}
             </div>
             <img
-              src={item.user.avatar || '/cat-home.jpg'}
+              src={item.user.avatar || '/brand/beaconvie-ai-mascot.png'}
               alt=""
               className="h-11 w-11 rounded-full object-cover"
             />
@@ -92,7 +92,7 @@ export function CommunityLeaderboardView() {
               </span>
             </div>
             <strong className="text-indigo-600">
-              {item.points} điểm
+              {item.points} Ä‘iá»ƒm
             </strong>
           </div>
         ))}

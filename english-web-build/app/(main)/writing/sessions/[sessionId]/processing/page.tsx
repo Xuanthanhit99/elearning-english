@@ -1,4 +1,4 @@
-import WritingProcessingPage from '@/src/Components/WritingPage/WritingProcessingPage';
+﻿import WritingProcessingPage from '@/src/Components/WritingPage/WritingProcessingPage';
 
 export default async function WritingSessionProcessing({
   params,

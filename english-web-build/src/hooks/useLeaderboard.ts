@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   useCallback,
@@ -52,7 +52,7 @@ export function useLeaderboard(input: {
       setError(
         cause instanceof Error
           ? cause.message
-          : 'Không thể tải bảng xếp hạng.',
+          : 'KhÃ´ng thá»ƒ táº£i báº£ng xáº¿p háº¡ng.',
       );
     } finally {
       setLoading(false);

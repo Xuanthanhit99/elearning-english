@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   CalendarDays,
@@ -46,37 +46,37 @@ const baseTabs: Array<{
 }> = [
   {
     key: "OVERVIEW",
-    label: "Tổng quan",
+    label: "Tá»•ng quan",
     icon: LayoutDashboard,
   },
   {
     key: "POSTS",
-    label: "Bài viết",
+    label: "BÃ i viáº¿t",
     icon: Newspaper,
   },
   {
     key: "CHAT",
-    label: "Chat nhóm",
+    label: "Chat nhÃ³m",
     icon: MessageCircle,
   },
   {
     key: "MEMBERS",
-    label: "Thành viên",
+    label: "ThÃ nh viÃªn",
     icon: Users,
   },
   {
     key: "CHALLENGES",
-    label: "Thử thách",
+    label: "Thá»­ thÃ¡ch",
     icon: Trophy,
   },
   {
     key: "EVENTS",
-    label: "Sự kiện",
+    label: "Sá»± kiá»‡n",
     icon: CalendarDays,
   },
   {
     key: "RESOURCES",
-    label: "Tài liệu",
+    label: "TÃ i liá»‡u",
     icon: FileText,
   },
 ];
@@ -130,7 +130,7 @@ const canManageClub =
       ...baseTabs,
       {
         key: "MANAGEMENT" as ClubTab,
-        label: "Quản lý",
+        label: "Quáº£n lÃ½",
         icon: Settings,
       },
     ];
@@ -142,7 +142,7 @@ const canManageClub =
       setError("");
       setClub(await getCommunityClub(clubId));
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Không thể tải câu lạc bộ");
+      setError(e instanceof Error ? e.message : "KhÃ´ng thá»ƒ táº£i cÃ¢u láº¡c bá»™");
     } finally {
       setLoading(false);
     }
@@ -192,14 +192,14 @@ const canManageClub =
         );
       } else {
         setError(
-          "Yêu cầu tham gia đã được gửi và đang chờ quản trị viên duyệt.",
+          "YÃªu cáº§u tham gia Ä‘Ã£ Ä‘Æ°á»£c gá»­i vÃ  Ä‘ang chá» quáº£n trá»‹ viÃªn duyá»‡t.",
         );
       }
     } catch (e) {
       setError(
         e instanceof Error
           ? e.message
-          : "Không thể cập nhật trạng thái tham gia",
+          : "KhÃ´ng thá»ƒ cáº­p nháº­t tráº¡ng thÃ¡i tham gia",
       );
     } finally {
       setJoinLoading(false);
@@ -208,17 +208,17 @@ const canManageClub =
 
   if (loading) {
     return (
-      <div className="rounded-3xl border-2 border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-12 text-center font-semibold text-slate-600 shadow-sm">
-        Đang tải câu lạc bộ...
+      <div className="rounded-3xl border-2 border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-12 text-center font-semibold text-slate-600 shadow-sm">
+        Äang táº£i cÃ¢u láº¡c bá»™...
       </div>
     );
   }
 
   if (!club) {
     return (
-      <div className="rounded-3xl border-2 border-[var(--lumiverse-danger)]/30 bg-[var(--lumiverse-danger-soft)] p-12 text-center">
-        <h2 className="font-extrabold text-[var(--lumiverse-danger)]">Không thể mở câu lạc bộ</h2>
-        <p className="mt-2 text-sm text-[var(--lumiverse-danger)]">{error}</p>
+      <div className="rounded-3xl border-2 border-[var(--BeaconVie-danger)]/30 bg-[var(--BeaconVie-danger-soft)] p-12 text-center">
+        <h2 className="font-extrabold text-[var(--BeaconVie-danger)]">KhÃ´ng thá»ƒ má»Ÿ cÃ¢u láº¡c bá»™</h2>
+        <p className="mt-2 text-sm text-[var(--BeaconVie-danger)]">{error}</p>
       </div>
     );
   }
@@ -243,8 +243,8 @@ const canManageClub =
           <CommunityClubChat clubId={activeClub.id} />
         ) : (
           <JoinRequiredPanel
-            title="Chat nhóm chỉ dành cho thành viên"
-            description="Tham gia câu lạc bộ để trò chuyện realtime với các thành viên khác."
+            title="Chat nhÃ³m chá»‰ dÃ nh cho thÃ nh viÃªn"
+            description="Tham gia cÃ¢u láº¡c bá»™ Ä‘á»ƒ trÃ² chuyá»‡n realtime vá»›i cÃ¡c thÃ nh viÃªn khÃ¡c."
             onJoin={toggleJoin}
           />
         );
@@ -294,9 +294,9 @@ const canManageClub =
             onDeleted={() => router.push("/community")}
           />
         ) : (
-          <div className="rounded-3xl border-2 border-[var(--lumiverse-danger)]/30 bg-[var(--lumiverse-danger-soft)] px-6 py-12 text-center">
-            <h3 className="font-extrabold text-[var(--lumiverse-danger)]">
-              Bạn không có quyền quản lý câu lạc bộ
+          <div className="rounded-3xl border-2 border-[var(--BeaconVie-danger)]/30 bg-[var(--BeaconVie-danger-soft)] px-6 py-12 text-center">
+            <h3 className="font-extrabold text-[var(--BeaconVie-danger)]">
+              Báº¡n khÃ´ng cÃ³ quyá»n quáº£n lÃ½ cÃ¢u láº¡c bá»™
             </h3>
           </div>
         );
@@ -305,12 +305,12 @@ const canManageClub =
 
   return (
     <div className="space-y-5">
-      <section className="overflow-hidden rounded-3xl border-2 border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] shadow-md">
+      <section className="overflow-hidden rounded-3xl border-2 border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] shadow-md">
         <div className="relative h-52 bg-gradient-to-br from-indigo-600 to-violet-700">
           {club.coverUrl && (
             <img
               src={resolveMediaUrl(club.coverUrl)}
-              alt={`Ảnh bìa ${club.name}`}
+              alt={`áº¢nh bÃ¬a ${club.name}`}
               onError={(event) => {
                 event.currentTarget.style.display = "none";
               }}
@@ -327,7 +327,7 @@ const canManageClub =
               {club.iconUrl ? (
                 <img
                   src={resolveMediaUrl(club.iconUrl)}
-                  alt={`Biểu tượng ${club.name}`}
+                  alt={`Biá»ƒu tÆ°á»£ng ${club.name}`}
                   onError={(event) => {
                     event.currentTarget.style.display = "none";
                   }}
@@ -344,16 +344,16 @@ const canManageClub =
               </h1>
 
               <div className="mt-1 flex flex-wrap items-center gap-3 text-sm font-semibold text-slate-600">
-                <span>{club.memberCount} thành viên</span>
-                <span>{club.postCount} bài viết</span>
+                <span>{club.memberCount} thÃ nh viÃªn</span>
+                <span>{club.postCount} bÃ i viáº¿t</span>
                 <span>
                   {club.privacy === "PUBLIC"
-                    ? "Câu lạc bộ công khai"
-                    : "Câu lạc bộ riêng tư"}
+                    ? "CÃ¢u láº¡c bá»™ cÃ´ng khai"
+                    : "CÃ¢u láº¡c bá»™ riÃªng tÆ°"}
                 </span>
 
                 {club.myRole && (
-                  <span className="flex items-center gap-1 rounded-full bg-[var(--lumiverse-primary-soft)] px-2.5 py-1 text-xs text-[var(--lumiverse-primary)]">
+                  <span className="flex items-center gap-1 rounded-full bg-[var(--BeaconVie-primary-soft)] px-2.5 py-1 text-xs text-[var(--BeaconVie-primary)]">
                     <ShieldCheck size={13} />
                     {club.myRole}
                   </span>
@@ -374,24 +374,24 @@ const canManageClub =
               disabled={joinLoading}
               className={`rounded-xl px-5 py-3 font-extrabold transition disabled:opacity-50 ${
                 club.joined
-                  ? "border-2 border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] text-[var(--lumiverse-ink)] hover:bg-[var(--lumiverse-hover-tint)]"
-                  : "bg-[var(--lumiverse-primary)] text-white hover:brightness-110"
+                  ? "border-2 border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] text-[var(--BeaconVie-ink)] hover:bg-[var(--BeaconVie-hover-tint)]"
+                  : "bg-[var(--BeaconVie-primary)] text-white hover:brightness-110"
               }`}
             >
               {joinLoading
-                ? "Đang xử lý..."
+                ? "Äang xá»­ lÃ½..."
                 : club.myRole === "OWNER"
-                  ? "Quản lý câu lạc bộ"
+                  ? "Quáº£n lÃ½ cÃ¢u láº¡c bá»™"
                   : club.joined
-                    ? "Rời câu lạc bộ"
+                    ? "Rá»i cÃ¢u láº¡c bá»™"
                     : club.privacy === "PRIVATE"
-                      ? "Xin gia nhập"
-                      : "Tham gia câu lạc bộ"}
+                      ? "Xin gia nháº­p"
+                      : "Tham gia cÃ¢u láº¡c bá»™"}
             </button>
           </div>
 
           <p className="mt-5 max-w-4xl text-sm leading-7 text-slate-700">
-            {club.description || "Câu lạc bộ chưa có mô tả."}
+            {club.description || "CÃ¢u láº¡c bá»™ chÆ°a cÃ³ mÃ´ táº£."}
           </p>
 
           {club.tags.length > 0 && (
@@ -399,7 +399,7 @@ const canManageClub =
               {club.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full bg-[var(--lumiverse-primary-soft)] px-3 py-1 text-xs font-bold text-[var(--lumiverse-primary)]"
+                  className="rounded-full bg-[var(--BeaconVie-primary-soft)] px-3 py-1 text-xs font-bold text-[var(--BeaconVie-primary)]"
                 >
                   #{tag}
                 </span>
@@ -415,7 +415,7 @@ const canManageClub =
         </div>
       )}
 
-      <nav className="flex gap-2 overflow-x-auto rounded-2xl border-2 border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] p-2 shadow-sm">
+      <nav className="flex gap-2 overflow-x-auto rounded-2xl border-2 border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-2 shadow-sm">
         {tabs.map((item) => {
           const Icon = item.icon;
 
@@ -426,7 +426,7 @@ const canManageClub =
               onClick={() => setTab(item.key)}
               className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition ${
                 tab === item.key
-                  ? "bg-[var(--lumiverse-primary)] text-white shadow-sm"
+                  ? "bg-[var(--BeaconVie-primary)] text-white shadow-sm"
                   : "text-slate-700 hover:bg-slate-100"
               }`}
             >
@@ -452,8 +452,8 @@ function JoinRequiredPanel({
   onJoin: () => Promise<void>;
 }) {
   return (
-    <div className="rounded-3xl border-2 border-[var(--lumiverse-border)] bg-[var(--lumiverse-card)] px-6 py-14 text-center shadow-sm">
-      <Users size={34} className="mx-auto text-[var(--lumiverse-primary)]" />
+    <div className="rounded-3xl border-2 border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] px-6 py-14 text-center shadow-sm">
+      <Users size={34} className="mx-auto text-[var(--BeaconVie-primary)]" />
       <h3 className="mt-4 text-lg font-extrabold text-slate-950">{title}</h3>
       <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-600">
         {description}
@@ -461,9 +461,9 @@ function JoinRequiredPanel({
       <button
         type="button"
         onClick={() => void onJoin()}
-        className="mt-5 rounded-xl bg-[var(--lumiverse-primary)] px-5 py-3 font-bold text-white"
+        className="mt-5 rounded-xl bg-[var(--BeaconVie-primary)] px-5 py-3 font-bold text-white"
       >
-        Tham gia câu lạc bộ
+        Tham gia cÃ¢u láº¡c bá»™
       </button>
     </div>
   );

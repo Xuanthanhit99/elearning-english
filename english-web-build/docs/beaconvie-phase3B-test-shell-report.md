@@ -1,8 +1,8 @@
-# Lumiverse Phase 3B Report: Placement Test Shell
+﻿# BeaconVie Phase 3B Report: Placement Test Shell
 
 ## Summary
 
-Phase 3B refactors the Placement Test Shell into a focused Lumiverse testing surface. It keeps the existing placement session API, answer persistence, skip logic, flag persistence, timer calculation, Speaking/Writing specialized endpoints, processing redirect, and reload recovery behavior.
+Phase 3B refactors the Placement Test Shell into a focused BeaconVie testing surface. It keeps the existing placement session API, answer persistence, skip logic, flag persistence, timer calculation, Speaking/Writing specialized endpoints, processing redirect, and reload recovery behavior.
 
 No backend, Prisma, database, auth, httpOnly cookie, refresh token, route, or API contract changes were made.
 

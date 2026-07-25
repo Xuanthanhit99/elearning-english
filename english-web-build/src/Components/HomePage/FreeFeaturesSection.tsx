@@ -1,20 +1,20 @@
-const features = [
+﻿const features = [
   {
-    icon: "🎓",
-    title: "Học miễn phí",
-    desc: "Bài học mở về từ vựng, nghe ngắn, mẫu câu giao tiếp và quiz cơ bản.",
+    icon: "ðŸŽ“",
+    title: "Há»c miá»…n phÃ­",
+    desc: "BÃ i há»c má»Ÿ vá» tá»« vá»±ng, nghe ngáº¯n, máº«u cÃ¢u giao tiáº¿p vÃ  quiz cÆ¡ báº£n.",
     bg: "bg-[#fff0dc]",
   },
   {
-    icon: "📝",
-    title: "Check bài miễn phí",
-    desc: "Gửi đoạn văn ngắn để sửa lỗi ngữ pháp, từ vựng và cách diễn đạt.",
+    icon: "ðŸ“",
+    title: "Check bÃ i miá»…n phÃ­",
+    desc: "Gá»­i Ä‘oáº¡n vÄƒn ngáº¯n Ä‘á»ƒ sá»­a lá»—i ngá»¯ phÃ¡p, tá»« vá»±ng vÃ  cÃ¡ch diá»…n Ä‘áº¡t.",
     bg: "bg-[#f3eefb]",
   },
   {
-    icon: "🔤",
-    title: "Check từ miễn phí",
-    desc: "Tra nghĩa, IPA, ví dụ, phát âm và cụm từ thường dùng.",
+    icon: "ðŸ”¤",
+    title: "Check tá»« miá»…n phÃ­",
+    desc: "Tra nghÄ©a, IPA, vÃ­ dá»¥, phÃ¡t Ã¢m vÃ  cá»¥m tá»« thÆ°á»ng dÃ¹ng.",
     bg: "bg-[#e9fbf3]",
   },
 ];
@@ -25,16 +25,16 @@ export function FreeFeaturesSection() {
       <div className="mx-auto max-w-6xl px-4">
         <div className="mx-auto mb-12 max-w-3xl text-center">
           <p className="mb-4 text-sm font-extrabold uppercase tracking-[0.25em] text-[#ff6b00]">
-            Tính năng miễn phí
+            TÃ­nh nÄƒng miá»…n phÃ­
           </p>
 
           <h2 className="text-4xl font-extrabold tracking-tight text-[#1f2a44] sm:text-5xl">
-            Bắt đầu học mà không cần trả phí
+            Báº¯t Ä‘áº§u há»c mÃ  khÃ´ng cáº§n tráº£ phÃ­
           </h2>
 
           <p className="mt-5 text-lg leading-8 text-[#5b6b85]">
-            Đưa các công cụ miễn phí lên trang chủ để người dùng có lý do đăng ký
-            và quay lại hằng ngày.
+            ÄÆ°a cÃ¡c cÃ´ng cá»¥ miá»…n phÃ­ lÃªn trang chá»§ Ä‘á»ƒ ngÆ°á»i dÃ¹ng cÃ³ lÃ½ do Ä‘Äƒng kÃ½
+            vÃ  quay láº¡i háº±ng ngÃ y.
           </p>
         </div>
 

@@ -1,4 +1,4 @@
-// src/Components/AuthInitializer.tsx
+﻿// src/Components/AuthInitializer.tsx
 "use client";
 
 import { initializeAuth } from "@/src/lib/auth-init";

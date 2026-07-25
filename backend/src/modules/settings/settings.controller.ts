@@ -1,4 +1,4 @@
-import {
+﻿import {
   Body,
   Controller,
   Delete,
@@ -149,7 +149,7 @@ export class SettingsController {
       .setHeader('Content-Type', 'application/json')
       .setHeader(
         'Content-Disposition',
-        `attachment; filename="poppylingo-settings-${userId}.json"`,
+        `attachment; filename="beaconvie-settings-${userId}.json"`,
       )
       .send(JSON.stringify(data, null, 2));
   }

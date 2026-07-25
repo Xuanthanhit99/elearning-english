@@ -1,4 +1,4 @@
-export type LeaderboardScope = 'GLOBAL' | 'FRIENDS' | 'CLUB';
+﻿export type LeaderboardScope = 'GLOBAL' | 'FRIENDS' | 'CLUB';
 export type LeaderboardTab = 'weekly' | 'monthly' | 'friends' | 'club' | 'skill';
 export type LeagueTier = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'DIAMOND' | 'MASTER' | 'LEGEND';
 export type LeaderboardZone = 'PROMOTION' | 'SAFE' | 'RELEGATION';

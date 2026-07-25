@@ -1,4 +1,4 @@
-import { CommunityClubDetailPage } from "@/src/Components/community-club/CommunityClubDetailPage";
+﻿import { CommunityClubDetailPage } from "@/src/Components/community-club/CommunityClubDetailPage";
 
 export default async function ClubPage({
   params,

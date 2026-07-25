@@ -1,4 +1,4 @@
-// app/grammar/[...slug]/page.tsx
+﻿// app/grammar/[...slug]/page.tsx
 "use client";
 
 import { api } from "@/src/lib/axios";
@@ -70,7 +70,7 @@ export interface GrammarLesson {
   title: string;
   order: number;
   duration: string;
-  type: "Lý thuyết" | "Bài tập";
+  type: "LÃ½ thuyáº¿t" | "BÃ i táº­p";
   completed: boolean;
   score: number;
   locked: boolean;
@@ -111,7 +111,7 @@ export default function GrammarDetailPage(props: PageProps) {
 
   useEffect(() => {
     if (!topicId) {
-      setMessage("Không tìm thấy topicId trên URL.");
+      setMessage("KhÃ´ng tÃ¬m tháº¥y topicId trÃªn URL.");
       setLoading(false);
       return;
     }
@@ -129,7 +129,7 @@ export default function GrammarDetailPage(props: PageProps) {
 
         if (active) setDetailGrammar(res.data);
       } catch (error) {
-        if (active) setMessage("Chưa tải được dữ liệu ngữ pháp.");
+        if (active) setMessage("ChÆ°a táº£i Ä‘Æ°á»£c dá»¯ liá»‡u ngá»¯ phÃ¡p.");
       } finally {
         if (active) setLoading(false);
       }
@@ -169,7 +169,7 @@ export default function GrammarDetailPage(props: PageProps) {
                   onClick={() => window.location.reload()}
                   className="mt-4 rounded-xl bg-violet-600 px-5 py-3 font-bold text-white"
                 >
-                  Tải lại
+                  Táº£i láº¡i
                 </button>
               </div>
             )}
@@ -178,7 +178,7 @@ export default function GrammarDetailPage(props: PageProps) {
               <>
                 <section>
                   <div className="mb-6 text-sm text-slate-500">
-                    Trang chủ &gt; Ngữ pháp &gt; {detailGrammar.category.title}{" "}
+                    Trang chá»§ &gt; Ngá»¯ phÃ¡p &gt; {detailGrammar.category.title}{" "}
                     &gt; <b className="text-[#10164f]">{detailGrammar.title}</b>
                   </div>
 
@@ -190,13 +190,13 @@ export default function GrammarDetailPage(props: PageProps) {
                       </h2>
                       <p className="mt-3 text-slate-500">
                         {detailGrammar.description ||
-                          "Chưa có mô tả cho chủ đề này."}
+                          "ChÆ°a cÃ³ mÃ´ táº£ cho chá»§ Ä‘á» nÃ y."}
                       </p>
 
                       <div className="mt-6 flex flex-wrap gap-4">
-                        <Badge>🌐 {detailGrammar.level}</Badge>
-                        <Badge>🕒 {detailGrammar.overview.estimatedTime}</Badge>
-                        <Badge>⭐ +{detailGrammar.overview.rewardXp}</Badge>
+                        <Badge>ðŸŒ {detailGrammar.level}</Badge>
+                        <Badge>ðŸ•’ {detailGrammar.overview.estimatedTime}</Badge>
+                        <Badge>â­ +{detailGrammar.overview.rewardXp}</Badge>
                         <Badge green>
                           {detailGrammar.overview.completedLessons}/
                           {detailGrammar.overview.totalLessons}
@@ -206,12 +206,12 @@ export default function GrammarDetailPage(props: PageProps) {
 
                     <div className="flex items-end gap-5">
                       <div className="rounded-2xl bg-indigo-50 px-5 py-4 text-sm font-bold">
-                        Giữ vững nhịp học nhé!
+                        Giá»¯ vá»¯ng nhá»‹p há»c nhÃ©!
                         <p className="font-normal text-slate-500">
-                          Bạn đang làm rất tốt! 💜
+                          Báº¡n Ä‘ang lÃ m ráº¥t tá»‘t! ðŸ’œ
                         </p>
                       </div>
-                      <div className="text-7xl">🦊</div>
+                      <div className="text-7xl">ðŸ¦Š</div>
                       <button className="rounded-xl border bg-white p-3">
                         <Bookmark size={20} />
                       </button>
@@ -220,18 +220,18 @@ export default function GrammarDetailPage(props: PageProps) {
                         disabled={!detailGrammar.overview.currentLessonId}
                         className="rounded-xl bg-violet-600 px-8 py-4 font-bold text-white shadow-lg shadow-violet-200 disabled:cursor-not-allowed disabled:bg-slate-300"
                       >
-                        Tiếp tục học
+                        Tiáº¿p tá»¥c há»c
                       </button>
                     </div>
                   </div>
 
                   <div className="mb-6 flex gap-8 border-b">
                     {[
-                      "Tổng quan",
-                      `Bài học (${detailGrammar.lessons.length})`,
-                      "Bài tập",
-                      "Mẹo ghi nhớ",
-                      "Thảo luận",
+                      "Tá»•ng quan",
+                      `BÃ i há»c (${detailGrammar.lessons.length})`,
+                      "BÃ i táº­p",
+                      "Máº¹o ghi nhá»›",
+                      "Tháº£o luáº­n",
                     ].map((x, i) => (
                       <button
                         key={x}
@@ -254,36 +254,36 @@ export default function GrammarDetailPage(props: PageProps) {
                             <h3 className="text-4xl font-black">
                               {detailGrammar.title}
                             </h3>
-                            <div className="mt-8 text-8xl">⏰</div>
+                            <div className="mt-8 text-8xl">â°</div>
                           </div>
                         </div>
 
                         <div className="space-y-5 p-7 text-sm">
                           <Info
-                            label="Chủ đề"
+                            label="Chá»§ Ä‘á»"
                             value={detailGrammar.category.title}
                           />
-                          <Info label="Cấp độ" value={detailGrammar.level} />
+                          <Info label="Cáº¥p Ä‘á»™" value={detailGrammar.level} />
                           <Info
-                            label="Số bài học"
-                            value={`${detailGrammar.overview.totalLessons} bài học`}
+                            label="Sá»‘ bÃ i há»c"
+                            value={`${detailGrammar.overview.totalLessons} bÃ i há»c`}
                           />
                           <Info
-                            label="Tiến độ của bạn"
+                            label="Tiáº¿n Ä‘á»™ cá»§a báº¡n"
                             value={`${detailGrammar.overview.progress}%`}
                             progress
                             percent={detailGrammar.overview.progress}
                           />
                           <Info
-                            label="Hoàn thành"
-                            value={`${detailGrammar.overview.completedLessons}/${detailGrammar.overview.totalLessons} bài học`}
+                            label="HoÃ n thÃ nh"
+                            value={`${detailGrammar.overview.completedLessons}/${detailGrammar.overview.totalLessons} bÃ i há»c`}
                           />
                           <Info
-                            label="Ước tính thời gian"
+                            label="Æ¯á»›c tÃ­nh thá»i gian"
                             value={detailGrammar.overview.estimatedTime}
                           />
                           <Info
-                            label="Phần thưởng"
+                            label="Pháº§n thÆ°á»Ÿng"
                             value={`+${detailGrammar.overview.rewardXp} XP  +${detailGrammar.overview.rewardCoin} Xu`}
                           />
                         </div>
@@ -291,12 +291,12 @@ export default function GrammarDetailPage(props: PageProps) {
 
                       <p className="p-5 text-sm leading-6 text-slate-500">
                         {detailGrammar.description ||
-                          "Nội dung tổng quan đang được cập nhật."}
+                          "Ná»™i dung tá»•ng quan Ä‘ang Ä‘Æ°á»£c cáº­p nháº­t."}
                       </p>
                     </div>
 
                     <div className="rounded-2xl border bg-white p-6">
-                      <h3 className="mb-5 font-black">Cách dùng chính</h3>
+                      <h3 className="mb-5 font-black">CÃ¡ch dÃ¹ng chÃ­nh</h3>
 
                       {detailGrammar.mainUsages.length > 0 ? (
                         detailGrammar.mainUsages.map((item) => (
@@ -310,19 +310,19 @@ export default function GrammarDetailPage(props: PageProps) {
                         ))
                       ) : (
                         <p className="text-sm text-slate-500">
-                          Chưa có dữ liệu cách dùng chính.
+                          ChÆ°a cÃ³ dá»¯ liá»‡u cÃ¡ch dÃ¹ng chÃ­nh.
                         </p>
                       )}
 
                       <button className="mt-4 w-full rounded-xl border py-3 font-bold text-violet-600">
-                        Xem thêm ví dụ
+                        Xem thÃªm vÃ­ dá»¥
                       </button>
                     </div>
                   </div>
 
                   <div className="mt-5 rounded-2xl border bg-white">
                     <h3 className="border-b p-5 font-black">
-                      Bài học trong chủ đề
+                      BÃ i há»c trong chá»§ Ä‘á»
                     </h3>
 
                     {detailGrammar.lessons.length > 0 ? (
@@ -354,7 +354,7 @@ export default function GrammarDetailPage(props: PageProps) {
 
                             <span
                               className={`w-fit rounded-lg px-3 py-1 text-xs font-bold ${
-                                lesson.type === "Bài tập"
+                                lesson.type === "BÃ i táº­p"
                                   ? "bg-pink-100 text-pink-500"
                                   : "bg-blue-100 text-blue-500"
                               }`}
@@ -369,7 +369,7 @@ export default function GrammarDetailPage(props: PageProps) {
                             <div className="text-right">
                               {lesson.completed && (
                                 <span className="font-bold text-emerald-500">
-                                  Hoàn thành
+                                  HoÃ n thÃ nh
                                 </span>
                               )}
 
@@ -378,7 +378,7 @@ export default function GrammarDetailPage(props: PageProps) {
                                   onClick={() => handleOpenLesson(lesson)}
                                   className="rounded-xl bg-violet-600 px-5 py-2 font-bold text-white"
                                 >
-                                  {isCurrent ? "Tiếp tục" : "Bắt đầu"}
+                                  {isCurrent ? "Tiáº¿p tá»¥c" : "Báº¯t Ä‘áº§u"}
                                 </button>
                               )}
 
@@ -394,54 +394,54 @@ export default function GrammarDetailPage(props: PageProps) {
                       })
                     ) : (
                       <p className="p-5 text-sm text-slate-500">
-                        Chủ đề này chưa có bài học.
+                        Chá»§ Ä‘á» nÃ y chÆ°a cÃ³ bÃ i há»c.
                       </p>
                     )}
 
                     <button className="m-4 w-[calc(100%-32px)] rounded-xl border py-3 font-bold">
-                      Xem tất cả bài học
+                      Xem táº¥t cáº£ bÃ i há»c
                     </button>
                   </div>
                 </section>
 
                 <aside className="space-y-6">
-                  <RightCard title="Tiến độ chủ đề">
+                  <RightCard title="Tiáº¿n Ä‘á»™ chá»§ Ä‘á»">
                     <div className="flex items-center gap-8">
                       <div className="grid h-36 w-36 place-items-center rounded-full border-[12px] border-violet-600">
                         <div className="text-center">
                           <p className="text-3xl font-black">
                             {detailGrammar.overview.progress}%
                           </p>
-                          <p className="text-xs text-slate-500">Hoàn thành</p>
+                          <p className="text-xs text-slate-500">HoÃ n thÃ nh</p>
                         </div>
                       </div>
 
                       <div className="space-y-4 text-sm">
                         <ProgressLine
-                          icon="✅"
+                          icon="âœ…"
                           main={`${detailGrammar.overview.completedLessons}/${detailGrammar.overview.totalLessons}`}
-                          sub="Bài học hoàn thành"
+                          sub="BÃ i há»c hoÃ n thÃ nh"
                         />
                         <ProgressLine
-                          icon="✅"
+                          icon="âœ…"
                           main={`${detailGrammar.overview.completedQuestions}/${detailGrammar.overview.totalQuestions}`}
-                          sub="Bài tập hoàn thành"
+                          sub="BÃ i táº­p hoÃ n thÃ nh"
                         />
                         <ProgressLine
-                          icon="⭐"
+                          icon="â­"
                           main={`+${detailGrammar.overview.rewardXp} XP`}
-                          sub="Điểm có thể nhận"
+                          sub="Äiá»ƒm cÃ³ thá»ƒ nháº­n"
                         />
                         <ProgressLine
-                          icon="💰"
+                          icon="ðŸ’°"
                           main={`+${detailGrammar.overview.rewardCoin} Xu`}
-                          sub="Phần thưởng"
+                          sub="Pháº§n thÆ°á»Ÿng"
                         />
                       </div>
                     </div>
                   </RightCard>
 
-                  <RightCard title="Lộ trình ngữ pháp" action="Xem tất cả">
+                  <RightCard title="Lá»™ trÃ¬nh ngá»¯ phÃ¡p" action="Xem táº¥t cáº£">
                     {detailGrammar.roadmap.length > 0 ? (
                       detailGrammar.roadmap.map((item) => (
                         <Roadmap
@@ -449,12 +449,12 @@ export default function GrammarDetailPage(props: PageProps) {
                           title={item.title}
                           sub={
                             item.completed
-                              ? "Hoàn thành"
+                              ? "HoÃ n thÃ nh"
                               : item.current
-                                ? "Đang học"
+                                ? "Äang há»c"
                                 : item.locked
-                                  ? "Chưa mở khóa"
-                                  : `${item.progress}% hoàn thành`
+                                  ? "ChÆ°a má»Ÿ khÃ³a"
+                                  : `${item.progress}% hoÃ n thÃ nh`
                           }
                           done={item.completed}
                           current={item.current}
@@ -462,15 +462,15 @@ export default function GrammarDetailPage(props: PageProps) {
                         />
                       ))
                     ) : (
-                      <p className="text-sm text-slate-500">Chưa có roadmap.</p>
+                      <p className="text-sm text-slate-500">ChÆ°a cÃ³ roadmap.</p>
                     )}
 
                     <button className="mt-5 w-full rounded-xl border py-3 font-bold text-violet-600">
-                      Xem roadmap đầy đủ
+                      Xem roadmap Ä‘áº§y Ä‘á»§
                     </button>
                   </RightCard>
 
-                  <RightCard title="Chủ đề liên quan" action="Xem tất cả">
+                  <RightCard title="Chá»§ Ä‘á» liÃªn quan" action="Xem táº¥t cáº£">
                     {detailGrammar.relatedTopics.length > 0 ? (
                       detailGrammar.relatedTopics.map((item) => (
                         <Related
@@ -482,7 +482,7 @@ export default function GrammarDetailPage(props: PageProps) {
                       ))
                     ) : (
                       <p className="text-sm text-slate-500">
-                        Chưa có chủ đề liên quan.
+                        ChÆ°a cÃ³ chá»§ Ä‘á» liÃªn quan.
                       </p>
                     )}
                   </RightCard>
@@ -577,11 +577,11 @@ function UseCase({
   return (
     <div className="mb-5">
       <p className={`font-bold ${colors[color] ?? "text-violet-500"}`}>
-        ● {title}
+        â— {title}
       </p>
       <p className="ml-5 mt-2 text-sm font-bold">{text}</p>
       <p className="ml-5 text-sm text-slate-500">
-        {meaning || "(Ví dụ minh họa.)"}
+        {meaning || "(VÃ­ dá»¥ minh há»a.)"}
       </p>
     </div>
   );
@@ -650,7 +650,7 @@ function Roadmap({
           done ? "bg-emerald-500" : current ? "bg-violet-600" : "bg-slate-300"
         }`}
       >
-        {locked ? <Lock size={13} /> : done ? "✓" : "●"}
+        {locked ? <Lock size={13} /> : done ? "âœ“" : "â—"}
       </div>
       <div>
         <p className={`font-bold ${current ? "text-violet-600" : ""}`}>

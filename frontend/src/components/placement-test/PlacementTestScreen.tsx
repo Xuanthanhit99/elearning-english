@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   ArrowLeft,
@@ -98,7 +98,7 @@ export default function PlacementTestScreen({
       setError(
         err instanceof Error
           ? err.message
-          : 'Không thể tải phiên kiểm tra.',
+          : 'KhÃ´ng thá»ƒ táº£i phiÃªn kiá»ƒm tra.',
       );
     } finally {
       setLoading(false);
@@ -173,7 +173,7 @@ export default function PlacementTestScreen({
       questionStartedAt.current = Date.now();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Không thể lưu câu trả lời.',
+        err instanceof Error ? err.message : 'KhÃ´ng thá»ƒ lÆ°u cÃ¢u tráº£ lá»i.',
       );
     } finally {
       setSaving(false);
@@ -197,7 +197,7 @@ export default function PlacementTestScreen({
       questionStartedAt.current = Date.now();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Không thể bỏ qua câu hỏi.',
+        err instanceof Error ? err.message : 'KhÃ´ng thá»ƒ bá» qua cÃ¢u há»i.',
       );
     } finally {
       setSaving(false);
@@ -238,7 +238,7 @@ export default function PlacementTestScreen({
       );
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Không thể đánh dấu câu hỏi.',
+        err instanceof Error ? err.message : 'KhÃ´ng thá»ƒ Ä‘Ã¡nh dáº¥u cÃ¢u há»i.',
       );
     } finally {
       setFlagging(false);
@@ -261,7 +261,7 @@ export default function PlacementTestScreen({
       <main className="flex min-h-[70vh] items-center justify-center p-6">
         <div className="max-w-md rounded-3xl bg-white p-8 text-center shadow-sm">
           <p className="text-xl font-black text-slate-900">
-            Không thể tải bài kiểm tra
+            KhÃ´ng thá»ƒ táº£i bÃ i kiá»ƒm tra
           </p>
           <p className="mt-2 text-sm text-slate-500">{error}</p>
           <button
@@ -269,7 +269,7 @@ export default function PlacementTestScreen({
             onClick={() => void loadTest()}
             className="mt-6 rounded-xl bg-violet-600 px-5 py-3 font-bold text-white"
           >
-            Thử lại
+            Thá»­ láº¡i
           </button>
         </div>
       </main>
@@ -289,7 +289,7 @@ export default function PlacementTestScreen({
       <div className="mx-auto grid max-w-[1500px] gap-5 xl:grid-cols-[300px_minmax(0,1fr)_310px]">
         <aside className="rounded-[28px] border border-violet-100 bg-white p-6 shadow-[0_16px_50px_rgba(76,29,149,0.08)]">
           <h2 className="text-xl font-black text-slate-950">
-            Tiến trình bài kiểm tra
+            Tiáº¿n trÃ¬nh bÃ i kiá»ƒm tra
           </h2>
 
           <div className="mt-6 flex items-center gap-5 border-b border-slate-100 pb-6">
@@ -300,23 +300,23 @@ export default function PlacementTestScreen({
                 <span className="text-2xl font-black text-slate-950">
                   {data.session.progressPercent}%
                 </span>
-                <span className="text-xs text-violet-600">Hoàn thành</span>
+                <span className="text-xs text-violet-600">HoÃ n thÃ nh</span>
               </div>
             </div>
 
             <div>
               <p className="font-black text-slate-900">
-                Câu {data.currentQuestion.globalOrder} /{' '}
+                CÃ¢u {data.currentQuestion.globalOrder} /{' '}
                 {data.session.totalQuestions}
               </p>
               <p className="mt-2 flex items-center gap-2 text-sm text-slate-500">
                 <Clock3 className="h-4 w-4" />
-                Khoảng 10 phút
+                Khoáº£ng 10 phÃºt
               </p>
             </div>
           </div>
 
-          <h3 className="mt-5 font-black text-slate-900">Các phần thi</h3>
+          <h3 className="mt-5 font-black text-slate-900">CÃ¡c pháº§n thi</h3>
 
           <div className="mt-3 space-y-2">
             {data.sections.map((section) => {
@@ -343,7 +343,7 @@ export default function PlacementTestScreen({
                       </p>
                       {active ? (
                         <p className="text-xs font-semibold text-violet-600">
-                          Đang làm
+                          Äang lÃ m
                         </p>
                       ) : null}
                     </div>
@@ -353,8 +353,8 @@ export default function PlacementTestScreen({
                     {section.total > 1
                       ? `${section.answered} / ${section.total}`
                       : section.status === 'COMPLETED'
-                        ? 'Đã xong'
-                        : 'Chưa bắt đầu'}
+                        ? 'ÄÃ£ xong'
+                        : 'ChÆ°a báº¯t Ä‘áº§u'}
                   </span>
                 </div>
               );
@@ -364,32 +364,32 @@ export default function PlacementTestScreen({
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
                 <Trophy className="h-5 w-5" />
               </div>
-              <p className="font-bold text-slate-900">Kết quả</p>
+              <p className="font-bold text-slate-900">Káº¿t quáº£</p>
             </div>
           </div>
 
           <div className="mt-6 border-t border-slate-100 pt-5">
-            <h3 className="font-black text-slate-900">Trạng thái</h3>
+            <h3 className="font-black text-slate-900">Tráº¡ng thÃ¡i</h3>
             <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-500">
-              <LegendDot className="bg-slate-200" text="Chưa làm" />
-              <LegendDot className="bg-violet-600" text="Đang làm" />
-              <LegendDot className="bg-emerald-500" text="Đã làm" />
-              <LegendDot className="bg-amber-400" text="Đánh dấu" />
+              <LegendDot className="bg-slate-200" text="ChÆ°a lÃ m" />
+              <LegendDot className="bg-violet-600" text="Äang lÃ m" />
+              <LegendDot className="bg-emerald-500" text="ÄÃ£ lÃ m" />
+              <LegendDot className="bg-amber-400" text="ÄÃ¡nh dáº¥u" />
             </div>
           </div>
 
           <div className="mt-8 flex items-end gap-2 rounded-2xl bg-violet-50 p-3">
             <div className="relative h-28 w-24 shrink-0">
               <img
-                src="/images/placement/poppy-cheer.png"
-                alt="Poppy cổ vũ"
+                src="/images/placement/beacon-cheer.png"
+                alt="Beacon cá»• vÅ©"
                 className="h-full w-full object-contain object-bottom"
               />
             </div>
             <div className="pb-3">
-              <p className="font-black text-violet-700">Tuyệt vời!</p>
+              <p className="font-black text-violet-700">Tuyá»‡t vá»i!</p>
               <p className="mt-1 text-xs leading-5 text-slate-600">
-                Bạn đang làm rất tốt. Cố lên nhé 💜
+                Báº¡n Ä‘ang lÃ m ráº¥t tá»‘t. Cá»‘ lÃªn nhÃ© ðŸ’œ
               </p>
             </div>
           </div>
@@ -406,7 +406,7 @@ export default function PlacementTestScreen({
                 </div>
                 <div>
                   <p className="font-black uppercase text-violet-700">
-                    Phần {SKILL_INDEX[data.currentQuestion.skill]}:{' '}
+                    Pháº§n {SKILL_INDEX[data.currentQuestion.skill]}:{' '}
                     {meta.label}
                   </p>
                 </div>
@@ -436,7 +436,7 @@ export default function PlacementTestScreen({
             <div className="flex items-center gap-3 text-sm text-violet-800">
               <Bot className="h-5 w-5 shrink-0" />
               <span>
-                <strong>AI gợi ý:</strong>{' '}
+                <strong>AI gá»£i Ã½:</strong>{' '}
                 {data.currentQuestion.adaptiveMessage}
               </span>
               <Sparkles className="ml-auto h-5 w-5 text-amber-400" />
@@ -446,7 +446,7 @@ export default function PlacementTestScreen({
           <div className="p-6 sm:p-8">
             <div className="mb-5 flex items-center justify-between gap-4">
               <span className="rounded-full bg-violet-50 px-4 py-2 text-sm font-bold text-violet-700">
-                Câu hỏi {data.currentQuestion.globalOrder}
+                CÃ¢u há»i {data.currentQuestion.globalOrder}
               </span>
 
               <span className="rounded-full bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700">
@@ -530,7 +530,7 @@ export default function PlacementTestScreen({
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 py-3 font-bold text-slate-400"
               >
                 <ArrowLeft className="h-5 w-5" />
-                Câu trước
+                CÃ¢u trÆ°á»›c
               </button>
 
               <span className="text-sm font-bold text-slate-500">
@@ -547,11 +547,11 @@ export default function PlacementTestScreen({
                 {saving ? (
                   <>
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    Đang lưu
+                    Äang lÆ°u
                   </>
                 ) : (
                   <>
-                    Câu tiếp theo
+                    CÃ¢u tiáº¿p theo
                     <ArrowRight className="h-5 w-5" />
                   </>
                 )}
@@ -561,12 +561,12 @@ export default function PlacementTestScreen({
             <div className="mt-5 flex flex-wrap items-center justify-center gap-5 rounded-xl bg-emerald-50 px-4 py-3 text-sm">
               <span className="inline-flex items-center gap-2 font-semibold text-emerald-700">
                 <Check className="h-4 w-4" />
-                Đã lưu lúc{' '}
+                ÄÃ£ lÆ°u lÃºc{' '}
                 {new Date(data.autosave.savedAt).toLocaleTimeString('vi-VN')}
               </span>
               <span className="inline-flex items-center gap-2 text-slate-600">
                 <Cloud className="h-4 w-4" />
-                Tiến trình được tự động lưu
+                Tiáº¿n trÃ¬nh Ä‘Æ°á»£c tá»± Ä‘á»™ng lÆ°u
               </span>
             </div>
           </footer>
@@ -577,7 +577,7 @@ export default function PlacementTestScreen({
             <div className="flex items-center gap-3">
               <Clock3 className="h-6 w-6 text-violet-600" />
               <div>
-                <p className="text-sm text-slate-500">Thời gian còn lại</p>
+                <p className="text-sm text-slate-500">Thá»i gian cÃ²n láº¡i</p>
                 <p
                   className={`text-3xl font-black ${
                     remainingSeconds <= 30
@@ -607,14 +607,14 @@ export default function PlacementTestScreen({
 
           <div className="rounded-[28px] border border-violet-100 bg-white p-5 shadow-[0_16px_50px_rgba(76,29,149,0.07)]">
             <h2 className="text-xl font-black text-slate-950">
-              Danh sách câu hỏi
+              Danh sÃ¡ch cÃ¢u há»i
             </h2>
 
             <div className="mt-4 flex flex-wrap gap-3 text-xs text-slate-500">
-              <LegendDot className="bg-slate-200" text="Chưa làm" />
-              <LegendDot className="bg-violet-600" text="Đang làm" />
-              <LegendDot className="bg-emerald-500" text="Đã làm" />
-              <LegendDot className="bg-amber-400" text="Đánh dấu" />
+              <LegendDot className="bg-slate-200" text="ChÆ°a lÃ m" />
+              <LegendDot className="bg-violet-600" text="Äang lÃ m" />
+              <LegendDot className="bg-emerald-500" text="ÄÃ£ lÃ m" />
+              <LegendDot className="bg-amber-400" text="ÄÃ¡nh dáº¥u" />
             </div>
 
             <div className="mt-5 grid grid-cols-5 gap-3">
@@ -643,7 +643,7 @@ export default function PlacementTestScreen({
           </div>
 
           <div className="rounded-[28px] border border-violet-100 bg-white p-5 shadow-[0_16px_50px_rgba(76,29,149,0.07)]">
-            <h2 className="text-lg font-black text-slate-950">Công cụ</h2>
+            <h2 className="text-lg font-black text-slate-950">CÃ´ng cá»¥</h2>
 
             <button
               type="button"
@@ -661,11 +661,11 @@ export default function PlacementTestScreen({
               <span>
                 <span className="block font-bold text-slate-900">
                   {data.currentQuestion.isFlagged
-                    ? 'Bỏ đánh dấu'
-                    : 'Đánh dấu câu hỏi'}
+                    ? 'Bá» Ä‘Ã¡nh dáº¥u'
+                    : 'ÄÃ¡nh dáº¥u cÃ¢u há»i'}
                 </span>
                 <span className="text-sm text-slate-500">
-                  Lưu câu hỏi để xem lại
+                  LÆ°u cÃ¢u há»i Ä‘á»ƒ xem láº¡i
                 </span>
               </span>
             </button>
@@ -679,10 +679,10 @@ export default function PlacementTestScreen({
               <SkipForward className="h-5 w-5 text-violet-600" />
               <span>
                 <span className="block font-bold text-slate-900">
-                  Bỏ qua câu hỏi
+                  Bá» qua cÃ¢u há»i
                 </span>
                 <span className="text-sm text-slate-500">
-                  Có thể quay lại sau
+                  CÃ³ thá»ƒ quay láº¡i sau
                 </span>
               </span>
             </button>
@@ -692,10 +692,10 @@ export default function PlacementTestScreen({
             <div className="flex gap-3">
               <Lightbulb className="h-6 w-6 shrink-0 text-amber-500" />
               <div>
-                <p className="font-black text-violet-700">Mẹo nhỏ</p>
+                <p className="font-black text-violet-700">Máº¹o nhá»</p>
                 <p className="mt-1 text-sm leading-6 text-slate-600">
-                  Dùng phím A–D để chọn đáp án, phím F để đánh dấu và mũi tên
-                  phải để chuyển câu.
+                  DÃ¹ng phÃ­m Aâ€“D Ä‘á»ƒ chá»n Ä‘Ã¡p Ã¡n, phÃ­m F Ä‘á»ƒ Ä‘Ã¡nh dáº¥u vÃ  mÅ©i tÃªn
+                  pháº£i Ä‘á»ƒ chuyá»ƒn cÃ¢u.
                 </p>
               </div>
             </div>

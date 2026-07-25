@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   useEffect,
@@ -45,8 +45,8 @@ export function useCountdown(endAt?: string) {
       expired: remaining === 0,
       label:
         days > 0
-          ? `${days} ngày ${hours} giờ`
-          : `${hours} giờ ${minutes} phút`,
+          ? `${days} ngÃ y ${hours} giá»`
+          : `${hours} giá» ${minutes} phÃºt`,
     };
   }, [endAt, now]);
 }

@@ -1,10 +1,10 @@
-# PoppyLingo Placement Test Screen
+﻿# BeaconVie Placement Test Screen
 
-Bộ code này dành cho màn làm câu hỏi như giao diện đã thống nhất.
+Bá»™ code nÃ y dÃ nh cho mÃ n lÃ m cÃ¢u há»i nhÆ° giao diá»‡n Ä‘Ã£ thá»‘ng nháº¥t.
 
-## Trước khi chạy
+## TrÆ°á»›c khi cháº¡y
 
-1. Bổ sung 3 field vào `PlacementTestQuestion`:
+1. Bá»• sung 3 field vÃ o `PlacementTestQuestion`:
 
 ```prisma
 isFlagged    Boolean @default(false)
@@ -12,7 +12,7 @@ isSkipped    Boolean @default(false)
 spentSeconds Int     @default(0)
 ```
 
-2. Chạy:
+2. Cháº¡y:
 
 ```bash
 npx prisma format
@@ -20,9 +20,9 @@ npx prisma migrate dev --name add_placement_test_question_state
 npx prisma generate
 ```
 
-3. Ghép `PlacementTestController` và `PlacementTestService` vào `PlacementModule`.
+3. GhÃ©p `PlacementTestController` vÃ  `PlacementTestService` vÃ o `PlacementModule`.
 
-4. Đảm bảo ngân hàng `PlacementQuestion` có đủ:
+4. Äáº£m báº£o ngÃ¢n hÃ ng `PlacementQuestion` cÃ³ Ä‘á»§:
 - Vocabulary: 10
 - Grammar: 10
 - Listening: 8
@@ -30,4 +30,4 @@ npx prisma generate
 - Speaking: 1
 - Writing: 1
 
-Tổng 35 câu.
+Tá»•ng 35 cÃ¢u.

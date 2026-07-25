@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { api } from '@/src/lib/axios';
@@ -41,7 +41,7 @@ export default function SocialLeaderboardPanel() {
       } else {
         setData({
           entries: [],
-          message: 'Bạn chưa tham gia câu lạc bộ nào.',
+          message: 'Báº¡n chÆ°a tham gia cÃ¢u láº¡c bá»™ nÃ o.',
         });
         setActivity([]);
       }
@@ -61,7 +61,7 @@ export default function SocialLeaderboardPanel() {
               : 'text-slate-600'
           }`}
         >
-          Bạn bè
+          Báº¡n bÃ¨
         </button>
         <button
           onClick={() => setScope('CLUB')}
@@ -71,7 +71,7 @@ export default function SocialLeaderboardPanel() {
               : 'text-slate-600'
           }`}
         >
-          Câu lạc bộ
+          CÃ¢u láº¡c bá»™
         </button>
       </div>
 
@@ -83,7 +83,7 @@ export default function SocialLeaderboardPanel() {
         >
           {clubs.map((club) => (
             <option key={club.id} value={club.id}>
-              {club.name} · {club.memberCount} thành viên
+              {club.name} Â· {club.memberCount} thÃ nh viÃªn
             </option>
           ))}
         </select>
@@ -94,11 +94,11 @@ export default function SocialLeaderboardPanel() {
           <div className="border-b p-5">
             <h2 className="text-xl font-black">
               {scope === 'FRIENDS'
-                ? 'Xếp hạng bạn bè'
-                : 'Xếp hạng câu lạc bộ'}
+                ? 'Xáº¿p háº¡ng báº¡n bÃ¨'
+                : 'Xáº¿p háº¡ng cÃ¢u láº¡c bá»™'}
             </h2>
             <p className="text-sm text-slate-500">
-              Thành viên chưa hoạt động vẫn hiển thị với 0 XP.
+              ThÃ nh viÃªn chÆ°a hoáº¡t Ä‘á»™ng váº«n hiá»ƒn thá»‹ vá»›i 0 XP.
             </p>
           </div>
 
@@ -130,7 +130,7 @@ export default function SocialLeaderboardPanel() {
                 <p className="text-xs text-slate-500">
                   Level {entry.user.level}
                   {entry.user.streak
-                    ? ` · 🔥 ${entry.user.streak}`
+                    ? ` Â· ðŸ”¥ ${entry.user.streak}`
                     : ''}
                 </p>
                 <p
@@ -141,8 +141,8 @@ export default function SocialLeaderboardPanel() {
                   }`}
                 >
                   {entry.user.learnedToday
-                    ? 'Đã học hôm nay'
-                    : 'Chưa học hôm nay'}
+                    ? 'ÄÃ£ há»c hÃ´m nay'
+                    : 'ChÆ°a há»c hÃ´m nay'}
                 </p>
               </div>
 
@@ -154,13 +154,13 @@ export default function SocialLeaderboardPanel() {
 
           {!data.entries?.length && (
             <div className="p-10 text-center text-slate-500">
-              {data.message ?? 'Chưa có dữ liệu.'}
+              {data.message ?? 'ChÆ°a cÃ³ dá»¯ liá»‡u.'}
             </div>
           )}
         </div>
 
         <aside className="rounded-3xl border bg-white p-5">
-          <h3 className="font-black">Hoạt động gần đây</h3>
+          <h3 className="font-black">Hoáº¡t Ä‘á»™ng gáº§n Ä‘Ã¢y</h3>
 
           <div className="mt-4 space-y-4">
             {activity.map((item) => (
@@ -170,7 +170,7 @@ export default function SocialLeaderboardPanel() {
                   {item.title}
                 </p>
                 <p className="text-xs text-slate-500">
-                  {item.xp ? `+${item.xp} XP · ` : ''}
+                  {item.xp ? `+${item.xp} XP Â· ` : ''}
                   {new Date(item.createdAt).toLocaleString()}
                 </p>
               </div>
@@ -178,7 +178,7 @@ export default function SocialLeaderboardPanel() {
 
             {!activity.length && (
               <p className="text-sm text-slate-500">
-                Chưa có hoạt động mới.
+                ChÆ°a cÃ³ hoáº¡t Ä‘á»™ng má»›i.
               </p>
             )}
           </div>

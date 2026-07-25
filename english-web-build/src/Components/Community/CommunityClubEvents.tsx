@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { CalendarDays, ExternalLink, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -61,10 +61,10 @@ export function CommunityClubEvents({
       <div className="flex items-center justify-between rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
         <div>
           <h3 className="text-lg font-extrabold text-slate-950">
-            Sự kiện câu lạc bộ
+            Sá»± kiá»‡n cÃ¢u láº¡c bá»™
           </h3>
           <p className="mt-1 text-sm text-slate-500">
-            Buổi học, speaking room và hoạt động chung.
+            Buá»•i há»c, speaking room vÃ  hoáº¡t Ä‘á»™ng chung.
           </p>
         </div>
 
@@ -75,7 +75,7 @@ export function CommunityClubEvents({
             className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 font-bold text-white"
           >
             <Plus size={17} />
-            Tạo sự kiện
+            Táº¡o sá»± kiá»‡n
           </button>
         )}
       </div>
@@ -91,7 +91,7 @@ export function CommunityClubEvents({
                   title: event.target.value,
                 }))
               }
-              placeholder="Tên sự kiện"
+              placeholder="TÃªn sá»± kiá»‡n"
               className="rounded-xl border-2 px-4 py-3"
             />
             <input
@@ -114,7 +114,7 @@ export function CommunityClubEvents({
                 }))
               }
               rows={4}
-              placeholder="Mô tả sự kiện"
+              placeholder="MÃ´ táº£ sá»± kiá»‡n"
               className="rounded-xl border-2 px-4 py-3 sm:col-span-2"
             />
             <input
@@ -147,7 +147,7 @@ export function CommunityClubEvents({
               onClick={() => void create()}
               className="rounded-xl bg-indigo-600 px-5 py-2.5 font-bold text-white"
             >
-              Tạo sự kiện
+              Táº¡o sá»± kiá»‡n
             </button>
           </div>
         </div>
@@ -157,7 +157,7 @@ export function CommunityClubEvents({
         <div className="rounded-3xl border-2 border-dashed border-slate-300 bg-white py-12 text-center">
           <CalendarDays size={30} className="mx-auto text-slate-400" />
           <p className="mt-3 font-bold text-slate-800">
-            Chưa có sự kiện
+            ChÆ°a cÃ³ sá»± kiá»‡n
           </p>
         </div>
       ) : (
@@ -183,11 +183,11 @@ export function CommunityClubEvents({
               </div>
 
               <p className="mt-3 text-sm leading-6 text-slate-600">
-                {item.description || 'Không có mô tả.'}
+                {item.description || 'KhÃ´ng cÃ³ mÃ´ táº£.'}
               </p>
 
               <p className="mt-3 text-xs font-semibold text-slate-500">
-                {item.attendeeCount} người đăng ký
+                {item.attendeeCount} ngÆ°á»i Ä‘Äƒng kÃ½
               </p>
 
               <div className="mt-4 flex gap-2">
@@ -198,7 +198,7 @@ export function CommunityClubEvents({
                   className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50"
                 >
                   {item.attendees.length > 0
-                    ? 'Đã đăng ký'
+                    ? 'ÄÃ£ Ä‘Äƒng kÃ½'
                     : 'Tham gia'}
                 </button>
 
@@ -210,7 +210,7 @@ export function CommunityClubEvents({
                     className="flex items-center gap-2 rounded-xl border-2 border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700"
                   >
                     <ExternalLink size={16} />
-                    Mở phòng
+                    Má»Ÿ phÃ²ng
                   </a>
                 )}
               </div>

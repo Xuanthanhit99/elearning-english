@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   BuilderOutline,
@@ -47,17 +47,17 @@ type BuilderProject = {
 };
 
 const levels = ["A1", "A2", "B1", "B2", "C1", "C2"];
-const skillOptions = ["Vocabulary", "Grammar", "Listening", "Speaking", "Reading", "Quiz"];
+const skillOptions = ["Từ vựng", "Ngữ pháp", "Luyện nghe", "Luyện nói", "Luyện đọc", "Quiz"];
 
 export default function LessonBuilderPage() {
   const [form, setForm] = useState<BuilderForm>({
-    goal: "Tôi muốn học English for Kids, 5 tuổi, 20 phút/ngày, trong 30 ngày",
-    audienceAge: "5 tuổi",
+    goal: "TÃ´i muá»‘n há»c English for Kids, 5 tuá»•i, 20 phÃºt/ngÃ y, trong 30 ngÃ y",
+    audienceAge: "5 tuá»•i",
     level: "A1",
     dailyMinutes: 20,
     totalDays: 30,
     interests: ["animals", "colors", "songs"],
-    focusSkills: ["Vocabulary", "Listening", "Speaking"],
+    focusSkills: ["Từ vựng", "Luyện nghe", "Luyện nói"],
   });
   const [interestText, setInterestText] = useState("animals, colors, songs");
   const [project, setProject] = useState<BuilderProject | null>(null);
@@ -110,7 +110,7 @@ export default function LessonBuilderPage() {
       setOutline(res.data.outline);
       await loadProjects();
     } catch (err: any) {
-      setError(err.response?.data?.message || "Không tạo được outline.");
+      setError(err.response?.data?.message || "KhÃ´ng táº¡o Ä‘Æ°á»£c outline.");
     } finally {
       setLoading("");
     }
@@ -126,7 +126,7 @@ export default function LessonBuilderPage() {
       setOutline(res.data.outline);
       await loadProjects();
     } catch (err: any) {
-      setError(err.response?.data?.message || "Không lưu được outline.");
+      setError(err.response?.data?.message || "KhÃ´ng lÆ°u Ä‘Æ°á»£c outline.");
     } finally {
       setLoading("");
     }
@@ -143,7 +143,7 @@ export default function LessonBuilderPage() {
       setOutline(res.data.outline);
       await loadProjects();
     } catch (err: any) {
-      setError(err.response?.data?.message || "Không xác nhận được outline.");
+      setError(err.response?.data?.message || "KhÃ´ng xÃ¡c nháº­n Ä‘Æ°á»£c outline.");
     } finally {
       setLoading("");
     }
@@ -169,7 +169,7 @@ export default function LessonBuilderPage() {
       await loadProjects();
     } catch (err: any) {
       if (axios.isCancel(err)) return;
-      setError(err.response?.data?.message || "Không sinh được nội dung.");
+      setError(err.response?.data?.message || "KhÃ´ng sinh Ä‘Æ°á»£c ná»™i dung.");
     } finally {
       if (!controller.signal.aborted) setLoading("");
     }
@@ -216,9 +216,9 @@ export default function LessonBuilderPage() {
         ...module.lessons,
         {
           title: `Lesson ${module.lessons.length + 1}`,
-          goal: "Mục tiêu bài học mới",
+          goal: "Má»¥c tiÃªu bÃ i há»c má»›i",
           duration: form.dailyMinutes || 15,
-          skills: ["Vocabulary", "Speaking"],
+          skills: ["Từ vựng", "Luyện nói"],
         },
       ],
     });
@@ -249,17 +249,17 @@ export default function LessonBuilderPage() {
                 AI Lesson Builder
               </div>
               <h1 className="mt-4 text-4xl font-black text-slate-950">
-                Tạo lộ trình học cá nhân hóa
+                Táº¡o lá»™ trÃ¬nh há»c cÃ¡ nhÃ¢n hÃ³a
               </h1>
               <p className="mt-3 max-w-3xl font-semibold leading-7 text-slate-600">
-                Nhập mục tiêu, để AI tạo outline, chỉnh sửa nếu cần, rồi sinh
-                nội dung đầy đủ cho từng bài học.
+                Nháº­p má»¥c tiÃªu, Ä‘á»ƒ AI táº¡o outline, chá»‰nh sá»­a náº¿u cáº§n, rá»“i sinh
+                ná»™i dung Ä‘áº§y Ä‘á»§ cho tá»«ng bÃ i há»c.
               </p>
             </div>
             <div className="grid grid-cols-3 gap-3 text-center">
-              <Stat icon={<Bot size={20} />} value="AI" label="phân tích" />
-              <Stat icon={<BookOpen size={20} />} value={String(lessonCount)} label="bài học" />
-              <Stat icon={<Clock size={20} />} value={`${outline?.estimatedMinutes || 0}p`} label="dự kiến" />
+              <Stat icon={<Bot size={20} />} value="AI" label="phÃ¢n tÃ­ch" />
+              <Stat icon={<BookOpen size={20} />} value={String(lessonCount)} label="bÃ i há»c" />
+              <Stat icon={<Clock size={20} />} value={`${outline?.estimatedMinutes || 0}p`} label="dá»± kiáº¿n" />
             </div>
           </div>
         </section>
@@ -274,10 +274,10 @@ export default function LessonBuilderPage() {
           <section className="space-y-6">
             <div className="rounded-[24px] border border-violet-100 bg-white p-5 shadow-sm">
               <h2 className="text-xl font-black text-slate-950">
-                1. Người dùng nhập mục tiêu
+                1. NgÆ°á»i dÃ¹ng nháº­p má»¥c tiÃªu
               </h2>
               <label className="mt-4 block text-sm font-black text-slate-700">
-                Chủ đề / mục tiêu
+                Chá»§ Ä‘á» / má»¥c tiÃªu
               </label>
               <textarea
                 value={form.goal}
@@ -288,7 +288,7 @@ export default function LessonBuilderPage() {
               />
 
               <div className="mt-4 grid grid-cols-2 gap-3">
-                <Field label="Độ tuổi">
+                <Field label="Äá»™ tuá»•i">
                   <input
                     value={form.audienceAge || ""}
                     onChange={(event) =>
@@ -297,7 +297,7 @@ export default function LessonBuilderPage() {
                     className="input"
                   />
                 </Field>
-                <Field label="Trình độ">
+                <Field label="TrÃ¬nh Ä‘á»™">
                   <select
                     value={form.level || "A1"}
                     onChange={(event) =>
@@ -310,7 +310,7 @@ export default function LessonBuilderPage() {
                     ))}
                   </select>
                 </Field>
-                <Field label="Phút/ngày">
+                <Field label="PhÃºt/ngÃ y">
                   <input
                     type="number"
                     value={form.dailyMinutes || 20}
@@ -323,7 +323,7 @@ export default function LessonBuilderPage() {
                     className="input"
                   />
                 </Field>
-                <Field label="Số ngày">
+                <Field label="Sá»‘ ngÃ y">
                   <input
                     type="number"
                     value={form.totalDays || 30}
@@ -335,7 +335,7 @@ export default function LessonBuilderPage() {
                 </Field>
               </div>
 
-              <Field label="Sở thích">
+              <Field label="Sá»Ÿ thÃ­ch">
                 <input
                   value={interestText}
                   onChange={(event) => setInterestText(event.target.value)}
@@ -346,7 +346,7 @@ export default function LessonBuilderPage() {
 
               <div className="mt-4">
                 <p className="text-sm font-black text-slate-700">
-                  Kỹ năng trọng tâm
+                  Ká»¹ nÄƒng trá»ng tÃ¢m
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {skillOptions.map((skill) => {
@@ -387,16 +387,16 @@ export default function LessonBuilderPage() {
                 ) : (
                   <Wand2 size={18} />
                 )}
-                AI tạo course outline
+                AI táº¡o course outline
               </button>
             </div>
 
             <div className="rounded-[24px] border border-violet-100 bg-white p-5 shadow-sm">
-              <h2 className="font-black text-slate-950">Các lộ trình đã tạo</h2>
+              <h2 className="font-black text-slate-950">CÃ¡c lá»™ trÃ¬nh Ä‘Ã£ táº¡o</h2>
               <div className="mt-4 space-y-3">
                 {projects.length === 0 && (
                   <p className="text-sm font-semibold text-slate-500">
-                    Chưa có lộ trình nào.
+                    ChÆ°a cÃ³ lá»™ trÃ¬nh nÃ o.
                   </p>
                 )}
                 {projects.slice(0, 6).map((item) => (
@@ -427,11 +427,11 @@ export default function LessonBuilderPage() {
                 <div className="max-w-md text-center">
                   <Bot className="mx-auto text-violet-500" size={56} />
                   <h2 className="mt-4 text-2xl font-black text-slate-950">
-                    Outline sẽ xuất hiện ở đây
+                    Outline sáº½ xuáº¥t hiá»‡n á»Ÿ Ä‘Ã¢y
                   </h2>
                   <p className="mt-2 font-semibold text-slate-500">
-                    Sau khi AI tạo cấu trúc, bạn có thể chỉnh từng module và
-                    lesson trước khi lưu vào hệ thống.
+                    Sau khi AI táº¡o cáº¥u trÃºc, báº¡n cÃ³ thá»ƒ chá»‰nh tá»«ng module vÃ 
+                    lesson trÆ°á»›c khi lÆ°u vÃ o há»‡ thá»‘ng.
                   </p>
                 </div>
               </div>
@@ -441,7 +441,7 @@ export default function LessonBuilderPage() {
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="flex-1">
                       <label className="text-sm font-black text-slate-500">
-                        Tên course
+                        TÃªn course
                       </label>
                       <input
                         value={outline.title}
@@ -464,7 +464,7 @@ export default function LessonBuilderPage() {
                     <div className="rounded-2xl bg-violet-50 p-4 text-sm font-black text-violet-700">
                       <p>{outline.level}</p>
                       <p>{lessonCount} lessons</p>
-                      <p>{outline.estimatedMinutes} phút</p>
+                      <p>{outline.estimatedMinutes} phÃºt</p>
                     </div>
                   </div>
 
@@ -475,7 +475,7 @@ export default function LessonBuilderPage() {
                       className="btn-secondary"
                     >
                       <Save size={16} />
-                      Lưu outline
+                      LÆ°u outline
                     </button>
                     <button
                       onClick={confirmOutline}
@@ -487,7 +487,7 @@ export default function LessonBuilderPage() {
                       ) : (
                         <CheckCircle2 size={16} />
                       )}
-                      Xác nhận & lưu course
+                      XÃ¡c nháº­n & lÆ°u course
                     </button>
                     <button
                       onClick={() => generateContent()}
@@ -499,7 +499,7 @@ export default function LessonBuilderPage() {
                       ) : (
                         <Sparkles size={16} />
                       )}
-                      Sinh nội dung tất cả bài
+                      Sinh ná»™i dung táº¥t cáº£ bÃ i
                     </button>
                     {project?.courseId && (
                       <Link
@@ -507,7 +507,7 @@ export default function LessonBuilderPage() {
                         className="btn-secondary"
                       >
                         <Play size={16} />
-                        Bắt đầu học
+                        Báº¯t Ä‘áº§u há»c
                       </Link>
                     )}
                   </div>
@@ -541,7 +541,7 @@ export default function LessonBuilderPage() {
                           })
                         }
                         className="mt-3 w-full rounded-2xl border border-violet-100 px-4 py-3 font-semibold text-slate-600 outline-none focus:border-violet-500"
-                        placeholder="Mô tả module"
+                        placeholder="MÃ´ táº£ module"
                       />
 
                       <div className="mt-4 space-y-3">
@@ -574,7 +574,7 @@ export default function LessonBuilderPage() {
                                       })
                                     }
                                     className="mt-2 w-full rounded-xl border border-white bg-white px-4 py-3 text-sm font-semibold text-slate-600 outline-none focus:border-violet-400"
-                                    placeholder="Mục tiêu bài học"
+                                    placeholder="Má»¥c tiÃªu bÃ i há»c"
                                   />
                                 </div>
                                 <input
@@ -593,7 +593,7 @@ export default function LessonBuilderPage() {
                                   }
                                   className="h-12 rounded-xl px-4 font-black text-red-500 hover:bg-red-50"
                                 >
-                                  Xóa
+                                  XÃ³a
                                 </button>
                               </div>
                               <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -616,7 +616,7 @@ export default function LessonBuilderPage() {
                                     ) : (
                                       <Sparkles size={14} />
                                     )}
-                                    Sinh riêng bài này
+                                    Sinh riÃªng bÃ i nÃ y
                                   </button>
                                 )}
                               </div>
@@ -630,7 +630,7 @@ export default function LessonBuilderPage() {
                         className="mt-4 inline-flex items-center gap-2 rounded-xl border border-violet-100 px-4 py-3 text-sm font-black text-violet-700 hover:bg-violet-50"
                       >
                         <Plus size={16} />
-                        Thêm lesson
+                        ThÃªm lesson
                       </button>
                     </div>
                   ))}

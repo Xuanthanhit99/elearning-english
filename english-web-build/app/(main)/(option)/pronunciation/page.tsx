@@ -1,4 +1,4 @@
-// app/pronunciation/page.tsx
+﻿// app/pronunciation/page.tsx
 
 import PronunciationPage from "@/src/Components/Pronunciation/Pronunciation";
 

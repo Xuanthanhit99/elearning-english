@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { FileText, Lightbulb, Loader2, Save, Send } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -80,7 +80,7 @@ export default function PlacementWritingQuestion({
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="rounded-full bg-cyan-50 px-4 py-2 text-sm font-black text-cyan-700">
-          Writing • {level}
+          Writing â€¢ {level}
         </span>
         <span className="text-sm font-bold text-slate-500">
           {minWords}-{maxWords} words

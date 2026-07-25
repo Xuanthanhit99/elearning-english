@@ -1,4 +1,4 @@
-import { api } from "./axios";
+﻿import { api } from "./axios";
 
 export async function getMyLeaderboardRewards() {
   const response = await api.get('/leaderboard/rewards');

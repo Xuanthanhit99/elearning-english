@@ -1,14 +1,14 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useRef, useState } from 'react';
 import { synthesizeSpeech, TtsLang } from '../lib/tts-api';
 
 /**
- * Phát âm dùng chung cho mọi nơi có nút loa (từ vựng, flashcard, bài
- * đọc, ngữ pháp, luyện phát âm...). Ưu tiên phát `audioUrl` có sẵn (vd.
- * dictionaryapi.dev); nếu rỗng thì gọi backend TTS (`/tts/speak`) để
- * tổng hợp giọng đọc, giữ đúng cách phát audio `new Audio(url).play()`
- * đã dùng sẵn trong VocabularyPage thay vì thêm cơ chế mới.
+ * PhÃ¡t Ã¢m dÃ¹ng chung cho má»i nÆ¡i cÃ³ nÃºt loa (tá»« vá»±ng, flashcard, bÃ i
+ * Ä‘á»c, ngá»¯ phÃ¡p, luyá»‡n phÃ¡t Ã¢m...). Æ¯u tiÃªn phÃ¡t `audioUrl` cÃ³ sáºµn (vd.
+ * dictionaryapi.dev); náº¿u rá»—ng thÃ¬ gá»i backend TTS (`/tts/speak`) Ä‘á»ƒ
+ * tá»•ng há»£p giá»ng Ä‘á»c, giá»¯ Ä‘Ãºng cÃ¡ch phÃ¡t audio `new Audio(url).play()`
+ * Ä‘Ã£ dÃ¹ng sáºµn trong VocabularyPage thay vÃ¬ thÃªm cÆ¡ cháº¿ má»›i.
  */
 export function useSpeak() {
   const [speakingKey, setSpeakingKey] = useState<string | null>(null);
@@ -23,7 +23,7 @@ export function useSpeak() {
       lang: TtsLang = 'en',
       rate = 1,
     ) => {
-      if (speakingKey) return; // đang phát 1 audio khác, chặn spam click
+      if (speakingKey) return; // Ä‘ang phÃ¡t 1 audio khÃ¡c, cháº·n spam click
 
       setError(null);
       setSpeakingKey(key);
@@ -42,7 +42,7 @@ export function useSpeak() {
           audio.play().catch(() => resolve());
         });
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Không phát được audio');
+        setError(err instanceof Error ? err.message : 'KhÃ´ng phÃ¡t Ä‘Æ°á»£c audio');
       } finally {
         setSpeakingKey((current) => (current === key ? null : current));
       }

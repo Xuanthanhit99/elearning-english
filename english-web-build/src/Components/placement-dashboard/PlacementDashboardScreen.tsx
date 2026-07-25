@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   ArrowRight,
@@ -26,23 +26,23 @@ import {
   retakePlacement,
 } from '@/src/lib/placement-dashboard-api';
 import {
-  LumiverseButton,
-  LumiverseDialog,
-  LumiverseDialogCloseButton,
-  LumiverseSkeleton,
-  LumiverseState,
-} from '@/src/Components/UI/Lumiverse';
+  BeaconVieButton,
+  BeaconVieDialog,
+  BeaconVieDialogCloseButton,
+  BeaconVieSkeleton,
+  BeaconVieState,
+} from '@/src/Components/UI/BeaconVie';
 
 const skillMeta: Record<
   LearningSkill,
   { label: string; icon: typeof Type }
 > = {
-  VOCABULARY: { label: 'Từ vựng', icon: Type },
-  GRAMMAR: { label: 'Ngữ pháp', icon: BookOpen },
-  LISTENING: { label: 'Nghe hiểu', icon: Headphones },
-  READING: { label: 'Đọc hiểu', icon: BookOpen },
-  SPEAKING: { label: 'Nói', icon: Mic2 },
-  WRITING: { label: 'Viết', icon: PencilLine },
+  VOCABULARY: { label: 'Tá»« vá»±ng', icon: Type },
+  GRAMMAR: { label: 'Ngá»¯ phÃ¡p', icon: BookOpen },
+  LISTENING: { label: 'Nghe hiá»ƒu', icon: Headphones },
+  READING: { label: 'Äá»c hiá»ƒu', icon: BookOpen },
+  SPEAKING: { label: 'NÃ³i', icon: Mic2 },
+  WRITING: { label: 'Viáº¿t', icon: PencilLine },
 };
 
 export default function PlacementDashboardScreen() {
@@ -66,7 +66,7 @@ export default function PlacementDashboardScreen() {
       setError(
         err instanceof Error
           ? err.message
-          : 'Không thể tải Placement Dashboard.',
+          : 'KhÃ´ng thá»ƒ táº£i Placement Dashboard.',
       );
     } finally {
       setLoading(false);
@@ -83,7 +83,7 @@ export default function PlacementDashboardScreen() {
       setError(
         err instanceof Error
           ? err.message
-          : 'Không thể tạo bài kiểm tra mới.',
+          : 'KhÃ´ng thá»ƒ táº¡o bÃ i kiá»ƒm tra má»›i.',
       );
       if (!force) setShowRetakeModal(true);
     } finally {
@@ -122,7 +122,7 @@ export default function PlacementDashboardScreen() {
     return data.skills
       .map((item) => {
         const label = skillMeta[item.skill].label;
-        const score = item.status === 'SKIPPED' ? 'chưa đánh giá' : `${Math.round(item.score)}/100`;
+        const score = item.status === 'SKIPPED' ? 'chÆ°a Ä‘Ã¡nh giÃ¡' : `${Math.round(item.score)}/100`;
         return `${label}: ${score}`;
       })
       .join(', ');
@@ -135,16 +135,16 @@ export default function PlacementDashboardScreen() {
         aria-busy="true"
         aria-live="polite"
       >
-        <span className="sr-only">Đang tải Placement Dashboard…</span>
+        <span className="sr-only">Äang táº£i Placement Dashboardâ€¦</span>
         <div className="mx-auto max-w-[1500px] space-y-5">
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(390px,0.95fr)]">
-            <LumiverseSkeleton className="h-[320px]" />
-            <LumiverseSkeleton className="h-[320px]" />
+            <BeaconVieSkeleton className="h-[320px]" />
+            <BeaconVieSkeleton className="h-[320px]" />
           </div>
           <div className="grid gap-4 lg:grid-cols-3">
-            <LumiverseSkeleton className="h-[180px]" />
-            <LumiverseSkeleton className="h-[180px]" />
-            <LumiverseSkeleton className="h-[180px]" />
+            <BeaconVieSkeleton className="h-[180px]" />
+            <BeaconVieSkeleton className="h-[180px]" />
+            <BeaconVieSkeleton className="h-[180px]" />
           </div>
         </div>
       </main>
@@ -154,10 +154,10 @@ export default function PlacementDashboardScreen() {
   if (!data) {
     return (
       <main className="mx-auto flex min-h-[70vh] max-w-2xl items-center justify-center px-4 py-10">
-        <LumiverseState
-          title="Không thể tải dữ liệu"
-          description={error || 'Vui lòng thử lại.'}
-          actionLabel="Thử lại"
+        <BeaconVieState
+          title="KhÃ´ng thá»ƒ táº£i dá»¯ liá»‡u"
+          description={error || 'Vui lÃ²ng thá»­ láº¡i.'}
+          actionLabel="Thá»­ láº¡i"
           tone="error"
           onAction={() => void load()}
         />
@@ -168,9 +168,9 @@ export default function PlacementDashboardScreen() {
   if (data.state === 'FIRST_TIME') {
     return (
       <StatusState
-        title="Hãy bắt đầu Placement Test"
-        description="AI sẽ đánh giá trình độ và tạo lộ trình học phù hợp cho bạn."
-        buttonLabel="Bắt đầu kiểm tra"
+        title="HÃ£y báº¯t Ä‘áº§u Placement Test"
+        description="AI sáº½ Ä‘Ã¡nh giÃ¡ trÃ¬nh Ä‘á»™ vÃ  táº¡o lá»™ trÃ¬nh há»c phÃ¹ há»£p cho báº¡n."
+        buttonLabel="Báº¯t Ä‘áº§u kiá»ƒm tra"
         onClick={() => router.push('/placement/introduction')}
       />
     );
@@ -179,9 +179,9 @@ export default function PlacementDashboardScreen() {
   if (data.state === 'IN_PROGRESS') {
     return (
       <StatusState
-        title="Bạn có bài kiểm tra chưa hoàn thành"
-        description="Tiến trình của bạn đã được tự động lưu."
-        buttonLabel="Tiếp tục bài kiểm tra"
+        title="Báº¡n cÃ³ bÃ i kiá»ƒm tra chÆ°a hoÃ n thÃ nh"
+        description="Tiáº¿n trÃ¬nh cá»§a báº¡n Ä‘Ã£ Ä‘Æ°á»£c tá»± Ä‘á»™ng lÆ°u."
+        buttonLabel="Tiáº¿p tá»¥c bÃ i kiá»ƒm tra"
         onClick={() =>
           router.push(data.currentTest?.testUrl ?? '/placement')
         }
@@ -192,9 +192,9 @@ export default function PlacementDashboardScreen() {
   if (data.state === 'PROCESSING') {
     return (
       <StatusState
-        title="AI đang xử lý bài kiểm tra"
-        description="Kết quả và lộ trình cá nhân hóa sẽ sớm hoàn tất."
-        buttonLabel="Xem tiến trình"
+        title="AI Ä‘ang xá»­ lÃ½ bÃ i kiá»ƒm tra"
+        description="Káº¿t quáº£ vÃ  lá»™ trÃ¬nh cÃ¡ nhÃ¢n hÃ³a sáº½ sá»›m hoÃ n táº¥t."
+        buttonLabel="Xem tiáº¿n trÃ¬nh"
         onClick={() =>
           router.push(
             data.currentTest?.processingUrl ?? '/placement',
@@ -211,12 +211,12 @@ export default function PlacementDashboardScreen() {
     <main className="min-h-screen px-4 py-6 sm:px-6">
       <div className="mx-auto max-w-[1500px] space-y-5">
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(390px,0.95fr)]">
-          <section className="lumiverse-card p-6">
+          <section className="BeaconVie-card p-6">
             <div className="grid items-center gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
               <div className="relative h-[300px]">
                 <Image
-                  src="/images/placement/poppy-completed.png"
-                  alt="Lumi chúc mừng"
+                  src="/images/placement/BeaconVie-completed.png"
+                  alt="Beacon chÃºc má»«ng"
                   fill
                   priority
                   className="object-contain"
@@ -226,54 +226,54 @@ export default function PlacementDashboardScreen() {
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-black text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
                   <CheckCircle2 aria-hidden className="h-4 w-4" />
-                  Đã hoàn thành
+                  ÄÃ£ hoÃ n thÃ nh
                 </div>
 
-                <h1 className="mt-4 text-4xl font-black text-[var(--lumiverse-ink)]">
+                <h1 className="mt-4 text-4xl font-black text-[var(--BeaconVie-ink)]">
                   Placement Test!
                 </h1>
 
-                <p className="mt-2 leading-7 text-[var(--lumiverse-muted)]">
-                  Bạn đã hoàn thành bài kiểm tra đánh giá trình độ tiếng Anh.
+                <p className="mt-2 leading-7 text-[var(--BeaconVie-muted)]">
+                  Báº¡n Ä‘Ã£ hoÃ n thÃ nh bÃ i kiá»ƒm tra Ä‘Ã¡nh giÃ¡ trÃ¬nh Ä‘á»™ tiáº¿ng Anh.
                 </p>
 
                 <div className="mt-6 grid gap-4 md:grid-cols-3">
                   <MetricCard
-                    title="Trình độ của bạn"
+                    title="TrÃ¬nh Ä‘á»™ cá»§a báº¡n"
                     value={latest.overallLevel}
                     footer={levelLabel(latest.overallLevel)}
                   />
                   <MetricCard
-                    title="Độ tin cậy AI"
+                    title="Äá»™ tin cáº­y AI"
                     value={`${latest.confidence ?? 0}%`}
-                    footer={`Phân tích từ ${latest.totalQuestions} câu hỏi`}
+                    footer={`PhÃ¢n tÃ­ch tá»« ${latest.totalQuestions} cÃ¢u há»i`}
                   />
                   <MetricCard
-                    title="Thứ hạng"
+                    title="Thá»© háº¡ng"
                     value={`${latest.percentile ?? 0}th`}
-                    footer="so với người có kết quả tương tự"
+                    footer="so vá»›i ngÆ°á»i cÃ³ káº¿t quáº£ tÆ°Æ¡ng tá»±"
                   />
                 </div>
 
-                <p className="mt-4 text-sm text-[var(--lumiverse-muted)]">
+                <p className="mt-4 text-sm text-[var(--BeaconVie-muted)]">
                   {latest.completedAt
                     ? new Date(latest.completedAt).toLocaleString('vi-VN')
-                    : 'Vừa hoàn thành'}
+                    : 'Vá»«a hoÃ n thÃ nh'}
                 </p>
               </div>
             </div>
           </section>
 
-          <aside className="lumiverse-card p-6">
-            <h2 className="text-xl font-black text-[var(--lumiverse-ink)]">
-              Bạn muốn làm gì tiếp theo?
+          <aside className="BeaconVie-card p-6">
+            <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">
+              Báº¡n muá»‘n lÃ m gÃ¬ tiáº¿p theo?
             </h2>
 
             <div className="mt-5 space-y-3">
               <ActionRow
                 icon={BookOpen}
-                title="Tiếp tục học"
-                description="Tiếp tục lộ trình cá nhân hóa dựa trên trình độ hiện tại."
+                title="Tiáº¿p tá»¥c há»c"
+                description="Tiáº¿p tá»¥c lá»™ trÃ¬nh cÃ¡ nhÃ¢n hÃ³a dá»±a trÃªn trÃ¬nh Ä‘á»™ hiá»‡n táº¡i."
                 onClick={() =>
                   router.push(data.actions.continueLearningUrl)
                 }
@@ -281,12 +281,12 @@ export default function PlacementDashboardScreen() {
 
               <ActionRow
                 icon={RefreshCw}
-                title="Làm lại bài kiểm tra"
+                title="LÃ m láº¡i bÃ i kiá»ƒm tra"
                 description={data.retake.message}
                 badge={
                   data.retake.allowed
-                    ? 'Có thể làm ngay'
-                    : `Nên làm lại sau ${data.retake.remainingDays} ngày`
+                    ? 'CÃ³ thá»ƒ lÃ m ngay'
+                    : `NÃªn lÃ m láº¡i sau ${data.retake.remainingDays} ngÃ y`
                 }
                 disabled={retaking}
                 onClick={() => {
@@ -300,8 +300,8 @@ export default function PlacementDashboardScreen() {
 
               <ActionRow
                 icon={BarChart3}
-                title="Xem kết quả chi tiết"
-                description="Phân tích sâu từng kỹ năng và gợi ý cải thiện."
+                title="Xem káº¿t quáº£ chi tiáº¿t"
+                description="PhÃ¢n tÃ­ch sÃ¢u tá»«ng ká»¹ nÄƒng vÃ  gá»£i Ã½ cáº£i thiá»‡n."
                 onClick={() => {
                   if (data.actions.detailedAnalysisUrl) {
                     router.push(data.actions.detailedAnalysisUrl);
@@ -312,10 +312,10 @@ export default function PlacementDashboardScreen() {
 
             <div className="mt-5 rounded-2xl bg-blue-50 p-4 dark:bg-white/8">
               <div className="flex gap-3">
-                <Sparkles aria-hidden className="h-5 w-5 shrink-0 text-[var(--lumiverse-primary)]" />
-                <p className="text-sm leading-6 text-[var(--lumiverse-muted)]">
-                  Luyện tập thường xuyên sẽ giúp cập nhật lộ trình chính xác hơn
-                  trong lần kiểm tra tiếp theo.
+                <Sparkles aria-hidden className="h-5 w-5 shrink-0 text-[var(--BeaconVie-primary)]" />
+                <p className="text-sm leading-6 text-[var(--BeaconVie-muted)]">
+                  Luyá»‡n táº­p thÆ°á»ng xuyÃªn sáº½ giÃºp cáº­p nháº­t lá»™ trÃ¬nh chÃ­nh xÃ¡c hÆ¡n
+                  trong láº§n kiá»ƒm tra tiáº¿p theo.
                 </p>
               </div>
             </div>
@@ -324,32 +324,32 @@ export default function PlacementDashboardScreen() {
 
         <section className="grid gap-4 lg:grid-cols-3">
           <SummaryCard
-            title="Điểm mạnh nổi bật"
+            title="Äiá»ƒm máº¡nh ná»•i báº­t"
             items={latest.strengths}
             positive
             icon={Trophy}
           />
           <SummaryCard
-            title="Kỹ năng cần cải thiện"
+            title="Ká»¹ nÄƒng cáº§n cáº£i thiá»‡n"
             items={latest.improvements}
             icon={Target}
           />
-          <div className="lumiverse-card p-6">
+          <div className="BeaconVie-card p-6">
             <div className="flex items-start gap-4">
-              <Rocket aria-hidden className="h-10 w-10 shrink-0 text-[var(--lumiverse-primary)]" />
+              <Rocket aria-hidden className="h-10 w-10 shrink-0 text-[var(--BeaconVie-primary)]" />
               <div>
-                <h2 className="text-xl font-black text-[var(--lumiverse-ink)]">
-                  Dự đoán tiến bộ
+                <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">
+                  Dá»± Ä‘oÃ¡n tiáº¿n bá»™
                 </h2>
-                <p className="mt-3 leading-7 text-[var(--lumiverse-muted)]">
-                  Nếu học đều 20 phút/ngày, bạn có thể đạt{' '}
-                  <strong className="text-[var(--lumiverse-primary)]">
-                    {latest.projectedLevel ?? 'mức tiếp theo'}
+                <p className="mt-3 leading-7 text-[var(--BeaconVie-muted)]">
+                  Náº¿u há»c Ä‘á»u 20 phÃºt/ngÃ y, báº¡n cÃ³ thá»ƒ Ä‘áº¡t{' '}
+                  <strong className="text-[var(--BeaconVie-primary)]">
+                    {latest.projectedLevel ?? 'má»©c tiáº¿p theo'}
                   </strong>{' '}
                   trong{' '}
-                  <strong className="text-[var(--lumiverse-ink)]">
-                    {latest.projectedWeeksMin ?? 0}–
-                    {latest.projectedWeeksMax ?? 0} tuần
+                  <strong className="text-[var(--BeaconVie-ink)]">
+                    {latest.projectedWeeksMin ?? 0}â€“
+                    {latest.projectedWeeksMax ?? 0} tuáº§n
                   </strong>
                   .
                 </p>
@@ -359,9 +359,9 @@ export default function PlacementDashboardScreen() {
         </section>
 
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(390px,0.95fr)]">
-          <div className="lumiverse-card p-6">
-            <h2 className="text-2xl font-black text-[var(--lumiverse-ink)]">
-              Tổng quan kỹ năng
+          <div className="BeaconVie-card p-6">
+            <h2 className="text-2xl font-black text-[var(--BeaconVie-ink)]">
+              Tá»•ng quan ká»¹ nÄƒng
             </h2>
 
             <div className="mt-6 grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
@@ -379,35 +379,35 @@ export default function PlacementDashboardScreen() {
                   return (
                     <div
                       key={item.skill}
-                      className="grid gap-4 rounded-2xl border border-[var(--lumiverse-border)] p-4 md:grid-cols-[160px_90px_110px_minmax(0,1fr)]"
+                      className="grid gap-4 rounded-2xl border border-[var(--BeaconVie-border)] p-4 md:grid-cols-[160px_90px_110px_minmax(0,1fr)]"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[var(--lumiverse-primary)] dark:bg-white/8">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[var(--BeaconVie-primary)] dark:bg-white/8">
                           <Icon aria-hidden className="h-5 w-5" />
                         </div>
-                        <span className="font-black text-[var(--lumiverse-ink)]">
+                        <span className="font-black text-[var(--BeaconVie-ink)]">
                           {meta.label}
                         </span>
                       </div>
 
-                      <div className="text-2xl font-black text-[var(--lumiverse-primary)]">
+                      <div className="text-2xl font-black text-[var(--BeaconVie-primary)]">
                         {item.status === 'SKIPPED'
-                          ? '—'
+                          ? 'â€”'
                           : Math.round(item.score)}
-                        <span className="text-sm text-[var(--lumiverse-muted)]">
+                        <span className="text-sm text-[var(--BeaconVie-muted)]">
                           /100
                         </span>
                       </div>
 
-                      <span className="self-start rounded-full bg-black/5 px-3 py-1 text-center text-xs font-bold text-[var(--lumiverse-muted)] dark:bg-white/8">
-                        {item.label ?? 'Đã đánh giá'}
+                      <span className="self-start rounded-full bg-black/5 px-3 py-1 text-center text-xs font-bold text-[var(--BeaconVie-muted)] dark:bg-white/8">
+                        {item.label ?? 'ÄÃ£ Ä‘Ã¡nh giÃ¡'}
                       </span>
 
-                      <div className="text-sm leading-6 text-[var(--lumiverse-muted)]">
+                      <div className="text-sm leading-6 text-[var(--BeaconVie-muted)]">
                         <p>{item.feedback}</p>
                         {item.improvements[0] ? (
                           <p className="mt-1 text-orange-600 dark:text-orange-400">
-                            Cần cải thiện: {item.improvements[0]}
+                            Cáº§n cáº£i thiá»‡n: {item.improvements[0]}
                           </p>
                         ) : null}
                       </div>
@@ -444,24 +444,24 @@ export default function PlacementDashboardScreen() {
           />
         </section>
 
-        <section className="lumiverse-card p-6">
+        <section className="BeaconVie-card p-6">
           <div className="grid items-center gap-5 lg:grid-cols-[minmax(0,1fr)_auto]">
             <div>
-              <h2 className="text-2xl font-black text-[var(--lumiverse-ink)]">
-                Tiếp tục hành trình học tập của bạn!
+              <h2 className="text-2xl font-black text-[var(--BeaconVie-ink)]">
+                Tiáº¿p tá»¥c hÃ nh trÃ¬nh há»c táº­p cá»§a báº¡n!
               </h2>
-              <p className="mt-2 max-w-3xl leading-7 text-[var(--lumiverse-muted)]">
-                Bạn đang ở trình độ {latest.overallLevel}. Hãy tiếp tục học
-                theo lộ trình AI để cải thiện các kỹ năng ưu tiên.
+              <p className="mt-2 max-w-3xl leading-7 text-[var(--BeaconVie-muted)]">
+                Báº¡n Ä‘ang á»Ÿ trÃ¬nh Ä‘á»™ {latest.overallLevel}. HÃ£y tiáº¿p tá»¥c há»c
+                theo lá»™ trÃ¬nh AI Ä‘á»ƒ cáº£i thiá»‡n cÃ¡c ká»¹ nÄƒng Æ°u tiÃªn.
               </p>
             </div>
 
-            <LumiverseButton
+            <BeaconVieButton
               onClick={() => router.push(data.actions.continueLearningUrl)}
             >
-              Tiếp tục học
+              Tiáº¿p tá»¥c há»c
               <ArrowRight aria-hidden className="h-5 w-5" />
-            </LumiverseButton>
+            </BeaconVieButton>
           </div>
         </section>
 
@@ -491,17 +491,17 @@ function StatusState(props: {
 }) {
   return (
     <main className="flex min-h-[75vh] items-center justify-center p-6">
-      <div className="w-full max-w-xl lumiverse-card p-9 text-center">
-        <Bot aria-hidden className="mx-auto h-12 w-12 text-[var(--lumiverse-primary)]" />
-        <h1 className="mt-5 text-3xl font-black text-[var(--lumiverse-ink)]">
+      <div className="w-full max-w-xl BeaconVie-card p-9 text-center">
+        <Bot aria-hidden className="mx-auto h-12 w-12 text-[var(--BeaconVie-primary)]" />
+        <h1 className="mt-5 text-3xl font-black text-[var(--BeaconVie-ink)]">
           {props.title}
         </h1>
-        <p className="mt-3 leading-7 text-[var(--lumiverse-muted)]">
+        <p className="mt-3 leading-7 text-[var(--BeaconVie-muted)]">
           {props.description}
         </p>
-        <LumiverseButton className="mt-7" onClick={props.onClick}>
+        <BeaconVieButton className="mt-7" onClick={props.onClick}>
           {props.buttonLabel}
-        </LumiverseButton>
+        </BeaconVieButton>
       </div>
     </main>
   );
@@ -513,12 +513,12 @@ function MetricCard(props: {
   footer: string;
 }) {
   return (
-    <div className="rounded-2xl border border-[var(--lumiverse-border)] p-5 text-center">
-      <p className="text-sm font-bold text-[var(--lumiverse-muted)]">{props.title}</p>
-      <p className="mt-2 text-4xl font-black text-[var(--lumiverse-primary)]">
+    <div className="rounded-2xl border border-[var(--BeaconVie-border)] p-5 text-center">
+      <p className="text-sm font-bold text-[var(--BeaconVie-muted)]">{props.title}</p>
+      <p className="mt-2 text-4xl font-black text-[var(--BeaconVie-primary)]">
         {props.value}
       </p>
-      <p className="mt-2 text-xs text-[var(--lumiverse-muted)]">{props.footer}</p>
+      <p className="mt-2 text-xs text-[var(--BeaconVie-muted)]">{props.footer}</p>
     </div>
   );
 }
@@ -538,25 +538,25 @@ function ActionRow(props: {
       type="button"
       disabled={props.disabled}
       onClick={props.onClick}
-      className="flex w-full items-start gap-4 rounded-2xl border border-[var(--lumiverse-border)] p-4 text-left transition hover:border-[var(--lumiverse-primary)] hover:bg-blue-50 disabled:opacity-50 dark:hover:bg-white/8"
+      className="flex w-full items-start gap-4 rounded-2xl border border-[var(--BeaconVie-border)] p-4 text-left transition hover:border-[var(--BeaconVie-primary)] hover:bg-blue-50 disabled:opacity-50 dark:hover:bg-white/8"
     >
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[var(--lumiverse-primary)] dark:bg-white/8">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[var(--BeaconVie-primary)] dark:bg-white/8">
         <Icon aria-hidden className="h-6 w-6" />
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="font-black text-[var(--lumiverse-ink)]">{props.title}</p>
+          <p className="font-black text-[var(--BeaconVie-ink)]">{props.title}</p>
           {props.badge ? (
-            <span className="rounded-full bg-black/5 px-2 py-1 text-[11px] font-bold text-[var(--lumiverse-muted)] dark:bg-white/8">
+            <span className="rounded-full bg-black/5 px-2 py-1 text-[11px] font-bold text-[var(--BeaconVie-muted)] dark:bg-white/8">
               {props.badge}
             </span>
           ) : null}
         </div>
-        <p className="mt-1 text-sm leading-6 text-[var(--lumiverse-muted)]">
+        <p className="mt-1 text-sm leading-6 text-[var(--BeaconVie-muted)]">
           {props.description}
         </p>
       </div>
-      <ArrowRight aria-hidden className="mt-3 h-5 w-5 shrink-0 text-[var(--lumiverse-primary)]" />
+      <ArrowRight aria-hidden className="mt-3 h-5 w-5 shrink-0 text-[var(--BeaconVie-primary)]" />
     </button>
   );
 }
@@ -571,7 +571,7 @@ function SummaryCard(props: {
 
   return (
     <div
-      className={`lumiverse-card p-6 ${
+      className={`BeaconVie-card p-6 ${
         props.positive
           ? 'border-emerald-200/60 bg-emerald-50/40 dark:bg-emerald-500/10'
           : 'border-orange-200/60 bg-orange-50/40 dark:bg-orange-500/10'
@@ -584,14 +584,14 @@ function SummaryCard(props: {
             props.positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-orange-600 dark:text-orange-400'
           }`}
         />
-        <h2 className="text-xl font-black text-[var(--lumiverse-ink)]">
+        <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">
           {props.title}
         </h2>
       </div>
       <div className="mt-4 space-y-2">
         {props.items.slice(0, 4).map((item) => (
-          <p key={item} className="text-sm leading-6 text-[var(--lumiverse-ink)]">
-            ✓ {item}
+          <p key={item} className="text-sm leading-6 text-[var(--BeaconVie-ink)]">
+            âœ“ {item}
           </p>
         ))}
       </div>
@@ -606,7 +606,7 @@ function RadarChart(props: { points: string; overall: number; summary: string })
         viewBox="0 0 220 220"
         className="h-[250px] w-[250px]"
         role="img"
-        aria-label={`Biểu đồ tổng quan kỹ năng. Điểm tổng: ${Math.round(props.overall)}/100. ${props.summary}`}
+        aria-label={`Biá»ƒu Ä‘á»“ tá»•ng quan ká»¹ nÄƒng. Äiá»ƒm tá»•ng: ${Math.round(props.overall)}/100. ${props.summary}`}
       >
         {[84, 64, 44, 24].map((radius) => (
           <polygon
@@ -620,17 +620,17 @@ function RadarChart(props: { points: string; overall: number; summary: string })
               })
               .join(' ')}
             fill="none"
-            stroke="var(--lumiverse-border)"
+            stroke="var(--BeaconVie-border)"
           />
         ))}
         <polygon
           points={props.points}
           fill="rgba(23,70,255,0.16)"
-          stroke="var(--lumiverse-primary)"
+          stroke="var(--BeaconVie-primary)"
           strokeWidth="3"
         />
-        <circle cx="110" cy="110" r="30" fill="var(--lumiverse-card)" />
-        <text x="110" y="106" textAnchor="middle" fontSize="12" fill="var(--lumiverse-muted)">
+        <circle cx="110" cy="110" r="30" fill="var(--BeaconVie-card)" />
+        <text x="110" y="106" textAnchor="middle" fontSize="12" fill="var(--BeaconVie-muted)">
           Overall
         </text>
         <text
@@ -639,7 +639,7 @@ function RadarChart(props: { points: string; overall: number; summary: string })
           textAnchor="middle"
           fontSize="22"
           fontWeight="800"
-          fill="var(--lumiverse-primary)"
+          fill="var(--BeaconVie-primary)"
         >
           {Math.round(props.overall)}
         </text>
@@ -652,24 +652,24 @@ function PriorityPanel(props: {
   priorities: PlacementDashboardData['priorities'];
 }) {
   return (
-    <section className="lumiverse-card p-6">
-      <h2 className="text-xl font-black text-[var(--lumiverse-ink)]">
-        Ưu tiên cải thiện (AI gợi ý)
+    <section className="BeaconVie-card p-6">
+      <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">
+        Æ¯u tiÃªn cáº£i thiá»‡n (AI gá»£i Ã½)
       </h2>
       <div className="mt-4 space-y-3">
         {props.priorities.map((item) => (
           <div
             key={item.id}
-            className="flex items-start gap-3 rounded-2xl border border-[var(--lumiverse-border)] p-4"
+            className="flex items-start gap-3 rounded-2xl border border-[var(--BeaconVie-border)] p-4"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--lumiverse-primary)] font-black text-white">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--BeaconVie-primary)] font-black text-white">
               {item.priority}
             </span>
             <div>
-              <p className="font-black text-[var(--lumiverse-primary)]">
+              <p className="font-black text-[var(--BeaconVie-primary)]">
                 {skillMeta[item.skill].label}
               </p>
-              <p className="mt-1 text-sm leading-6 text-[var(--lumiverse-muted)]">
+              <p className="mt-1 text-sm leading-6 text-[var(--BeaconVie-muted)]">
                 {item.reason}
               </p>
             </div>
@@ -684,29 +684,29 @@ function LearningPathPanel(props: {
   phases: PlacementDashboardData['learningPath'];
 }) {
   return (
-    <section className="lumiverse-card p-6">
-      <h2 className="text-xl font-black text-[var(--lumiverse-ink)]">
-        Lộ trình học tập cá nhân hóa
+    <section className="BeaconVie-card p-6">
+      <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">
+        Lá»™ trÃ¬nh há»c táº­p cÃ¡ nhÃ¢n hÃ³a
       </h2>
       <div className="mt-4 grid gap-3">
         {props.phases.map((phase) => (
           <div
             key={phase.id}
-            className="rounded-2xl border border-[var(--lumiverse-border)] p-4"
+            className="rounded-2xl border border-[var(--BeaconVie-border)] p-4"
           >
-            <p className="text-sm font-black text-[var(--lumiverse-primary)]">
-              Giai đoạn {phase.phase}
+            <p className="text-sm font-black text-[var(--BeaconVie-primary)]">
+              Giai Ä‘oáº¡n {phase.phase}
             </p>
-            <p className="mt-1 text-xs text-[var(--lumiverse-muted)]">
-              {phase.weeksMin}–{phase.weeksMax} tuần
+            <p className="mt-1 text-xs text-[var(--BeaconVie-muted)]">
+              {phase.weeksMin}â€“{phase.weeksMax} tuáº§n
             </p>
-            <h3 className="mt-3 font-black text-[var(--lumiverse-ink)]">
+            <h3 className="mt-3 font-black text-[var(--BeaconVie-ink)]">
               {phase.title}
             </h3>
-            <p className="mt-2 text-sm leading-6 text-[var(--lumiverse-muted)]">
+            <p className="mt-2 text-sm leading-6 text-[var(--BeaconVie-muted)]">
               {phase.description}
             </p>
-            <div className="mt-4 lumiverse-progress h-2">
+            <div className="mt-4 BeaconVie-progress h-2">
               <div style={{ width: `${phase.progress}%` }} />
             </div>
           </div>
@@ -722,17 +722,17 @@ function HistoryPanel(props: {
   onSelect: (url: string) => void;
 }) {
   return (
-    <section className="lumiverse-card p-6">
+    <section className="BeaconVie-card p-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-black text-[var(--lumiverse-ink)]">
-          Lịch sử bài kiểm tra
+        <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">
+          Lá»‹ch sá»­ bÃ i kiá»ƒm tra
         </h2>
         <button
           type="button"
           onClick={props.onViewAll}
-          className="text-sm font-bold text-[var(--lumiverse-primary)]"
+          className="text-sm font-bold text-[var(--BeaconVie-primary)]"
         >
-          Xem tất cả
+          Xem táº¥t cáº£
         </button>
       </div>
       <div className="mt-4 space-y-3">
@@ -744,20 +744,20 @@ function HistoryPanel(props: {
             className="flex w-full items-center justify-between rounded-xl bg-black/[0.03] p-3 text-left dark:bg-white/5"
           >
             <div>
-              <p className="text-sm font-bold text-[var(--lumiverse-ink)]">
+              <p className="text-sm font-bold text-[var(--BeaconVie-ink)]">
                 {item.completedAt
                   ? new Date(item.completedAt).toLocaleDateString('vi-VN')
-                  : 'Không rõ ngày'}
+                  : 'KhÃ´ng rÃµ ngÃ y'}
               </p>
-              <p className="mt-1 text-xs text-[var(--lumiverse-muted)]">
-                {item.isLatest ? 'Kết quả gần nhất' : levelLabel(item.level)}
+              <p className="mt-1 text-xs text-[var(--BeaconVie-muted)]">
+                {item.isLatest ? 'Káº¿t quáº£ gáº§n nháº¥t' : levelLabel(item.level)}
               </p>
             </div>
             <div className="text-right">
-              <span className="rounded-full bg-[var(--lumiverse-primary)] px-3 py-1 text-xs font-black text-white">
+              <span className="rounded-full bg-[var(--BeaconVie-primary)] px-3 py-1 text-xs font-black text-white">
                 {item.level}
               </span>
-              <p className="mt-1 text-xs font-bold text-[var(--lumiverse-muted)]">
+              <p className="mt-1 text-xs font-bold text-[var(--BeaconVie-muted)]">
                 {Math.round(item.score)}/100
               </p>
             </div>
@@ -773,35 +773,35 @@ function ComparisonPanel(props: {
   currentLevel: string;
 }) {
   return (
-    <section className="lumiverse-card p-6">
-      <h2 className="text-lg font-black text-[var(--lumiverse-ink)]">
-        So sánh tiến bộ
+    <section className="BeaconVie-card p-6">
+      <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">
+        So sÃ¡nh tiáº¿n bá»™
       </h2>
       {props.comparison.hasPrevious ? (
         <div className="mt-5 grid gap-4 sm:grid-cols-3">
           <CompareMetric
-            title="Điểm cũ"
+            title="Äiá»ƒm cÅ©"
             value={`${Math.round(
               props.comparison.previousScore ?? 0,
             )}/100`}
           />
           <CompareMetric
-            title="Điểm số"
+            title="Äiá»ƒm sá»‘"
             value={`${
               (props.comparison.scoreDelta ?? 0) >= 0 ? '+' : ''
             }${Math.round(props.comparison.scoreDelta ?? 0)}`}
             positive={(props.comparison.scoreDelta ?? 0) >= 0}
           />
           <CompareMetric
-            title="Cấp độ"
-            value={`${props.comparison.previousLevel} → ${props.currentLevel}`}
+            title="Cáº¥p Ä‘á»™"
+            value={`${props.comparison.previousLevel} â†’ ${props.currentLevel}`}
             positive={(props.comparison.levelDelta ?? 0) >= 0}
           />
         </div>
       ) : (
-        <p className="mt-5 rounded-2xl bg-black/[0.03] p-5 text-sm text-[var(--lumiverse-muted)] dark:bg-white/5">
-          Đây là kết quả đầu tiên. Sau lần kiểm tra tiếp theo, hệ thống sẽ
-          hiển thị tiến bộ tại đây.
+        <p className="mt-5 rounded-2xl bg-black/[0.03] p-5 text-sm text-[var(--BeaconVie-muted)] dark:bg-white/5">
+          ÄÃ¢y lÃ  káº¿t quáº£ Ä‘áº§u tiÃªn. Sau láº§n kiá»ƒm tra tiáº¿p theo, há»‡ thá»‘ng sáº½
+          hiá»ƒn thá»‹ tiáº¿n bá»™ táº¡i Ä‘Ã¢y.
         </p>
       )}
     </section>
@@ -815,10 +815,10 @@ function CompareMetric(props: {
 }) {
   return (
     <div className="rounded-2xl bg-black/[0.03] p-4 text-center dark:bg-white/5">
-      <p className="text-xs font-bold text-[var(--lumiverse-muted)]">{props.title}</p>
+      <p className="text-xs font-bold text-[var(--BeaconVie-muted)]">{props.title}</p>
       <p
         className={`mt-2 text-2xl font-black ${
-          props.positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-[var(--lumiverse-primary)]'
+          props.positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-[var(--BeaconVie-primary)]'
         }`}
       >
         {props.value}
@@ -832,9 +832,9 @@ function CoursePanel(props: {
   onSelect: (slug: string | null) => void;
 }) {
   return (
-    <section className="lumiverse-card p-6">
-      <h2 className="text-lg font-black text-[var(--lumiverse-ink)]">
-        Khóa học AI đề xuất cho bạn
+    <section className="BeaconVie-card p-6">
+      <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">
+        KhÃ³a há»c AI Ä‘á» xuáº¥t cho báº¡n
       </h2>
       <div className="mt-4 grid gap-3">
         {props.courses.slice(0, 3).map((course) => (
@@ -842,7 +842,7 @@ function CoursePanel(props: {
             key={course.id}
             type="button"
             onClick={() => props.onSelect(course.slug)}
-            className="flex gap-4 rounded-2xl border border-[var(--lumiverse-border)] p-3 text-left hover:bg-blue-50 dark:hover:bg-white/8"
+            className="flex gap-4 rounded-2xl border border-[var(--BeaconVie-border)] p-3 text-left hover:bg-blue-50 dark:hover:bg-white/8"
           >
             <div className="relative h-20 w-24 shrink-0 overflow-hidden rounded-xl bg-blue-50 dark:bg-white/8">
               {course.thumbnail ? (
@@ -853,17 +853,17 @@ function CoursePanel(props: {
                   className="object-cover"
                 />
               ) : (
-                <BookOpen aria-hidden className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 text-[var(--lumiverse-primary)]" />
+                <BookOpen aria-hidden className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 text-[var(--BeaconVie-primary)]" />
               )}
             </div>
             <div>
-              <p className="font-black text-[var(--lumiverse-ink)]">{course.title}</p>
+              <p className="font-black text-[var(--BeaconVie-ink)]">{course.title}</p>
               <p className="mt-1 text-xs text-amber-500">
-                ★ {course.rating ?? 0}
+                â˜… {course.rating ?? 0}
                 {course.reviews !== null ? ` (${course.reviews})` : ''}
               </p>
-              <p className="mt-1 text-sm text-[var(--lumiverse-muted)]">
-                {course.lessonCount ?? 0} bài học
+              <p className="mt-1 text-sm text-[var(--BeaconVie-muted)]">
+                {course.lessonCount ?? 0} bÃ i há»c
               </p>
             </div>
           </button>
@@ -881,39 +881,39 @@ function RetakeDialog(props: {
   onConfirm: () => void;
 }) {
   return (
-    <LumiverseDialog open={props.open} onClose={props.onClose} titleId="dashboard-retake-title">
+    <BeaconVieDialog open={props.open} onClose={props.onClose} titleId="dashboard-retake-title">
       <div className="flex items-start justify-between gap-4">
-        <h2 id="dashboard-retake-title" className="text-2xl font-black text-[var(--lumiverse-ink)]">
-          Làm lại Placement Test?
+        <h2 id="dashboard-retake-title" className="text-2xl font-black text-[var(--BeaconVie-ink)]">
+          LÃ m láº¡i Placement Test?
         </h2>
-        <LumiverseDialogCloseButton onClose={props.onClose} label="Đóng hộp thoại" />
+        <BeaconVieDialogCloseButton onClose={props.onClose} label="ÄÃ³ng há»™p thoáº¡i" />
       </div>
-      <p className="mt-3 leading-7 text-[var(--lumiverse-muted)]">
+      <p className="mt-3 leading-7 text-[var(--BeaconVie-muted)]">
         {props.message}
       </p>
       <div className="mt-5 rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
-        Kết quả mới sẽ được lưu riêng và không xóa lịch sử cũ.
+        Káº¿t quáº£ má»›i sáº½ Ä‘Æ°á»£c lÆ°u riÃªng vÃ  khÃ´ng xÃ³a lá»‹ch sá»­ cÅ©.
       </div>
       <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <LumiverseButton tone="ghost" disabled={props.loading} onClick={props.onClose}>
-          Quay lại
-        </LumiverseButton>
-        <LumiverseButton loading={props.loading} onClick={props.onConfirm}>
-          Vẫn làm lại
-        </LumiverseButton>
+        <BeaconVieButton tone="ghost" disabled={props.loading} onClick={props.onClose}>
+          Quay láº¡i
+        </BeaconVieButton>
+        <BeaconVieButton loading={props.loading} onClick={props.onConfirm}>
+          Váº«n lÃ m láº¡i
+        </BeaconVieButton>
       </div>
-    </LumiverseDialog>
+    </BeaconVieDialog>
   );
 }
 
 function levelLabel(level: string) {
   const labels: Record<string, string> = {
-    A1: 'Sơ cấp',
-    A2: 'Sơ trung cấp',
-    B1: 'Trung cấp',
-    B2: 'Trung cấp cao',
-    C1: 'Cao cấp',
-    C2: 'Thành thạo',
+    A1: 'SÆ¡ cáº¥p',
+    A2: 'SÆ¡ trung cáº¥p',
+    B1: 'Trung cáº¥p',
+    B2: 'Trung cáº¥p cao',
+    C1: 'Cao cáº¥p',
+    C2: 'ThÃ nh tháº¡o',
   };
   return labels[level] ?? level;
 }

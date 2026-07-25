@@ -1,4 +1,4 @@
-export type CommunityUserCard = {
+﻿export type CommunityUserCard = {
   id: string;
   fullname: string;
   username?: string | null;

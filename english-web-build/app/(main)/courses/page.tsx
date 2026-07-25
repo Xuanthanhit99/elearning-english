@@ -1,4 +1,4 @@
-import CoursesPage from '@/src/Components/Courses/CoursesPage'
+﻿import CoursesPage from '@/src/Components/Courses/CoursesPage'
 import React from 'react'
 
 const page = () => {

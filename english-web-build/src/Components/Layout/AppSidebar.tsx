@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import AppLogo from "@/src/Components/UI/AppLogo";
 import {
@@ -52,7 +52,7 @@ type AppSidebarProps = {
 function buildGroups(t: (key: string) => string): SidebarGroup[] {
   return [
     {
-      title: "Main",
+      title: "Chính",
       items: [
         { label: t("sidebar.home"), href: "/dashboard", icon: Home },
         { label: t("sidebar.todayLesson"), href: "/learn", icon: BookOpen },
@@ -63,7 +63,7 @@ function buildGroups(t: (key: string) => string): SidebarGroup[] {
       title: t("sidebar.groupSkills"),
       items: [
         { label: t("sidebar.vocabulary"), href: "/vocabulary", icon: BookOpen },
-        { label: "Grammar", href: "/grammar", icon: CheckCircle2 },
+        { label: "Ngữ pháp", href: "/grammar", icon: CheckCircle2 },
         { label: t("sidebar.listening"), href: "/listening", icon: Headphones },
         { label: t("sidebar.speaking"), href: "/speaking", icon: Mic2 },
         { label: t("sidebar.reading"), href: "/reading", icon: Landmark },
@@ -71,7 +71,7 @@ function buildGroups(t: (key: string) => string): SidebarGroup[] {
       ],
     },
     {
-      title: "Engagement",
+      title: "Tương tác",
       items: [
         { label: t("sidebar.missions"), href: "/missions", icon: Trophy },
         { label: t("sidebar.community"), href: "/community", icon: Users },
@@ -80,7 +80,7 @@ function buildGroups(t: (key: string) => string): SidebarGroup[] {
       ],
     },
     {
-      title: "Companion",
+      title: "Đồng hành",
       items: [
         { label: t("sidebar.arena"), href: "/arena", icon: MessageCircle },
         { label: t("sidebar.discover"), href: "/discover", icon: Compass },
@@ -140,7 +140,7 @@ export default function AppSidebar({
       <aside
         data-testid="app-sidebar-desktop"
         className={[
-          "fixed inset-y-0 left-0 z-40 hidden border-r border-[var(--lumiverse-border)] bg-[var(--lumiverse-shell-surface)] shadow-[12px_0_44px_rgba(22,45,100,0.08)] backdrop-blur-2xl transition-[width] duration-300 lg:block",
+          "fixed inset-y-0 left-0 z-40 hidden border-r border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-shell-surface)] shadow-[12px_0_44px_rgba(22,45,100,0.08)] backdrop-blur-2xl transition-[width] duration-300 lg:block",
           collapsed ? "w-[96px]" : "w-[280px]",
         ].join(" ")}
       >
@@ -159,14 +159,14 @@ export default function AppSidebar({
           type="button"
           aria-label={t("sidebar.closeMenu")}
           onClick={() => onMobileOpenChange(false)}
-          className="fixed inset-0 z-50 bg-[var(--lumiverse-overlay)] backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-50 bg-[var(--BeaconVie-overlay)] backdrop-blur-sm lg:hidden"
         />
       )}
 
       <aside
         data-testid="app-sidebar-mobile-drawer"
         className={[
-          "fixed inset-y-0 left-0 z-50 w-[86vw] max-w-[330px] border-r border-[var(--lumiverse-border)] bg-[var(--lumiverse-shell-surface-strong)] shadow-2xl backdrop-blur-2xl transition-transform duration-300 lg:hidden",
+          "fixed inset-y-0 left-0 z-50 w-[86vw] max-w-[330px] border-r border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-shell-surface-strong)] shadow-2xl backdrop-blur-2xl transition-transform duration-300 lg:hidden",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
         ].join(" ")}
       >
@@ -204,17 +204,17 @@ function SidebarContent({
   return (
     <div className="flex h-full min-w-0 flex-col">
       <div
-        className={`flex h-[76px] items-center border-b border-[var(--lumiverse-border)] px-4 ${
+        className={`flex h-[76px] items-center border-b border-[var(--BeaconVie-border)] px-4 ${
           collapsed ? "justify-center" : "justify-between"
         }`}
       >
         {collapsed ? (
           <Link
             href="/"
-            aria-label="Lumiverse"
+            aria-label="BeaconVie"
             className="flex h-12 w-12 items-center justify-center rounded-2xl shadow-[0_16px_34px_rgba(23,70,255,0.24)]"
           >
-            <Image src="/loho/icon.png" alt="" width={512} height={512} className="h-11 w-11 rounded-[22%] object-contain" />
+            <Image src="/brand/beaconvie-app-icon.png" alt="" width={512} height={512} className="h-11 w-11 rounded-[22%] object-contain" />
           </Link>
         ) : (
           <AppLogo href="/" />
@@ -224,7 +224,7 @@ function SidebarContent({
             type="button"
             aria-label={t("sidebar.closeMenu")}
             onClick={onCloseMobile}
-            className="lumiverse-button-soft h-10 w-10 shrink-0 p-0 text-[var(--lumiverse-muted)]"
+            className="BeaconVie-button-soft h-10 w-10 shrink-0 p-0 text-[var(--BeaconVie-muted)]"
           >
             <X size={18} />
           </button>
@@ -234,7 +234,7 @@ function SidebarContent({
               type="button"
               aria-label={t("sidebar.collapse")}
               onClick={onToggleCollapsed}
-              className="lumiverse-button-soft h-10 w-10 shrink-0 p-0 text-[var(--lumiverse-muted)]"
+              className="BeaconVie-button-soft h-10 w-10 shrink-0 p-0 text-[var(--BeaconVie-muted)]"
             >
               <ChevronLeft size={18} />
             </button>
@@ -246,7 +246,7 @@ function SidebarContent({
         {groups.map((group) => (
           <div key={group.title} className="mb-5">
             {!collapsed && (
-              <p className="mb-2 px-3 text-[11px] font-black uppercase tracking-[0.18em] text-[var(--lumiverse-muted)]">
+              <p className="mb-2 px-3 text-[11px] font-black uppercase tracking-[0.18em] text-[var(--BeaconVie-muted)]">
                 {group.title}
               </p>
             )}
@@ -266,8 +266,8 @@ function SidebarContent({
                       "flex h-12 min-w-0 items-center rounded-2xl text-sm font-black transition duration-200",
                       collapsed ? "justify-center px-0" : "gap-3 px-3",
                       active
-                        ? "bg-gradient-to-r from-[var(--lumiverse-primary)] to-[var(--lumiverse-violet)] text-white shadow-[0_16px_34px_rgba(23,70,255,0.24)]"
-                        : "text-[var(--lumiverse-muted)] hover:-translate-y-0.5 hover:bg-[var(--lumiverse-hover-tint)] hover:text-[var(--lumiverse-primary)]",
+                        ? "bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] text-white shadow-[0_16px_34px_rgba(23,70,255,0.24)]"
+                        : "text-[var(--BeaconVie-muted)] hover:-translate-y-0.5 hover:bg-[var(--BeaconVie-hover-tint)] hover:text-[var(--BeaconVie-primary)]",
                     ].join(" ")}
                   >
                     <Icon size={19} strokeWidth={2.5} className="shrink-0" />
@@ -285,24 +285,24 @@ function SidebarContent({
       </nav>
 
       {!mobile && collapsed ? (
-        <div className="border-t border-[var(--lumiverse-border)] p-3">
+        <div className="border-t border-[var(--BeaconVie-border)] p-3">
           <button
             type="button"
             aria-label={t("sidebar.expand")}
             onClick={onToggleCollapsed}
-            className="flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--lumiverse-primary-soft)] text-[var(--lumiverse-primary)]"
+            className="flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]"
           >
             <ChevronRight size={18} />
           </button>
         </div>
       ) : (
-        <div className="border-t border-[var(--lumiverse-border)] p-4">
+        <div className="border-t border-[var(--BeaconVie-border)] p-4">
           <div className="overflow-hidden rounded-3xl border border-white/40 bg-gradient-to-br from-blue-50 via-white to-violet-50 p-4 shadow-[0_14px_32px_rgba(23,70,255,0.12)] dark:border-white/10 dark:from-blue-950/50 dark:via-slate-950 dark:to-violet-950/50">
-            <p className="font-black text-[var(--lumiverse-primary)]">{t("sidebar.premiumTitle")}</p>
-            <p className="mt-1 text-xs font-bold leading-5 text-[var(--lumiverse-muted)]">
+            <p className="font-black text-[var(--BeaconVie-primary)]">{t("sidebar.premiumTitle")}</p>
+            <p className="mt-1 text-xs font-bold leading-5 text-[var(--BeaconVie-muted)]">
               {t("sidebar.premiumDesc")}
             </p>
-            <Link href="/courses" className="lumiverse-button-primary mt-3 w-full text-sm">
+            <Link href="/courses" className="BeaconVie-button-primary mt-3 w-full text-sm">
               {t("sidebar.upgradeNow")}
             </Link>
           </div>

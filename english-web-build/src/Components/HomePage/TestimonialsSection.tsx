@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
@@ -9,27 +9,27 @@ const testimonials = [
   {
     name: "Minh Anh",
     avatar: "A",
-    text: "Bài học ngắn, dễ hiểu. Mình thích phần check từ vì có ví dụ rõ ràng.",
+    text: "BÃ i há»c ngáº¯n, dá»… hiá»ƒu. MÃ¬nh thÃ­ch pháº§n check tá»« vÃ¬ cÃ³ vÃ­ dá»¥ rÃµ rÃ ng.",
   },
   {
-    name: "Hoàng Nam",
+    name: "HoÃ ng Nam",
     avatar: "N",
-    text: "Giao diện dễ gần nhưng không quá trẻ con. Mình học mỗi ngày được 10 phút.",
+    text: "Giao diá»‡n dá»… gáº§n nhÆ°ng khÃ´ng quÃ¡ tráº» con. MÃ¬nh há»c má»—i ngÃ y Ä‘Æ°á»£c 10 phÃºt.",
   },
   {
     name: "Linh Chi",
     avatar: "L",
-    text: "Check bài giúp mình biết sai ở đâu, rất hợp cho người tự học.",
+    text: "Check bÃ i giÃºp mÃ¬nh biáº¿t sai á»Ÿ Ä‘Ã¢u, ráº¥t há»£p cho ngÆ°á»i tá»± há»c.",
   },
   {
-    name: "Tuấn Kiệt",
+    name: "Tuáº¥n Kiá»‡t",
     avatar: "K",
-    text: "Lộ trình học rõ ràng, mỗi ngày chỉ cần hoàn thành vài nhiệm vụ nhỏ.",
+    text: "Lá»™ trÃ¬nh há»c rÃµ rÃ ng, má»—i ngÃ y chá»‰ cáº§n hoÃ n thÃ nh vÃ i nhiá»‡m vá»¥ nhá».",
   },
   {
-    name: "Hà My",
+    name: "HÃ  My",
     avatar: "M",
-    text: "Lumiverse tạo cảm giác học nhẹ nhàng hơn, không bị áp lực như trước.",
+    text: "BeaconVie táº¡o cáº£m giÃ¡c há»c nháº¹ nhÃ ng hÆ¡n, khÃ´ng bá»‹ Ã¡p lá»±c nhÆ° trÆ°á»›c.",
   },
 ];
 
@@ -39,15 +39,15 @@ export default function TestimonialsSection() {
       <div className="mx-auto max-w-6xl px-4">
         <div className="mx-auto mb-14 max-w-3xl text-center">
           <p className="mb-4 text-sm font-extrabold uppercase tracking-[0.25em] text-[#ff6b00]">
-            Đánh giá học viên
+            ÄÃ¡nh giÃ¡ há»c viÃªn
           </p>
 
           <h2 className="text-4xl font-extrabold text-[#1f2a44] sm:text-5xl">
-            Người học nói gì về Lumiverse?
+            NgÆ°á»i há»c nÃ³i gÃ¬ vá» BeaconVie?
           </h2>
 
           <p className="mt-5 text-lg leading-8 text-[#5b6b85]">
-            Đánh giá giúp trang chủ đáng tin hơn và phù hợp với mọi nhóm người dùng.
+            ÄÃ¡nh giÃ¡ giÃºp trang chá»§ Ä‘Ã¡ng tin hÆ¡n vÃ  phÃ¹ há»£p vá»›i má»i nhÃ³m ngÆ°á»i dÃ¹ng.
           </p>
         </div>
 
@@ -74,11 +74,11 @@ export default function TestimonialsSection() {
             <SwiperSlide key={item.name}>
               <div className="h-full rounded-[26px] border border-[#ead8c2] bg-white p-7 shadow-[0_24px_70px_rgba(31,42,68,0.06)]">
                 <div className="text-xl font-extrabold text-[#ff9900]">
-                  ★★★★★
+                  â˜…â˜…â˜…â˜…â˜…
                 </div>
 
                 <p className="mt-5 min-h-[88px] text-base leading-8 text-[#5b6b85]">
-                  “{item.text}”
+                  â€œ{item.text}â€
                 </p>
 
                 <div className="mt-6 flex items-center gap-4">

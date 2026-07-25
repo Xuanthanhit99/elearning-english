@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -77,32 +77,32 @@ const statCards: Array<{
 }> = [
   {
     key: "lessonsLearned",
-    title: "Bài học đã học",
+    title: "BÃ i há»c Ä‘Ã£ há»c",
     icon: "book",
     tone: "blue",
-    hint: "Tăng hôm nay",
+    hint: "TÄƒng hÃ´m nay",
   },
   {
     key: "testsTaken",
-    title: "Bài kiểm tra",
+    title: "BÃ i kiá»ƒm tra",
     icon: "check",
     tone: "emerald",
-    hint: "Đã hoàn thành",
+    hint: "ÄÃ£ hoÃ n thÃ nh",
   },
   {
     key: "averageScore",
-    title: "Điểm trung bình",
+    title: "Äiá»ƒm trung bÃ¬nh",
     suffix: "%",
     icon: "target",
     tone: "pink",
-    hint: "Tuần này",
+    hint: "Tuáº§n nÃ y",
   },
   {
     key: "streakDays",
-    title: "Ngày học liên tục",
+    title: "NgÃ y há»c liÃªn tá»¥c",
     icon: "calendar",
     tone: "yellow",
-    hint: "Tuyệt vời",
+    hint: "Tuyá»‡t vá»i",
   },
 ];
 
@@ -217,7 +217,7 @@ export default function VocabularyOverviewPage() {
         const res = await api.get<OverviewData>("/vocabulary/overview");
         if (active) setData(res.data);
       } catch {
-        if (active) setMessage("Chưa tải được tổng quan học tập. Hãy thử lại sau.");
+        if (active) setMessage("ChÆ°a táº£i Ä‘Æ°á»£c tá»•ng quan há»c táº­p. HÃ£y thá»­ láº¡i sau.");
       } finally {
         if (active) setLoading(false);
       }
@@ -236,7 +236,7 @@ export default function VocabularyOverviewPage() {
   const xpProgress = data?.profile?.xpProgress || 0;
 
   const greeting = useMemo(() => {
-    const raw = data?.user?.name || "bạn";
+    const raw = data?.user?.name || "báº¡n";
     return raw.split(" ")[0] || raw;
   }, [data?.user?.name]);
 
@@ -244,9 +244,9 @@ export default function VocabularyOverviewPage() {
     <div className="px-4 py-7 lg:px-8">
       <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-[#101733]">Tổng quan học tập</h1>
+          <h1 className="text-3xl font-black text-[#101733]">Tá»•ng quan há»c táº­p</h1>
           <p className="mt-2 text-sm font-bold text-[#6a708d]">
-            Chào lại {greeting}! Cùng tiếp tục hành trình chinh phục tiếng Anh nhé!
+            ChÃ o láº¡i {greeting}! CÃ¹ng tiáº¿p tá»¥c hÃ nh trÃ¬nh chinh phá»¥c tiáº¿ng Anh nhÃ©!
           </p>
         </div>
       </div>
@@ -262,7 +262,7 @@ export default function VocabularyOverviewPage() {
           <div className="grid gap-5 xl:grid-cols-[1fr_1.45fr]">
             <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#7b4cff] to-[#9b78ff] p-7 text-white shadow-[0_18px_42px_rgba(101,44,255,0.22)]">
               <div className="relative z-10 max-w-[260px]">
-                <p className="text-sm font-black text-white/80">Cấp độ hiện tại</p>
+                <p className="text-sm font-black text-white/80">Cáº¥p Ä‘á»™ hiá»‡n táº¡i</p>
                 <div className="mt-5 flex items-center gap-4">
                   <div className="grid h-16 w-16 place-items-center rounded-2xl bg-white/18 text-2xl font-black ring-1 ring-white/20">
                     {data?.profile?.levelNumber || 1}
@@ -278,7 +278,7 @@ export default function VocabularyOverviewPage() {
                 </div>
                 <div className="mt-8">
                   <div className="mb-2 flex justify-between text-xs font-black text-white/85">
-                    <span>XP hiện tại</span>
+                    <span>XP hiá»‡n táº¡i</span>
                     <span>
                       {numberText(data?.profile?.xp)} / {numberText(data?.profile?.nextXp)}
                     </span>
@@ -292,8 +292,8 @@ export default function VocabularyOverviewPage() {
                 </div>
               </div>
               <Image
-                src="/loho/icon.png"
-                alt="Lumiverse"
+                src="/brand/beaconvie-app-icon.png"
+                alt="BeaconVie"
                 width={180}
                 height={180}
                 className="absolute bottom-3 right-4 w-40 drop-shadow-2xl"
@@ -319,7 +319,7 @@ export default function VocabularyOverviewPage() {
           <div className="grid gap-5 xl:grid-cols-[1fr_520px]">
             <section className="relative overflow-hidden rounded-3xl border border-[#ebeaf6] bg-white p-7 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
               <div className="flex items-center justify-between gap-4">
-                <h2 className="text-xl font-black text-[#101733]">Kế hoạch học hôm nay</h2>
+                <h2 className="text-xl font-black text-[#101733]">Káº¿ hoáº¡ch há»c hÃ´m nay</h2>
                 <span className="text-sm font-black text-[#6d35ff]">
                   {new Date().toLocaleDateString("vi-VN")}
                 </span>
@@ -334,7 +334,7 @@ export default function VocabularyOverviewPage() {
                           : "bg-[#f2efff] text-[#8a80a9]"
                       }`}
                     >
-                      {item.done ? "✓" : index + 1}
+                      {item.done ? "âœ“" : index + 1}
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-3">
@@ -353,10 +353,10 @@ export default function VocabularyOverviewPage() {
                 className="mt-7 inline-flex h-12 min-w-[220px] items-center justify-center rounded-xl bg-[#6d35ff] px-6 text-sm font-black text-white shadow-[0_12px_24px_rgba(101,44,255,0.18)]"
               >
                 <AppIcon name="zap" bare size={17} className="mr-2" />
-                Tiếp tục học
+                Tiáº¿p tá»¥c há»c
               </Link>
               <Image
-                src="/loho/icon.png"
+                src="/brand/beaconvie-app-icon.png"
                 alt="Mascot"
                 width={210}
                 height={210}
@@ -366,16 +366,16 @@ export default function VocabularyOverviewPage() {
 
             <section className="rounded-3xl border border-[#ebeaf6] bg-white p-7 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-black text-[#101733]">Cần ôn lại</h2>
+                <h2 className="text-xl font-black text-[#101733]">Cáº§n Ã´n láº¡i</h2>
                 <Link href="/vocabulary/review" className="text-sm font-black text-[#6d35ff]">
-                  Xem tất cả
+                  Xem táº¥t cáº£
                 </Link>
               </div>
               <div className="mt-6 grid grid-cols-3 gap-3">
                 {[
-                  { label: "Từ vựng", value: data?.review?.total || 0, sub: "từ cần ôn", icon: "book" as AppIconName },
-                  { label: "Ngữ pháp", value: data?.review?.grammar || 0, sub: "chủ điểm", icon: "library" as AppIconName },
-                  { label: "Bài tập", value: data?.review?.exercises || 0, sub: "bài tập", icon: "notebook" as AppIconName },
+                  { label: "Tá»« vá»±ng", value: data?.review?.total || 0, sub: "tá»« cáº§n Ã´n", icon: "book" as AppIconName },
+                  { label: "Ngá»¯ phÃ¡p", value: data?.review?.grammar || 0, sub: "chá»§ Ä‘iá»ƒm", icon: "library" as AppIconName },
+                  { label: "BÃ i táº­p", value: data?.review?.exercises || 0, sub: "bÃ i táº­p", icon: "notebook" as AppIconName },
                 ].map((item) => (
                   <div key={item.label} className="rounded-2xl bg-[#faf9ff] p-4">
                     <AppIcon name={item.icon} tone="purple" />
@@ -392,21 +392,21 @@ export default function VocabularyOverviewPage() {
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="rounded-lg bg-[#f2efff] px-2 py-1 text-xs font-black text-[#6d35ff]">
-                            {word.topic || "Từ vựng"}
+                            {word.topic || "Tá»« vá»±ng"}
                           </span>
                           <strong className="text-sm font-black text-[#111842]">
                             {word.word}
                           </strong>
                         </div>
                         <p className="mt-1 text-xs font-bold text-[#69708b]">
-                          {word.phonetic || word.meaningVi || "Ôn lại từ này"}
+                          {word.phonetic || word.meaningVi || "Ã”n láº¡i tá»« nÃ y"}
                         </p>
                       </div>
                       <span
                         className={`self-center text-xs font-black ${
-                          word.priority === "Khó"
+                          word.priority === "KhÃ³"
                             ? "text-red-500"
-                            : word.priority === "Trung bình"
+                            : word.priority === "Trung bÃ¬nh"
                               ? "text-amber-500"
                               : "text-[#8b91aa]"
                         }`}
@@ -417,7 +417,7 @@ export default function VocabularyOverviewPage() {
                   ))
                 ) : (
                   <p className="p-5 text-sm font-bold text-[#69708b]">
-                    Chưa có từ cần ôn. Hãy học thêm từ mới để hệ thống gợi ý nhé.
+                    ChÆ°a cÃ³ tá»« cáº§n Ã´n. HÃ£y há»c thÃªm tá»« má»›i Ä‘á»ƒ há»‡ thá»‘ng gá»£i Ã½ nhÃ©.
                   </p>
                 )}
               </div>
@@ -425,15 +425,15 @@ export default function VocabularyOverviewPage() {
                 href="/vocabulary/review"
                 className="mt-5 flex h-12 items-center justify-center rounded-xl border border-[#bfaeff] text-sm font-black text-[#6d35ff] hover:bg-[#f7f3ff]"
               >
-                Ôn tập ngay
+                Ã”n táº­p ngay
               </Link>
             </section>
 
             <section className="rounded-3xl border border-[#ebeaf6] bg-white p-7 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-black text-[#101733]">Tiến độ kỹ năng</h2>
+                <h2 className="text-xl font-black text-[#101733]">Tiáº¿n Ä‘á»™ ká»¹ nÄƒng</h2>
                 <Link href="/vocabulary/skills" className="text-sm font-black text-[#6d35ff]">
-                  Chi tiết
+                  Chi tiáº¿t
                 </Link>
               </div>
               <div className="mt-7 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-6">
@@ -452,9 +452,9 @@ export default function VocabularyOverviewPage() {
 
             <section className="rounded-3xl border border-[#ebeaf6] bg-white p-7 shadow-[0_12px_34px_rgba(35,35,80,0.06)]">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-black text-[#101733]">Thành tích gần đây</h2>
+                <h2 className="text-xl font-black text-[#101733]">ThÃ nh tÃ­ch gáº§n Ä‘Ã¢y</h2>
                 <Link href="/vocabulary/achievements" className="text-sm font-black text-[#6d35ff]">
-                  Xem tất cả
+                  Xem táº¥t cáº£
                 </Link>
               </div>
               <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">

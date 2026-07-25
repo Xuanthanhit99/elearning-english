@@ -1,4 +1,4 @@
-import LessonBuilderCoursePage from "@/src/Components/LessonBuilder/LessonBuilderCoursePage";
+﻿import LessonBuilderCoursePage from "@/src/Components/LessonBuilder/LessonBuilderCoursePage";
 
 export default function Page() {
   return <LessonBuilderCoursePage />;

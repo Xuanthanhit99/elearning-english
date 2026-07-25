@@ -1,8 +1,8 @@
-# Lumiverse Phase 3C Report: Placement Question Components
+﻿# BeaconVie Phase 3C Report: Placement Question Components
 
 ## Summary
 
-Phase 3C refactors the placement question UI into a consistent Lumiverse style for normal text questions, multiple choice, fill blank, reading, listening, speaking, and writing.
+Phase 3C refactors the placement question UI into a consistent BeaconVie style for normal text questions, multiple choice, fill blank, reading, listening, speaking, and writing.
 
 No backend, database, Prisma, auth, httpOnly cookie flow, API contract, timer logic, polling, or answer persistence was changed.
 

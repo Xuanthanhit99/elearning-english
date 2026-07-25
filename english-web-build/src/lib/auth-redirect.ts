@@ -1,4 +1,4 @@
-export const DEFAULT_AUTHENTICATED_PATH = "/dashboard";
+﻿export const DEFAULT_AUTHENTICATED_PATH = "/dashboard";
 export const LOGIN_PATH = "/login";
 
 const BLOCKED_PREFIXES = ["/auth", "/login", "/register"];
@@ -34,8 +34,8 @@ export function isSafeRedirectPath(value: string | null | undefined) {
   }
 
   try {
-    const parsed = new URL(candidate, "https://lumiverse.local");
-    if (parsed.origin !== "https://lumiverse.local") return false;
+    const parsed = new URL(candidate, "https://BeaconVie.local");
+    if (parsed.origin !== "https://BeaconVie.local") return false;
     return !BLOCKED_PREFIXES.some((prefix) => parsed.pathname.startsWith(prefix));
   } catch {
     return false;

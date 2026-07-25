@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   CefrLevel,
@@ -37,12 +37,12 @@ import { useEffect, useMemo, useState } from "react";
 // } from '';
 
 const levelDescriptions: Record<CefrLevel, string> = {
-  A1: "Mới bắt đầu",
-  A2: "Sơ cấp",
-  B1: "Trung cấp",
-  B2: "Trung cao cấp",
-  C1: "Nâng cao",
-  C2: "Thành thạo",
+  A1: "Má»›i báº¯t Ä‘áº§u",
+  A2: "SÆ¡ cáº¥p",
+  B1: "Trung cáº¥p",
+  B2: "Trung cao cáº¥p",
+  C1: "NÃ¢ng cao",
+  C2: "ThÃ nh tháº¡o",
 };
 
 export default function PlacementLanding() {
@@ -85,7 +85,7 @@ export default function PlacementLanding() {
         return;
       }
 
-      setRetakeError(payload?.message ?? "Không thể tạo bài kiểm tra mới.");
+      setRetakeError(payload?.message ?? "KhÃ´ng thá»ƒ táº¡o bÃ i kiá»ƒm tra má»›i.");
     } finally {
       setRetaking(false);
     }
@@ -105,7 +105,7 @@ export default function PlacementLanding() {
       setLoadError(
         error instanceof Error
           ? error.message
-          : "Không thể tải thông tin xếp trình độ.",
+          : "KhÃ´ng thá»ƒ táº£i thÃ´ng tin xáº¿p trÃ¬nh Ä‘á»™.",
       );
     } finally {
       setLoading(false);
@@ -117,7 +117,7 @@ export default function PlacementLanding() {
   }, []);
 
   const certificateText = useMemo(
-    () => data?.options.supportedCertificates.join(" • ") ?? "",
+    () => data?.options.supportedCertificates.join(" â€¢ ") ?? "",
     [data],
   );
 
@@ -134,7 +134,7 @@ export default function PlacementLanding() {
       setActionError(
         error instanceof Error
           ? error.message
-          : "Không thể lưu trình độ đã chọn.",
+          : "KhÃ´ng thá»ƒ lÆ°u trÃ¬nh Ä‘á»™ Ä‘Ã£ chá»n.",
       );
     } finally {
       setSavingLevel(false);
@@ -150,7 +150,7 @@ export default function PlacementLanding() {
       <main className="mx-auto flex min-h-[70vh] max-w-7xl items-center justify-center px-4 py-10">
         <div className="w-full max-w-lg rounded-3xl border border-red-100 bg-white p-8 text-center shadow-sm">
           <p className="text-lg font-semibold text-slate-900">
-            Không thể tải màn xếp trình độ
+            KhÃ´ng thá»ƒ táº£i mÃ n xáº¿p trÃ¬nh Ä‘á»™
           </p>
           <p className="mt-2 text-sm text-slate-500">{loadError}</p>
           <button
@@ -158,7 +158,7 @@ export default function PlacementLanding() {
             onClick={() => void loadData()}
             className="mt-6 rounded-xl bg-violet-600 px-5 py-3 font-semibold text-white transition hover:bg-violet-700"
           >
-            Thử lại
+            Thá»­ láº¡i
           </button>
         </div>
       </main>
@@ -173,23 +173,23 @@ export default function PlacementLanding() {
             <div>
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-violet-100 bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-700">
                 <Sparkles className="h-4 w-4" />
-                Lộ trình cá nhân hóa
+                Lá»™ trÃ¬nh cÃ¡ nhÃ¢n hÃ³a
               </div>
 
               <h1 className="max-w-xl text-4xl font-black leading-tight tracking-tight text-slate-950 sm:text-5xl">
-                Chào mừng trở lại,
+                ChÃ o má»«ng trá»Ÿ láº¡i,
                 <span className="block bg-gradient-to-r from-violet-600 to-fuchsia-500 bg-clip-text text-transparent">
-                  {data.user.name} 👋
+                  {data.user.name} ðŸ‘‹
                 </span>
               </h1>
 
               <p className="mt-6 max-w-xl text-xl font-semibold leading-8 text-slate-800">
-                Hãy xây dựng lộ trình học tiếng Anh dành riêng cho bạn.
+                HÃ£y xÃ¢y dá»±ng lá»™ trÃ¬nh há»c tiáº¿ng Anh dÃ nh riÃªng cho báº¡n.
               </p>
 
               <p className="mt-3 max-w-xl text-base leading-7 text-slate-500">
-                Chọn một phương thức bên dưới để Lumiverse xác định điểm bắt
-                đầu phù hợp nhất.
+                Chá»n má»™t phÆ°Æ¡ng thá»©c bÃªn dÆ°á»›i Ä‘á»ƒ BeaconVie xÃ¡c Ä‘á»‹nh Ä‘iá»ƒm báº¯t
+                Ä‘áº§u phÃ¹ há»£p nháº¥t.
               </p>
             </div>
 
@@ -205,7 +205,7 @@ export default function PlacementLanding() {
                 <div className="rounded-[32px] bg-gradient-to-br from-violet-600 to-fuchsia-500 p-8 text-white shadow-2xl">
                   <GraduationCap className="mx-auto h-20 w-20" />
                   <p className="mt-3 text-center text-lg font-black">
-                    POPPYLINGO
+                    BeaconVie
                   </p>
                 </div>
               </div>
@@ -217,10 +217,10 @@ export default function PlacementLanding() {
             <section className="mt-8 rounded-3xl border border-emerald-100 bg-emerald-50/70 p-5 sm:flex sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-semibold text-emerald-700">
-                  Trình độ hiện tại
+                  TrÃ¬nh Ä‘á»™ hiá»‡n táº¡i
                 </p>
                 <p className="mt-1 text-2xl font-black text-slate-950">
-                  {data.placement.overallLevel} ·{" "}
+                  {data.placement.overallLevel} Â·{" "}
                   {levelDescriptions[data.placement.overallLevel]}
                 </p>
               </div>
@@ -230,7 +230,7 @@ export default function PlacementLanding() {
                 onClick={() => router.push("/learning-path")}
                 className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white transition hover:bg-emerald-700 sm:mt-0 sm:w-auto"
               >
-                Tiếp tục lộ trình
+                Tiáº¿p tá»¥c lá»™ trÃ¬nh
                 <ArrowRight className="h-5 w-5" />
               </button>
             </section>
@@ -240,54 +240,54 @@ export default function PlacementLanding() {
             <PlacementCard
               tone="violet"
               icon={<ClipboardIllustration />}
-              title="Làm bài kiểm tra trình độ"
-              badge="Được đề xuất"
-              description="Hệ thống đánh giá năng lực hiện tại và xác định trình độ theo từng kỹ năng."
+              title="LÃ m bÃ i kiá»ƒm tra trÃ¬nh Ä‘á»™"
+              badge="ÄÆ°á»£c Ä‘á» xuáº¥t"
+              description="Há»‡ thá»‘ng Ä‘Ã¡nh giÃ¡ nÄƒng lá»±c hiá»‡n táº¡i vÃ  xÃ¡c Ä‘á»‹nh trÃ¬nh Ä‘á»™ theo tá»«ng ká»¹ nÄƒng."
               features={[
                 {
                   icon: <Clock3 className="h-5 w-5" />,
-                  text: `Thời gian: ${data.options.testDurationMinutes.min} – ${data.options.testDurationMinutes.max} phút`,
+                  text: `Thá»i gian: ${data.options.testDurationMinutes.min} â€“ ${data.options.testDurationMinutes.max} phÃºt`,
                 },
               ]}
-              buttonText="Bắt đầu làm bài"
+              buttonText="Báº¯t Ä‘áº§u lÃ m bÃ i"
               onClick={() => router.push("/placement/introduction")}
             />
 
             <PlacementCard
               tone="blue"
               icon={<CertificateIllustration />}
-              title="Tải lên chứng chỉ"
-              description={`${certificateText}. Hệ thống sẽ đọc, kiểm tra và quy đổi sang CEFR.`}
+              title="Táº£i lÃªn chá»©ng chá»‰"
+              description={`${certificateText}. Há»‡ thá»‘ng sáº½ Ä‘á»c, kiá»ƒm tra vÃ  quy Ä‘á»•i sang CEFR.`}
               features={[
                 {
                   icon: <Check className="h-5 w-5" />,
-                  text: "Hỗ trợ nhiều loại chứng chỉ",
+                  text: "Há»— trá»£ nhiá»u loáº¡i chá»©ng chá»‰",
                 },
                 {
                   icon: <LockKeyhole className="h-5 w-5" />,
-                  text: "Bảo mật thông tin tải lên",
+                  text: "Báº£o máº­t thÃ´ng tin táº£i lÃªn",
                 },
               ]}
-              buttonText="Tải lên chứng chỉ"
+              buttonText="Táº£i lÃªn chá»©ng chá»‰"
               onClick={() => router.push("/placement/certificate")}
             />
 
             <PlacementCard
               tone="green"
               icon={<TargetIllustration />}
-              title="Chọn trình độ của tôi"
-              description="Bạn đã biết trình độ của mình? Chọn thủ công từ A1 đến C2 theo CEFR."
+              title="Chá»n trÃ¬nh Ä‘á»™ cá»§a tÃ´i"
+              description="Báº¡n Ä‘Ã£ biáº¿t trÃ¬nh Ä‘á»™ cá»§a mÃ¬nh? Chá»n thá»§ cÃ´ng tá»« A1 Ä‘áº¿n C2 theo CEFR."
               features={[
                 {
                   icon: <BarChart3 className="h-5 w-5" />,
-                  text: "Từ A1 đến C2 theo CEFR",
+                  text: "Tá»« A1 Ä‘áº¿n C2 theo CEFR",
                 },
                 {
                   icon: <Target className="h-5 w-5" />,
-                  text: "Có thể đánh giá lại sau",
+                  text: "CÃ³ thá»ƒ Ä‘Ã¡nh giÃ¡ láº¡i sau",
                 },
               ]}
-              buttonText="Chọn trình độ"
+              buttonText="Chá»n trÃ¬nh Ä‘á»™"
               onClick={() => {
                 setActionError("");
                 setShowLevelModal(true);
@@ -298,21 +298,21 @@ export default function PlacementLanding() {
               disabled={retaking}
               onClick={() => void handleRetake(false)}
             >
-              Làm lại bài kiểm tra
+              LÃ m láº¡i bÃ i kiá»ƒm tra
             </button>
 
             {showRetakeModal ? (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                 <div className="w-full max-w-md rounded-3xl bg-white p-7">
-                  <h2 className="text-2xl font-black">Làm lại ngay?</h2>
+                  <h2 className="text-2xl font-black">LÃ m láº¡i ngay?</h2>
 
                   <p className="mt-3 text-slate-600">
-                    Bạn vừa hoàn thành Placement Test. Làm lại quá sớm có thể
-                    chưa phản ánh rõ sự tiến bộ.
+                    Báº¡n vá»«a hoÃ n thÃ nh Placement Test. LÃ m láº¡i quÃ¡ sá»›m cÃ³ thá»ƒ
+                    chÆ°a pháº£n Ã¡nh rÃµ sá»± tiáº¿n bá»™.
                   </p>
 
                   <p className="mt-3 text-sm text-slate-500">
-                    Kết quả cũ vẫn được giữ nguyên trong lịch sử.
+                    Káº¿t quáº£ cÅ© váº«n Ä‘Æ°á»£c giá»¯ nguyÃªn trong lá»‹ch sá»­.
                   </p>
 
                   <div className="mt-6 flex justify-end gap-3">
@@ -320,7 +320,7 @@ export default function PlacementLanding() {
                       type="button"
                       onClick={() => setShowRetakeModal(false)}
                     >
-                      Quay lại
+                      Quay láº¡i
                     </button>
 
                     <button
@@ -329,7 +329,7 @@ export default function PlacementLanding() {
                       onClick={() => void handleRetake(true)}
                       className="rounded-xl bg-violet-600 px-5 py-3 font-black text-white"
                     >
-                      Vẫn làm lại
+                      Váº«n lÃ m láº¡i
                     </button>
                   </div>
                 </div>
@@ -340,23 +340,23 @@ export default function PlacementLanding() {
           <section className="mt-6 grid overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm sm:grid-cols-2 xl:grid-cols-4">
             <Benefit
               icon={<BookOpen className="h-7 w-7 text-violet-600" />}
-              title="Lộ trình cá nhân hóa"
-              text="Học đúng nội dung phù hợp với trình độ và mục tiêu."
+              title="Lá»™ trÃ¬nh cÃ¡ nhÃ¢n hÃ³a"
+              text="Há»c Ä‘Ãºng ná»™i dung phÃ¹ há»£p vá»›i trÃ¬nh Ä‘á»™ vÃ  má»¥c tiÃªu."
             />
             <Benefit
               icon={<BarChart3 className="h-7 w-7 text-blue-600" />}
-              title="Theo dõi tiến độ"
-              text="Theo dõi sự tiến bộ và nhận báo cáo chi tiết."
+              title="Theo dÃµi tiáº¿n Ä‘á»™"
+              text="Theo dÃµi sá»± tiáº¿n bá»™ vÃ  nháº­n bÃ¡o cÃ¡o chi tiáº¿t."
             />
             <Benefit
               icon={<Bot className="h-7 w-7 text-amber-600" />}
-              title="Hỗ trợ AI thông minh"
-              text="Gợi ý và điều chỉnh lộ trình theo kết quả học."
+              title="Há»— trá»£ AI thÃ´ng minh"
+              text="Gá»£i Ã½ vÃ  Ä‘iá»u chá»‰nh lá»™ trÃ¬nh theo káº¿t quáº£ há»c."
             />
             <Benefit
               icon={<Gift className="h-7 w-7 text-pink-600" />}
-              title="Học để nhận thưởng"
-              text="Kiếm XP, mở khóa phần thưởng và thành tích."
+              title="Há»c Ä‘á»ƒ nháº­n thÆ°á»Ÿng"
+              text="Kiáº¿m XP, má»Ÿ khÃ³a pháº§n thÆ°á»Ÿng vÃ  thÃ nh tÃ­ch."
               last
             />
           </section>
@@ -538,10 +538,10 @@ function ManualLevelModal({
               CEFR
             </p>
             <h2 className="mt-2 text-3xl font-black text-slate-950">
-              Chọn trình độ của bạn
+              Chá»n trÃ¬nh Ä‘á»™ cá»§a báº¡n
             </h2>
             <p className="mt-2 text-slate-500">
-              Hệ thống sẽ dùng mức này làm điểm bắt đầu cho các kỹ năng.
+              Há»‡ thá»‘ng sáº½ dÃ¹ng má»©c nÃ y lÃ m Ä‘iá»ƒm báº¯t Ä‘áº§u cho cÃ¡c ká»¹ nÄƒng.
             </p>
           </div>
 
@@ -550,7 +550,7 @@ function ManualLevelModal({
             onClick={onClose}
             disabled={saving}
             className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50"
-            aria-label="Đóng"
+            aria-label="ÄÃ³ng"
           >
             <X className="h-6 w-6" />
           </button>
@@ -603,7 +603,7 @@ function ManualLevelModal({
             disabled={saving}
             className="rounded-xl border border-slate-200 px-5 py-3 font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
           >
-            Quay lại
+            Quay láº¡i
           </button>
 
           <button
@@ -615,11 +615,11 @@ function ManualLevelModal({
             {saving ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                Đang lưu
+                Äang lÆ°u
               </>
             ) : (
               <>
-                Bắt đầu từ {selectedLevel}
+                Báº¯t Ä‘áº§u tá»« {selectedLevel}
                 <ChevronRight className="h-5 w-5" />
               </>
             )}

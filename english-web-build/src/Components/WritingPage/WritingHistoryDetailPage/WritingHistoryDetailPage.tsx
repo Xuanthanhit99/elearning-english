@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { api } from '@/src/lib/axios';
 import {
@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { LumiverseLoadingState } from '@/src/Components/UI/Lumiverse';
+import { BeaconVieLoadingState } from '@/src/Components/UI/BeaconVie';
 
 type HistoryDetail = {
   session: {
@@ -77,7 +77,7 @@ export default function WritingHistoryDetailPage({sessionId} : {sessionId: strin
       setData(res.data);
     } catch (err) {
       console.error(err);
-      setError('Không tải được chi tiết lịch sử Writing.');
+      setError('Không tải được chi tiết lịch sử luyện viết.');
     } finally {
       setLoading(false);
     }
@@ -91,7 +91,7 @@ export default function WritingHistoryDetailPage({sessionId} : {sessionId: strin
       router.push(`/writing/sessions/${res.data.sessionId}`);
     } catch (err) {
       console.error(err);
-      setError('Không tạo được bài luyện lại lúc này.');
+      setError('KhÃ´ng táº¡o Ä‘Æ°á»£c bÃ i luyá»‡n láº¡i lÃºc nÃ y.');
     } finally {
       setRetrying(false);
     }
@@ -103,7 +103,7 @@ export default function WritingHistoryDetailPage({sessionId} : {sessionId: strin
 
   if (loading)
     return (
-      <LumiverseLoadingState className="m-10" label="Đang tải lịch sử bài viết..." />
+      <BeaconVieLoadingState className="m-10" label="Äang táº£i lá»‹ch sá»­ bÃ i viáº¿t..." />
     );
 
   if (error && !data) {
@@ -114,13 +114,13 @@ export default function WritingHistoryDetailPage({sessionId} : {sessionId: strin
           onClick={loadData}
           className="mt-4 rounded-xl bg-violet-600 px-5 py-3 font-bold text-white"
         >
-          Thử lại
+          Thá»­ láº¡i
         </button>
       </div>
     );
   }
 
-  if (!data) return <div className="p-10">Không có dữ liệu lịch sử.</div>;
+  if (!data) return <div className="p-10">KhÃ´ng cÃ³ dá»¯ liá»‡u lá»‹ch sá»­.</div>;
 
   return (
     <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
@@ -135,14 +135,14 @@ export default function WritingHistoryDetailPage({sessionId} : {sessionId: strin
                     onClick={() => router.push('/writing/history')}
                     className="h-11 rounded-xl border border-violet-500 px-6 font-bold text-violet-600"
                   >
-                    ← Back to History
+                    â† Back to History
                   </button>
 
                   <button
                     onClick={() => router.push(`/writing/sessions/${sessionId}`)}
                     className="h-11 rounded-xl bg-violet-600 px-6 font-bold text-white"
                   >
-                    Review My Essay
+                    Review My Bài luận
                   </button>
                 </div>
               </div>
@@ -171,7 +171,7 @@ export default function WritingHistoryDetailPage({sessionId} : {sessionId: strin
                   className="flex h-12 items-center gap-2 rounded-xl border border-violet-500 px-8 font-bold text-violet-600 disabled:opacity-50"
                 >
                   <RefreshCcw className="h-5 w-5" />
-                  {retrying ? 'Creating...' : 'Try Another Essay'}
+                  {retrying ? 'Creating...' : 'Try Another Bài luận'}
                 </button>
 
                 <button
@@ -199,8 +199,8 @@ function TitleBlock({ data }: { data: HistoryDetail }) {
   return (
     <div>
       <div className="text-sm font-bold text-slate-400">
-        ← Writing › History › {data.lesson.title} ›{' '}
-        <span className="text-[#09083f]">Result Details</span>
+        ← Luyện viết › Lịch sử › {data.lesson.title} ›{' '}
+        <span className="text-[#09083f]">Chi tiết kết quả</span>
       </div>
 
       <div className="mt-6 flex items-center gap-4">
@@ -212,13 +212,13 @@ function TitleBlock({ data }: { data: HistoryDetail }) {
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-extrabold">{data.lesson.title}</h1>
             <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-600">
-              Completed
+              Hoàn thành
             </span>
           </div>
 
           <p className="mt-2 text-sm font-semibold text-slate-500">
-            {formatType(data.lesson.type)} • {data.lesson.level} Level •{' '}
-            {formatDate(data.session.submittedAt)} • ~{data.lesson.maxWords} words
+            {formatType(data.lesson.type)} â€¢ {data.lesson.level} Level â€¢{' '}
+            {formatDate(data.session.submittedAt)} â€¢ ~{data.lesson.maxWords} từ
           </p>
         </div>
       </div>
@@ -234,10 +234,10 @@ function Tabs({
   setTab: (tab: string) => void;
 }) {
   const tabs = [
-    ['OVERVIEW', 'Overview'],
-    ['FEEDBACK', 'Detailed Feedback'],
+    ['OVERVIEW', 'Tổng quan'],
+    ['FEEDBACK', 'Nhận xét chi tiết'],
     ['CORRECTIONS', 'Corrections'],
-    ['SAMPLE', 'Sample Essay'],
+    ['SAMPLE', 'Bài mẫu'],
   ];
 
   return (
@@ -263,8 +263,8 @@ function EssayCard({ data }: { data: HistoryDetail }) {
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
       <div className="flex justify-between">
-        <h2 className="text-lg font-extrabold">Your Essay</h2>
-        <span className="text-sm text-slate-500">{data.session.wordCount} words</span>
+        <h2 className="text-lg font-extrabold">Bài viết của bạn</h2>
+        <span className="text-sm text-slate-500">{data.session.wordCount} từ</span>
       </div>
 
       <div className="mt-6 whitespace-pre-line text-sm leading-8 text-slate-700">
@@ -273,14 +273,14 @@ function EssayCard({ data }: { data: HistoryDetail }) {
 
       <p className="mt-6 flex items-center gap-2 text-sm text-slate-500">
         <Calendar className="h-4 w-4" />
-        Submitted on {formatDate(data.session.submittedAt)}
+        Đã nộp lúc {formatDate(data.session.submittedAt)}
       </p>
     </div>
   );
 }
 
 function renderHighlightedEssay(content: string) {
-  return content || 'Bài viết này chưa có nội dung được lưu.';
+  return content || 'BÃ i viáº¿t nÃ y chÆ°a cÃ³ ná»™i dung Ä‘Æ°á»£c lÆ°u.';
 }
 
 function ScoreCard({ data }: { data: HistoryDetail }) {
@@ -324,13 +324,13 @@ function InfoCard({ data }: { data: HistoryDetail }) {
     ['Type', formatType(data.lesson.type)],
     ['Level', data.lesson.level],
     ['Time Spent', formatTime(data.session.timeSpentSeconds)],
-    ['Word Count', `${data.session.wordCount} words`],
-    ['Status', 'Completed'],
+    ['Số từ', `${data.session.wordCount} từ`],
+    ['Status', 'Hoàn thành'],
   ];
 
   return (
     <div className="mt-5 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
-      <h2 className="text-lg font-extrabold">Essay Information</h2>
+      <h2 className="text-lg font-extrabold">Bài luận Information</h2>
 
       <div className="mt-5 grid grid-cols-6 gap-4">
         {items.map(([label, value]) => (
@@ -362,7 +362,7 @@ function CorrectionsCard({
             <span className="font-semibold text-red-500 line-through">
               {item.wrong}
             </span>
-            <span>→</span>
+            <span>â†’</span>
             <span className="font-bold text-green-600">{item.correct}</span>
             <span className="text-slate-500">{item.explanation}</span>
             <span className="rounded-lg bg-violet-100 px-3 py-1 text-center text-xs font-bold text-violet-600">
@@ -381,10 +381,10 @@ function QuickSummary({ data }: { data: HistoryDetail }) {
       <h2 className="text-lg font-extrabold">Quick Summary</h2>
 
       <div className="mt-6 space-y-5 text-sm">
-        <SummaryRow label="Overall Score" value={`${data.score.overall}/100`} />
-        <SummaryRow label="Time Spent" value={formatTime(data.session.timeSpentSeconds)} />
-        <SummaryRow label="Words Used" value={`${data.session.wordCount}`} />
-        <SummaryRow label="Completed At" value={formatDate(data.session.submittedAt)} />
+        <SummaryRow label="Điểm tổng" value={`${data.score.overall}/100`} />
+        <SummaryRow label="Thời gian" value={formatTime(data.session.timeSpentSeconds)} />
+        <SummaryRow label="Số từ đã dùng" value={`${data.session.wordCount}`} />
+        <SummaryRow label="Hoàn thành lúc" value={formatDate(data.session.submittedAt)} />
       </div>
     </div>
   );
@@ -402,7 +402,7 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
 function Highlights({ data }: { data: HistoryDetail }) {
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
-      <h2 className="text-lg font-extrabold">Feedback Highlights</h2>
+      <h2 className="text-lg font-extrabold">Điểm nổi bật trong nhận xét</h2>
 
       <p className="mt-6 font-bold text-green-600">Strengths</p>
       <div className="mt-4 space-y-4">
@@ -430,12 +430,12 @@ function Highlights({ data }: { data: HistoryDetail }) {
 function ProgressChart({ data }: { data: HistoryDetail }) {
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
-      <h2 className="text-lg font-extrabold">Writing Progress</h2>
+      <h2 className="text-lg font-extrabold">Tiến độ luyện viết</h2>
 
       <div className="mt-6 flex h-36 items-end gap-6 border-b border-slate-200">
         {data.progressChart.length === 0 && (
           <div className="flex h-full flex-1 items-center justify-center text-sm font-semibold text-slate-500">
-            Chưa có đủ dữ liệu tiến độ.
+            ChÆ°a cÃ³ Ä‘á»§ dá»¯ liá»‡u tiáº¿n Ä‘á»™.
           </div>
         )}
 
@@ -451,7 +451,7 @@ function ProgressChart({ data }: { data: HistoryDetail }) {
       </div>
 
       <p className="mt-5 text-center text-sm font-bold text-violet-600">
-        Keep practicing to improve your score!
+        Tiếp tục luyện tập để cải thiện điểm số!
       </p>
     </div>
   );
@@ -459,12 +459,12 @@ function ProgressChart({ data }: { data: HistoryDetail }) {
 
 function formatType(type: string) {
   const map: Record<string, string> = {
-    SENTENCE: 'Sentence Writing',
-    PARAGRAPH: 'Paragraph',
-    ESSAY: 'Essay Writing',
+    SENTENCE: 'Viết câu',
+    PARAGRAPH: 'Đoạn văn',
+    ESSAY: 'Viết bài luận',
     EMAIL: 'Email',
     OPINION: 'Opinion',
-    STORY: 'Story',
+    STORY: 'Câu chuyện',
     IELTS_TASK_1: 'IELTS Task 1',
     IELTS_TASK_2: 'IELTS Task 2',
   };
@@ -489,3 +489,6 @@ function formatDate(value: string) {
     minute: '2-digit',
   });
 }
+
+
+

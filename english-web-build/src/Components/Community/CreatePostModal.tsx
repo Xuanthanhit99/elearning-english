@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useMemo, useState } from 'react';
 import { BookOpen, HelpCircle, ImageIcon, Mic, PenLine, Trophy, X } from 'lucide-react';
@@ -6,12 +6,12 @@ import { createCommunityPost } from '@/src/lib/community-api';
 import type { CommunityPost, CommunityPostType } from '@/src/types/community';
 
 const options: Array<{ type: CommunityPostType; label: string; description: string; icon: typeof BookOpen }> = [
-  { type: 'SHARE', label: 'Chia sẻ điều đã học', description: 'Kiến thức, tài liệu hoặc kinh nghiệm học', icon: BookOpen },
-  { type: 'QUESTION', label: 'Hỏi cộng đồng', description: 'Đặt câu hỏi và nhận góp ý', icon: HelpCircle },
-  { type: 'SPEAKING', label: 'Chia sẻ bài nói', description: 'Đăng audio để mọi người lắng nghe', icon: Mic },
-  { type: 'WRITING', label: 'Chia sẻ bài viết', description: 'Đăng đoạn văn hoặc bài luận', icon: PenLine },
-  { type: 'IMAGE', label: 'Góc học tập', description: 'Chia sẻ hình ảnh, sách hoặc không gian học', icon: ImageIcon },
-  { type: 'ACHIEVEMENT', label: 'Khoe thành tích', description: 'Chia sẻ streak, cấp độ hoặc cột mốc', icon: Trophy },
+  { type: 'SHARE', label: 'Chia sáº» Ä‘iá»u Ä‘Ã£ há»c', description: 'Kiáº¿n thá»©c, tÃ i liá»‡u hoáº·c kinh nghiá»‡m há»c', icon: BookOpen },
+  { type: 'QUESTION', label: 'Há»i cá»™ng Ä‘á»“ng', description: 'Äáº·t cÃ¢u há»i vÃ  nháº­n gÃ³p Ã½', icon: HelpCircle },
+  { type: 'SPEAKING', label: 'Chia sáº» bÃ i nÃ³i', description: 'ÄÄƒng audio Ä‘á»ƒ má»i ngÆ°á»i láº¯ng nghe', icon: Mic },
+  { type: 'WRITING', label: 'Chia sáº» bÃ i viáº¿t', description: 'ÄÄƒng Ä‘oáº¡n vÄƒn hoáº·c bÃ i luáº­n', icon: PenLine },
+  { type: 'IMAGE', label: 'GÃ³c há»c táº­p', description: 'Chia sáº» hÃ¬nh áº£nh, sÃ¡ch hoáº·c khÃ´ng gian há»c', icon: ImageIcon },
+  { type: 'ACHIEVEMENT', label: 'Khoe thÃ nh tÃ­ch', description: 'Chia sáº» streak, cáº¥p Ä‘á»™ hoáº·c cá»™t má»‘c', icon: Trophy },
 ];
 
 export function CreatePostModal({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: (post: CommunityPost) => void }) {
@@ -46,7 +46,7 @@ export function CreatePostModal({ open, onClose, onCreated }: { open: boolean; o
       setType(null); setTitle(''); setContent(''); setTags(''); setMediaUrl('');
       onClose();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Không thể tạo bài viết');
+      setError(e instanceof Error ? e.message : 'KhÃ´ng thá»ƒ táº¡o bÃ i viáº¿t');
     } finally {
       setSubmitting(false);
     }
@@ -56,8 +56,8 @@ export function CreatePostModal({ open, onClose, onCreated }: { open: boolean; o
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
       <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b px-6 py-5">
-          <div><h2 className="text-xl font-bold">Tạo bài đăng</h2><p className="text-sm text-slate-500">Chọn đúng mục đích để cộng đồng dễ tương tác.</p></div>
-          <button type="button" onClick={onClose} aria-label="Đóng" className="rounded-full p-2 hover:bg-slate-100"><X aria-hidden /></button>
+          <div><h2 className="text-xl font-bold">Táº¡o bÃ i Ä‘Äƒng</h2><p className="text-sm text-slate-500">Chá»n Ä‘Ãºng má»¥c Ä‘Ã­ch Ä‘á»ƒ cá»™ng Ä‘á»“ng dá»… tÆ°Æ¡ng tÃ¡c.</p></div>
+          <button type="button" onClick={onClose} aria-label="ÄÃ³ng" className="rounded-full p-2 hover:bg-slate-100"><X aria-hidden /></button>
         </div>
 
         {!type ? (
@@ -69,14 +69,14 @@ export function CreatePostModal({ open, onClose, onCreated }: { open: boolean; o
           </div>
         ) : (
           <div className="space-y-5 p-6">
-            <button type="button" onClick={() => setType(null)} className="text-sm font-semibold text-indigo-600">← Chọn loại bài khác</button>
+            <button type="button" onClick={() => setType(null)} className="text-sm font-semibold text-indigo-600">â† Chá»n loáº¡i bÃ i khÃ¡c</button>
             <div className="rounded-2xl bg-indigo-50 p-4"><strong>{selected?.label}</strong><p className="text-sm text-slate-600">{selected?.description}</p></div>
-            <label className="block"><span className="mb-2 block text-sm font-semibold">Tiêu đề</span><input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={160} className="w-full rounded-xl border px-4 py-3 outline-none focus:border-indigo-500" placeholder={type === 'QUESTION' ? 'Bạn đang muốn hỏi điều gì?' : 'Tiêu đề ngắn gọn'} /></label>
-            <label className="block"><span className="mb-2 block text-sm font-semibold">Nội dung *</span><textarea value={content} onChange={(e) => setContent(e.target.value)} rows={7} className="w-full rounded-xl border px-4 py-3 outline-none focus:border-indigo-500" placeholder="Chia sẻ rõ ràng, thân thiện và tôn trọng mọi người..." /></label>
-            {(type === 'SPEAKING' || type === 'IMAGE') && <label className="block"><span className="mb-2 block text-sm font-semibold">{type === 'SPEAKING' ? 'URL audio' : 'URL hình ảnh'}</span><input value={mediaUrl} onChange={(e) => setMediaUrl(e.target.value)} className="w-full rounded-xl border px-4 py-3" placeholder="https://..." /></label>}
+            <label className="block"><span className="mb-2 block text-sm font-semibold">TiÃªu Ä‘á»</span><input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={160} className="w-full rounded-xl border px-4 py-3 outline-none focus:border-indigo-500" placeholder={type === 'QUESTION' ? 'Báº¡n Ä‘ang muá»‘n há»i Ä‘iá»u gÃ¬?' : 'TiÃªu Ä‘á» ngáº¯n gá»n'} /></label>
+            <label className="block"><span className="mb-2 block text-sm font-semibold">Ná»™i dung *</span><textarea value={content} onChange={(e) => setContent(e.target.value)} rows={7} className="w-full rounded-xl border px-4 py-3 outline-none focus:border-indigo-500" placeholder="Chia sáº» rÃµ rÃ ng, thÃ¢n thiá»‡n vÃ  tÃ´n trá»ng má»i ngÆ°á»i..." /></label>
+            {(type === 'SPEAKING' || type === 'IMAGE') && <label className="block"><span className="mb-2 block text-sm font-semibold">{type === 'SPEAKING' ? 'URL audio' : 'URL hÃ¬nh áº£nh'}</span><input value={mediaUrl} onChange={(e) => setMediaUrl(e.target.value)} className="w-full rounded-xl border px-4 py-3" placeholder="https://..." /></label>}
             <label className="block"><span className="mb-2 block text-sm font-semibold">Hashtag</span><input value={tags} onChange={(e) => setTags(e.target.value)} className="w-full rounded-xl border px-4 py-3" placeholder="grammar, speaking, daily-english" /></label>
             {error && <p className="rounded-xl bg-red-50 p-3 text-sm text-red-600">{error}</p>}
-            <div className="flex justify-end gap-3"><button type="button" onClick={onClose} className="rounded-xl px-5 py-3 font-semibold">Hủy</button><button type="button" onClick={submit} disabled={submitting || !content.trim()} className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white disabled:opacity-50">{submitting ? 'Đang đăng...' : 'Đăng bài'}</button></div>
+            <div className="flex justify-end gap-3"><button type="button" onClick={onClose} className="rounded-xl px-5 py-3 font-semibold">Há»§y</button><button type="button" onClick={submit} disabled={submitting || !content.trim()} className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white disabled:opacity-50">{submitting ? 'Äang Ä‘Äƒng...' : 'ÄÄƒng bÃ i'}</button></div>
           </div>
         )}
       </div>

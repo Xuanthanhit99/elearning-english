@@ -1,4 +1,4 @@
-export type Settings = {
+﻿export type Settings = {
   learningGoal: string;
   dailyStudyMinutes: number;
   preferredSkills: string[];

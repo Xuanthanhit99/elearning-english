@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   ForbiddenException,
   Injectable,
@@ -109,7 +109,7 @@ export class LessonBuilderService {
     });
 
     if (!project) {
-      throw new NotFoundException('Không tìm thấy luồng tạo bài học.');
+      throw new NotFoundException('KhÃ´ng tÃ¬m tháº¥y luá»“ng táº¡o bÃ i há»c.');
     }
 
     return {
@@ -226,7 +226,7 @@ export class LessonBuilderService {
     const project = await this.ensureProjectOwner(userId, projectId);
 
     if (!project.courseId) {
-      throw new BadRequestException('Bạn cần xác nhận outline trước.');
+      throw new BadRequestException('Báº¡n cáº§n xÃ¡c nháº­n outline trÆ°á»›c.');
     }
 
     await this.prisma.aILessonBuilderProject.update({
@@ -252,7 +252,7 @@ export class LessonBuilderService {
     });
 
     if (!lessons.length) {
-      throw new NotFoundException('Không tìm thấy bài học để sinh nội dung.');
+      throw new NotFoundException('KhÃ´ng tÃ¬m tháº¥y bÃ i há»c Ä‘á»ƒ sinh ná»™i dung.');
     }
 
     for (const lesson of lessons) {
@@ -301,7 +301,7 @@ export class LessonBuilderService {
     });
 
     if (!enrollment) {
-      throw new ForbiddenException('Bạn chưa sở hữu khóa học này.');
+      throw new ForbiddenException('Báº¡n chÆ°a sá»Ÿ há»¯u khÃ³a há»c nÃ y.');
     }
 
     const course = await this.prisma.course.findUnique({
@@ -332,7 +332,7 @@ export class LessonBuilderService {
     });
 
     if (!course) {
-      throw new NotFoundException('Không tìm thấy khóa học.');
+      throw new NotFoundException('KhÃ´ng tÃ¬m tháº¥y khÃ³a há»c.');
     }
 
     const progress = await this.prisma.lessonProgress.findMany({
@@ -353,7 +353,7 @@ export class LessonBuilderService {
           completed: completedIds.has(lesson.id),
           hasContent:
             Boolean(lesson.content) &&
-            !lesson.content?.includes('Nội dung chi tiết đang chờ AI tạo'),
+            !lesson.content?.includes('Ná»™i dung chi tiáº¿t Ä‘ang chá» AI táº¡o'),
         })),
       })),
     };
@@ -365,7 +365,7 @@ export class LessonBuilderService {
     });
 
     if (!project) {
-      throw new NotFoundException('Không tìm thấy luồng tạo bài học.');
+      throw new NotFoundException('KhÃ´ng tÃ¬m tháº¥y luá»“ng táº¡o bÃ i há»c.');
     }
 
     return project;
@@ -386,18 +386,18 @@ export class LessonBuilderService {
 
   private async generateLessonContent(project: any, lesson: any) {
     const prompt = `
-Bạn là AI Lesson Builder của PoppyLingo.
-Tạo nội dung chi tiết cho một bài học tiếng Anh cá nhân hóa.
+Báº¡n lÃ  AI Lesson Builder cá»§a BeaconVie.
+Táº¡o ná»™i dung chi tiáº¿t cho má»™t bÃ i há»c tiáº¿ng Anh cÃ¡ nhÃ¢n hÃ³a.
 
 Course: ${lesson.section.course.title}
 Module: ${lesson.section.title}
 Lesson: ${lesson.title}
-Goal của người học: ${project.goal}
+Goal cá»§a ngÆ°á»i há»c: ${project.goal}
 Level: ${project.level || lesson.section.course.level || 'A1'}
-Độ tuổi: ${project.audienceAge || 'general'}
-Sở thích: ${(project.interests || []).join(', ') || 'không có'}
+Äá»™ tuá»•i: ${project.audienceAge || 'general'}
+Sá»Ÿ thÃ­ch: ${(project.interests || []).join(', ') || 'khÃ´ng cÃ³'}
 
-Chỉ trả về JSON object:
+Chá»‰ tráº£ vá» JSON object:
 {
   "title": "string",
   "duration": 15,
@@ -412,10 +412,10 @@ Chỉ trả về JSON object:
   "quiz": [{"question":"string","options":["A","B","C","D"],"answer":"A","explanation":"string"}]
 }
 
-Yêu cầu:
-- Nội dung ngắn gọn, đúng trình độ, dùng tiếng Việt giải thích.
-- Có đủ Vocabulary, Grammar, Dialogue/Story, Listening script, Speaking, Reading, Exercises, Quiz.
-- Quiz 3-5 câu, answer phải trùng chính xác một option.
+YÃªu cáº§u:
+- Ná»™i dung ngáº¯n gá»n, Ä‘Ãºng trÃ¬nh Ä‘á»™, dÃ¹ng tiáº¿ng Viá»‡t giáº£i thÃ­ch.
+- CÃ³ Ä‘á»§ Vocabulary, Grammar, Dialogue/Story, Listening script, Speaking, Reading, Exercises, Quiz.
+- Quiz 3-5 cÃ¢u, answer pháº£i trÃ¹ng chÃ­nh xÃ¡c má»™t option.
 `;
 
     try {
@@ -431,19 +431,19 @@ Yêu cầu:
 
   private buildOutlinePrompt(dto: CreateLessonBuilderOutlineDto) {
     return `
-Bạn là AI Lesson Builder của PoppyLingo.
-Hãy phân tích yêu cầu người học và tạo course outline tiếng Anh cá nhân hóa.
+Báº¡n lÃ  AI Lesson Builder cá»§a BeaconVie.
+HÃ£y phÃ¢n tÃ­ch yÃªu cáº§u ngÆ°á»i há»c vÃ  táº¡o course outline tiáº¿ng Anh cÃ¡ nhÃ¢n hÃ³a.
 
-Yêu cầu người dùng:
-- Mục tiêu: ${dto.goal}
-- Độ tuổi: ${dto.audienceAge || 'không rõ'}
-- Trình độ: ${dto.level || 'tự chọn phù hợp'}
-- Thời gian học mỗi ngày: ${dto.dailyMinutes || 30} phút
-- Số ngày học: ${dto.totalDays || 30}
-- Sở thích: ${(dto.interests || []).join(', ') || 'không có'}
-- Kỹ năng trọng tâm: ${(dto.focusSkills || []).join(', ') || 'đủ 4 kỹ năng'}
+YÃªu cáº§u ngÆ°á»i dÃ¹ng:
+- Má»¥c tiÃªu: ${dto.goal}
+- Äá»™ tuá»•i: ${dto.audienceAge || 'khÃ´ng rÃµ'}
+- TrÃ¬nh Ä‘á»™: ${dto.level || 'tá»± chá»n phÃ¹ há»£p'}
+- Thá»i gian há»c má»—i ngÃ y: ${dto.dailyMinutes || 30} phÃºt
+- Sá»‘ ngÃ y há»c: ${dto.totalDays || 30}
+- Sá»Ÿ thÃ­ch: ${(dto.interests || []).join(', ') || 'khÃ´ng cÃ³'}
+- Ká»¹ nÄƒng trá»ng tÃ¢m: ${(dto.focusSkills || []).join(', ') || 'Ä‘á»§ 4 ká»¹ nÄƒng'}
 
-Chỉ trả về JSON object:
+Chá»‰ tráº£ vá» JSON object:
 {
   "title": "string",
   "description": "string",
@@ -465,11 +465,11 @@ Chỉ trả về JSON object:
   ]
 }
 
-Quy tắc:
-- Tạo 2-6 modules tùy số ngày học.
-- Tổng lesson nên phù hợp với thời gian học, tối thiểu 4, tối đa 40.
-- Lesson phải có thứ tự học tự nhiên, từ dễ đến khó.
-- Không markdown, không giải thích ngoài JSON.
+Quy táº¯c:
+- Táº¡o 2-6 modules tÃ¹y sá»‘ ngÃ y há»c.
+- Tá»•ng lesson nÃªn phÃ¹ há»£p vá»›i thá»i gian há»c, tá»‘i thiá»ƒu 4, tá»‘i Ä‘a 40.
+- Lesson pháº£i cÃ³ thá»© tá»± há»c tá»± nhiÃªn, tá»« dá»… Ä‘áº¿n khÃ³.
+- KhÃ´ng markdown, khÃ´ng giáº£i thÃ­ch ngoÃ i JSON.
 `;
   }
 
@@ -482,7 +482,7 @@ Quy tắc:
         lessons: (Array.isArray(module?.lessons) ? module.lessons : [])
           .map((lesson: any, lessonIndex: number) => ({
             title: String(lesson?.title || `Lesson ${lessonIndex + 1}`),
-            goal: String(lesson?.goal || 'Hoàn thành mục tiêu bài học.'),
+            goal: String(lesson?.goal || 'HoÃ n thÃ nh má»¥c tiÃªu bÃ i há»c.'),
             duration: Number(lesson?.duration) || 15,
             skills: Array.isArray(lesson?.skills)
               ? lesson.skills.map(String)
@@ -496,7 +496,7 @@ Quy tắc:
     const outline: BuilderOutline = {
       title: String(input?.title || 'AI English Course'),
       description: String(
-        input?.description || 'Khóa học tiếng Anh cá nhân hóa bởi AI.',
+        input?.description || 'KhÃ³a há»c tiáº¿ng Anh cÃ¡ nhÃ¢n hÃ³a bá»Ÿi AI.',
       ),
       level: String(input?.level || 'A1'),
       estimatedMinutes: Number(input?.estimatedMinutes) || 300,
@@ -513,7 +513,7 @@ Quy tắc:
       title: String(input?.title || title),
       duration: Number(input?.duration) || 15,
       learningGoal: String(
-        input?.learningGoal || 'Nắm nội dung chính của bài.',
+        input?.learningGoal || 'Náº¯m ná»™i dung chÃ­nh cá»§a bÃ i.',
       ),
       vocabulary: Array.isArray(input?.vocabulary) ? input.vocabulary : [],
       grammar: Array.isArray(input?.grammar) ? input.grammar : [],
@@ -534,24 +534,24 @@ Quy tắc:
     return {
       title: topic.length > 60 ? 'Personal English Course' : topic,
       description:
-        'Lộ trình cá nhân hóa giúp bạn học từ vựng, mẫu câu, nghe, nói và ôn tập từng ngày.',
+        'Lá»™ trÃ¬nh cÃ¡ nhÃ¢n hÃ³a giÃºp báº¡n há»c tá»« vá»±ng, máº«u cÃ¢u, nghe, nÃ³i vÃ  Ã´n táº­p tá»«ng ngÃ y.',
       level: dto.level || 'A1',
       estimatedMinutes:
         (dto.dailyMinutes || 30) * Math.min(dto.totalDays || 7, 14),
       modules: [
         {
           title: 'Module 1: Foundation',
-          description: 'Làm quen với từ vựng và mẫu câu nền tảng.',
+          description: 'LÃ m quen vá»›i tá»« vá»±ng vÃ  máº«u cÃ¢u ná»n táº£ng.',
           lessons: [
             {
               title: 'Lesson 1: Hello and Goals',
-              goal: 'Biết chào hỏi và nói mục tiêu học.',
+              goal: 'Biáº¿t chÃ o há»i vÃ  nÃ³i má»¥c tiÃªu há»c.',
               duration: 15,
               skills: ['Vocabulary', 'Speaking'],
             },
             {
               title: 'Lesson 2: Useful Words',
-              goal: 'Học nhóm từ quan trọng đầu tiên.',
+              goal: 'Há»c nhÃ³m tá»« quan trá»ng Ä‘áº§u tiÃªn.',
               duration: 15,
               skills: ['Vocabulary', 'Listening'],
             },
@@ -559,17 +559,17 @@ Quy tắc:
         },
         {
           title: 'Module 2: Practice',
-          description: 'Dùng kiến thức trong tình huống ngắn.',
+          description: 'DÃ¹ng kiáº¿n thá»©c trong tÃ¬nh huá»‘ng ngáº¯n.',
           lessons: [
             {
               title: 'Lesson 3: Short Dialogue',
-              goal: 'Hiểu và luyện hội thoại ngắn.',
+              goal: 'Hiá»ƒu vÃ  luyá»‡n há»™i thoáº¡i ngáº¯n.',
               duration: 20,
               skills: ['Listening', 'Speaking'],
             },
             {
               title: 'Lesson 4: Review and Quiz',
-              goal: 'Ôn tập và kiểm tra nhanh.',
+              goal: 'Ã”n táº­p vÃ  kiá»ƒm tra nhanh.',
               duration: 20,
               skills: ['Reading', 'Quiz'],
             },
@@ -583,23 +583,23 @@ Quy tắc:
     return {
       title,
       duration: 15,
-      learningGoal: 'Hiểu và sử dụng nội dung chính của bài học.',
+      learningGoal: 'Hiá»ƒu vÃ  sá»­ dá»¥ng ná»™i dung chÃ­nh cá»§a bÃ i há»c.',
       vocabulary: [
         {
           word: 'practice',
-          meaning: 'luyện tập',
+          meaning: 'luyá»‡n táº­p',
           example: 'I practice English every day.',
         },
         {
           word: 'goal',
-          meaning: 'mục tiêu',
+          meaning: 'má»¥c tiÃªu',
           example: 'My goal is to speak clearly.',
         },
       ],
       grammar: [
         {
           point: 'Present Simple',
-          explanation: 'Dùng để nói thói quen hoặc sự thật đơn giản.',
+          explanation: 'DÃ¹ng Ä‘á»ƒ nÃ³i thÃ³i quen hoáº·c sá»± tháº­t Ä‘Æ¡n giáº£n.',
           example: 'I study English every day.',
         },
       ],
@@ -607,17 +607,17 @@ Quy tắc:
         {
           speaker: 'A',
           line: 'What is your goal?',
-          vi: 'Mục tiêu của bạn là gì?',
+          vi: 'Má»¥c tiÃªu cá»§a báº¡n lÃ  gÃ¬?',
         },
         {
           speaker: 'B',
           line: 'I want to speak English.',
-          vi: 'Tôi muốn nói tiếng Anh.',
+          vi: 'TÃ´i muá»‘n nÃ³i tiáº¿ng Anh.',
         },
       ],
       listeningScript:
         'I study English every day. I practice new words and short sentences.',
-      speakingTask: 'Nói 3 câu về mục tiêu học tiếng Anh của bạn.',
+      speakingTask: 'NÃ³i 3 cÃ¢u vá» má»¥c tiÃªu há»c tiáº¿ng Anh cá»§a báº¡n.',
       reading: {
         title: 'My English Goal',
         content:
@@ -634,9 +634,9 @@ Quy tắc:
       quiz: [
         {
           question: 'What does "goal" mean?',
-          options: ['mục tiêu', 'bài hát', 'màu sắc', 'thời tiết'],
-          answer: 'mục tiêu',
-          explanation: 'Goal nghĩa là mục tiêu.',
+          options: ['má»¥c tiÃªu', 'bÃ i hÃ¡t', 'mÃ u sáº¯c', 'thá»i tiáº¿t'],
+          answer: 'má»¥c tiÃªu',
+          explanation: 'Goal nghÄ©a lÃ  má»¥c tiÃªu.',
         },
       ],
     };
@@ -645,7 +645,7 @@ Quy tắc:
   private renderLessonContent(content: any) {
     const lines: string[] = [];
     lines.push(`# ${content.title}`);
-    lines.push(`\n## Mục tiêu\n${content.learningGoal}`);
+    lines.push(`\n## Má»¥c tiÃªu\n${content.learningGoal}`);
 
     lines.push('\n## Vocabulary');
     for (const item of content.vocabulary || []) {
@@ -657,7 +657,7 @@ Quy tắc:
     lines.push('\n## Grammar');
     for (const item of content.grammar || []) {
       lines.push(
-        `- ${item.point || ''}: ${item.explanation || ''} Ví dụ: ${item.example || ''}`,
+        `- ${item.point || ''}: ${item.explanation || ''} VÃ­ dá»¥: ${item.example || ''}`,
       );
     }
 
@@ -682,7 +682,7 @@ Quy tắc:
 
     lines.push('\n## Exercises');
     for (const item of content.exercises || []) {
-      lines.push(`- ${item.question || ''} Đáp án: ${item.answer || ''}`);
+      lines.push(`- ${item.question || ''} ÄÃ¡p Ã¡n: ${item.answer || ''}`);
     }
 
     return lines.join('\n');
@@ -691,16 +691,16 @@ Quy tắc:
   private buildLessonPlaceholder(lesson: BuilderOutlineLesson) {
     return `# ${lesson.title}
 
-## Mục tiêu
-${lesson.goal || 'Hoàn thành mục tiêu bài học.'}
+## Má»¥c tiÃªu
+${lesson.goal || 'HoÃ n thÃ nh má»¥c tiÃªu bÃ i há»c.'}
 
-Nội dung chi tiết đang chờ AI tạo. Hãy bấm "Sinh nội dung" để tạo Vocabulary, Grammar, Listening, Speaking, Reading và Quiz cho bài này.`;
+Ná»™i dung chi tiáº¿t Ä‘ang chá» AI táº¡o. HÃ£y báº¥m "Sinh ná»™i dung" Ä‘á»ƒ táº¡o Vocabulary, Grammar, Listening, Speaking, Reading vÃ  Quiz cho bÃ i nÃ y.`;
   }
 
   private buildCourseThumbnail(title: string) {
     const label = encodeURIComponent(title || 'AI Course');
     return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 360"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#7c3aed"/><stop offset="1" stop-color="#14b8a6"/></linearGradient></defs><rect width="600" height="360" rx="36" fill="url(#g)"/><circle cx="480" cy="80" r="72" fill="#fff" opacity=".18"/><circle cx="90" cy="300" r="90" fill="#fff" opacity=".16"/><text x="60" y="155" font-family="Arial,sans-serif" font-size="44" font-weight="900" fill="#fff">AI Lesson</text><text x="60" y="210" font-family="Arial,sans-serif" font-size="30" font-weight="800" fill="#ede9fe">${label.slice(0, 22)}</text><text x="60" y="280" font-family="Arial,sans-serif" font-size="24" font-weight="800" fill="#ccfbf1">PoppyLingo</text></svg>`,
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 360"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#7c3aed"/><stop offset="1" stop-color="#14b8a6"/></linearGradient></defs><rect width="600" height="360" rx="36" fill="url(#g)"/><circle cx="480" cy="80" r="72" fill="#fff" opacity=".18"/><circle cx="90" cy="300" r="90" fill="#fff" opacity=".16"/><text x="60" y="155" font-family="Arial,sans-serif" font-size="44" font-weight="900" fill="#fff">AI Lesson</text><text x="60" y="210" font-family="Arial,sans-serif" font-size="30" font-weight="800" fill="#ede9fe">${label.slice(0, 22)}</text><text x="60" y="280" font-family="Arial,sans-serif" font-size="24" font-weight="800" fill="#ccfbf1">BeaconVie</text></svg>`,
     )}`;
   }
 }

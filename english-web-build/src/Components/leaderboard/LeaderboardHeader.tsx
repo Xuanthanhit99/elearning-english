@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { useCountdown } from '@/src/hooks/useCountdown';
@@ -21,22 +21,22 @@ export function LeaderboardHeader({
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-white/75">
-            Lumiverse League
+            BeaconVie League
           </p>
 
           <h1 className="mt-2 text-3xl font-black sm:text-4xl">
-            Bảng xếp hạng
+            Báº£ng xáº¿p háº¡ng
           </h1>
 
           <p className="mt-2 max-w-xl text-sm text-white/80 sm:text-base">
-            Học đều mỗi ngày, tích lũy XP và tiến lên giải đấu cao hơn.
+            Há»c Ä‘á»u má»—i ngÃ y, tÃ­ch lÅ©y XP vÃ  tiáº¿n lÃªn giáº£i Ä‘áº¥u cao hÆ¡n.
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:min-w-[420px]">
           <div className="rounded-2xl bg-white/15 p-4 backdrop-blur">
             <p className="text-xs font-bold uppercase text-white/70">
-              Giải hiện tại
+              Giáº£i hiá»‡n táº¡i
             </p>
             <p className="mt-2 text-lg font-black">
               {leagueIcons[league]}{' '}
@@ -46,7 +46,7 @@ export function LeaderboardHeader({
 
           <div className="rounded-2xl bg-white/15 p-4 backdrop-blur">
             <p className="text-xs font-bold uppercase text-white/70">
-              Kết thúc sau
+              Káº¿t thÃºc sau
             </p>
             <p className="mt-2 text-lg font-black">
               {countdown.label}
@@ -60,14 +60,14 @@ export function LeaderboardHeader({
           href="/leaderboard/rewards"
           className="rounded-xl bg-white px-4 py-2 text-sm font-black text-violet-700"
         >
-          🎁 Phần thưởng
+          ðŸŽ Pháº§n thÆ°á»Ÿng
         </Link>
 
         <Link
           href="/leaderboard/history"
           className="rounded-xl bg-white/15 px-4 py-2 text-sm font-black text-white backdrop-blur"
         >
-          📚 Lịch sử
+          ðŸ“š Lá»‹ch sá»­
         </Link>
       </div>
     </section>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Poppins } from "next/font/google";
 import "./globals.css";
 import ThemeInitializer, {
   themeAntiFlashScript,
@@ -7,19 +7,20 @@ import ThemeInitializer, {
 import LanguageInitializer from "@/src/Components/LanguageInitializer";
 import AuthInitializer from "@/src/Components/Auth/AuthInitializer";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const poppins = Poppins({
+  variable: "--font-poppins",
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
-  title: "Lumiverse",
-  description: "Học ngôn ngữ cùng Lumi",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://beaconvie.com",
+  ),
+  applicationName: "BeaconVie",
+  title: "BeaconVie",
+  description:
+    "BeaconVie là nền tảng học tiếng Anh ứng dụng AI, cá nhân hóa lộ trình và đồng hành cùng người học mỗi ngày.",
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -27,7 +28,9 @@ export const metadata: Metadata = {
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
     ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
 };
 
@@ -37,17 +40,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="vi"
-      className={`${geistSans.variable} ${geistMono.variable}`}
-      suppressHydrationWarning
-    >
+    <html lang="vi" className={poppins.variable} suppressHydrationWarning>
       <head>
-        <script
-          dangerouslySetInnerHTML={{ __html: themeAntiFlashScript }}
-        />
+        <script dangerouslySetInnerHTML={{ __html: themeAntiFlashScript }} />
       </head>
-      <body className="lumiverse-theme-compat min-h-screen antialiased">
+      <body className="BeaconVie-theme-compat min-h-screen antialiased">
         <ThemeInitializer />
         <LanguageInitializer />
         <AuthInitializer />

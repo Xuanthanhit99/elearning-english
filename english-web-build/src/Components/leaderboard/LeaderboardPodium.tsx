@@ -1,4 +1,4 @@
-import { formatXp } from '@/src/lib/leaderboard';
+﻿import { formatXp } from '@/src/lib/leaderboard';
 import type { LeaderboardEntry } from '@/src/types/leaderboard';
 
 export function LeaderboardPodium({
@@ -15,20 +15,20 @@ export function LeaderboardPodium({
       <div className="grid grid-cols-3 items-end gap-2 sm:gap-4">
         <PodiumItem
           entry={second}
-          medal="🥈"
+          medal="ðŸ¥ˆ"
           height="h-28 sm:h-36"
           order="order-1"
         />
         <PodiumItem
           entry={first}
-          medal="🥇"
+          medal="ðŸ¥‡"
           height="h-36 sm:h-48"
           order="order-2"
           highlight
         />
         <PodiumItem
           entry={third}
-          medal="🥉"
+          medal="ðŸ¥‰"
           height="h-24 sm:h-32"
           order="order-3"
         />
@@ -73,7 +73,7 @@ function PodiumItem({
       </div>
 
       <p className="mt-2 truncate text-xs font-black sm:text-sm">
-        {entry?.user.displayName ?? '—'}
+        {entry?.user.displayName ?? 'â€”'}
       </p>
 
       <p className="text-[11px] font-bold text-violet-600 sm:text-xs">

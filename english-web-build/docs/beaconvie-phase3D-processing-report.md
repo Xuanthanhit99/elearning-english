@@ -1,8 +1,8 @@
-# Lumiverse Phase 3D Report: Placement Processing
+﻿# BeaconVie Phase 3D Report: Placement Processing
 
 ## Summary
 
-Phase 3D redesigns the Placement Processing screen with Lumiverse UI while keeping the existing processing lifecycle intact.
+Phase 3D redesigns the Placement Processing screen with BeaconVie UI while keeping the existing processing lifecycle intact.
 
 No backend, database, Prisma, auth, API contract, polling contract, or redirect behavior was changed.
 
@@ -25,7 +25,7 @@ Existing flow preserved:
 
 ## Implemented
 
-- Rebuilt processing screen using Lumiverse cards, progress, sections, and status panels.
+- Rebuilt processing screen using BeaconVie cards, progress, sections, and status panels.
 - Overall progress uses `snapshot.progress`.
 - Step progress uses `step.progress`.
 - Skill progress uses `skill.progress`.

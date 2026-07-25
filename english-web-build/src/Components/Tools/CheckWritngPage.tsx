@@ -1,12 +1,12 @@
-// src/Components/Tools/CheckWritingPage.tsx
+﻿// src/Components/Tools/CheckWritingPage.tsx
 "use client";
 
 import { api } from "@/src/lib/axios";
 import { useState } from "react";
 
 const samples = [
-  "Email công việc",
-  "Bài tập tiếng Anh",
+  "Email cÃ´ng viá»‡c",
+  "BÃ i táº­p tiáº¿ng Anh",
   "IELTS Writing",
   "Speaking script",
 ];
@@ -101,28 +101,28 @@ export default function CheckWritingPage() {
         <div className="grid items-start gap-10 lg:grid-cols-[1fr_320px]">
           <div>
             <div className="mb-5 inline-flex rounded-full border border-[#ffd4ad] bg-white px-4 py-2 text-sm font-extrabold text-[#ff6b00] shadow-sm">
-              📝 Công cụ miễn phí
+              ðŸ“ CÃ´ng cá»¥ miá»…n phÃ­
             </div>
 
             <h1 className="max-w-3xl text-5xl font-extrabold leading-tight text-[#1f2a44] lg:text-6xl">
-              Check bài viết cùng{" "}
-              <span className="text-[#ff6b00]">Lumiverse</span>
+              Check bÃ i viáº¿t cÃ¹ng{" "}
+              <span className="text-[#ff6b00]">BeaconVie</span>
             </h1>
 
             <p className="mt-5 max-w-3xl text-lg leading-8 text-[#5b6b85]">
-              Dán đoạn văn tiếng Anh của bạn để Lumi kiểm tra ngữ pháp, từ vựng,
-              cách diễn đạt và gợi ý phiên bản tự nhiên hơn.
+              DÃ¡n Ä‘oáº¡n vÄƒn tiáº¿ng Anh cá»§a báº¡n Ä‘á»ƒ Beacon kiá»ƒm tra ngá»¯ phÃ¡p, tá»« vá»±ng,
+              cÃ¡ch diá»…n Ä‘áº¡t vÃ  gá»£i Ã½ phiÃªn báº£n tá»± nhiÃªn hÆ¡n.
             </p>
           </div>
 
           <div className="rounded-[28px] border border-[#ead8c2] bg-white p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
             <h2 className="text-2xl font-extrabold text-[#1f2a44]">
-              Lumi sẽ kiểm tra gì?
+              Beacon sáº½ kiá»ƒm tra gÃ¬?
             </h2>
 
             <p className="mt-3 leading-7 text-[#5b6b85]">
-              Không chỉ sửa lỗi, Lumi còn giải thích vì sao sai và gợi ý cách nói
-              tự nhiên.
+              KhÃ´ng chá»‰ sá»­a lá»—i, Beacon cÃ²n giáº£i thÃ­ch vÃ¬ sao sai vÃ  gá»£i Ã½ cÃ¡ch nÃ³i
+              tá»± nhiÃªn.
             </p>
 
             <div className="mt-5 space-y-3">
@@ -136,16 +136,16 @@ export default function CheckWritingPage() {
         <div className="mt-12 grid gap-6 lg:grid-cols-[360px_1fr]">
           <aside className="h-fit rounded-[26px] border border-[#ead8c2] bg-white p-5 shadow-[0_24px_70px_rgba(31,42,68,0.06)]">
             <h2 className="text-2xl font-extrabold text-[#1f2a44]">
-              Dán bài viết cần check
+              DÃ¡n bÃ i viáº¿t cáº§n check
             </h2>
 
             <p className="mt-2 text-sm leading-6 text-[#5b6b85]">
-              Phù hợp cho câu ngắn, đoạn văn, email, bài speaking script.
+              PhÃ¹ há»£p cho cÃ¢u ngáº¯n, Ä‘oáº¡n vÄƒn, email, bÃ i speaking script.
             </p>
 
             <label className="mt-5 block">
               <span className="mb-2 block text-xs font-extrabold text-[#5b6b85]">
-                Bài viết tiếng Anh
+                BÃ i viáº¿t tiáº¿ng Anh
               </span>
 
               <button
@@ -153,7 +153,7 @@ export default function CheckWritingPage() {
                 onClick={() => speakText(result?.suggestedVersion || text)}
                 className="mb-2 block text-xs font-extrabold text-[#5b6b85]"
               >
-                🔊 Nghe bài viết
+                ðŸ”Š Nghe bÃ i viáº¿t
               </button>
 
               <textarea
@@ -192,11 +192,11 @@ export default function CheckWritingPage() {
               disabled={loading || !text.trim()}
               className="mt-4 w-full rounded-2xl bg-[#ff6b00] py-4 font-extrabold text-white shadow-lg shadow-orange-200 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading ? "Lumi đang sửa bài..." : "Check bài"}
+              {loading ? "Beacon Ä‘ang sá»­a bÃ i..." : "Check bÃ i"}
             </button>
 
             <div className="mt-5">
-              <h3 className="font-extrabold text-[#1f2a44]">Mẫu hay dùng</h3>
+              <h3 className="font-extrabold text-[#1f2a44]">Máº«u hay dÃ¹ng</h3>
 
               <div className="mt-3 flex flex-wrap gap-2">
                 {samples.map((item) => (
@@ -254,8 +254,8 @@ function ScoreCard({ data }: { data: WritingCheckResult }) {
           </div>
 
           <div className="absolute -bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-[#ff6b00] px-4 py-1 text-xs font-extrabold text-white shadow-lg shadow-orange-200 animate-[scoreBadge_2s_ease-in-out_infinite]">
-            <span className="animate-bounce">🏆</span>
-            <span>Điểm tổng thể</span>
+            <span className="animate-bounce">ðŸ†</span>
+            <span>Äiá»ƒm tá»•ng thá»ƒ</span>
           </div>
         </div>
 
@@ -266,21 +266,21 @@ function ScoreCard({ data }: { data: WritingCheckResult }) {
           </h2>
 
           <p className="mt-3 leading-7 text-[#5b6b85]">
-            Lumi đã kiểm tra ngữ pháp, từ vựng, cách diễn đạt và khả năng truyền
-            đạt ý nghĩa của bài viết.
+            Beacon Ä‘Ã£ kiá»ƒm tra ngá»¯ phÃ¡p, tá»« vá»±ng, cÃ¡ch diá»…n Ä‘áº¡t vÃ  kháº£ nÄƒng truyá»n
+            Ä‘áº¡t Ã½ nghÄ©a cá»§a bÃ i viáº¿t.
           </p>
 
           <div className="mt-4 flex flex-wrap gap-2">
             <span className="rounded-full bg-[#fff0dc] px-3 py-2 text-xs font-extrabold text-[#ff6b00]">
-              ✍️ Writing
+              âœï¸ Writing
             </span>
 
             <span className="rounded-full bg-[#f7f1fb] px-3 py-2 text-xs font-extrabold text-[#6b5796]">
-              📚 {data.detectedLanguage || "English"}
+              ðŸ“š {data.detectedLanguage || "English"}
             </span>
 
             <span className="rounded-full bg-[#e8fff1] px-3 py-2 text-xs font-extrabold text-emerald-600">
-              🎯 {data.style || "General"}
+              ðŸŽ¯ {data.style || "General"}
             </span>
           </div>
         </div>
@@ -289,31 +289,31 @@ function ScoreCard({ data }: { data: WritingCheckResult }) {
       {/* Scores */}
       <div className="mt-8 grid gap-4 md:grid-cols-4">
         <ScoreItem
-          title="Grammar"
+          title="Ngữ pháp"
           value={data.grammarScore || 0}
           color="bg-red-50 text-red-500"
-          icon="📖"
+          icon="ðŸ“–"
         />
 
         <ScoreItem
-          title="Vocabulary"
+          title="Từ vựng"
           value={data.vocabularyScore || 0}
           color="bg-orange-50 text-orange-500"
-          icon="📚"
+          icon="ðŸ“š"
         />
 
         <ScoreItem
           title="Clarity"
           value={data.clarityScore || 0}
           color="bg-blue-50 text-blue-500"
-          icon="💬"
+          icon="ðŸ’¬"
         />
 
         <ScoreItem
           title="Meaning"
           value={data.meaningScore || 0}
           color="bg-green-50 text-green-500"
-          icon="🎯"
+          icon="ðŸŽ¯"
         />
       </div>
     </div>
@@ -333,7 +333,7 @@ function ErrorList({ data }: { data: WritingCheckResult }) {
 
   return (
     <div className="rounded-[26px] border border-[#ead8c2] bg-white p-6 shadow-[0_24px_70px_rgba(31,42,68,0.06)]">
-      <h2 className="text-xl font-extrabold text-[#1f2a44]">Lỗi cần sửa</h2>
+      <h2 className="text-xl font-extrabold text-[#1f2a44]">Lá»—i cáº§n sá»­a</h2>
 
       <div className="mt-4 space-y-3">
         {errors.length > 0 ? (
@@ -352,7 +352,7 @@ function ErrorList({ data }: { data: WritingCheckResult }) {
 
               <p className="font-bold text-red-500">{item.wrong}</p>
 
-              <p className="font-bold text-emerald-600">→ {item.correct}</p>
+              <p className="font-bold text-emerald-600">â†’ {item.correct}</p>
 
               <p className="mt-2 text-sm leading-6 text-[#5b6b85]">
                 {item.explanation}
@@ -361,7 +361,7 @@ function ErrorList({ data }: { data: WritingCheckResult }) {
           ))
         ) : (
           <div className="rounded-2xl bg-slate-50 p-4 text-center font-bold text-emerald-600">
-            🎉 Không phát hiện lỗi ngữ pháp đáng kể
+            ðŸŽ‰ KhÃ´ng phÃ¡t hiá»‡n lá»—i ngá»¯ phÃ¡p Ä‘Ã¡ng ká»ƒ
           </div>
         )}
       </div>
@@ -373,11 +373,11 @@ function ImprovedVersion({ data }: { data: WritingCheckResult }) {
   return (
     <div className="rounded-[26px] border border-[#ead8c2] bg-white p-6 shadow-[0_24px_70px_rgba(31,42,68,0.06)]">
       <h2 className="text-xl font-extrabold text-[#1f2a44]">
-        Phiên bản Lumi gợi ý
+        PhiÃªn báº£n Beacon gá»£i Ã½
       </h2>
 
       <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 font-bold leading-7 text-[#1f2a44]">
-        {data.suggestedVersion || "Lumi chưa có phiên bản gợi ý."}
+        {data.suggestedVersion || "Beacon chÆ°a cÃ³ phiÃªn báº£n gá»£i Ã½."}
       </div>
     </div>
   );
@@ -386,10 +386,10 @@ function ImprovedVersion({ data }: { data: WritingCheckResult }) {
 function SuggestionGrid({ data }: { data: WritingCheckResult }) {
   return (
     <div className="grid gap-6 md:grid-cols-2">
-      <SuggestionBox title="Từ/cụm từ nên học" items={data.phrases ?? []} />
+      <SuggestionBox title="Tá»«/cá»¥m tá»« nÃªn há»c" items={data.phrases ?? []} />
 
       <SuggestionBox
-        title="Bài học gợi ý"
+        title="BÃ i há»c gá»£i Ã½"
         items={
           data.learningTips?.map((item) => `${item.title}: ${item.content}`) ??
           []
@@ -420,11 +420,11 @@ function SuggestionBox({ title, items }: { title: string; items: string[] }) {
 function StudyNote({ note }: { note?: string }) {
   return (
     <div className="rounded-[24px] bg-gradient-to-r from-[#1f2a44] to-[#6b5796] p-6 text-white shadow-[0_24px_70px_rgba(31,42,68,0.12)]">
-      <h2 className="text-2xl font-extrabold">💡 Mẹo học từ Lumi</h2>
+      <h2 className="text-2xl font-extrabold">ðŸ’¡ Máº¹o há»c tá»« Beacon</h2>
 
       <p className="mt-3 leading-7 text-white/90">
         {note ||
-          "Sau khi sửa bài, hãy đọc lại phiên bản đã sửa 3 lần để ghi nhớ cấu trúc câu tự nhiên hơn."}
+          "Sau khi sá»­a bÃ i, hÃ£y Ä‘á»c láº¡i phiÃªn báº£n Ä‘Ã£ sá»­a 3 láº§n Ä‘á»ƒ ghi nhá»› cáº¥u trÃºc cÃ¢u tá»± nhiÃªn hÆ¡n."}
       </p>
     </div>
   );
@@ -433,7 +433,7 @@ function StudyNote({ note }: { note?: string }) {
 function Tip({ text }: { text: string }) {
   return (
     <div className="rounded-2xl bg-[#fff4e8] px-4 py-3 font-extrabold text-[#1f2a44]">
-      ✓ {text}
+      âœ“ {text}
     </div>
   );
 }
@@ -451,11 +451,11 @@ function WritingLoading() {
       />
 
       <h2 className="mt-5 text-4xl font-extrabold text-[#1f2a44]">
-        Lumi đang sửa bài...
+        Beacon Ä‘ang sá»­a bÃ i...
       </h2>
 
       <p className="mt-3 text-[#5b6b85]">
-        Đang kiểm tra ngữ pháp, từ vựng và cách diễn đạt.
+        Äang kiá»ƒm tra ngá»¯ phÃ¡p, tá»« vá»±ng vÃ  cÃ¡ch diá»…n Ä‘áº¡t.
       </p>
 
       <div className="mt-5 flex justify-center gap-2">
@@ -480,10 +480,10 @@ function WritingNotFound() {
       />
 
       <h2 className="mt-5 text-4xl font-extrabold text-[#1f2a44]">
-        Lumi chưa hiểu bài viết này 😿
+        Beacon chÆ°a hiá»ƒu bÃ i viáº¿t nÃ y ðŸ˜¿
       </h2>
 
-      <p className="mt-3 text-[#5b6b85]">Hãy thử nhập đoạn văn dài hơn.</p>
+      <p className="mt-3 text-[#5b6b85]">HÃ£y thá»­ nháº­p Ä‘oáº¡n vÄƒn dÃ i hÆ¡n.</p>
     </div>
   );
 }
@@ -491,13 +491,13 @@ function WritingNotFound() {
 function WritingError() {
   return (
     <div className="rounded-[26px] border border-red-200 bg-white p-10 text-center">
-      <div className="text-7xl">😵</div>
+      <div className="text-7xl">ðŸ˜µ</div>
 
       <h2 className="mt-5 text-4xl font-extrabold text-[#1f2a44]">
-        Lumi gặp sự cố
+        Beacon gáº·p sá»± cá»‘
       </h2>
 
-      <p className="mt-3 text-[#5b6b85]">Không thể kết nối AI lúc này.</p>
+      <p className="mt-3 text-[#5b6b85]">KhÃ´ng thá»ƒ káº¿t ná»‘i AI lÃºc nÃ y.</p>
     </div>
   );
 }
@@ -505,14 +505,14 @@ function WritingError() {
 function EmptyWritingResult() {
   return (
     <div className="rounded-[26px] border border-[#ead8c2] bg-white p-12 text-center">
-      <div className="text-7xl">📝</div>
+      <div className="text-7xl">ðŸ“</div>
 
       <h2 className="mt-5 text-3xl font-extrabold text-[#1f2a44]">
-        Hãy dán bài viết để bắt đầu
+        HÃ£y dÃ¡n bÃ i viáº¿t Ä‘á»ƒ báº¯t Ä‘áº§u
       </h2>
 
       <p className="mt-3 text-[#5b6b85]">
-        Lumi sẽ phân tích ngữ pháp, từ vựng và cách diễn đạt.
+        Beacon sáº½ phÃ¢n tÃ­ch ngá»¯ phÃ¡p, tá»« vá»±ng vÃ  cÃ¡ch diá»…n Ä‘áº¡t.
       </p>
     </div>
   );

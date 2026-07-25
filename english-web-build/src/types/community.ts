@@ -1,4 +1,4 @@
-export type CommunityPostType = 'SHARE' | 'QUESTION' | 'SPEAKING' | 'WRITING' | 'IMAGE' | 'ACHIEVEMENT' | 'POLL';
+﻿export type CommunityPostType = 'SHARE' | 'QUESTION' | 'SPEAKING' | 'WRITING' | 'IMAGE' | 'ACHIEVEMENT' | 'POLL';
 export type CommunityReactionType = 'LIKE' | 'USEFUL' | 'GREAT' | 'HELPFUL' | 'INSPIRED';
 
 export interface CommunityAuthor {

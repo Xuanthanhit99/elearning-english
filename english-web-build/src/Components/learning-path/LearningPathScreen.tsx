@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ArrowRight,
@@ -28,19 +28,19 @@ import {
   startLearningPathLesson,
 } from "@/src/lib/learning-path-api";
 import {
-  LumiverseBadge,
-  LumiverseButton,
-  LumiverseCard,
-  LumiverseProgress,
-  LumiverseSectionHeader,
-  LumiverseState,
-} from "@/src/Components/UI/Lumiverse";
+  BeaconVieBadge,
+  BeaconVieButton,
+  BeaconVieCard,
+  BeaconVieProgress,
+  BeaconVieSectionHeader,
+  BeaconVieState,
+} from "@/src/Components/UI/BeaconVie";
 
 const statusCopy: Record<LearningPathLesson["status"], string> = {
   LOCKED: "Locked",
-  AVAILABLE: "Start",
-  IN_PROGRESS: "Continue",
-  COMPLETED: "Review",
+  AVAILABLE: "Bắt đầu",
+  IN_PROGRESS: "Tiếp tục",
+  COMPLETED: "Ôn tập",
 };
 
 /** Distinguishes the full PLACEMENT lesson shape from the DEFAULT_FOUNDATION starting-lesson pointer. */
@@ -64,7 +64,7 @@ export default function LearningPathScreen() {
       setData(await getLearningPath());
     } catch (err) {
       // The backend no longer 404s for a user without a completed
-      // Placement test — GET /learning-path always resolves to either a
+      // Placement test â€” GET /learning-path always resolves to either a
       // PLACEMENT-sourced path or a DEFAULT_FOUNDATION per-skill starter
       // path (see LearningPathService.buildDefaultFoundationPath). A
       // request can still fail for genuine errors (network, 5xx), which
@@ -103,7 +103,7 @@ export default function LearningPathScreen() {
 
   if (!data) {
     return (
-      <LumiverseState
+      <BeaconVieState
         title="Learning path is unavailable"
         description={error}
         actionLabel="Try again"
@@ -116,14 +116,14 @@ export default function LearningPathScreen() {
   return (
     <main className="min-h-screen px-3 py-5 sm:px-4 lg:px-6">
       <div className="mx-auto max-w-7xl space-y-5">
-        <LumiverseCard className="overflow-hidden p-0">
+        <BeaconVieCard className="overflow-hidden p-0">
           <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:p-8">
             <section>
-              <LumiverseBadge>Learning Path</LumiverseBadge>
-              <h1 className="mt-4 max-w-4xl text-3xl font-black tracking-tight text-[var(--lumiverse-ink)] sm:text-5xl">
+              <BeaconVieBadge>Learning Path</BeaconVieBadge>
+              <h1 className="mt-4 max-w-4xl text-3xl font-black tracking-tight text-[var(--BeaconVie-ink)] sm:text-5xl">
                 {data.title}
               </h1>
-              <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-[var(--lumiverse-muted)]">
+              <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-[var(--BeaconVie-muted)]">
                 {data.source === "PLACEMENT" ? (
                   <>
                     Your path is generated from placement result {data.overallLevel}
@@ -132,7 +132,7 @@ export default function LearningPathScreen() {
                   </>
                 ) : (
                   <>
-                    You haven&apos;t completed a placement test yet — here&apos;s a
+                    You haven&apos;t completed a placement test yet â€” here&apos;s a
                     foundation starting point for every skill. Take the placement
                     test any time for personalized recommendations.
                   </>
@@ -140,7 +140,7 @@ export default function LearningPathScreen() {
               </p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-4">
-                <HeroMetric icon={GraduationCap} label="Level" value={data.overallLevel ?? "—"} />
+                <HeroMetric icon={GraduationCap} label="Level" value={data.overallLevel ?? "â€”"} />
                 <HeroMetric icon={Target} label="Progress" value={`${data.progressPercent}%`} />
                 <HeroMetric icon={CheckCircle2} label="Completed" value={`${data.completedLessons}`} />
                 <HeroMetric icon={BookOpen} label="Lessons" value={`${data.totalLessons}`} />
@@ -156,7 +156,7 @@ export default function LearningPathScreen() {
               onStart={handleStartLesson}
             />
           </div>
-        </LumiverseCard>
+        </BeaconVieCard>
 
         {error ? (
           <p className="rounded-2xl bg-rose-50 p-4 text-sm font-bold text-rose-600">
@@ -165,8 +165,8 @@ export default function LearningPathScreen() {
         ) : null}
 
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <LumiverseCard className="p-6">
-            <LumiverseSectionHeader
+          <BeaconVieCard className="p-6">
+            <BeaconVieSectionHeader
               eyebrow="Journey"
               title="Milestones and lesson map"
               description="Nodes keep their real lock, progress and lesson links. Locked lessons are not clickable."
@@ -178,19 +178,19 @@ export default function LearningPathScreen() {
                 onStart={handleStartLesson}
               />
             ) : data.source === "DEFAULT_FOUNDATION" ? (
-              <LumiverseState
-                title="Foundation path — see your skill breakdown"
+              <BeaconVieState
+                title="Foundation path â€” see your skill breakdown"
                 description="Take the placement test to unlock a personalized milestone map. Each skill's starting lesson is listed in the panel to the right."
                 tone="soft"
               />
             ) : (
-              <LumiverseState
+              <BeaconVieState
                 title="No lessons in this path yet"
                 description="The backend returned an empty path. Retake placement or refresh after path generation finishes."
                 tone="empty"
               />
             )}
-          </LumiverseCard>
+          </BeaconVieCard>
 
           <aside className="space-y-5">
             {data.phases.length ? <PhasePanel phases={data.phases} /> : null}
@@ -202,8 +202,8 @@ export default function LearningPathScreen() {
         </section>
 
         {data.courses.length ? (
-          <LumiverseCard className="p-6">
-            <LumiverseSectionHeader
+          <BeaconVieCard className="p-6">
+            <BeaconVieSectionHeader
               eyebrow="Courses"
               title="Recommended course groups"
               description="Course cards are shown only from the learning path response."
@@ -213,7 +213,7 @@ export default function LearningPathScreen() {
                 <CourseSummary key={course.id} course={course} />
               ))}
             </div>
-          </LumiverseCard>
+          </BeaconVieCard>
         ) : null}
       </div>
     </main>
@@ -231,29 +231,29 @@ function NextLessonCard({
 }) {
   if (!lesson) {
     return (
-      <LumiverseCard className="p-5">
-        <Compass aria-hidden className="h-9 w-9 text-[var(--lumiverse-primary)]" />
-        <h2 className="mt-4 text-2xl font-black text-[var(--lumiverse-ink)]">
+      <BeaconVieCard className="p-5">
+        <Compass aria-hidden className="h-9 w-9 text-[var(--BeaconVie-primary)]" />
+        <h2 className="mt-4 text-2xl font-black text-[var(--BeaconVie-ink)]">
           Path is ready
         </h2>
-        <p className="mt-2 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+        <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
           There is no current lesson from the API yet. Check the timeline below.
         </p>
-      </LumiverseCard>
+      </BeaconVieCard>
     );
   }
 
   return (
-    <LumiverseCard className="border-[var(--lumiverse-primary)]/20 bg-[var(--lumiverse-primary-soft)] p-5">
-      <LumiverseBadge>Next lesson</LumiverseBadge>
-      <h2 className="mt-4 text-2xl font-black text-[var(--lumiverse-ink)]">
+    <BeaconVieCard className="border-[var(--BeaconVie-primary)]/20 bg-[var(--BeaconVie-primary-soft)] p-5">
+      <BeaconVieBadge>Next lesson</BeaconVieBadge>
+      <h2 className="mt-4 text-2xl font-black text-[var(--BeaconVie-ink)]">
         {lesson.title}
       </h2>
-      <p className="mt-2 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+      <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
         {lesson.sectionTitle}
-        {lesson.duration ? ` • ${lesson.duration} min` : ""}
+        {lesson.duration ? ` â€¢ ${lesson.duration} min` : ""}
       </p>
-      <LumiverseButton
+      <BeaconVieButton
         className="mt-6 w-full"
         loading={startingLessonId === lesson.id}
         disabled={lesson.status === "LOCKED"}
@@ -261,13 +261,13 @@ function NextLessonCard({
       >
         {lesson.status === "IN_PROGRESS" ? "Continue lesson" : "Start lesson"}
         <ArrowRight aria-hidden className="h-4 w-4" />
-      </LumiverseButton>
+      </BeaconVieButton>
       {lesson.status === "LOCKED" ? (
-        <p className="mt-3 text-xs font-bold text-[var(--lumiverse-muted)]">
+        <p className="mt-3 text-xs font-bold text-[var(--BeaconVie-muted)]">
           This lesson is locked by the current path order.
         </p>
       ) : null}
-    </LumiverseCard>
+    </BeaconVieCard>
   );
 }
 
@@ -284,33 +284,33 @@ function PathTimeline({
     <div className="space-y-8">
       {courses.map((course, courseIndex) => (
         <section key={course.id} className="relative">
-          <div className="mb-4 flex flex-col gap-3 rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-4 flex flex-col gap-3 rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-2xl bg-[var(--lumiverse-primary-soft)]">
+              <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-2xl bg-[var(--BeaconVie-primary-soft)]">
                 {course.thumbnail ? (
                   <Image src={course.thumbnail} alt={course.title} fill className="object-cover" />
                 ) : (
-                  <Route className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 text-[var(--lumiverse-primary)]" />
+                  <Route className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 text-[var(--BeaconVie-primary)]" />
                 )}
               </div>
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--lumiverse-primary)]">
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-primary)]">
                   Stage {courseIndex + 1}
                 </p>
-                <h2 className="text-xl font-black text-[var(--lumiverse-ink)]">
+                <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">
                   {course.title}
                 </h2>
-                <p className="mt-1 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+                <p className="mt-1 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
                   {course.reason}
                 </p>
               </div>
             </div>
             <div className="min-w-[160px]">
-              <div className="flex justify-between text-xs font-black text-[var(--lumiverse-muted)]">
+              <div className="flex justify-between text-xs font-black text-[var(--BeaconVie-muted)]">
                 <span>{course.completedLessons}/{course.totalLessons}</span>
                 <span>{course.progressPercent}%</span>
               </div>
-              <LumiverseProgress value={course.progressPercent} className="mt-2" />
+              <BeaconVieProgress value={course.progressPercent} className="mt-2" />
             </div>
           </div>
 
@@ -320,7 +320,7 @@ function PathTimeline({
               are kept disabled because the API marks the course unavailable.
             </div>
           ) : (
-            <ol className="relative ml-3 space-y-4 border-l-2 border-dashed border-[var(--lumiverse-border)] pl-6">
+            <ol className="relative ml-3 space-y-4 border-l-2 border-dashed border-[var(--BeaconVie-border)] pl-6">
               {course.lessons.map((lesson) => (
                 <PathNode
                   key={lesson.id}
@@ -360,8 +360,8 @@ function PathNode({
             : current
               ? "bg-violet-600 text-white"
               : locked
-                ? "bg-[var(--lumiverse-disabled)]/20 text-[var(--lumiverse-muted)]"
-                : "bg-[var(--lumiverse-primary)] text-white",
+                ? "bg-[var(--BeaconVie-disabled)]/20 text-[var(--BeaconVie-muted)]"
+                : "bg-[var(--BeaconVie-primary)] text-white",
         ].join(" ")}
       >
         {completed ? (
@@ -381,19 +381,19 @@ function PathNode({
             : completed
               ? "border-emerald-100 bg-emerald-50/35"
               : locked
-                ? "border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)]"
-                : "border-[var(--lumiverse-primary)]/20 bg-[var(--lumiverse-card)]",
+                ? "border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)]"
+                : "border-[var(--BeaconVie-primary)]/20 bg-[var(--BeaconVie-card)]",
         ].join(" ")}
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--lumiverse-muted)]">
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-muted)]">
               {lesson.sectionTitle}
             </p>
-            <h3 className="mt-1 font-black text-[var(--lumiverse-ink)]">
+            <h3 className="mt-1 font-black text-[var(--BeaconVie-ink)]">
               {lesson.title}
             </h3>
-            <p className="mt-1 flex flex-wrap items-center gap-3 text-sm font-semibold text-[var(--lumiverse-muted)]">
+            <p className="mt-1 flex flex-wrap items-center gap-3 text-sm font-semibold text-[var(--BeaconVie-muted)]">
               {lesson.duration ? (
                 <span className="inline-flex items-center gap-1">
                   <Clock3 aria-hidden className="h-4 w-4" />
@@ -405,12 +405,12 @@ function PathNode({
           </div>
 
           {locked ? (
-            <span aria-disabled="true" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-[var(--lumiverse-disabled)]/20 px-4 py-3 text-sm font-black text-[var(--lumiverse-muted)]">
+            <span aria-disabled="true" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-[var(--BeaconVie-disabled)]/20 px-4 py-3 text-sm font-black text-[var(--BeaconVie-muted)]">
               <Lock aria-hidden className="h-4 w-4" />
               Locked
             </span>
           ) : completed ? (
-            <Link href={lesson.href} className="lumiverse-button-soft text-sm">
+            <Link href={lesson.href} className="BeaconVie-button-soft text-sm">
               Review <ArrowRight aria-hidden className="h-4 w-4" />
             </Link>
           ) : (
@@ -418,16 +418,16 @@ function PathNode({
               type="button"
               onClick={onStart}
               disabled={loading}
-              className="lumiverse-button-primary text-sm disabled:opacity-60"
+              className="BeaconVie-button-primary text-sm disabled:opacity-60"
             >
               {loading ? <Loader2 aria-hidden className="h-4 w-4 animate-spin" /> : <Play aria-hidden className="h-4 w-4" />}
-              {current ? "Continue" : "Start"}
+              {current ? "Tiếp tục" : "Bắt đầu"}
             </button>
           )}
         </div>
 
         {locked ? (
-          <p className="mt-3 rounded-2xl bg-[var(--lumiverse-card-soft)] p-3 text-xs font-bold leading-5 text-[var(--lumiverse-muted)]">
+          <p className="mt-3 rounded-2xl bg-[var(--BeaconVie-card-soft)] p-3 text-xs font-bold leading-5 text-[var(--BeaconVie-muted)]">
             Complete the previous available lessons to unlock this node.
           </p>
         ) : null}
@@ -438,82 +438,82 @@ function PathNode({
 
 function PhasePanel({ phases }: { phases: LearningPathData["phases"] }) {
   return (
-    <LumiverseCard className="p-5">
-      <h2 className="text-lg font-black text-[var(--lumiverse-ink)]">
+    <BeaconVieCard className="p-5">
+      <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">
         Stages
       </h2>
       <div className="mt-4 space-y-3">
         {phases.map((phase) => (
-          <div key={phase.id} className="rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] p-4">
-            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--lumiverse-primary)]">
+          <div key={phase.id} className="rounded-2xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-4">
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-primary)]">
               Phase {phase.phase}
-              {phase.targetLevel ? ` • ${phase.targetLevel}` : ""}
+              {phase.targetLevel ? ` â€¢ ${phase.targetLevel}` : ""}
             </p>
-            <h3 className="mt-2 font-black text-[var(--lumiverse-ink)]">
+            <h3 className="mt-2 font-black text-[var(--BeaconVie-ink)]">
               {phase.title}
             </h3>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
               {phase.description}
             </p>
-            <LumiverseProgress value={phase.progress} className="mt-4" />
+            <BeaconVieProgress value={phase.progress} className="mt-4" />
           </div>
         ))}
       </div>
-    </LumiverseCard>
+    </BeaconVieCard>
   );
 }
 
 function PriorityPanel({ priorities }: { priorities: LearningPathData["priorities"] }) {
   return (
-    <LumiverseCard className="p-5">
-      <h2 className="text-lg font-black text-[var(--lumiverse-ink)]">
+    <BeaconVieCard className="p-5">
+      <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">
         Skill priorities
       </h2>
       <div className="mt-4 space-y-3">
         {priorities.map((item) => (
-          <div key={item.id} className="flex gap-3 rounded-2xl bg-[var(--lumiverse-primary-soft)] p-4">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--lumiverse-primary)] font-black text-white">
+          <div key={item.id} className="flex gap-3 rounded-2xl bg-[var(--BeaconVie-primary-soft)] p-4">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--BeaconVie-primary)] font-black text-white">
               {item.priority}
             </span>
             <div>
-              <p className="font-black text-[var(--lumiverse-ink)]">
+              <p className="font-black text-[var(--BeaconVie-ink)]">
                 {item.skill}
               </p>
-              <p className="mt-1 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+              <p className="mt-1 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
                 {item.reason}
               </p>
             </div>
           </div>
         ))}
       </div>
-    </LumiverseCard>
+    </BeaconVieCard>
   );
 }
 
 function SkillPanel({ skills }: { skills: LearningPathData["skills"] }) {
   return (
-    <LumiverseCard className="p-5">
-      <h2 className="text-lg font-black text-[var(--lumiverse-ink)]">
+    <BeaconVieCard className="p-5">
+      <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">
         Skill baseline
       </h2>
       <div className="mt-4 space-y-3">
         {skills.map((item) => (
-          <div key={item.skill} className="rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] p-4">
+          <div key={item.skill} className="rounded-2xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-4">
             <div className="flex items-center justify-between gap-3">
-              <p className="font-black text-[var(--lumiverse-ink)]">
+              <p className="font-black text-[var(--BeaconVie-ink)]">
                 {item.skill}
               </p>
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
-                {item.level ?? item.status ?? "—"}
+                {item.level ?? item.status ?? "â€”"}
               </span>
             </div>
             {typeof item.score === "number" ? (
-              <LumiverseProgress value={item.score} className="mt-3" />
+              <BeaconVieProgress value={item.score} className="mt-3" />
             ) : null}
             {item.startingLesson ? (
               <Link
                 href={item.startingLesson.href}
-                className="mt-3 inline-flex items-center gap-1 text-sm font-black text-[var(--lumiverse-primary)]"
+                className="mt-3 inline-flex items-center gap-1 text-sm font-black text-[var(--BeaconVie-primary)]"
               >
                 Start: {item.startingLesson.title}
                 <ArrowRight aria-hidden className="h-4 w-4" />
@@ -522,24 +522,24 @@ function SkillPanel({ skills }: { skills: LearningPathData["skills"] }) {
           </div>
         ))}
       </div>
-    </LumiverseCard>
+    </BeaconVieCard>
   );
 }
 
 function CourseSummary({ course }: { course: LearningPathCourse }) {
   return (
-    <article className="rounded-3xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] p-4">
+    <article className="rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-4">
       <div className="flex gap-4">
-        <div className="relative h-24 w-28 shrink-0 overflow-hidden rounded-2xl bg-[var(--lumiverse-primary-soft)]">
+        <div className="relative h-24 w-28 shrink-0 overflow-hidden rounded-2xl bg-[var(--BeaconVie-primary-soft)]">
           {course.thumbnail ? (
             <Image src={course.thumbnail} alt={course.title} fill className="object-cover" />
           ) : (
-            <BookOpen className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 text-[var(--lumiverse-primary)]" />
+            <BookOpen className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 text-[var(--BeaconVie-primary)]" />
           )}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-black text-[var(--lumiverse-ink)]">
+            <h3 className="font-black text-[var(--BeaconVie-ink)]">
               {course.title}
             </h3>
             {!course.available ? (
@@ -548,10 +548,10 @@ function CourseSummary({ course }: { course: LearningPathCourse }) {
               </span>
             ) : null}
           </div>
-          <p className="mt-1 text-sm font-semibold leading-6 text-[var(--lumiverse-muted)]">
+          <p className="mt-1 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
             {course.reason}
           </p>
-          <div className="mt-3 flex flex-wrap gap-3 text-xs font-bold text-[var(--lumiverse-muted)]">
+          <div className="mt-3 flex flex-wrap gap-3 text-xs font-bold text-[var(--BeaconVie-muted)]">
             <span className="inline-flex items-center gap-1">
               <BookOpen aria-hidden className="h-4 w-4" />
               {course.lessonCount} lessons
@@ -583,12 +583,12 @@ function HeroMetric({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl border border-[var(--lumiverse-border)] bg-[var(--lumiverse-card-soft)] p-4">
-      <Icon aria-hidden className="h-5 w-5 text-[var(--lumiverse-primary)]" />
-      <p className="mt-3 text-xs font-black uppercase tracking-[0.12em] text-[var(--lumiverse-muted)]">
+    <div className="rounded-2xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-4">
+      <Icon aria-hidden className="h-5 w-5 text-[var(--BeaconVie-primary)]" />
+      <p className="mt-3 text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-muted)]">
         {label}
       </p>
-      <p className="mt-1 text-xl font-black text-[var(--lumiverse-ink)]">
+      <p className="mt-1 text-xl font-black text-[var(--BeaconVie-ink)]">
         {value}
       </p>
     </div>
@@ -599,10 +599,10 @@ function LearningPathSkeleton() {
   return (
     <main className="min-h-screen px-3 py-5">
       <div className="mx-auto max-w-7xl animate-pulse space-y-5">
-        <div className="h-[360px] rounded-[28px] bg-[var(--lumiverse-card)]" />
+        <div className="h-[360px] rounded-[28px] bg-[var(--BeaconVie-card)]" />
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="h-[720px] rounded-[28px] bg-[var(--lumiverse-card)]" />
-          <div className="h-[720px] rounded-[28px] bg-[var(--lumiverse-card)]" />
+          <div className="h-[720px] rounded-[28px] bg-[var(--BeaconVie-card)]" />
+          <div className="h-[720px] rounded-[28px] bg-[var(--BeaconVie-card)]" />
         </div>
       </div>
     </main>
