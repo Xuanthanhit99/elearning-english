@@ -93,6 +93,14 @@ export class CommunitySocialController {
     return this.service.rejectFriendRequest(this.userId(req), requestId);
   }
 
+  @Patch('friends/requests/:requestId/cancel')
+  cancelFriendRequest(
+    @Req() req: AuthenticatedRequest,
+    @Param('requestId') requestId: string,
+  ) {
+    return this.service.cancelFriendRequest(this.userId(req), requestId);
+  }
+
   @Delete('friends/:friendId')
   removeFriend(
     @Req() req: AuthenticatedRequest,

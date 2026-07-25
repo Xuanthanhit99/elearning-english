@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -298,6 +299,21 @@ export class CommunityService {
     });
     if (!post) throw new NotFoundException('Không tìm thấy bài viết');
 
+    if (dto.parentId) {
+      // Read paths (getPost/getFeed) only ever fetch `parentId: null`
+      // comments plus one level of `replies` — a reply-to-a-reply would be
+      // persisted and counted but never rendered anywhere. Reject it
+      // instead of silently accepting unreachable data.
+      const parent = await this.prisma.communityComment.findFirst({
+        where: { id: dto.parentId, postId, deletedAt: null },
+        select: { parentId: true },
+      });
+      if (!parent) throw new NotFoundException('Không tìm thấy bình luận gốc');
+      if (parent.parentId) {
+        throw new BadRequestException('Chỉ hỗ trợ trả lời tối đa 1 cấp');
+      }
+    }
+
     const comment = await this.prisma.$transaction(async (tx) => {
       const created = await tx.communityComment.create({
         data: {
@@ -329,6 +345,46 @@ export class CommunityService {
       this.jobs.recalculatePostScore(postId),
     ]);
     return mapped;
+  }
+
+  async updateComment(userId: string, commentId: string, content: string) {
+    const comment = await this.assertCommentOwner(userId, commentId);
+    const updated = await this.prisma.communityComment.update({
+      where: { id: commentId },
+      data: { content: content.trim(), isEdited: true },
+      include: { author: { select: COMMUNITY_AUTHOR_SELECT } },
+    });
+    const mapped = applyCommunityDisplayNames(updated);
+    this.gateway.emitCommentUpdated(comment.postId, mapped);
+    return mapped;
+  }
+
+  async deleteComment(userId: string, commentId: string) {
+    const comment = await this.assertCommentOwner(userId, commentId);
+    await this.prisma.$transaction(async (tx) => {
+      await tx.communityComment.update({
+        where: { id: commentId },
+        data: { deletedAt: new Date() },
+      });
+      await tx.communityPost.update({
+        where: { id: comment.postId },
+        data: { commentsCount: { decrement: 1 } },
+      });
+    });
+    this.gateway.emitCommentDeleted(comment.postId, commentId);
+    return { success: true };
+  }
+
+  private async assertCommentOwner(userId: string, commentId: string) {
+    const comment = await this.prisma.communityComment.findFirst({
+      where: { id: commentId, deletedAt: null },
+      select: { authorId: true, postId: true },
+    });
+    if (!comment) throw new NotFoundException('Không tìm thấy bình luận');
+    if (comment.authorId !== userId) {
+      throw new ForbiddenException('Bạn không có quyền thay đổi bình luận này');
+    }
+    return comment;
   }
 
   async reactPost(userId: string, postId: string, type: CommunityReactionType) {
@@ -411,6 +467,30 @@ export class CommunityService {
       await this.jobs.recalculatePostScore(postId);
     }
     return { bookmarked: false };
+  }
+
+  async listBookmarks(userId: string, query: { cursor?: string; limit?: number }) {
+    const limit = Math.min(Math.max(Number(query.limit) || 10, 1), 30);
+    const cursor = query.cursor?.trim() || undefined;
+
+    // Reuses the same @@index([userId, createdAt]) the bookmark model was
+    // already built with — this was the one purpose-built index in the
+    // schema with no endpoint querying it.
+    const bookmarks = await this.prisma.communityBookmark.findMany({
+      where: { userId, post: { deletedAt: null } },
+      take: limit + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      orderBy: { createdAt: 'desc' },
+      include: { post: { include: this.postInclude(userId) } },
+    });
+
+    const hasMore = bookmarks.length > limit;
+    const items = hasMore ? bookmarks.slice(0, limit) : bookmarks;
+
+    return {
+      items: items.map((b) => this.mapPost(b.post)),
+      nextCursor: hasMore ? (items.at(-1)?.id ?? null) : null,
+    };
   }
 
   async follow(userId: string, followingId: string) {

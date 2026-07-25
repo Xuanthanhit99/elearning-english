@@ -80,6 +80,7 @@ export class CreateCommunityChallengeDto {
   @IsOptional()
   @IsInt()
   @Min(0)
+  @Max(500)
   rewardXp?: number;
 
   @IsDateString()

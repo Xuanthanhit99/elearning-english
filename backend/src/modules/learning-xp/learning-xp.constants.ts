@@ -11,7 +11,9 @@ export type LearningActivityCode =
   | 'QUIZ_COMPLETED'
   | 'MISSION_CLAIMED'
   | 'PLACEMENT_COMPLETED'
-  | 'CONVERSATION_COMPLETED';
+  | 'CONVERSATION_COMPLETED'
+  | 'CLUB_CHALLENGE_COMPLETED'
+  | 'STUDY_ROOM_SESSION_COMPLETED';
 
 export interface LearningXpRule {
   sourceType: XpSourceType;
@@ -86,5 +88,22 @@ export const LEARNING_XP_RULES: Record<LearningActivityCode, LearningXpRule> = {
     skill: LearningSkill.SPEAKING,
     baseXp: 25,
     maxBonusXp: 20,
+  },
+  // Reward-amount style, same as MISSION_CLAIMED — `rewardXp` carries the
+  // exact amount (creator-set on the challenge, DTO-capped at 500), clamped
+  // again here as defense in depth against a user creating their own
+  // high-reward challenge and self-completing it.
+  CLUB_CHALLENGE_COMPLETED: {
+    sourceType: XpSourceType.COMMUNITY,
+    baseXp: 0,
+    maxBonusXp: 500,
+  },
+  // Group XP for a completed Study Room session — reuses the standard
+  // score/completionRate bonus curve (completionRate = % of the session's
+  // shared goal reached).
+  STUDY_ROOM_SESSION_COMPLETED: {
+    sourceType: XpSourceType.REALTIME_ROOM,
+    baseXp: 10,
+    maxBonusXp: 25,
   },
 };

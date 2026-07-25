@@ -1,5 +1,13 @@
 import { Transform } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 import { CourseStatus, UserRole, UserStatus } from '@prisma/client';
 
 export class AdminListQueryDto {
@@ -34,6 +42,7 @@ export class AdminUserActionDto {
     'BAN',
     'UNBAN',
     'DEACTIVATE',
+    'SUSPEND',
     'RESET_XP',
     'RESET_STREAK',
     'RESET_PLACEMENT',
@@ -43,6 +52,7 @@ export class AdminUserActionDto {
     | 'BAN'
     | 'UNBAN'
     | 'DEACTIVATE'
+    | 'SUSPEND'
     | 'RESET_XP'
     | 'RESET_STREAK'
     | 'RESET_PLACEMENT'
@@ -55,6 +65,14 @@ export class AdminUserActionDto {
   @IsOptional()
   @IsString()
   reason?: string;
+
+  // Required for SUSPEND — bounded to 90 days so a "temporary" suspend
+  // can't accidentally become an unbounded one.
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(24 * 90)
+  suspendHours?: number;
 }
 
 export class AdminContentStatusDto {
@@ -83,6 +101,16 @@ export class AdminModerationActionDto {
   @IsOptional()
   @IsString()
   reason?: string;
+}
+
+export class AdminFeatureFlagDto {
+  @IsBoolean()
+  isEnabled!: boolean;
+}
+
+export class AdminGamificationToggleDto {
+  @IsBoolean()
+  isActive!: boolean;
 }
 
 export const USER_STATUS_VALUES = Object.values(UserStatus);

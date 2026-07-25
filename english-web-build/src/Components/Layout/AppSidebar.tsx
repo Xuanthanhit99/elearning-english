@@ -82,7 +82,7 @@ function buildGroups(t: (key: string) => string): SidebarGroup[] {
     {
       title: "Companion",
       items: [
-        // { label: "Pet", href: "/pet", icon: PawPrint },
+        { label: t("sidebar.arena"), href: "/arena", icon: MessageCircle },
         { label: t("sidebar.discover"), href: "/discover", icon: Compass },
         { label: t("sidebar.studyRooms"), href: "/study-rooms", icon: MessageCircle },
       ],

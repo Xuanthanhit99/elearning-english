@@ -301,7 +301,7 @@ Format:
 ]
 `;
 
-    const text = await this.geminiService.generateJson(prompt);
+    const text = await this.geminiService.generateJson(prompt, { module: 'grammar_job' });
     return this.safeJsonParse(text);
   }
 
@@ -351,7 +351,7 @@ Format:
 ]
 `;
 
-    const text = await this.geminiService.generateJson(prompt);
+    const text = await this.geminiService.generateJson(prompt, { module: 'grammar_job' });
     return this.safeJsonParse(text);
   }
 
@@ -386,7 +386,7 @@ Format:
 ]
 `;
 
-    const text = await this.geminiService.generateJson(prompt);
+    const text = await this.geminiService.generateJson(prompt, { module: 'grammar_job' });
     return this.safeJsonParse(text);
   }
 

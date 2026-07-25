@@ -134,7 +134,7 @@ export type AdminOperations = {
   featureFlags: {
     runtimeWritable: boolean;
     source: string;
-    flags: Record<string, boolean>;
+    flags: AdminFeatureFlag[];
     limitation?: string;
   };
   systemSettings: {
@@ -229,13 +229,22 @@ export async function moderateAdminPost(
   return response.data;
 }
 
+export type AdminClub = {
+  id: string;
+  name: string;
+  isActive?: boolean | null;
+  memberCount?: number | null;
+  owner?: { fullname?: string | null; email?: string | null } | null;
+  _count?: { members?: number } | null;
+};
+
 export async function getAdminClubs(params?: {
   search?: string;
   status?: string;
   page?: number;
   limit?: number;
 }) {
-  const response = await api.get<AdminPaginated<Record<string, unknown>>>(
+  const response = await api.get<AdminPaginated<AdminClub>>(
     "/admin-dashboard/moderation/clubs",
     { params },
   );
@@ -256,5 +265,130 @@ export async function getAdminAuditLogs(params?: {
 
 export async function getAdminOperations() {
   const response = await api.get<AdminOperations>("/admin-dashboard/operations");
+  return response.data;
+}
+
+export type AdminRevenue = {
+  totalRevenue: number;
+  totalOrders: number;
+  totalStudents: number;
+  totalTeachers: number;
+  platformFee: number;
+  teacherRevenue: number;
+  platformFeeRate: number;
+  teacherRevenueSummary: Array<{
+    teacherId: string;
+    teacherName: string;
+    teacherEmail: string;
+    totalRevenue: number;
+    platformFee: number;
+    teacherRevenue: number;
+    orders: number;
+  }>;
+};
+
+export async function getAdminRevenue() {
+  const response = await api.get<AdminRevenue>("/admin-dashboard/revenue");
+  return response.data;
+}
+
+export async function moderateAdminClub(
+  id: string,
+  payload: { action: string; targetUserId?: string; reason?: string },
+) {
+  const response = await api.patch(`/admin-dashboard/moderation/clubs/${id}`, payload);
+  return response.data;
+}
+
+export type AdminFeatureFlag = {
+  key: string;
+  description: string | null;
+  isEnabled: boolean;
+  updatedAt: string;
+  updatedBy: { id: string; fullname: string; email: string } | null;
+  runtimeWritable: boolean;
+};
+
+export async function setAdminFeatureFlag(key: string, isEnabled: boolean) {
+  const response = await api.patch<AdminFeatureFlag>(
+    `/admin-dashboard/operations/feature-flags/${key}`,
+    { isEnabled },
+  );
+  return response.data;
+}
+
+export type AdminAiUsageSummary = {
+  windowDays: number;
+  totalRequests: number;
+  successCount: number;
+  failureCount: number;
+  timeoutCount: number;
+  averageDurationMs: number;
+  byModule: Array<{ module: string; requests: number; averageDurationMs: number }>;
+  dailyTrend: Array<{ day: string; count: number }>;
+  note: string;
+};
+
+export async function getAdminAiUsage(fromDays?: number) {
+  const response = await api.get<AdminAiUsageSummary>("/admin-dashboard/operations/ai-usage", {
+    params: fromDays ? { fromDays } : undefined,
+  });
+  return response.data;
+}
+
+export type AdminBullMqQueueCount = {
+  name: string;
+  isPaused: boolean;
+  waiting: number;
+  active: number;
+  completed: number;
+  failed: number;
+  delayed: number;
+};
+
+export async function getAdminBullMqQueues() {
+  const response = await api.get<AdminBullMqQueueCount[]>(
+    "/admin-dashboard/operations/bullmq-queues",
+  );
+  return response.data;
+}
+
+export type AdminFailedJob = {
+  id: string;
+  name: string;
+  data: unknown;
+  failedReason: string;
+  attemptsMade: number;
+  timestamp: number;
+};
+
+export async function listAdminFailedJobs(queueName: string) {
+  const response = await api.get<AdminFailedJob[]>(
+    `/admin-dashboard/operations/queues/${queueName}/failed`,
+  );
+  return response.data;
+}
+
+export async function retryAdminJob(queueName: string, jobId: string) {
+  const response = await api.post(
+    `/admin-dashboard/operations/queues/${queueName}/jobs/${jobId}/retry`,
+  );
+  return response.data;
+}
+
+export async function removeAdminJob(queueName: string, jobId: string) {
+  const response = await api.post(
+    `/admin-dashboard/operations/queues/${queueName}/jobs/${jobId}/remove`,
+  );
+  return response.data;
+}
+
+export async function pauseAdminQueue(queueName: string) {
+  const response = await api.post(`/admin-dashboard/operations/queues/${queueName}/pause`);
+  return response.data;
+}
+
+export async function resumeAdminQueue(queueName: string) {
+  const response = await api.post(`/admin-dashboard/operations/queues/${queueName}/resume`);
   return response.data;
 }

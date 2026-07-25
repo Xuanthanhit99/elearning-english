@@ -193,6 +193,7 @@ JSON format:
     try {
       return await this.geminiService.generateJson(prompt, {
         models: ['gemini-2.5-flash', 'gemini-2.0-flash'],
+        module: 'words',
       });
     } catch (error: any) {
       console.log('Gemini failed:', error?.message);

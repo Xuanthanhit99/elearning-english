@@ -171,6 +171,7 @@ Rules:
       return await this.geminiService.generateJson(prompt, {
         models: ['gemini-2.5-flash', 'gemini-2.0-flash'],
         retries: 1,
+        module: 'writing_topics',
       });
     } catch (error: any) {
       console.log('Gemini failed:', error?.message);

@@ -1712,7 +1712,7 @@ Format:
 ]`;
 
     try {
-      const result = await this.geminiService.generateJson(prompt);
+      const result = await this.geminiService.generateJson(prompt, { module: 'listening' });
 
       return Array.isArray(result)
         ? (result as GeneratedListeningQuestion[])

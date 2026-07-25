@@ -215,9 +215,9 @@ export function CommunityPage() {
       return <CommunityChallengesView />;
     }
 
-   {view === 'LEADERBOARD' && (
-  <SocialLeaderboardPanel />
-)}
+    if (view === 'LEADERBOARD') {
+      return <SocialLeaderboardPanel />;
+    }
 
     if (view === 'MESSAGES') {
       return (

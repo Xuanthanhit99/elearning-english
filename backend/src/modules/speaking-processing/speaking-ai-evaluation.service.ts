@@ -74,6 +74,7 @@ Format:
     const parsed = await this.geminiService.generateJson(prompt, {
       models: [process.env.SPEAKING_GEMINI_MODEL ?? 'gemini-2.5-flash'],
       retries: 1,
+      module: 'speaking_processing',
     });
 
     return this.normalize(parsed);

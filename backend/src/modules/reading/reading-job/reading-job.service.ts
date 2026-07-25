@@ -175,7 +175,7 @@ export class ReadingJobService {
     let data: GeminiReadingData | null = null;
 
     try {
-      data = await this.geminiService.generateJson(prompt);
+      data = await this.geminiService.generateJson(prompt, { module: 'reading_job' });
     } catch (error) {
       this.logger.warn(
         `Gemini failed for ${params.categoryName} ${params.level}: ${

@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Patch,
+  Post,
   Query,
   Req,
   UnauthorizedException,
@@ -17,6 +18,8 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { AdminDashboardService } from './admin-dashboard.service';
 import {
   AdminContentStatusDto,
+  AdminFeatureFlagDto,
+  AdminGamificationToggleDto,
   AdminListQueryDto,
   AdminModerationActionDto,
   AdminUserActionDto,
@@ -89,12 +92,16 @@ export class AdminDashboardController {
     );
   }
 
+  // MODERATOR (in addition to ADMIN) can act on these four — every other
+  // route in this controller stays ADMIN-only via the class-level @Roles.
   @Get('moderation/posts')
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
   listModerationPosts(@Query() query: AdminListQueryDto) {
     return this.adminDashboardService.listModerationPosts(query);
   }
 
   @Patch('moderation/posts/:id')
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
   moderatePost(
     @Param('id') id: string,
     @Body() dto: AdminModerationActionDto,
@@ -104,17 +111,42 @@ export class AdminDashboardController {
   }
 
   @Get('moderation/clubs')
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
   listClubs(@Query() query: AdminListQueryDto) {
     return this.adminDashboardService.listClubs(query);
   }
 
   @Patch('moderation/clubs/:id')
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
   moderateClub(
     @Param('id') id: string,
     @Body() dto: AdminModerationActionDto,
     @Req() req: AdminRequest,
   ) {
     return this.adminDashboardService.moderateClub(id, dto, this.getActor(req));
+  }
+
+  @Get('gamification/:kind')
+  listGamificationDefinitions(
+    @Param('kind') kind: string,
+    @Query() query: AdminListQueryDto,
+  ) {
+    return this.adminDashboardService.listGamificationDefinitions(kind, query);
+  }
+
+  @Patch('gamification/:kind/:id/toggle')
+  toggleGamificationDefinition(
+    @Param('kind') kind: string,
+    @Param('id') id: string,
+    @Body() dto: AdminGamificationToggleDto,
+    @Req() req: AdminRequest,
+  ) {
+    return this.adminDashboardService.toggleGamificationDefinition(
+      kind,
+      id,
+      dto.isActive,
+      this.getActor(req),
+    );
   }
 
   @Get('audit-logs')
@@ -140,6 +172,75 @@ export class AdminDashboardController {
   @Get('operations/feature-flags')
   getFeatureFlags() {
     return this.adminDashboardService.getFeatureFlags();
+  }
+
+  @Patch('operations/feature-flags/:key')
+  setFeatureFlag(
+    @Param('key') key: string,
+    @Body() dto: AdminFeatureFlagDto,
+    @Req() req: AdminRequest,
+  ) {
+    return this.adminDashboardService.setFeatureFlag(
+      key,
+      dto.isEnabled,
+      this.getActor(req),
+    );
+  }
+
+  @Get('operations/bullmq-queues')
+  getBullMqQueues() {
+    return this.adminDashboardService.getBullMqQueues();
+  }
+
+  @Get('operations/ai-usage')
+  getAiUsage(@Query('fromDays') fromDays?: string) {
+    return this.adminDashboardService.getAiUsage(
+      fromDays ? Number(fromDays) : undefined,
+    );
+  }
+
+  @Get('operations/queues/:queueName/failed')
+  listFailedJobs(@Param('queueName') queueName: string) {
+    return this.adminDashboardService.listFailedJobs(queueName);
+  }
+
+  @Post('operations/queues/:queueName/jobs/:jobId/retry')
+  retryJob(
+    @Param('queueName') queueName: string,
+    @Param('jobId') jobId: string,
+    @Req() req: AdminRequest,
+  ) {
+    return this.adminDashboardService.retryJob(
+      queueName,
+      jobId,
+      this.getActor(req),
+    );
+  }
+
+  @Post('operations/queues/:queueName/jobs/:jobId/remove')
+  removeJob(
+    @Param('queueName') queueName: string,
+    @Param('jobId') jobId: string,
+    @Req() req: AdminRequest,
+  ) {
+    return this.adminDashboardService.removeJob(
+      queueName,
+      jobId,
+      this.getActor(req),
+    );
+  }
+
+  @Post('operations/queues/:queueName/pause')
+  pauseQueue(@Param('queueName') queueName: string, @Req() req: AdminRequest) {
+    return this.adminDashboardService.pauseQueue(queueName, this.getActor(req));
+  }
+
+  @Post('operations/queues/:queueName/resume')
+  resumeQueue(@Param('queueName') queueName: string, @Req() req: AdminRequest) {
+    return this.adminDashboardService.resumeQueue(
+      queueName,
+      this.getActor(req),
+    );
   }
 
   private getActor(req: AdminRequest) {

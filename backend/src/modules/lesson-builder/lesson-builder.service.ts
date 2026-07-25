@@ -157,7 +157,12 @@ export class LessonBuilderService {
           thumbnail: this.buildCourseThumbnail(outline.title),
           level: outline.level || project.level || 'A1',
           price: 0,
-          status: CourseStatus.APPROVED,
+          // AI-generated content must remain a draft by default and never
+          // auto-publish (this used to jump straight to APPROVED, skipping
+          // the same DRAFT->PENDING->APPROVED review pipeline every
+          // manually-authored course already goes through via
+          // courses.controller.ts's /submit and /approve routes).
+          status: CourseStatus.DRAFT,
         },
       });
 
@@ -371,7 +376,7 @@ export class LessonBuilderService {
     prompt: string,
   ): Promise<BuilderOutline> {
     try {
-      const result = await this.geminiService.generateJson(prompt);
+      const result = await this.geminiService.generateJson(prompt, { module: 'lesson_builder' });
       return this.normalizeOutline(result);
     } catch (error) {
       console.error('[LessonBuilder] outline fallback:', error);
@@ -415,7 +420,7 @@ Yêu cầu:
 
     try {
       return this.normalizeLessonContent(
-        await this.geminiService.generateJson(prompt),
+        await this.geminiService.generateJson(prompt, { module: 'lesson_builder' }),
         lesson.title,
       );
     } catch (error) {

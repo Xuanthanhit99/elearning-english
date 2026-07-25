@@ -148,6 +148,36 @@ export class AuthSessionService {
     await this.invalidateAllOtherSessions(userId);
   }
 
+  /**
+   * Time-boxed suspension — reuses the exact same access-blocking
+   * mechanism as banUser() (the Redis marker JwtStrategy/every socket
+   * gateway already checks), just with a TTL bounded to the suspension
+   * window instead of the full refresh-token lifetime, so access is
+   * automatically restored once it expires even if nothing else runs.
+   * `unbanUser()` doubles as "lift a suspension early".
+   */
+  async suspendUser(userId: string, until: Date) {
+    const ttlSeconds = Math.max(
+      1,
+      Math.min(
+        BANNED_USER_TTL_SECONDS,
+        Math.ceil((until.getTime() - Date.now()) / 1000),
+      ),
+    );
+
+    await this.redis
+      .set(bannedUserRedisKey(userId), '1', 'EX', ttlSeconds)
+      .catch((error) =>
+        this.logger.warn(
+          `Failed to set suspension marker for userId=${userId}: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        ),
+      );
+
+    await this.invalidateAllOtherSessions(userId);
+  }
+
   async unbanUser(userId: string) {
     await this.redis
       .del(bannedUserRedisKey(userId))
@@ -192,6 +222,20 @@ export class AuthSessionService {
           this.invalidateByJti(session.refreshTokenId as string),
         ),
     );
+
+    // The Redis jti pointer deletion above is what actually blocks a
+    // refresh — this is purely the Postgres audit trail catching up so a
+    // banned/suspended user's device-session list (and any admin view of
+    // it) accurately reflects "revoked" instead of silently staying
+    // `revokedAt: null` forever. Self-service revoke (settings.service.ts)
+    // and refresh-reuse detection (auth.service.ts) already set this field
+    // the same way — this was the one revocation path that didn't.
+    if (sessions.length > 0) {
+      await this.prisma.userDeviceSession.updateMany({
+        where: { id: { in: sessions.map((s) => s.id) } },
+        data: { revokedAt: new Date() },
+      });
+    }
   }
 
   private async pointJti(jti: string, pointer: SessionPointer) {

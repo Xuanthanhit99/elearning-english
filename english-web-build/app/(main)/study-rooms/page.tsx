@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import StudyRoomHubPage from "@/src/Components/StudyRoom/StudyRoomHubPage";
 
-export default function StudyRoomsPage() {
-  redirect("/arena/rooms");
+export default function Page() {
+  return <StudyRoomHubPage />;
 }

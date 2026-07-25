@@ -175,7 +175,7 @@ question: "Choose the best corrected sentence."
 `;
 
     try {
-      const aiData = await this.geminiService.generateJson(prompt);
+      const aiData = await this.geminiService.generateJson(prompt, { module: 'placement_tests' });
 
       const questions = this.normalizeQuestions(aiData?.questions || []);
 

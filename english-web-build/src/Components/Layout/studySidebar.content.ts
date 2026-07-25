@@ -27,6 +27,7 @@ export type StudySidebarContent = {
     speakingTopics: string;
     speakingSituations: string;
     conversation: string;
+    studyRooms: string;
     reading: string;
     readingOverview: string;
     readingPractice: string;
@@ -72,6 +73,7 @@ const vi: StudySidebarContent = {
     speakingTopics: "Chủ đề nói",
     speakingSituations: "Tình huống",
     conversation: "Hội thoại AI",
+    studyRooms: "Phòng học nhóm",
     reading: "Đọc hiểu",
     readingOverview: "Tổng quan đọc",
     readingPractice: "Luyện đọc",
@@ -117,6 +119,7 @@ const en: StudySidebarContent = {
     speakingTopics: "Speaking topics",
     speakingSituations: "Situations",
     conversation: "AI Conversation",
+    studyRooms: "Study Rooms",
     reading: "Reading",
     readingOverview: "Reading overview",
     readingPractice: "Reading practice",
@@ -162,6 +165,7 @@ const zh: StudySidebarContent = {
     speakingTopics: "口语话题",
     speakingSituations: "情景对话",
     conversation: "AI 对话",
+    studyRooms: "学习房间",
     reading: "阅读",
     readingOverview: "阅读总览",
     readingPractice: "阅读练习",
@@ -207,6 +211,7 @@ const de: StudySidebarContent = {
     speakingTopics: "Sprechthemen",
     speakingSituations: "Situationen",
     conversation: "KI-Gespräch",
+    studyRooms: "Lernräume",
     reading: "Lesen",
     readingOverview: "Leseübersicht",
     readingPractice: "Leseübung",

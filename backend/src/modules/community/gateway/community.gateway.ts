@@ -12,6 +12,7 @@ import { Server, Socket } from 'socket.io';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { getAllowedOrigins } from '../../../config/cors.config';
 import { getJwtAccessSecret } from '../../auth/auth-secrets.util';
+import { AuthSessionService } from '../../auth/auth-session.service';
 
 type CommunitySocketUser = {
   id: string;
@@ -37,14 +38,27 @@ export class CommunityGateway
   constructor(
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
+    private readonly authSession: AuthSessionService,
   ) {}
 
-  handleConnection(client: AuthenticatedCommunitySocket) {
+  async handleConnection(client: AuthenticatedCommunitySocket) {
     const user = this.authenticate(client);
 
     if (!user) {
       client.emit('community:unauthorized', {
         message: 'Invalid community session.',
+      });
+      client.disconnect(true);
+      return;
+    }
+
+    // A banned user's already-issued access token stays cryptographically
+    // valid until it expires — HTTP's JwtStrategy already checks this via
+    // AuthSessionService.isBanned(), but every socket gateway only verified
+    // the JWT signature, so a ban never actually reached realtime features.
+    if (await this.authSession.isBanned(user.id)) {
+      client.emit('community:unauthorized', {
+        message: 'This account has been banned.',
       });
       client.disconnect(true);
       return;
@@ -178,6 +192,16 @@ export class CommunityGateway
 
   emitCommentCreated(postId: string, comment: unknown) {
     this.server.to(`post:${postId}`).emit('community:comment-created', comment);
+  }
+
+  emitCommentUpdated(postId: string, comment: unknown) {
+    this.server.to(`post:${postId}`).emit('community:comment-updated', comment);
+  }
+
+  emitCommentDeleted(postId: string, commentId: string) {
+    this.server
+      .to(`post:${postId}`)
+      .emit('community:comment-deleted', { commentId });
   }
 
   emitReactionUpdated(postId: string, payload: unknown) {

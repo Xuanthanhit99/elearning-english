@@ -7,6 +7,14 @@ import {
   type LearningActivityCode,
 } from './learning-xp.constants';
 
+// Activities whose bonus is a pre-set reward amount (event.rewardXp),
+// clamped to the rule's maxBonusXp, rather than derived from score/
+// completionRate.
+const REWARD_AMOUNT_ACTIVITIES = new Set<LearningActivityCode>([
+  'MISSION_CLAIMED',
+  'CLUB_CHALLENGE_COMPLETED',
+]);
+
 @Injectable()
 export class LearningXpListener {
   private readonly logger = new Logger(LearningXpListener.name);
@@ -17,14 +25,13 @@ export class LearningXpListener {
   async handle(event: LearningActivityCompletedEvent) {
     const rule = LEARNING_XP_RULES[event.activity];
 
-    const bonusXp =
-      event.activity === 'MISSION_CLAIMED'
-        ? Math.max(0, Math.min(event.rewardXp ?? 0, rule.maxBonusXp))
-        : this.calculateBonusXp(
-            event.score,
-            event.completionRate,
-            rule.maxBonusXp,
-          );
+    const bonusXp = REWARD_AMOUNT_ACTIVITIES.has(event.activity)
+      ? Math.max(0, Math.min(event.rewardXp ?? 0, rule.maxBonusXp))
+      : this.calculateBonusXp(
+          event.score,
+          event.completionRate,
+          rule.maxBonusXp,
+        );
 
     try {
       await this.xpService.awardXp({
@@ -86,6 +93,8 @@ export class LearningXpListener {
       MISSION_CLAIMED: 'Nhận thưởng nhiệm vụ',
       PLACEMENT_COMPLETED: 'Hoàn thành Placement Test',
       CONVERSATION_COMPLETED: 'Hoàn thành buổi hội thoại AI',
+      CLUB_CHALLENGE_COMPLETED: 'Hoàn thành thử thách cộng đồng',
+      STUDY_ROOM_SESSION_COMPLETED: 'Hoàn thành buổi học nhóm',
     };
 
     return labels[activity];

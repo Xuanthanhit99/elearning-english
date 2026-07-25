@@ -11,6 +11,7 @@ import {
   NotificationSocketUser,
 } from './notification-cookie-auth.service';
 import { getAllowedOrigins } from '../../config/cors.config';
+import { AuthSessionService } from '../auth/auth-session.service';
 
 type AuthenticatedNotificationSocket = Socket & {
   data: {
@@ -29,11 +30,26 @@ export class NotificationGateway implements OnGatewayConnection {
   @WebSocketServer()
   server!: Server;
 
-  constructor(private readonly auth: NotificationCookieAuthService) {}
+  constructor(
+    private readonly auth: NotificationCookieAuthService,
+    private readonly authSession: AuthSessionService,
+  ) {}
 
-  handleConnection(client: AuthenticatedNotificationSocket) {
+  async handleConnection(client: AuthenticatedNotificationSocket) {
     try {
       const user = this.auth.authenticate(client);
+
+      // A banned user's already-issued access token stays valid until
+      // expiry — every gateway only verified the JWT signature, so a ban
+      // never reached realtime features until this check was added.
+      if (await this.authSession.isBanned(user.id)) {
+        client.emit('notification:unauthorized', {
+          message: 'Invalid notification session.',
+        });
+        client.disconnect(true);
+        return;
+      }
+
       client.data.user = user;
       client.join(this.userRoom(user.id));
       client.emit('notification:connected', { ok: true });

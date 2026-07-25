@@ -18,6 +18,7 @@ import { arenaRoomChannel, arenaUserChannel, getArenaDisconnectGraceMs } from '.
 import { ArenaService } from '../arena.service';
 import { ArenaPowerUpService } from '../battle/arena-power-up.service';
 import { ArenaRateLimiterService } from '../rate-limit/arena-rate-limiter.service';
+import { AuthSessionService } from '../../auth/auth-session.service';
 
 type AuthenticatedArenaSocket = Socket & {
   data: {
@@ -43,13 +44,24 @@ export class ArenaGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly arenaService: ArenaService,
     private readonly powerUps: ArenaPowerUpService,
     private readonly rateLimiter: ArenaRateLimiterService,
+    private readonly authSession: AuthSessionService,
   ) {}
 
-  handleConnection(client: AuthenticatedArenaSocket) {
+  async handleConnection(client: AuthenticatedArenaSocket) {
     client.data.roomIds = new Set();
 
     try {
       const user = this.auth.authenticate(client);
+
+      // A banned user's already-issued access token stays valid until
+      // expiry — HTTP's JwtStrategy already checks this; every gateway
+      // only verified the JWT signature, so a ban never reached realtime.
+      if (await this.authSession.isBanned(user.id)) {
+        client.emit('arena:unauthorized', { code: 'INVALID_SESSION' });
+        client.disconnect(true);
+        return;
+      }
+
       client.data.user = user;
       void client.join(arenaUserChannel(user.id));
       client.emit('arena:connected', { ok: true });

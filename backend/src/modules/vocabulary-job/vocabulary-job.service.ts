@@ -286,7 +286,7 @@ Format:
 
     let items: GeminiTopicItem[] = [];
     try {
-      const result = await this.geminiService.generateJson(prompt);
+      const result = await this.geminiService.generateJson(prompt, { module: 'vocabulary_job' });
       items = Array.isArray(result) ? result : [];
     } catch (error: any) {
       console.error(
@@ -405,7 +405,7 @@ Format:
 
     let items: GeminiWordItem[] = [];
     try {
-      const result = await this.geminiService.generateJson(prompt);
+      const result = await this.geminiService.generateJson(prompt, { module: 'vocabulary_job' });
       items = Array.isArray(result) ? result : [];
     } catch (error: any) {
       console.error(

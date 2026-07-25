@@ -98,6 +98,12 @@ function buildLearningTree(c: StudySidebarContent): TreeItem[] {
       match: (path) => path.startsWith("/conversation"),
     },
     {
+      icon: "users",
+      label: c.tree.studyRooms,
+      href: "/study-rooms",
+      match: (path) => path.startsWith("/study-rooms"),
+    },
+    {
       icon: "book",
       label: c.tree.reading,
       href: "/reading",

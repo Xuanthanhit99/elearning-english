@@ -16,6 +16,7 @@ import { CreateCommunityPostDto } from './dto/create-community-post.dto';
 import { GetCommunityFeedDto } from './dto/get-community-feed.dto';
 import { ReactCommunityPostDto } from './dto/react-community-post.dto';
 import { UpdateCommunityPostDto } from './dto/update-community-post.dto';
+import { UpdateCommunityCommentDto } from './dto/update-community-comment.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 
 @Controller('community')
@@ -65,6 +66,20 @@ export class CommunityController {
     return this.service.createComment(this.userId(req), postId, dto);
   }
 
+  @Patch('comments/:commentId')
+  updateComment(
+    @Req() req: any,
+    @Param('commentId') commentId: string,
+    @Body() dto: UpdateCommunityCommentDto,
+  ) {
+    return this.service.updateComment(this.userId(req), commentId, dto.content);
+  }
+
+  @Delete('comments/:commentId')
+  deleteComment(@Req() req: any, @Param('commentId') commentId: string) {
+    return this.service.deleteComment(this.userId(req), commentId);
+  }
+
   @Post('posts/:postId/reactions')
   react(
     @Req() req: any,
@@ -77,6 +92,18 @@ export class CommunityController {
   @Delete('posts/:postId/reactions')
   removeReaction(@Req() req: any, @Param('postId') postId: string) {
     return this.service.removeReaction(this.userId(req), postId);
+  }
+
+  @Get('bookmarks')
+  listBookmarks(
+    @Req() req: any,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.service.listBookmarks(this.userId(req), {
+      cursor,
+      limit: limit ? Number(limit) : undefined,
+    });
   }
 
   @Post('posts/:postId/bookmark')

@@ -8,13 +8,18 @@ import {
   FileText,
   Flag,
   HeartPulse,
+  Lock,
   RefreshCw,
   ShieldCheck,
   Users,
 } from "lucide-react";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
+import { useAuthStore } from "@/src/store/authStore";
 import {
+  AdminAiUsageSummary,
+  AdminBullMqQueueCount,
+  AdminClub,
   AdminContentResponse,
   AdminAuditLog,
   AdminCommunityPost,
@@ -22,15 +27,22 @@ import {
   AdminOverview,
   AdminPaginated,
   AdminQueueSummary,
+  AdminRevenue,
   AdminUser,
   applyAdminUserAction,
+  getAdminAiUsage,
   getAdminAuditLogs,
+  getAdminBullMqQueues,
+  getAdminClubs,
   getAdminContent,
   getAdminModerationPosts,
   getAdminOperations,
   getAdminOverview,
+  getAdminRevenue,
   getAdminUsers,
+  moderateAdminClub,
   moderateAdminPost,
+  setAdminFeatureFlag,
   updateAdminContentStatus,
 } from "@/src/lib/admin-api";
 
@@ -48,39 +60,68 @@ const contentTypes = [
 ];
 
 export default function AdminBackofficePage() {
+  const currentUser = useAuthStore((s) => s.user);
   const [tab, setTab] = useState<Tab>("overview");
   const [overview, setOverview] = useState<AdminOverview | null>(null);
   const [users, setUsers] = useState<AdminPaginated<AdminUser> | null>(null);
   const [content, setContent] = useState<AdminContentResponse | null>(null);
   const [posts, setPosts] = useState<AdminPaginated<AdminCommunityPost> | null>(null);
+  const [clubs, setClubs] = useState<AdminPaginated<AdminClub> | null>(null);
   const [auditLogs, setAuditLogs] = useState<AdminPaginated<AdminAuditLog> | null>(null);
   const [operations, setOperations] = useState<AdminOperations | null>(null);
+  const [revenue, setRevenue] = useState<AdminRevenue | null>(null);
+  const [aiUsage, setAiUsage] = useState<AdminAiUsageSummary | null>(null);
+  const [bullMqQueues, setBullMqQueues] = useState<AdminBullMqQueueCount[] | null>(null);
   const [contentType, setContentType] = useState("VOCABULARY");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Backend already enforces this via RolesGuard on every endpoint — this
+  // is purely a UX improvement (Part 14: "permission-aware navigation,
+  // permission-denied states") so a non-admin gets a clear message instead
+  // of a page that renders empty/erroring API calls one by one.
+  const hasAdminAccess = currentUser?.role === "ADMIN" || currentUser?.role === "MODERATOR";
+
   const load = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [overviewData, usersData, contentData, postData, opsData, logsData] =
-        await Promise.all([
-          getAdminOverview(),
-          getAdminUsers({ search, limit: 10 }),
-          getAdminContent({ type: contentType, search, limit: 10 }),
-          getAdminModerationPosts({ search, limit: 10 }),
-          getAdminOperations(),
-          getAdminAuditLogs({ search, limit: 10 }),
-        ]);
+      const [
+        overviewData,
+        usersData,
+        contentData,
+        postData,
+        clubsData,
+        opsData,
+        logsData,
+        revenueData,
+        aiUsageData,
+        bullMqData,
+      ] = await Promise.all([
+        getAdminOverview(),
+        getAdminUsers({ search, limit: 10 }),
+        getAdminContent({ type: contentType, search, limit: 10 }),
+        getAdminModerationPosts({ search, limit: 10 }),
+        getAdminClubs({ search, limit: 10 }),
+        getAdminOperations(),
+        getAdminAuditLogs({ search, limit: 10 }),
+        getAdminRevenue().catch(() => null),
+        getAdminAiUsage().catch(() => null),
+        getAdminBullMqQueues().catch(() => null),
+      ]);
 
       setOverview(overviewData);
       setUsers(usersData);
       setContent(contentData);
       setPosts(postData);
+      setClubs(clubsData);
       setOperations(opsData);
       setAuditLogs(logsData);
+      setRevenue(revenueData);
+      setAiUsage(aiUsageData);
+      setBullMqQueues(bullMqData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Không tải được dữ liệu admin.");
     } finally {
@@ -132,6 +173,23 @@ export default function AdminBackofficePage() {
       },
     ];
   }, [overview]);
+
+  if (currentUser && !hasAdminAccess) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 text-slate-950 dark:bg-slate-950 dark:text-white">
+        <div className="max-w-md rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-950">
+            <Lock size={26} />
+          </div>
+          <h1 className="mt-4 text-xl font-black">Không có quyền truy cập</h1>
+          <p className="mt-2 text-sm font-semibold text-slate-500">
+            Trang này chỉ dành cho quản trị viên hoặc kiểm duyệt viên. Tài khoản của bạn không có
+            quyền truy cập khu vực quản trị.
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-6 text-slate-950 dark:bg-slate-950 dark:text-white sm:px-6 lg:px-8">
@@ -373,6 +431,55 @@ export default function AdminBackofficePage() {
               </Panel>
             )}
 
+            {tab === "moderation" && (
+              <Panel title="Club Moderation" description="Archive, restore hoặc xoá club vi phạm; chuyển quyền sở hữu.">
+                <ResponsiveTable
+                  columns={["Club", "Owner", "Status", "Members", "Action"]}
+                  rows={(clubs?.items ?? []).map((club) => [
+                    club.name ?? "Club",
+                    club.owner?.fullname ?? "-",
+                    <StatusPill key="status" value={club.isActive === false ? "ARCHIVED" : "ACTIVE"} />,
+                    club.memberCount ?? club._count?.members ?? 0,
+                    <div key="actions" className="flex flex-wrap gap-2">
+                      <SmallAction
+                        label={club.isActive === false ? "Restore" : "Archive"}
+                        loading={busyId === `${club.id}-archive`}
+                        onClick={() =>
+                          runAction(`${club.id}-archive`, () =>
+                            moderateAdminClub(club.id, {
+                              action: club.isActive === false ? "RESTORE" : "ARCHIVE",
+                            }),
+                          )
+                        }
+                      />
+                      <SmallAction
+                        label="Xoá"
+                        loading={busyId === `${club.id}-delete`}
+                        onClick={() =>
+                          runAction(`${club.id}-delete`, () =>
+                            moderateAdminClub(club.id, { action: "DELETE" }),
+                          )
+                        }
+                      />
+                    </div>,
+                  ])}
+                />
+              </Panel>
+            )}
+
+            {tab === "overview" && revenue && (
+              <Panel title="Doanh thu" description="Tổng hợp từ đơn hàng đã thanh toán (Order.status = PAID).">
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <RevenueStat label="Tổng doanh thu" value={revenue.totalRevenue} />
+                  <RevenueStat label="Platform fee" value={revenue.platformFee} />
+                  <RevenueStat label="Doanh thu giáo viên" value={revenue.teacherRevenue} />
+                </div>
+                <p className="mt-3 text-xs font-bold text-slate-500">
+                  {revenue.totalOrders} đơn hàng · {revenue.totalStudents} học viên · {revenue.totalTeachers} giáo viên
+                </p>
+              </Panel>
+            )}
+
             {tab === "operations" && operations && (
               <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
                 <Panel title="Queue Monitoring" description="Theo dõi processing jobs an toàn, không restart worker từ UI.">
@@ -387,13 +494,31 @@ export default function AdminBackofficePage() {
                     <HealthRow label="Memory" value={`${operations.health.memory.heapUsedMb}/${operations.health.memory.heapTotalMb} MB`} />
                   </div>
                 </Panel>
-                <Panel title="Feature Flags" description={operations.featureFlags.limitation}>
+                <Panel title="Feature Flags" description="Bật/tắt tính năng theo thời gian thực — thay đổi được audit và invalidate cache ngay.">
                   <div className="grid gap-2 sm:grid-cols-2">
-                    {Object.entries(operations.featureFlags.flags).map(([key, enabled]) => (
-                      <div key={key} className="flex items-center justify-between rounded-2xl bg-slate-50 p-3 dark:bg-slate-950">
-                        <span className="text-sm font-black">{key}</span>
-                        <StatusPill value={enabled ? "ON" : "OFF"} />
-                      </div>
+                    {operations.featureFlags.flags.map((flag) => (
+                      <button
+                        key={flag.key}
+                        type="button"
+                        disabled={busyId === `flag-${flag.key}`}
+                        onClick={() =>
+                          // runAction already reloads everything (including
+                          // this flag's fresh value) on success — no need
+                          // for a separate optimistic local-state patch.
+                          runAction(`flag-${flag.key}`, () =>
+                            setAdminFeatureFlag(flag.key, !flag.isEnabled),
+                          )
+                        }
+                        className="flex items-center justify-between rounded-2xl bg-slate-50 p-3 text-left transition hover:bg-violet-50 disabled:opacity-60 dark:bg-slate-950 dark:hover:bg-violet-950"
+                      >
+                        <div>
+                          <span className="block text-sm font-black">{flag.key}</span>
+                          {flag.description && (
+                            <span className="text-xs font-semibold text-slate-500">{flag.description}</span>
+                          )}
+                        </div>
+                        <StatusPill value={flag.isEnabled ? "ON" : "OFF"} />
+                      </button>
                     ))}
                   </div>
                 </Panel>
@@ -408,6 +533,39 @@ export default function AdminBackofficePage() {
                     ])}
                   />
                 </Panel>
+                {bullMqQueues && (
+                  <Panel title="BullMQ Queues" description="Số liệu thật từ BullMQ (waiting/active/completed/failed), không phải bảng DB proxy.">
+                    <ResponsiveTable
+                      columns={["Queue", "Waiting", "Active", "Completed", "Failed", "Paused"]}
+                      rows={bullMqQueues.map((q) => [
+                        q.name,
+                        q.waiting,
+                        q.active,
+                        q.completed,
+                        q.failed,
+                        <StatusPill key="paused" value={q.isPaused ? "PAUSED" : "RUNNING"} />,
+                      ])}
+                    />
+                  </Panel>
+                )}
+                {aiUsage && (
+                  <Panel title="AI Usage (Gemini)" description={aiUsage.note}>
+                    <div className="grid gap-3 sm:grid-cols-4">
+                      <RevenueStat label="Requests" value={aiUsage.totalRequests} format="int" />
+                      <RevenueStat label="Success" value={aiUsage.successCount} format="int" />
+                      <RevenueStat label="Failed" value={aiUsage.failureCount} format="int" />
+                      <RevenueStat label="Avg latency" value={aiUsage.averageDurationMs} format="ms" />
+                    </div>
+                    <div className="mt-4 space-y-2">
+                      {aiUsage.byModule.map((m) => (
+                        <div key={m.module} className="flex items-center justify-between rounded-2xl bg-slate-50 p-3 text-sm font-bold dark:bg-slate-950">
+                          <span>{m.module}</span>
+                          <span className="text-slate-500">{m.requests} req · {m.averageDurationMs}ms avg</span>
+                        </div>
+                      ))}
+                    </div>
+                  </Panel>
+                )}
               </section>
             )}
 
@@ -598,6 +756,29 @@ function HealthRow({ label, value }: { label: string; value: string }) {
     <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-3 dark:bg-slate-950">
       <span className="text-sm font-black">{label}</span>
       <span className="text-sm font-bold text-slate-500">{value}</span>
+    </div>
+  );
+}
+
+function RevenueStat({
+  label,
+  value,
+  format = "currency",
+}: {
+  label: string;
+  value: number;
+  format?: "currency" | "int" | "ms";
+}) {
+  const display =
+    format === "currency"
+      ? value.toLocaleString("vi-VN") + "đ"
+      : format === "ms"
+        ? `${value}ms`
+        : value.toLocaleString("vi-VN");
+  return (
+    <div className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-950">
+      <p className="text-xs font-black uppercase text-slate-400">{label}</p>
+      <p className="mt-1 text-xl font-black">{display}</p>
     </div>
   );
 }

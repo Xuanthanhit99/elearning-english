@@ -300,6 +300,7 @@ Rules:
       return await this.geminiService.generateJson(prompt, {
         models: ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'],
         retries: 1,
+        module: 'writing_job',
       });
     } catch (error: any) {
       this.logger.warn(`Gemini failed: ${error?.message}`);

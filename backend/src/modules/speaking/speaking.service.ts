@@ -141,6 +141,7 @@ Format:
     try {
       return await this.geminiService.generateJson(prompt, {
         models: ['gemini-2.5-flash'],
+        module: 'speaking_question',
       });
     } catch (error) {
       throw new BadGatewayException(
@@ -226,6 +227,7 @@ Format:
     try {
       const parsed = await this.geminiService.generateJson(prompt, {
         models: ['gemini-2.5-flash'],
+        module: 'speaking_evaluation',
       });
 
       return this.normalizeEvaluation(parsed);

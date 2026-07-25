@@ -2,10 +2,13 @@
 
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { AiUsageService } from '../ai-usage/ai-usage.service';
 
 @Injectable()
 export class GeminiService {
   private genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+
+  constructor(private readonly aiUsage: AiUsageService) {}
 
   private sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -95,14 +98,23 @@ export class GeminiService {
       temperature?: number;
       timeoutMs?: number;
       retries?: number;
+      /** Caller-supplied label for AI-usage attribution (Part 9's
+       * "endpoint/module usage") — optional so existing call sites don't
+       * break; defaults to 'unspecified' rather than silently dropping
+       * the request from usage tracking. */
+      module?: string;
+      userId?: string;
     },
   ) {
     const models = options?.models ?? ['gemini-2.5-flash-lite', 'gemini-2.5-flash'];
     const temperature = options?.temperature ?? 0.4;
     const timeoutMs = options?.timeoutMs ?? 30000;
     const retries = options?.retries ?? 3;
+    const moduleLabel = options?.module ?? 'unspecified';
+    const startedAt = Date.now();
 
     let lastError: any;
+    let timedOut = false;
 
     for (const modelName of models) {
       const model = this.genAI.getGenerativeModel({
@@ -123,10 +135,21 @@ export class GeminiService {
           ]);
 
           const text = (result as any).response.text();
+          const usageMetadata = (result as any).response.usageMetadata;
 
-          return this.extractJson(text);
+          const parsed = this.extractJson(text);
+          void this.aiUsage.record({
+            module: moduleLabel,
+            success: true,
+            durationMs: Date.now() - startedAt,
+            promptTokens: usageMetadata?.promptTokenCount ?? null,
+            completionTokens: usageMetadata?.candidatesTokenCount ?? null,
+            userId: options?.userId,
+          });
+          return parsed;
         } catch (error: any) {
           lastError = error;
+          if (error?.message === 'Gemini timeout') timedOut = true;
 
           console.error(
             `[Gemini] ${modelName} retry ${retry + 1}:`,
@@ -139,6 +162,15 @@ export class GeminiService {
         }
       }
     }
+
+    void this.aiUsage.record({
+      module: moduleLabel,
+      success: false,
+      timedOut,
+      durationMs: Date.now() - startedAt,
+      errorType: lastError?.name ?? 'UnknownError',
+      userId: options?.userId,
+    });
 
     throw new InternalServerErrorException(
       lastError?.message || 'Gemini generate failed',

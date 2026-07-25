@@ -1,8 +1,10 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import {
   CommunityPostStatus,
   CourseStatus,
@@ -16,6 +18,9 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthSessionService } from 'src/modules/auth/auth-session.service';
 import { RedisCacheService } from 'src/common/cache/redis-cache.service';
 import { CacheMetricsService } from 'src/common/cache/cache-metrics.service';
+import { FeatureFlagsService } from 'src/modules/feature-flags/feature-flags.service';
+import { AiUsageService } from 'src/modules/ai-usage/ai-usage.service';
+import { QueueAdminService } from 'src/modules/queue-admin/queue-admin.service';
 import {
   AdminContentStatusDto,
   AdminListQueryDto,
@@ -41,12 +46,17 @@ type Paginated<T> = {
 
 @Injectable()
 export class AdminDashboardService {
+  private readonly logger = new Logger(AdminDashboardService.name);
+
   constructor(
     private readonly prismaService: PrismaService,
     private readonly auditLogService: AuditLogService,
     private readonly authSessionService: AuthSessionService,
     private readonly redisCache: RedisCacheService,
     private readonly cacheMetrics: CacheMetricsService,
+    private readonly featureFlagsService: FeatureFlagsService,
+    private readonly aiUsageService: AiUsageService,
+    private readonly queueAdminService: QueueAdminService,
   ) {}
 
   private get db() {
@@ -336,8 +346,35 @@ export class AdminDashboardService {
       );
     }
 
+    // Protect the last remaining administrator: an action that would strip
+    // admin access from the only ADMIN left (role change away from ADMIN,
+    // or a ban/deactivate) is rejected outright, regardless of who performs
+    // it. Self-targeting is already blocked above, but this is a direct,
+    // cheap safety net against ever ending up with zero administrators.
+    const stripsAdminAccess =
+      current.role === UserRole.ADMIN &&
+      ((dto.action === 'ASSIGN_ROLE' && dto.role && dto.role !== UserRole.ADMIN) ||
+        dto.action === 'BAN' ||
+        dto.action === 'DEACTIVATE' ||
+        dto.action === 'SUSPEND');
+
+    if (stripsAdminAccess) {
+      const adminCount = await this.prismaService.user.count({
+        where: { role: UserRole.ADMIN },
+      });
+      if (adminCount <= 1) {
+        throw new BadRequestException(
+          'Không thể thực hiện thao tác này vì đây là quản trị viên cuối cùng.',
+        );
+      }
+    }
+
     const changedFields: string[] = [];
     let updatedUser = current;
+    const suspendUntil =
+      dto.action === 'SUSPEND' && dto.suspendHours
+        ? new Date(Date.now() + dto.suspendHours * 60 * 60 * 1000)
+        : null;
 
     await this.prismaService.$transaction(async (tx) => {
       if (dto.action === 'BAN') {
@@ -352,7 +389,11 @@ export class AdminDashboardService {
       if (dto.action === 'UNBAN') {
         updatedUser = await tx.user.update({
           where: { id },
-          data: { status: UserStatus.ACTIVE },
+          data: {
+            status: UserStatus.ACTIVE,
+            suspendedUntil: null,
+            suspensionReason: null,
+          },
           select: { id: true, role: true, status: true, xp: true },
         });
         changedFields.push('status');
@@ -365,6 +406,22 @@ export class AdminDashboardService {
           select: { id: true, role: true, status: true, xp: true },
         });
         changedFields.push('status');
+      }
+
+      if (dto.action === 'SUSPEND') {
+        if (!dto.suspendHours) {
+          throw new BadRequestException('Thiếu thời lượng đình chỉ (giờ).');
+        }
+        updatedUser = await tx.user.update({
+          where: { id },
+          data: {
+            status: UserStatus.SUSPENDED,
+            suspendedUntil: suspendUntil,
+            suspensionReason: dto.reason ?? null,
+          },
+          select: { id: true, role: true, status: true, xp: true },
+        });
+        changedFields.push('status', 'suspendedUntil');
       }
 
       if (dto.action === 'ASSIGN_ROLE') {
@@ -431,6 +488,10 @@ export class AdminDashboardService {
       await this.authSessionService.unbanUser(id);
     }
 
+    if (dto.action === 'SUSPEND' && suspendUntil) {
+      await this.authSessionService.suspendUser(id, suspendUntil);
+    }
+
     await this.record(
       actor,
       `admin.user.${dto.action.toLowerCase()}`,
@@ -444,6 +505,24 @@ export class AdminDashboardService {
     );
 
     return this.getUserProfile(id);
+  }
+
+  // Reverts User.status back to ACTIVE once a suspension window passes.
+  // The actual access block is already gone by then (AuthSessionService.
+  // suspendUser's Redis marker has its own matching TTL and expires on its
+  // own) — this only keeps the Postgres status field (the thing admin UI
+  // and user-facing account state read) in sync, on a schedule bounded
+  // tightly enough that a suspended user is never shown as "active" for
+  // long after their window ends.
+  @Cron(CronExpression.EVERY_MINUTE)
+  async expireSuspensions() {
+    const result = await this.prismaService.user.updateMany({
+      where: { status: UserStatus.SUSPENDED, suspendedUntil: { lte: new Date() } },
+      data: { status: UserStatus.ACTIVE, suspendedUntil: null, suspensionReason: null },
+    });
+    if (result.count > 0) {
+      this.logger.log(`Auto-restored ${result.count} expired suspension(s).`);
+    }
   }
 
   async listContent(query: AdminListQueryDto) {
@@ -486,6 +565,57 @@ export class AdminDashboardService {
     });
 
     return item;
+  }
+
+  // Read-only inspection + controlled enable/disable only (Part 7's own
+  // sanctioned fallback when full reward-rule editing is judged unsafe) —
+  // never touches XpTransaction/UserAchievement history, never edits
+  // rewardXp/targetValue/ruleConfig. A definition being disabled just
+  // means AchievementsService/MissionsV2 stop matching new events against
+  // it; every already-unlocked/claimed row for it is untouched.
+  private gamificationDelegate(kind: string) {
+    if (kind === 'ACHIEVEMENT') return this.db.achievement;
+    if (kind === 'MISSION') return this.db.missionTemplateV2;
+    throw new BadRequestException(`Loại gamification không hỗ trợ: ${kind}`);
+  }
+
+  async listGamificationDefinitions(kind: string, query: AdminListQueryDto) {
+    const { page, limit, skip } = this.normalizePagination(query);
+    const delegate = this.gamificationDelegate(kind);
+    const search = query.search?.trim();
+
+    const where = search
+      ? { OR: [{ title: { contains: search, mode: 'insensitive' } }, { code: { contains: search, mode: 'insensitive' } }] }
+      : {};
+
+    const [items, total] = await Promise.all([
+      delegate.findMany({ where, skip, take: limit, orderBy: { title: 'asc' } }),
+      delegate.count({ where }),
+    ]);
+
+    return this.toPaginated(items, total, page, limit);
+  }
+
+  async toggleGamificationDefinition(
+    kind: string,
+    id: string,
+    isActive: boolean,
+    actor: AdminActor,
+  ) {
+    const delegate = this.gamificationDelegate(kind);
+    const before = await delegate.findUnique({ where: { id } });
+    if (!before) throw new NotFoundException('Không tìm thấy định nghĩa.');
+
+    const updated = await delegate.update({ where: { id }, data: { isActive } });
+
+    await this.record(actor, `admin.gamification.${kind.toLowerCase()}_toggle`, ['isActive'], {
+      kind,
+      targetId: id,
+      before: before.isActive,
+      after: isActive,
+    });
+
+    return updated;
   }
 
   async listModerationPosts(query: AdminListQueryDto) {
@@ -795,22 +925,59 @@ export class AdminDashboardService {
     };
   }
 
-  getFeatureFlags() {
-    return {
-      runtimeWritable: false,
-      source: 'server_defaults',
-      flags: {
-        placement: true,
-        leaderboard: true,
-        community: true,
-        aiWriting: true,
-        aiSpeaking: true,
-        notifications: true,
-        recommendations: true,
-      },
-      limitation:
-        'Runtime persistence needs a dedicated settings table before production rollout.',
-    };
+  async getFeatureFlags() {
+    // Real, DB-backed, admin-writable — see FeatureFlagsService. This used
+    // to be a hardcoded, non-persisted object; kept the method name/shape
+    // (list of flags) so the existing frontend call site didn't need a
+    // rewrite, only the data source underneath changed.
+    return { runtimeWritable: true, source: 'feature_flag_table', flags: await this.featureFlagsService.listAll() };
+  }
+
+  async setFeatureFlag(key: string, isEnabled: boolean, actor: AdminActor) {
+    const before = await this.prismaService.featureFlag.findUnique({ where: { key } });
+    const updated = await this.featureFlagsService.setEnabled(key, isEnabled, actor.id);
+    await this.record(actor, 'admin.feature_flag.update', ['isEnabled'], {
+      key,
+      before: before?.isEnabled ?? null,
+      after: updated.isEnabled,
+    });
+    return updated;
+  }
+
+  async getAiUsage(fromDays?: number) {
+    return this.aiUsageService.getSummary({ fromDays });
+  }
+
+  async listFailedJobs(queueName: string) {
+    return this.queueAdminService.listFailedJobs(queueName);
+  }
+
+  async getBullMqQueues() {
+    return this.queueAdminService.getAllQueueCounts();
+  }
+
+  async retryJob(queueName: string, jobId: string, actor: AdminActor) {
+    const result = await this.queueAdminService.retryJob(queueName, jobId);
+    await this.record(actor, 'admin.queue.retry_job', [], { queueName, jobId });
+    return result;
+  }
+
+  async removeJob(queueName: string, jobId: string, actor: AdminActor) {
+    const result = await this.queueAdminService.removeJob(queueName, jobId);
+    await this.record(actor, 'admin.queue.remove_job', [], { queueName, jobId });
+    return result;
+  }
+
+  async pauseQueue(queueName: string, actor: AdminActor) {
+    const result = await this.queueAdminService.pauseQueue(queueName);
+    await this.record(actor, 'admin.queue.pause', [], { queueName });
+    return result;
+  }
+
+  async resumeQueue(queueName: string, actor: AdminActor) {
+    const result = await this.queueAdminService.resumeQueue(queueName);
+    await this.record(actor, 'admin.queue.resume', [], { queueName });
+    return result;
   }
 
   getSystemSettings() {
@@ -1063,6 +1230,51 @@ export class AdminDashboardService {
           },
           orderBy: { updatedAt: 'desc' },
         };
+      // The 4 content types below were previously only reachable through
+      // bulk AI-cron generation straight to "live" (isActive: true by
+      // default), with no admin list/search/status-toggle path at all —
+      // extending this same switch (not a new subsystem) closes that gap
+      // for their category/topic layer, mirroring the exact isActive
+      // pattern every other type here already uses.
+      case 'GRAMMAR_CATEGORY':
+        return {
+          delegate: this.db.grammarCategory,
+          where: contains('title') ? { title: { contains: search, mode: 'insensitive' } } : {},
+          select: { id: true, title: true, slug: true, order: true, isActive: true, createdAt: true, updatedAt: true },
+          orderBy: { order: 'asc' },
+        };
+      case 'GRAMMAR_TOPIC':
+        return {
+          delegate: this.db.grammarTopic,
+          where: contains('title') ? { title: { contains: search, mode: 'insensitive' } } : {},
+          select: { id: true, title: true, slug: true, level: true, order: true, isActive: true, createdAt: true, updatedAt: true },
+          orderBy: { order: 'asc' },
+        };
+      case 'READING_CATEGORY':
+        return {
+          delegate: this.db.readingCategory,
+          where: contains('name') ? { name: { contains: search, mode: 'insensitive' } } : {},
+          select: { id: true, name: true, slug: true, order: true, isActive: true, createdAt: true, updatedAt: true },
+          orderBy: { order: 'asc' },
+        };
+      case 'SPEAKING_CATEGORY':
+        return {
+          delegate: this.db.speakingCategory,
+          where: contains('title') ? { title: { contains: search, mode: 'insensitive' } } : {},
+          select: { id: true, title: true, slug: true, order: true, isActive: true, createdAt: true, updatedAt: true },
+          orderBy: { order: 'asc' },
+        };
+      // WordTopic has no publish-state field in the schema (confirmed by
+      // audit — order-only) — list/search is still useful on its own, so
+      // it's included for that, but updateContentStatus rejects it below
+      // rather than silently writing to a field that doesn't exist.
+      case 'VOCABULARY_TOPIC':
+        return {
+          delegate: this.db.wordTopic,
+          where: contains('name') ? { name: { contains: search, mode: 'insensitive' } } : {},
+          select: { id: true, name: true, slug: true, order: true },
+          orderBy: { order: 'asc' },
+        };
       default:
         throw new BadRequestException(`Loại nội dung không hỗ trợ: ${type}`);
     }
@@ -1104,6 +1316,12 @@ export class AdminDashboardService {
 
     if (type === 'READING') {
       return { isPublished };
+    }
+
+    if (type === 'VOCABULARY_TOPIC') {
+      throw new BadRequestException(
+        'Chủ đề từ vựng không có trạng thái xuất bản để thay đổi.',
+      );
     }
 
     if (type === 'COURSE') {

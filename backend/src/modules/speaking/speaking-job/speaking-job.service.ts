@@ -353,6 +353,7 @@ Format:
 
     const parsed = (await this.geminiService.generateJson(prompt, {
       models: ['gemini-2.5-flash'],
+      module: 'speaking_job',
     })) as any[];
 
     return parsed.map((item: any) => ({

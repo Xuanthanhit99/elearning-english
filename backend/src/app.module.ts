@@ -75,6 +75,7 @@ import { PlacementSessionModule } from './modules/placement/placement-session/pl
 import { ChatSessionModule } from './modules/chat-session/chat-session.module';
 import { AchievementsModule } from './modules/achievements/achievements.module';
 import { ConversationModule } from './modules/conversation/conversation.module';
+import { StudyRoomModule } from './modules/study-room/study-room.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { SearchModule } from './modules/search/search.module';
 import { HealthController } from './health.controller';
@@ -182,6 +183,7 @@ import { HealthController } from './health.controller';
     ChatSessionModule,
     AchievementsModule,
     ConversationModule,
+    StudyRoomModule,
     AnalyticsModule,
     SearchModule,
   ],

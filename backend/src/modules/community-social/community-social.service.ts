@@ -25,6 +25,7 @@ import {
 } from './dto/community-social.dto';
 import { CommunitySocialGateway } from './community-social.gateway';
 import { applyCommunityDisplayNames } from '../community/community-display-name.util';
+import { LearningXpPublisher } from '../learning-xp/learning-xp.publisher';
 
 const USER_CARD_SELECT = {
   id: true,
@@ -48,6 +49,7 @@ export class CommunitySocialService {
     private readonly gateway: CommunitySocialGateway,
     private readonly notifications: NotificationsService,
     private readonly settingsQuery: SettingsQueryService,
+    private readonly learningXp: LearningXpPublisher,
   ) {}
 
   async getPostComments(postId: string) {
@@ -307,6 +309,27 @@ export class CommunitySocialService {
     }
 
     return { rejected: true };
+  }
+
+  async cancelFriendRequest(userId: string, requestId: string) {
+    // Requester-side withdrawal — rejectFriendRequest only lets the
+    // addressee act on a pending request, so there was previously no way
+    // to take back a request you sent. CANCELLED already existed as an
+    // enum value with no code path ever setting it.
+    const updated = await this.prisma.communityFriendRequest.updateMany({
+      where: {
+        id: requestId,
+        requesterId: userId,
+        status: 'PENDING',
+      },
+      data: { status: 'CANCELLED' },
+    });
+
+    if (!updated.count) {
+      throw new NotFoundException('Không tìm thấy lời mời kết bạn');
+    }
+
+    return { cancelled: true };
   }
 
   async removeFriend(userId: string, friendId: string) {
@@ -643,20 +666,27 @@ export class CommunitySocialService {
       });
 
       if (!existingReward) {
-        await this.prisma.$transaction([
-          this.prisma.communityActivityLog.create({
-            data: {
-              userId,
-              type: 'COMPLETE_CHALLENGE',
-              points: 50,
-              referenceId: challengeId,
-            },
-          }),
-          this.prisma.user.update({
-            where: { id: userId },
-            data: { xp: { increment: challenge.rewardXp } },
-          }),
-        ]);
+        await this.prisma.communityActivityLog.create({
+          data: {
+            userId,
+            type: 'COMPLETE_CHALLENGE',
+            points: 50,
+            referenceId: challengeId,
+          },
+        });
+
+        // Reuses the real XP ledger (LearningXpPublisher → XpTransaction)
+        // instead of a raw `user.xp` mutation — challenge XP is now visible
+        // in XP history/streaks/analytics like every other XP source, and
+        // `awardXp`'s own idempotencyKey gives a second dedup layer beyond
+        // the existingReward check above.
+        await this.learningXp.publish({
+          activity: 'CLUB_CHALLENGE_COMPLETED',
+          userId,
+          sourceId: challengeId,
+          rewardXp: challenge.rewardXp,
+          metadata: { challengeId, title: challenge.title },
+        });
       }
     }
 

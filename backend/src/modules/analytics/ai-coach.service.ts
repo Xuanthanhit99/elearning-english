@@ -137,7 +137,7 @@ export class AiCoachService {
     try {
       const generated = await this.gemini.generateJson(
         this.buildPrompt(goal, metrics),
-        { temperature: 0.3, retries: 2, timeoutMs: 20000 },
+        { temperature: 0.3, retries: 2, timeoutMs: 20000, module: 'ai_coach' },
       );
       advice = this.normalizeGeneratedAdvice(generated);
     } catch (error) {

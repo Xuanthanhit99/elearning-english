@@ -14,6 +14,25 @@ import { extname } from 'node:path';
 import { diskStorage } from 'multer';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
+const DOCUMENT_MIME_TYPES = new Set([
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'text/plain',
+]);
+
+// Matches CreateCommunityMediaDto's declared `IMAGE | AUDIO | VIDEO |
+// DOCUMENT` union (create-community-post.dto.ts) — the upload endpoint
+// previously only accepted images, silently making audio/video/document
+// posts impossible to attach real media to.
+function resolveMediaType(mimetype: string): 'IMAGE' | 'AUDIO' | 'VIDEO' | 'DOCUMENT' | null {
+  if (mimetype.startsWith('image/')) return 'IMAGE';
+  if (mimetype.startsWith('audio/')) return 'AUDIO';
+  if (mimetype.startsWith('video/')) return 'VIDEO';
+  if (DOCUMENT_MIME_TYPES.has(mimetype)) return 'DOCUMENT';
+  return null;
+}
+
 @Controller('community')
 @UseGuards(JwtAuthGuard)
 export class CommunityUploadController {
@@ -35,10 +54,10 @@ export class CommunityUploadController {
       },
 
       fileFilter: (_req, file, callback) => {
-        const allowed = file.mimetype.startsWith('image/');
+        const allowed = resolveMediaType(file.mimetype) !== null;
 
         if (!allowed) {
-          callback(new BadRequestException('Chỉ hỗ trợ file ảnh'), false);
+          callback(new BadRequestException('Định dạng file không được hỗ trợ'), false);
           return;
         }
 
@@ -48,7 +67,7 @@ export class CommunityUploadController {
   )
   upload(@UploadedFile() file: Express.Multer.File, @Req() req: Request) {
     if (!file) {
-      throw new BadRequestException('Không nhận được file ảnh');
+      throw new BadRequestException('Không nhận được file');
     }
 
     const configuredBaseUrl = process.env.API_PUBLIC_URL?.replace(/\/$/, '');
@@ -58,7 +77,7 @@ export class CommunityUploadController {
     const baseUrl = configuredBaseUrl || requestBaseUrl;
 
     return {
-      type: 'IMAGE',
+      type: resolveMediaType(file.mimetype) ?? 'DOCUMENT',
       name: file.originalname,
       fileName: file.filename,
       relativeUrl: `/uploads/community/${file.filename}`,

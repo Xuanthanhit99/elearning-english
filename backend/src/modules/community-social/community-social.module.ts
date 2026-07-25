@@ -7,9 +7,16 @@ import { CommunitySocialGateway } from './community-social.gateway';
 import { CommunitySocialService } from './community-social.service';
 import { CommunityUploadController } from './community-upload.controller';
 import { SettingsModule } from '../settings/settings.module';
+import { LearningXpModule } from '../learning-xp/learning-xp.module';
 
 @Module({
-  imports: [PrismaModule, NotificationsModule, SettingsModule, CommunityModule],
+  imports: [
+    PrismaModule,
+    NotificationsModule,
+    SettingsModule,
+    CommunityModule,
+    LearningXpModule,
+  ],
   controllers: [CommunitySocialController, CommunityUploadController],
   providers: [CommunitySocialService, CommunitySocialGateway],
   exports: [CommunitySocialService, CommunitySocialGateway],

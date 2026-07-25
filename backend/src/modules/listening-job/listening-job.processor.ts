@@ -321,7 +321,7 @@ Format:
   }
 ]`;
 
-    const result = await this.geminiService.generateJson(prompt);
+    const result = await this.geminiService.generateJson(prompt, { module: 'listening_job' });
 
     if (!Array.isArray(result)) {
       return [];

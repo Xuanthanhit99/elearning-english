@@ -1132,9 +1132,9 @@ Trả về định dạng JSON Array chuẩn theo mẫu:
       // const aiResult = (await this.geminiService.generateJson(
       //   prompt,
       // )) as GeminiWordItem[];
-      const aiResult = (await this.geminiService.generateJson(
-        prompt,
-      )) as GeminiWordItem[];
+      const aiResult = (await this.geminiService.generateJson(prompt, {
+        module: 'vocabulary_words',
+      })) as GeminiWordItem[];
       result = Array.isArray(aiResult) ? aiResult : [];
     } catch (error) {
       console.error('GEMINI ERROR:', error);
@@ -2736,7 +2736,7 @@ Rules:
 - completed is true only if the sentence naturally uses the target word.
 - score is 0-100.
 - feedback must be encouraging and concise.
-`);
+`, { module: 'vocabulary_challenge_grading' });
       } catch (error) {
         const normalizedSentence = sentence.toLowerCase();
         const normalizedWord = targetWord.word.toLowerCase();

@@ -16,12 +16,14 @@ enum UserRole {
   STUDENT
   TEACHER
   ADMIN
+  MODERATOR
 }
 
 enum UserStatus {
   ACTIVE
   INACTIVE
   BANNED
+  SUSPENDED
 }
 
 enum CourseStatus {
@@ -178,13 +180,20 @@ model User {
 
   interests String[] @default([])
 
-  status       UserStatus @default(ACTIVE)
-  provider     String?
-  providerId   String?
-  courses      Course[]
-  phone        String?
-  englishLevel String?    @default("Beginner")
-  learningGoal String?    @default("General English")
+  status           UserStatus @default(ACTIVE)
+  // Only meaningful while status = SUSPENDED — a scheduled sweep (see
+  // AdminDashboardService) reverts status back to ACTIVE once this passes,
+  // independent of the Redis access-block marker (AuthSessionService.
+  // suspendUser), which has its own TTL and is the thing that actually
+  // blocks requests in the meantime.
+  suspendedUntil   DateTime?
+  suspensionReason String?
+  provider         String?
+  providerId       String?
+  courses          Course[]
+  phone            String?
+  englishLevel     String?    @default("Beginner")
+  learningGoal     String?    @default("General English")
 
   twoFactorSecret        String?
   twoFactorTempSecret    String?
@@ -197,7 +206,7 @@ model User {
   // Account-level brute-force lockout (temporary, not permanent — see
   // AuthService.login). Reset to 0 / null on every successful login.
   failedLoginAttempts Int       @default(0)
-  lockedUntil          DateTime?
+  lockedUntil         DateTime?
 
   enrollments Enrollment[]
 
@@ -285,10 +294,10 @@ model User {
   communityClubInvitesSent     CommunityClubInvite[]           @relation("CommunityClubInviteSender")
   communityClubInvitesReceived CommunityClubInvite[]           @relation("CommunityClubInviteReceiver")
 
-  settings             UserSettings?
-  deviceSessions       UserDeviceSession[]
-  learningDnaSnapshots LearningDnaSnapshot[]
-  auditLogs            AuditLog[]
+  settings                UserSettings?
+  deviceSessions          UserDeviceSession[]
+  learningDnaSnapshots    LearningDnaSnapshot[]
+  auditLogs               AuditLog[]
   passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
 
@@ -304,22 +313,27 @@ model User {
   createdChallenges       SocialChallenge[]              @relation("SocialChallengeCreator")
   challengeParticipations SocialChallengeParticipant[]
 
-  currentPlacementTestId    String?
-  currentPlacementTest      PlacementTest?             @relation("CurrentPlacementTest", fields: [currentPlacementTestId], references: [id], onDelete: SetNull)
-  placementTests            PlacementTest[]            @relation("UserPlacementTests")
-  missionV2Items            UserMissionV2[]            @relation("UserMissionV2Relation")
-  createAt                  DateTime                   @default(now())
-  updatedAt                 DateTime                   @updatedAt
-  userLearningProfile       UserLearningProfile?
-  userWordProgresses        UserWordProgress[]
-  userWeeklyVocabularyPlans UserWeeklyVocabularyPlan[]
-  weeklyVocabularyTests     WeeklyVocabularyTest[]
-  vocabularyNotebookItems   UserVocabularyNotebook[]
-  languageCertificates      UserLanguageCertificate[]
-  aiLessonBuilderProjects   AILessonBuilderProject[]
-  chatSessions              ChatSession[]
-  userPet                   UserPet?
-  conversationSessions      ConversationSession[]
+  currentPlacementTestId     String?
+  currentPlacementTest       PlacementTest?             @relation("CurrentPlacementTest", fields: [currentPlacementTestId], references: [id], onDelete: SetNull)
+  placementTests             PlacementTest[]            @relation("UserPlacementTests")
+  missionV2Items             UserMissionV2[]            @relation("UserMissionV2Relation")
+  createAt                   DateTime                   @default(now())
+  updatedAt                  DateTime                   @updatedAt
+  userLearningProfile        UserLearningProfile?
+  userWordProgresses         UserWordProgress[]
+  userWeeklyVocabularyPlans  UserWeeklyVocabularyPlan[]
+  weeklyVocabularyTests      WeeklyVocabularyTest[]
+  vocabularyNotebookItems    UserVocabularyNotebook[]
+  languageCertificates       UserLanguageCertificate[]
+  aiLessonBuilderProjects    AILessonBuilderProject[]
+  chatSessions               ChatSession[]
+  userPet                    UserPet?
+  conversationSessions       ConversationSession[]
+  studyRoomsHosted           StudyRoom[]                @relation("StudyRoomHost")
+  studyRoomMemberships       StudyRoomMember[]          @relation("StudyRoomMemberUser")
+  studySessionParticipations StudySessionParticipant[]  @relation("StudySessionParticipantUser")
+  featureFlagUpdates         FeatureFlag[]              @relation("FeatureFlagUpdatedBy")
+  aiUsageLogs                AiUsageLog[]               @relation("AiUsageLogUser")
 }
 
 model Course {
@@ -1123,7 +1137,7 @@ model ArenaMatch {
   questionHistory    ArenaUserQuestionHistory[]
   ratingHistory      ArenaRatingHistory[]
   progressionRecords ArenaProgressionRecord[]
-  fairPlayLogs        ArenaFairPlayLog[]
+  fairPlayLogs       ArenaFairPlayLog[]
 
   @@index([seasonId])
 }
@@ -1378,22 +1392,22 @@ model ArenaUserQuestionHistory {
 /// docblock for why). Never soft-deleted — closed seasons remain queryable
 /// for historical standings.
 model ArenaSeason {
-  id        String            @id @default(uuid())
-  name      String
-  seasonCode String?          @unique
-  seasonNumber Int?           @unique
-  startsAt  DateTime
-  endsAt    DateTime
-  status    ArenaSeasonStatus @default(UPCOMING)
-  isActive  Boolean           @default(false)
-  activatedAt DateTime?
-  closingStartedAt DateTime?
-  closedAt DateTime?
+  id                   String            @id @default(uuid())
+  name                 String
+  seasonCode           String?           @unique
+  seasonNumber         Int?              @unique
+  startsAt             DateTime
+  endsAt               DateTime
+  status               ArenaSeasonStatus @default(UPCOMING)
+  isActive             Boolean           @default(false)
+  activatedAt          DateTime?
+  closingStartedAt     DateTime?
+  closedAt             DateTime?
   rewardsDistributedAt DateTime?
-  resetAppliedAt DateTime?
-  metadata  Json?
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
+  resetAppliedAt       DateTime?
+  metadata             Json?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
 
   matches            ArenaMatch[]
   ratingHistory      ArenaRatingHistory[]
@@ -1412,30 +1426,30 @@ model ArenaSeason {
 }
 
 model ArenaSeasonResult {
-  id               String   @id @default(uuid())
-  seasonId         String
-  userId           String
-  finalMmr         Int
-  finalTier        ArenaTier
-  peakMmr          Int
-  peakTier         ArenaTier
-  matches          Int
-  wins             Int
-  losses           Int
-  winRate          Int
-  finalRank        Int?
-  rewardTier       String
-  rewardPayload    Json?
-  rewardStatus     String   @default("PENDING")
-  rewardXpStatus   String   @default("PENDING")
-  rewardGoldStatus String   @default("PENDING")
-  rewardArenaPointStatus String @default("PENDING")
-  rewardNotificationStatus String @default("PENDING")
-  rewardGrantedAt  DateTime?
-  resetPreviousMmr Int?
-  resetNextMmr     Int?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                       String    @id @default(uuid())
+  seasonId                 String
+  userId                   String
+  finalMmr                 Int
+  finalTier                ArenaTier
+  peakMmr                  Int
+  peakTier                 ArenaTier
+  matches                  Int
+  wins                     Int
+  losses                   Int
+  winRate                  Int
+  finalRank                Int?
+  rewardTier               String
+  rewardPayload            Json?
+  rewardStatus             String    @default("PENDING")
+  rewardXpStatus           String    @default("PENDING")
+  rewardGoldStatus         String    @default("PENDING")
+  rewardArenaPointStatus   String    @default("PENDING")
+  rewardNotificationStatus String    @default("PENDING")
+  rewardGrantedAt          DateTime?
+  resetPreviousMmr         Int?
+  resetNextMmr             Int?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
 
   season ArenaSeason @relation(fields: [seasonId], references: [id])
   user   User        @relation(fields: [userId], references: [id])
@@ -4316,22 +4330,22 @@ enum ConversationRole {
 }
 
 model ConversationScenario {
-  id                  String             @id @default(uuid())
-  code                String             @unique
-  title               String
-  description         String
-  mode                ConversationMode
-  difficulty          CefrLevel
-  icon                String?
-  systemPromptTemplate String            @db.Text
-  openingLine         String             @db.Text
-  requiredVocabulary  String[]           @default([])
-  grammarFocus        String[]           @default([])
-  goals               String[]           @default([])
-  displayOrder        Int                @default(0)
-  isActive            Boolean            @default(true)
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
+  id                   String           @id @default(uuid())
+  code                 String           @unique
+  title                String
+  description          String
+  mode                 ConversationMode
+  difficulty           CefrLevel
+  icon                 String?
+  systemPromptTemplate String           @db.Text
+  openingLine          String           @db.Text
+  requiredVocabulary   String[]         @default([])
+  grammarFocus         String[]         @default([])
+  goals                String[]         @default([])
+  displayOrder         Int              @default(0)
+  isActive             Boolean          @default(true)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
 
   sessions ConversationSession[]
 
@@ -4339,35 +4353,35 @@ model ConversationScenario {
 }
 
 model ConversationSession {
-  id               String              @id @default(uuid())
-  userId           String
-  scenarioId       String?
-  mode             ConversationMode
-  difficulty       CefrLevel
-  status           ConversationStatus  @default(ACTIVE)
-  turnCount        Int                 @default(0)
-  summary          String?             @db.Text
-  startedAt        DateTime            @default(now())
-  lastMessageAt    DateTime            @default(now())
-  completedAt      DateTime?
+  id            String             @id @default(uuid())
+  userId        String
+  scenarioId    String?
+  mode          ConversationMode
+  difficulty    CefrLevel
+  status        ConversationStatus @default(ACTIVE)
+  turnCount     Int                @default(0)
+  summary       String?            @db.Text
+  startedAt     DateTime           @default(now())
+  lastMessageAt DateTime           @default(now())
+  completedAt   DateTime?
 
-  overallScore      Int?
-  fluencyScore      Int?
-  grammarScore      Int?
-  vocabularyScore   Int?
-  pronunciationScore Int?
-  confidenceScore   Int?
-  naturalnessScore  Int?
-  feedback          String?            @db.Text
-  recommendedVocabulary String[]       @default([])
-  recommendedGrammar    String[]       @default([])
+  overallScore          Int?
+  fluencyScore          Int?
+  grammarScore          Int?
+  vocabularyScore       Int?
+  pronunciationScore    Int?
+  confidenceScore       Int?
+  naturalnessScore      Int?
+  feedback              String?  @db.Text
+  recommendedVocabulary String[] @default([])
+  recommendedGrammar    String[] @default([])
 
   // Linked once the session finishes — created fresh (lessonId/topicId left
   // null, both nullable on SpeakingSession) purely as an Analytics sink, so
   // this conversation's aggregate scores surface in the user's existing
   // SPEAKING skill radar/weakness detection/dashboard without touching any
   // of those already-complete read paths.
-  speakingSessionId String?            @unique
+  speakingSessionId String? @unique
 
   user     User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   scenario ConversationScenario? @relation(fields: [scenarioId], references: [id])
@@ -4378,14 +4392,161 @@ model ConversationSession {
 }
 
 model ConversationMessage {
-  id        String              @id @default(uuid())
+  id        String           @id @default(uuid())
   sessionId String
   role      ConversationRole
-  content   String              @db.Text
+  content   String           @db.Text
   feedback  Json?
-  createdAt DateTime            @default(now())
+  createdAt DateTime         @default(now())
 
   session ConversationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId, createdAt])
+}
+
+// ==================================================
+// Study Together / Study Rooms
+// ==================================================
+// Cooperative realtime study sessions — distinct from Arena (competitive
+// PvP quiz battles). A room is a persistent container; a session is one
+// timed, shared-goal study period within it (a room can host many
+// sessions over its lifetime — "room persistence" + "session history").
+
+enum StudyRoomVisibility {
+  PUBLIC
+  PRIVATE
+  INVITE_ONLY
+}
+
+enum StudyRoomStatus {
+  WAITING
+  IN_SESSION
+  ENDED
+}
+
+enum StudyRoomMemberRole {
+  HOST
+  MEMBER
+}
+
+enum StudyRoomMemberStatus {
+  ACTIVE
+  MUTED
+  KICKED
+  BANNED
+  LEFT
+}
+
+model StudyRoom {
+  id               String              @id @default(uuid())
+  hostId           String
+  name             String
+  description      String?
+  topic            String?
+  visibility       StudyRoomVisibility @default(PUBLIC)
+  inviteCode       String?             @unique
+  goalMinutes      Int                 @default(25)
+  maxMembers       Int                 @default(8)
+  status           StudyRoomStatus     @default(WAITING)
+  scheduledStartAt DateTime?
+  reminderSentAt   DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  host     User              @relation("StudyRoomHost", fields: [hostId], references: [id], onDelete: Cascade)
+  members  StudyRoomMember[]
+  sessions StudySession[]
+
+  @@index([visibility, status, createdAt])
+  @@index([hostId])
+  @@index([scheduledStartAt])
+}
+
+model StudyRoomMember {
+  id       String                @id @default(uuid())
+  roomId   String
+  userId   String
+  role     StudyRoomMemberRole   @default(MEMBER)
+  status   StudyRoomMemberStatus @default(ACTIVE)
+  ready    Boolean               @default(false)
+  joinedAt DateTime              @default(now())
+  leftAt   DateTime?
+
+  room StudyRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User      @relation("StudyRoomMemberUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+  @@index([userId, status])
+  @@index([roomId, status])
+}
+
+model StudySession {
+  id               String    @id @default(uuid())
+  roomId           String
+  goalMinutes      Int
+  startedAt        DateTime  @default(now())
+  endsAt           DateTime
+  endedAt          DateTime?
+  participantCount Int       @default(0)
+  summary          String?   @db.Text
+
+  room         StudyRoom                 @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  participants StudySessionParticipant[]
+
+  @@index([roomId, startedAt])
+  @@index([endedAt, endsAt])
+}
+
+model StudySessionParticipant {
+  id             String    @id @default(uuid())
+  sessionId      String
+  userId         String
+  joinedAt       DateTime  @default(now())
+  leftAt         DateTime?
+  minutesPresent Int       @default(0)
+  xpAwarded      Int       @default(0)
+
+  session StudySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User         @relation("StudySessionParticipantUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, userId])
+  @@index([userId])
+}
+
+// ==================================================
+// Admin Console / Feature Flags / AI Usage Ops
+// ==================================================
+
+model FeatureFlag {
+  key         String   @id
+  description String?
+  isEnabled   Boolean  @default(true)
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  updatedBy User? @relation("FeatureFlagUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+}
+
+// Aggregate-only Gemini call instrumentation — deliberately never stores
+// prompt/response content (Part 9's explicit privacy requirement), just
+// enough to compute request/success/failure/timeout counts, latency, and
+// per-module/per-user usage trends.
+model AiUsageLog {
+  id               String   @id @default(uuid())
+  module           String
+  success          Boolean
+  timedOut         Boolean  @default(false)
+  durationMs       Int
+  promptTokens     Int?
+  completionTokens Int?
+  errorType        String?
+  userId           String?
+  createdAt        DateTime @default(now())
+
+  user User? @relation("AiUsageLogUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([module, createdAt])
+  @@index([createdAt])
+  @@index([userId, createdAt])
 }

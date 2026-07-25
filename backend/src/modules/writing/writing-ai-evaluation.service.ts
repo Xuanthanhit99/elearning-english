@@ -91,6 +91,7 @@ Rules:
       models: [process.env.WRITING_GEMINI_MODEL ?? 'gemini-2.5-flash'],
       timeoutMs: Number(process.env.WRITING_GEMINI_TIMEOUT_MS ?? 45000),
       retries: 1,
+      module: 'writing_evaluation',
     });
     return this.normalize(parsed);
   }

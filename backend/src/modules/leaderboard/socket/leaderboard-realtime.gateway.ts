@@ -12,6 +12,8 @@ import {
   LeaderboardSocketUser,
 } from './leaderboard-cookie-auth.service';
 import { getAllowedOrigins } from '../../../config/cors.config';
+import { PrismaService } from '../../../prisma/prisma.service';
+import { AuthSessionService } from '../../auth/auth-session.service';
 
 type AuthenticatedSocket = Socket & {
   data: {
@@ -30,11 +32,26 @@ export class LeaderboardRealtimeGateway implements OnGatewayConnection {
   @WebSocketServer()
   server!: Server;
 
-  constructor(private readonly auth: LeaderboardCookieAuthService) {}
+  constructor(
+    private readonly auth: LeaderboardCookieAuthService,
+    private readonly prisma: PrismaService,
+    private readonly authSession: AuthSessionService,
+  ) {}
 
-  handleConnection(client: AuthenticatedSocket) {
+  async handleConnection(client: AuthenticatedSocket) {
     try {
       const user = this.auth.authenticate(client);
+
+      // A banned user's already-issued access token stays valid until
+      // expiry — every gateway only verified the JWT signature, so a ban
+      // never reached realtime features until this check was added.
+      if (await this.authSession.isBanned(user.id)) {
+        client.emit('leaderboard:unauthorized', {
+          message: 'Phiên đăng nhập không hợp lệ.',
+        });
+        client.disconnect(true);
+        return;
+      }
 
       client.data.user = user;
 
@@ -49,7 +66,7 @@ export class LeaderboardRealtimeGateway implements OnGatewayConnection {
   }
 
   @SubscribeMessage('leaderboard:join-group')
-  joinGroup(
+  async joinGroup(
     @ConnectedSocket()
     client: AuthenticatedSocket,
     @MessageBody()
@@ -61,6 +78,18 @@ export class LeaderboardRealtimeGateway implements OnGatewayConnection {
       return {
         joined: false,
       };
+    }
+
+    // A user only belongs to groups they have a real LeaderboardEntry in
+    // (global/club/skill groups are all populated the same way by the
+    // season job) — without this check, any authenticated user could join
+    // any group's realtime room and observe another cohort's live updates.
+    const entry = await this.prisma.leaderboardEntry.findFirst({
+      where: { groupId: body.groupId, userId: client.data.user.id },
+      select: { id: true },
+    });
+    if (!entry) {
+      return { joined: false };
     }
 
     client.join(`leaderboard:group:${body.groupId}`);

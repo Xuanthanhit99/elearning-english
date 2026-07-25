@@ -48,7 +48,7 @@ Rules:
 - Explain notes in Vietnamese.
 `;
 
-    const aiData = await this.geminiService.generateJson(prompt);
+    const aiData = await this.geminiService.generateJson(prompt, { module: 'pronunciation' });
 
     return this.prisma.pronunciationExercise.create({
       data: {
@@ -136,7 +136,7 @@ Rules:
 - Notes must be Vietnamese.
 `;
 
-    const aiData = await this.geminiService.generateJson(prompt);
+    const aiData = await this.geminiService.generateJson(prompt, { module: 'pronunciation' });
 
     return this.prisma.pronunciationResult.create({
       data: {
