@@ -1,5 +1,5 @@
 import { Provider } from '@nestjs/common';
-import Redis from 'ioredis';
+import { createRedisClient } from '../../config/redis.config';
 
 /*
  * Stage 6D.3: kết nối Redis riêng cho Listening, dùng cho cold-start
@@ -14,10 +14,7 @@ export const LISTENING_REDIS = Symbol('LISTENING_REDIS');
 export const ListeningRedisProvider: Provider = {
   provide: LISTENING_REDIS,
   useFactory: () =>
-    new Redis({
-      host: process.env.REDIS_HOST ?? '127.0.0.1',
-      port: Number(process.env.REDIS_PORT ?? 6379),
-      password: process.env.REDIS_PASSWORD || undefined,
+    createRedisClient({
       maxRetriesPerRequest: null,
     }),
 };

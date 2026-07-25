@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus, Injectable, OnModuleDestroy } from '@nestjs/common';
 import Redis from 'ioredis';
+import { getRedisConnectionOptions } from '../../../config/redis.config';
 
 export type ArenaRateLimitAction =
   | 'queueJoin'
@@ -58,9 +59,7 @@ export class ArenaRateLimiterService implements OnModuleDestroy {
 
   constructor() {
     this.redis = new Redis({
-      host: process.env.REDIS_HOST ?? '127.0.0.1',
-      port: Number(process.env.REDIS_PORT ?? 6379),
-      password: process.env.REDIS_PASSWORD || undefined,
+      ...getRedisConnectionOptions(),
       maxRetriesPerRequest: 1,
       enableOfflineQueue: false,
       lazyConnect: true,

@@ -1,5 +1,4 @@
 import { Global, Module } from '@nestjs/common';
-import Redis from 'ioredis';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
@@ -18,6 +17,7 @@ import { AUTH_REDIS } from './auth.constants';
 import { AuditLogModule } from '../audit-log/audit-log.module';
 import { MailModule } from '../mail/mail.module';
 import { getJwtModuleSecret } from './auth-secrets.util';
+import { createRedisClient } from '../../config/redis.config';
 
 @Global()
 @Module({
@@ -49,10 +49,7 @@ import { getJwtModuleSecret } from './auth-secrets.util';
     {
       provide: AUTH_REDIS,
       useFactory: () =>
-        new Redis({
-          host: process.env.REDIS_HOST ?? '127.0.0.1',
-          port: Number(process.env.REDIS_PORT ?? 6379),
-          password: process.env.REDIS_PASSWORD || undefined,
+        createRedisClient({
           maxRetriesPerRequest: null,
         }),
     },

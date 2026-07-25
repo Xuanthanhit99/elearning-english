@@ -10,6 +10,7 @@ import helmet from 'helmet';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { getAllowedOrigins } from './config/cors.config';
 import { RedisIoAdapter } from './realtime/redis-io.adapter';
+import { validateProductionEnvironment } from './config/production-env.validation';
 
 const bootstrapLogger = new Logger('Bootstrap');
 
@@ -29,6 +30,8 @@ process.on('uncaughtException', (error) => {
 });
 
 async function bootstrap() {
+  validateProductionEnvironment();
+
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Without this, BullMQ workers/DB connections/websocket clients could be
@@ -51,7 +54,8 @@ async function bootstrap() {
     origin: getAllowedOrigins(),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type'],
+    allowedHeaders: ['Content-Type', 'X-Request-Id'],
+    exposedHeaders: ['X-Request-Id'],
   });
 
   app.use('/uploads', express.static(join(process.cwd(), 'uploads')));

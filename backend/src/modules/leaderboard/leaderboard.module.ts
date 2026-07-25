@@ -21,13 +21,12 @@ import { LeaderboardRealtimeGateway } from './socket/leaderboard-realtime.gatewa
 import { SocialLeaderboardController } from './social-leaderboard.controller';
 import { SocialLeaderboardService } from './social-leaderboard.service';
 import { XpService } from './xp.service';
+import { getRedisConnectionOptions } from '../../config/redis.config';
 
 class LeaderboardRedisClient extends Redis implements OnModuleDestroy {
   constructor() {
     super({
-      host: process.env.REDIS_HOST ?? '127.0.0.1',
-      port: Number(process.env.REDIS_PORT ?? 6379),
-      password: process.env.REDIS_PASSWORD || undefined,
+      ...getRedisConnectionOptions(),
       maxRetriesPerRequest: null,
     });
   }

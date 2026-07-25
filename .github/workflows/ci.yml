@@ -1,0 +1,134 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Prisma schema
+        run: npx prisma validate
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Check migration files
+        shell: bash
+        run: |
+          missing=0
+          for dir in prisma/migrations/*; do
+            if [ -d "$dir" ] && [ ! -f "$dir/migration.sql" ]; then
+              echo "::error file=$dir::Missing migration.sql"
+              missing=1
+            fi
+          done
+          exit "$missing"
+
+      - name: Build backend
+        run: npm run build
+
+      - name: Run backend tests
+        run: npm test -- --runInBand
+
+      - name: Audit critical backend dependencies
+        run: npm audit --audit-level=critical
+
+      - name: Audit high backend dependencies
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: english-web-build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: english-web-build/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck frontend
+        run: npm run typecheck
+
+      - name: Check translations
+        run: npm run i18n:check
+
+      - name: Build frontend
+        env:
+          NEXT_PUBLIC_API_URL: https://api.beaconvie.com
+          NEXT_PUBLIC_SOCKET_URL: https://api.beaconvie.com
+          NEXT_PUBLIC_SITE_URL: https://beaconvie.com
+        run: npm run build
+
+      - name: Run frontend smoke tests
+        run: npm test
+
+      - name: Audit critical frontend dependencies
+        run: npm audit --audit-level=critical
+
+      - name: Audit high frontend dependencies
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  release-scripts:
+    name: Release Scripts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Parse release scripts
+        run: |
+          node --check scripts/smoke/release-smoke.mjs
+          node --check scripts/load/baseline-load.mjs
+
+  secret-scan:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

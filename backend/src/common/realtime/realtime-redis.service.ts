@@ -1,5 +1,6 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import Redis from 'ioredis';
+import { getRedisConnectionOptions } from '../../config/redis.config';
 
 /**
  * Dedicated Redis client for cross-instance realtime primitives (presence
@@ -14,9 +15,7 @@ export class RealtimeRedisService implements OnModuleDestroy {
 
   constructor() {
     this.client = new Redis({
-      host: process.env.REDIS_HOST ?? '127.0.0.1',
-      port: Number(process.env.REDIS_PORT ?? 6379),
-      password: process.env.REDIS_PASSWORD || undefined,
+      ...getRedisConnectionOptions(),
       maxRetriesPerRequest: null,
     });
   }

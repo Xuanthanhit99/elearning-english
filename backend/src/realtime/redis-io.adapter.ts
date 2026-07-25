@@ -3,6 +3,7 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 import { createAdapter } from '@socket.io/redis-adapter';
 import Redis from 'ioredis';
 import { ServerOptions } from 'socket.io';
+import { getRedisConnectionOptions } from '../config/redis.config';
 
 /*
  * Shared Socket.IO Redis adapter for the whole app (not Arena-specific) —
@@ -21,9 +22,7 @@ export class RedisIoAdapter extends IoAdapter {
 
   connectToRedis(): void {
     this.pubClient = new Redis({
-      host: process.env.REDIS_HOST ?? '127.0.0.1',
-      port: Number(process.env.REDIS_PORT ?? 6379),
-      password: process.env.REDIS_PASSWORD || undefined,
+      ...getRedisConnectionOptions(),
       maxRetriesPerRequest: null,
     });
     this.subClient = this.pubClient.duplicate();

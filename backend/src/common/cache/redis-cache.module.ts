@@ -1,9 +1,9 @@
 import { Global, Module } from '@nestjs/common';
-import Redis from 'ioredis';
 import { CONTENT_REDIS } from './cache.constants';
 import { RedisCacheService } from './redis-cache.service';
 import { CacheMetricsService } from './cache-metrics.service';
 import { ContentCacheService } from './content-cache.service';
+import { createRedisClient } from '../../config/redis.config';
 
 /**
  * Shared lesson-content cache, reusing the same Redis instance (env vars)
@@ -18,10 +18,7 @@ import { ContentCacheService } from './content-cache.service';
     {
       provide: CONTENT_REDIS,
       useFactory: () =>
-        new Redis({
-          host: process.env.REDIS_HOST ?? '127.0.0.1',
-          port: Number(process.env.REDIS_PORT ?? 6379),
-          password: process.env.REDIS_PASSWORD || undefined,
+        createRedisClient({
           maxRetriesPerRequest: null,
           retryStrategy: (times) => Math.min(times * 200, 2000),
         }),

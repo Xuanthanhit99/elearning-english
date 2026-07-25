@@ -1,6 +1,7 @@
 import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
 import Redis from 'ioredis';
 import { PrismaService } from './prisma/prisma.service';
+import { getRedisConnectionOptions } from './config/redis.config';
 
 @Controller('health')
 export class HealthController {
@@ -44,9 +45,7 @@ export class HealthController {
     }
 
     const redis = new Redis({
-      host: process.env.REDIS_HOST ?? '127.0.0.1',
-      port: Number(process.env.REDIS_PORT ?? 6379),
-      password: process.env.REDIS_PASSWORD || undefined,
+      ...getRedisConnectionOptions(),
       maxRetriesPerRequest: 1,
       enableOfflineQueue: false,
       lazyConnect: true,

@@ -79,6 +79,7 @@ import { StudyRoomModule } from './modules/study-room/study-room.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { SearchModule } from './modules/search/search.module';
 import { HealthController } from './health.controller';
+import { getRedisConnectionOptions } from './config/redis.config';
 
 @Module({
   imports: [
@@ -95,12 +96,8 @@ import { HealthController } from './health.controller';
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 20 }]),
     BullModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        connection: {
-          host: configService.get<string>('REDIS_HOST', '127.0.0.1'),
-          port: configService.get<number>('REDIS_PORT', 6379),
-          password: configService.get<string>('REDIS_PASSWORD') || undefined,
-        },
+      useFactory: (_configService: ConfigService) => ({
+        connection: getRedisConnectionOptions(),
       }),
     }),
     ServeStaticModule.forRoot({
