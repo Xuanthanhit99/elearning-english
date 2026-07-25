@@ -21,7 +21,7 @@ const bootstrapLogger = new Logger('Bootstrap');
 // happens to the process, only that both are always logged before anything else.
 process.on('unhandledRejection', (reason) => {
   bootstrapLogger.error(
-    `Unhandled promise rejection: ${reason instanceof Error ? reason.stack ?? reason.message : String(reason)}`,
+    `Unhandled promise rejection: ${reason instanceof Error ? (reason.stack ?? reason.message) : String(reason)}`,
   );
 });
 
@@ -49,12 +49,38 @@ async function bootstrap() {
       crossOriginResourcePolicy: { policy: 'cross-origin' },
     }),
   );
+  const allowedOrigins = getAllowedOrigins();
 
   app.enableCors({
-    origin: getAllowedOrigins(),
+    origin: (origin, callback) => {
+      // Cho phép health check, curl hoặc server-to-server không có Origin.
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      const normalizedOrigin = origin.replace(/\/+$/, '');
+
+      if (allowedOrigins.includes(normalizedOrigin)) {
+        return callback(null, true);
+      }
+
+      console.error('[CORS] Blocked origin:', origin);
+
+      return callback(
+        new Error(`Origin ${origin} is not allowed by CORS`),
+        false,
+      );
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'X-Request-Id'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'Origin',
+      'X-Requested-With',
+      'X-Request-Id',
+    ],
     exposedHeaders: ['X-Request-Id'],
   });
 
@@ -89,6 +115,18 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
 
-  await app.listen(process.env.PORT ?? 3002);
+  const port = Number(process.env.PORT || 3002);
+
+  await app.listen(port, '0.0.0.0');
+
+  bootstrapLogger.log(`Backend is listening on 0.0.0.0:${port}`);
 }
-bootstrap();
+bootstrap().catch((error) => {
+  bootstrapLogger.error(
+    `Bootstrap failed: ${
+      error instanceof Error ? (error.stack ?? error.message) : String(error)
+    }`,
+  );
+
+  process.exit(1);
+});

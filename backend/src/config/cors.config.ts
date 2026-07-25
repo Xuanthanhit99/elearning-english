@@ -1,8 +1,8 @@
-export function getAllowedOrigins() {
+export function getAllowedOrigins(): string[] {
   const configured = [process.env.FRONTEND_URL, process.env.CORS_ORIGINS]
     .filter(Boolean)
     .flatMap((value) => String(value).split(','))
-    .map((origin) => origin.trim())
+    .map((origin) => origin.trim().replace(/\/+$/, ''))
     .filter(Boolean);
 
   if (configured.length > 0) {
