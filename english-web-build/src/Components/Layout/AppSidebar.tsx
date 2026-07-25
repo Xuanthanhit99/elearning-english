@@ -57,6 +57,7 @@ function buildGroups(t: (key: string) => string): SidebarGroup[] {
         { label: t("sidebar.home"), href: "/dashboard", icon: Home },
         { label: t("sidebar.todayLesson"), href: "/learn", icon: BookOpen },
         { label: t("sidebar.learningPath"), href: "/learning-path", icon: Compass },
+        { label: t("sidebar.placement"), href: "/placement", icon: Compass }
       ],
     },
     {
@@ -82,7 +83,7 @@ function buildGroups(t: (key: string) => string): SidebarGroup[] {
     {
       title: "Đồng hành",
       items: [
-        { label: t("sidebar.arena"), href: "/arena", icon: MessageCircle },
+        { label: t("sidebar.Arena"), href: "/arena", icon: MessageCircle },
         { label: t("sidebar.discover"), href: "/discover", icon: Compass },
         { label: t("sidebar.studyRooms"), href: "/study-rooms", icon: MessageCircle },
       ],

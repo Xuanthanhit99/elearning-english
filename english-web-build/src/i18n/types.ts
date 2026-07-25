@@ -139,6 +139,7 @@ export type Dictionary = {
     collapse: string;
     expand: string;
     closeMenu: string;
+    placement: string;
   };
   settings: {
     badge: string;

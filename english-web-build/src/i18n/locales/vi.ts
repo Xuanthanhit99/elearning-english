@@ -122,6 +122,7 @@ const vi: Dictionary = {
     collapse: "Thu gọn sidebar",
     expand: "Mở rộng sidebar",
     closeMenu: "Đóng menu",
+    placement: "Kiểm tra trình độ"
   },
   settings: {
     badge: "Cài đặt BeaconVie",
