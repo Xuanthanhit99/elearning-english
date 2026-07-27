@@ -42,6 +42,7 @@ export class ListeningJobProcessor extends WorkerHost {
   }
 
   async process(job: Job) {
+    this.logger.log(`Processing Listening job: id=${job.id}, name=${job.name}`);
     switch (job.name) {
       case LISTENING_GENERATION_JOB.GENERATE_BATCH:
         return this.generateBatch(job as Job<GenerateBatchJobData>);
@@ -211,6 +212,7 @@ export class ListeningJobProcessor extends WorkerHost {
   }
 
   private async generateAudio(job: Job<GenerateAudioJobData>) {
+    this.logger.log(`Processing Listening job: id=${job.id}, name=${job.name}`);
     const { questionId, transcript } = job.data;
 
     const question = await this.prisma.listeningQuestion.findUnique({
@@ -321,7 +323,9 @@ Format:
   }
 ]`;
 
-    const result = await this.geminiService.generateJson(prompt, { module: 'listening_job' });
+    const result = await this.geminiService.generateJson(prompt, {
+      module: 'listening_job',
+    });
 
     if (!Array.isArray(result)) {
       return [];
