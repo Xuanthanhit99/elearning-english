@@ -105,17 +105,20 @@ export class ListeningTtsService {
       // await fs.writeFile(filepath, response.audioContent as Uint8Array);
       this.logger.log(`Đã ghi audio: ${filepath}`);
       return publicUrl;
-    } catch (error) {
+    } catch (error: unknown) {
       this.logger.error(
         `Không tạo được audio Listening: directory=${directory}, filepath=${filepath}`,
         error instanceof Error ? error.stack : String(error),
       );
+      const message = error instanceof Error ? error.message : String(error);
 
+      throw new Error(`Google TTS generation failed: ${message}`, {
+        cause: error,
+      });
       /*
        * Không chặn việc tạo question nếu TTS lỗi.
        * Question vẫn có transcript để retry TTS sau.
        */
-      return error;
     }
   }
 }
