@@ -20,7 +20,13 @@ COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=build /app/dist ./dist
 COPY scripts ./scripts
-RUN mkdir -p uploads/community && chown -R node:node /app/uploads
+# RUN mkdir -p uploads/community && chown -R node:node /app/uploads
+RUN mkdir -p \
+      /app/uploads/community \
+      /app/storage/listening-audio \
+      /app/storage/tts-audio \
+    && chown -R node:node /app/uploads /app/storage
+
 USER node
 EXPOSE 3002
 CMD ["node", "dist/src/main.js"]
