@@ -1,5 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
+require('dotenv').config();
 
 const credentialsJson = process.env.GOOGLE_TTS_CREDENTIALS_JSON;
 const credentialsPath =
