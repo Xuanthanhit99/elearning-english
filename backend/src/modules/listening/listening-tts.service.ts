@@ -61,6 +61,12 @@ export class ListeningTtsService {
         // File chưa tồn tại.
       }
 
+      this.logger.log(
+        `Bắt đầu tạo audio: filepath=${filepath}, voice=${
+          process.env.LISTENING_TTS_VOICE ?? 'en-US-Neural2-F'
+        }`,
+      );
+
       const [response] = await this.client.synthesizeSpeech({
         input: {
           text: normalized,
@@ -75,16 +81,33 @@ export class ListeningTtsService {
         },
       });
 
+      this.logger.log(
+        `Google TTS phản hồi: hasAudio=${Boolean(response.audioContent)}`,
+      );
+
+      const audioContent = response.audioContent;
+
       if (!response.audioContent) {
-        return null;
+        throw new Error('Google TTS returned empty audio content');
       }
 
-      await fs.writeFile(filepath, response.audioContent as Uint8Array);
+      let audioBuffer: Buffer;
 
+      if (typeof audioContent === 'string') {
+        audioBuffer = Buffer.from(audioContent, 'base64');
+      } else if (Buffer.isBuffer(audioContent)) {
+        audioBuffer = audioContent;
+      } else {
+        audioBuffer = Buffer.from(audioContent as Uint8Array);
+      }
+
+      await fs.writeFile(filepath, audioBuffer);
+      // await fs.writeFile(filepath, response.audioContent as Uint8Array);
+      this.logger.log(`Đã ghi audio: ${filepath}`);
       return publicUrl;
     } catch (error) {
       this.logger.error(
-        'Không tạo được audio Listening',
+        `Không tạo được audio Listening: directory=${directory}, filepath=${filepath}`,
         error instanceof Error ? error.stack : String(error),
       );
 
@@ -92,7 +115,7 @@ export class ListeningTtsService {
        * Không chặn việc tạo question nếu TTS lỗi.
        * Question vẫn có transcript để retry TTS sau.
        */
-      return null;
+      return error;
     }
   }
 }
