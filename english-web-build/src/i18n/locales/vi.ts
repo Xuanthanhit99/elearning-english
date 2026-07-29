@@ -122,6 +122,10 @@ const vi: Dictionary = {
     collapse: "Thu gọn sidebar",
     expand: "Mở rộng sidebar",
     closeMenu: "Đóng menu",
+    groupAdmin: "Quản trị tài liệu",
+    documentLibrary: "Thư viện tài liệu",
+    documentModeration: "Kiểm duyệt tài liệu",
+    documentGenerator: "Tạo tài liệu AI",
     placement: "Kiểm tra trình độ"
   },
   settings: {

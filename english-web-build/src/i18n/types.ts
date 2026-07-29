@@ -140,6 +140,10 @@ export type Dictionary = {
     expand: string;
     closeMenu: string;
     placement: string;
+    groupAdmin: string;
+    documentLibrary: string;
+    documentModeration: string;
+    documentGenerator: string;
   };
   settings: {
     badge: string;

@@ -330,6 +330,152 @@ export function createNotificationTemplateRegistry(
       },
     },
     {
+      eventType: NotificationEventType.DOCUMENT_UPLOAD_RECEIVED,
+      eventVersion: 1,
+      templateKey: 'document-upload-received.v1',
+      render: ({ metadata }) =>
+        safeResult({
+          templateKey: 'document-upload-received.v1',
+          title: getText(metadata, 'title', 'Đã nhận tài liệu của bạn'),
+          body: getText(metadata, 'message', 'Tài liệu của bạn đang được xử lý.'),
+          actionUrl: getInternalHref(urls, metadata, '/my-documents'),
+        }),
+    },
+    {
+      eventType: NotificationEventType.DOCUMENT_PROCESSING_FAILED,
+      eventVersion: 1,
+      templateKey: 'document-processing-failed.v1',
+      render: ({ metadata }) =>
+        safeResult({
+          templateKey: 'document-processing-failed.v1',
+          title: getText(metadata, 'title', 'Xử lý tài liệu thất bại'),
+          body: getText(metadata, 'message', 'Có lỗi khi xử lý tài liệu của bạn.'),
+          actionUrl: getInternalHref(urls, metadata, '/my-documents'),
+        }),
+    },
+    {
+      eventType: NotificationEventType.DOCUMENT_PENDING_REVIEW,
+      eventVersion: 1,
+      templateKey: 'document-pending-review.v1',
+      render: ({ metadata }) =>
+        safeResult({
+          templateKey: 'document-pending-review.v1',
+          title: getText(metadata, 'title', 'Tài liệu đang chờ duyệt'),
+          body: getText(metadata, 'message', 'Tài liệu của bạn đang chờ Admin xem xét.'),
+          actionUrl: getInternalHref(urls, metadata, '/my-documents'),
+        }),
+    },
+    {
+      eventType: NotificationEventType.DOCUMENT_CHANGES_REQUESTED,
+      eventVersion: 1,
+      templateKey: 'document-changes-requested.v1',
+      render: ({ metadata }) =>
+        safeResult({
+          templateKey: 'document-changes-requested.v1',
+          title: getText(metadata, 'title', 'Cần chỉnh sửa tài liệu'),
+          body: getText(metadata, 'message', 'Admin yêu cầu bạn chỉnh sửa tài liệu trước khi xuất bản.'),
+          actionUrl: getInternalHref(urls, metadata, '/my-documents'),
+        }),
+    },
+    {
+      eventType: NotificationEventType.DOCUMENT_APPROVED,
+      eventVersion: 1,
+      templateKey: 'document-approved.v1',
+      render: ({ metadata }) =>
+        safeResult({
+          templateKey: 'document-approved.v1',
+          title: getText(metadata, 'title', 'Tài liệu đã được duyệt'),
+          body: getText(metadata, 'message', 'Tài liệu của bạn đã được duyệt và sẽ sớm xuất bản.'),
+          actionUrl: getInternalHref(urls, metadata, '/my-documents'),
+        }),
+    },
+    {
+      eventType: NotificationEventType.DOCUMENT_PUBLISHED,
+      eventVersion: 1,
+      templateKey: 'document-published.v1',
+      render: ({ metadata }) => {
+        const slug = getText(metadata, 'slug', '');
+        return safeResult({
+          templateKey: 'document-published.v1',
+          title: getText(metadata, 'title', 'Tài liệu đã được xuất bản'),
+          body: getText(metadata, 'message', 'Tài liệu của bạn đã xuất bản trên Thư viện tài liệu.'),
+          actionUrl: getInternalHref(urls, metadata, slug ? `/documents/${slug}` : '/my-documents'),
+        });
+      },
+    },
+    {
+      eventType: NotificationEventType.DOCUMENT_REJECTED,
+      eventVersion: 1,
+      templateKey: 'document-rejected.v1',
+      render: ({ metadata }) =>
+        safeResult({
+          templateKey: 'document-rejected.v1',
+          title: getText(metadata, 'title', 'Tài liệu bị từ chối'),
+          body: getText(metadata, 'message', 'Tài liệu của bạn không được chấp nhận.'),
+          actionUrl: getInternalHref(urls, metadata, '/my-documents'),
+        }),
+    },
+    {
+      eventType: NotificationEventType.DOCUMENT_HIDDEN,
+      eventVersion: 1,
+      templateKey: 'document-hidden.v1',
+      render: ({ metadata }) =>
+        safeResult({
+          templateKey: 'document-hidden.v1',
+          title: getText(metadata, 'title', 'Tài liệu đã bị ẩn'),
+          body: getText(metadata, 'message', 'Tài liệu của bạn tạm thời bị ẩn khỏi Thư viện tài liệu.'),
+          actionUrl: getInternalHref(urls, metadata, '/my-documents'),
+        }),
+    },
+    {
+      eventType: NotificationEventType.DOCUMENT_REMOVED,
+      eventVersion: 1,
+      templateKey: 'document-removed.v1',
+      render: ({ metadata }) =>
+        safeResult({
+          templateKey: 'document-removed.v1',
+          title: getText(metadata, 'title', 'Tài liệu đã bị gỡ'),
+          body: getText(metadata, 'message', 'Tài liệu của bạn đã bị gỡ khỏi Thư viện tài liệu.'),
+          actionUrl: getInternalHref(urls, metadata, '/my-documents'),
+        }),
+    },
+    {
+      eventType: NotificationEventType.DOCUMENT_REPORT_RESOLVED,
+      eventVersion: 1,
+      templateKey: 'document-report-resolved.v1',
+      render: ({ metadata }) =>
+        safeResult({
+          templateKey: 'document-report-resolved.v1',
+          title: getText(metadata, 'title', 'Báo cáo của bạn đã được xử lý'),
+          body: getText(metadata, 'message', 'Admin đã xử lý báo cáo tài liệu bạn gửi.'),
+          actionUrl: getInternalHref(urls, metadata, '/documents'),
+        }),
+    },
+    {
+      eventType: NotificationEventType.DOCUMENT_GENERATION_COMPLETED,
+      eventVersion: 1,
+      templateKey: 'document-generation-completed.v1',
+      render: ({ metadata }) =>
+        safeResult({
+          templateKey: 'document-generation-completed.v1',
+          title: getText(metadata, 'title', 'Tạo tài liệu AI hoàn tất'),
+          body: getText(metadata, 'message', 'Tài liệu do Gemini tạo đã sẵn sàng để duyệt.'),
+          actionUrl: getInternalHref(urls, metadata, '/admin/documents/moderation'),
+        }),
+    },
+    {
+      eventType: NotificationEventType.DOCUMENT_GENERATION_FAILED,
+      eventVersion: 1,
+      templateKey: 'document-generation-failed.v1',
+      render: ({ metadata }) =>
+        safeResult({
+          templateKey: 'document-generation-failed.v1',
+          title: getText(metadata, 'title', 'Tạo tài liệu AI thất bại'),
+          body: getText(metadata, 'message', 'Quá trình tạo tài liệu bằng Gemini gặp lỗi.'),
+          actionUrl: getInternalHref(urls, metadata, '/admin/documents/generator'),
+        }),
+    },
+    {
       eventType: NotificationEventType.SYSTEM_NOTIFICATION,
       eventVersion: 1,
       templateKey: 'system-notification.v1',

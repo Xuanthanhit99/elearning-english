@@ -45,6 +45,8 @@ const protectedPrefixes = [
   "/lesson-builder",
   "/study-rooms",
   "/admin",
+  "/documents/upload",
+  "/my-documents",
 ];
 
 type AuthRouteInput = {

@@ -20,6 +20,24 @@ export enum NotificationEventType {
   // Phase F2.1 — fired at most once per account (lifetime placement).
   ARENA_PLACEMENT_COMPLETED = 'ARENA_PLACEMENT_COMPLETED',
   ARENA_RATING_DECAYED = 'ARENA_RATING_DECAYED',
+
+  // Document Library — community upload pipeline + admin moderation +
+  // Gemini generation lifecycle. No dedicated preference column exists
+  // yet (same situation as the Arena events above) so these are
+  // registered as ALWAYS_ENABLED in notification-preference.registry.ts
+  // rather than adding a new UserSettings migration for this pass.
+  DOCUMENT_UPLOAD_RECEIVED = 'DOCUMENT_UPLOAD_RECEIVED',
+  DOCUMENT_PROCESSING_FAILED = 'DOCUMENT_PROCESSING_FAILED',
+  DOCUMENT_PENDING_REVIEW = 'DOCUMENT_PENDING_REVIEW',
+  DOCUMENT_CHANGES_REQUESTED = 'DOCUMENT_CHANGES_REQUESTED',
+  DOCUMENT_APPROVED = 'DOCUMENT_APPROVED',
+  DOCUMENT_PUBLISHED = 'DOCUMENT_PUBLISHED',
+  DOCUMENT_REJECTED = 'DOCUMENT_REJECTED',
+  DOCUMENT_HIDDEN = 'DOCUMENT_HIDDEN',
+  DOCUMENT_REMOVED = 'DOCUMENT_REMOVED',
+  DOCUMENT_REPORT_RESOLVED = 'DOCUMENT_REPORT_RESOLVED',
+  DOCUMENT_GENERATION_COMPLETED = 'DOCUMENT_GENERATION_COMPLETED',
+  DOCUMENT_GENERATION_FAILED = 'DOCUMENT_GENERATION_FAILED',
 }
 
 export enum NotificationEventPriority {

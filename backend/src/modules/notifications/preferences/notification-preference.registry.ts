@@ -124,6 +124,26 @@ const ALWAYS_ENABLED_EVENT_TYPES = new Map<NotificationEventType, string>([
     NotificationEventType.ARENA_RATING_DECAYED,
     'Arena rating decay is an infrequent account-status notification; no dedicated preference column exists yet.',
   ],
+  ...([
+    NotificationEventType.DOCUMENT_UPLOAD_RECEIVED,
+    NotificationEventType.DOCUMENT_PROCESSING_FAILED,
+    NotificationEventType.DOCUMENT_PENDING_REVIEW,
+    NotificationEventType.DOCUMENT_CHANGES_REQUESTED,
+    NotificationEventType.DOCUMENT_APPROVED,
+    NotificationEventType.DOCUMENT_PUBLISHED,
+    NotificationEventType.DOCUMENT_REJECTED,
+    NotificationEventType.DOCUMENT_HIDDEN,
+    NotificationEventType.DOCUMENT_REMOVED,
+    NotificationEventType.DOCUMENT_REPORT_RESOLVED,
+    NotificationEventType.DOCUMENT_GENERATION_COMPLETED,
+    NotificationEventType.DOCUMENT_GENERATION_FAILED,
+  ].map(
+    (eventType) =>
+      [
+        eventType,
+        'Document Library lifecycle notification; no dedicated preference column exists yet — always enabled like SYSTEM_NOTIFICATION.',
+      ] as const,
+  )),
 ]);
 
 export const NOTIFICATION_PREFERENCE_KEYS = NOTIFICATION_PREFERENCE_RULES.map(

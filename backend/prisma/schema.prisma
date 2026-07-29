@@ -334,6 +334,15 @@ model User {
   studySessionParticipations StudySessionParticipant[]  @relation("StudySessionParticipantUser")
   featureFlagUpdates         FeatureFlag[]              @relation("FeatureFlagUpdatedBy")
   aiUsageLogs                AiUsageLog[]               @relation("AiUsageLogUser")
+
+  learningDocuments         LearningDocument[]          @relation("LearningDocumentAuthor")
+  approvedDocumentVersions  LearningDocumentVersion[]   @relation("LearningDocumentVersionApprovedBy")
+  documentBookmarks         DocumentBookmark[]
+  documentRatings           DocumentRating[]
+  documentDownloads         DocumentDownload[]
+  documentReportsFiled      DocumentReport[]            @relation("DocumentReportReporter")
+  documentReportsResolved   DocumentReport[]            @relation("DocumentReportResolver")
+  documentModerationHistory DocumentModerationHistory[] @relation("DocumentModerationHistoryActor")
 }
 
 model Course {
@@ -4549,4 +4558,392 @@ model AiUsageLog {
   @@index([module, createdAt])
   @@index([createdAt])
   @@index([userId, createdAt])
+}
+
+// ==================================================
+// Document Library (Thư viện tài liệu)
+// ==================================================
+
+enum LearningDocumentSource {
+  BEACONVIE
+  COMMUNITY
+}
+
+enum LearningDocumentCreationType {
+  ADMIN_UPLOAD
+  GEMINI_GENERATED
+  USER_UPLOAD
+}
+
+enum LearningDocumentStatus {
+  DRAFT
+  UPLOADING
+  PROCESSING
+  AI_REVIEWING
+  PENDING_ADMIN_REVIEW
+  CHANGES_REQUESTED
+  APPROVED
+  PUBLISHED
+  REJECTED
+  HIDDEN
+  REMOVED
+  FAILED
+}
+
+enum DocumentVersionStatus {
+  DRAFT
+  GENERATING
+  PROCESSING
+  VALIDATING
+  READY_FOR_REVIEW
+  APPROVED
+  PUBLISHED
+  REJECTED
+  FAILED
+  ARCHIVED
+}
+
+enum DocumentModerationDecision {
+  APPROVE
+  REVIEW
+  REJECT
+}
+
+enum DocumentRiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum DocumentReportStatus {
+  OPEN
+  REVIEWING
+  RESOLVED
+  DISMISSED
+}
+
+enum DocumentReportReason {
+  COPYRIGHT
+  INAPPROPRIATE_CONTENT
+  WRONG_INFORMATION
+  SPAM
+  MALICIOUS_FILE
+  PERSONAL_INFORMATION
+  BROKEN_FILE
+  OTHER
+}
+
+enum DocumentGenerationSectionStatus {
+  PENDING
+  GENERATING
+  COMPLETED
+  FAILED
+  NEEDS_ADMIN_ACTION
+}
+
+enum DocumentPublishMode {
+  SAVE_AS_DRAFT
+  REQUIRE_ADMIN_REVIEW
+  PUBLISH_AFTER_APPROVAL
+}
+
+model LearningDocument {
+  id                 String  @id @default(uuid())
+  title              String
+  slug               String  @unique
+  description        String?
+  summary            String?
+  learningObjectives Json?
+  tableOfContents    Json?
+
+  source       LearningDocumentSource
+  creationType LearningDocumentCreationType
+  status       LearningDocumentStatus       @default(DRAFT)
+
+  category            String
+  level               String?
+  language            String  @default("vi")
+  explanationLanguage String?
+  skills              Json?
+  tags                Json?
+  documentType        String?
+
+  coverStorageKey String?
+  coverUrl        String?
+
+  hasAnswerKey  Boolean @default(false)
+  hasAudio      Boolean @default(false)
+  allowDownload Boolean @default(true)
+  isFeatured    Boolean @default(false)
+  aiAssisted    Boolean @default(false)
+
+  activeVersionId String?                  @unique
+  activeVersion   LearningDocumentVersion? @relation("ActiveDocumentVersion", fields: [activeVersionId], references: [id], onDelete: SetNull)
+
+  authorId String?
+  author   User?   @relation("LearningDocumentAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  viewCount     Int   @default(0)
+  downloadCount Int   @default(0)
+  bookmarkCount Int   @default(0)
+  ratingAverage Float @default(0)
+  ratingCount   Int   @default(0)
+  reportCount   Int   @default(0)
+
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  versions          LearningDocumentVersion[]   @relation("DocumentVersions")
+  moderation        DocumentModeration?
+  moderationHistory DocumentModerationHistory[]
+  bookmarks         DocumentBookmark[]
+  ratings           DocumentRating[]
+  downloads         DocumentDownload[]
+  reports           DocumentReport[]
+  processingEvents  DocumentProcessingEvent[]
+
+  @@index([status, source])
+  @@index([category, level])
+  @@index([publishedAt])
+  @@index([authorId, status])
+  @@index([isFeatured, status])
+}
+
+model LearningDocumentVersion {
+  id         String           @id @default(uuid())
+  documentId String
+  document   LearningDocument @relation("DocumentVersions", fields: [documentId], references: [id], onDelete: Cascade)
+
+  versionNumber Int
+  status        DocumentVersionStatus @default(DRAFT)
+
+  originalFileName  String?
+  storageKey        String?
+  sourceStorageKey  String?
+  contentStorageKey String?
+  previewStorageKey String?
+
+  mimeType    String?
+  fileSize    Int?
+  pageCount   Int?
+  checksum    String?
+  contentHash String?
+
+  generationConfig Json?
+  outline          Json?
+  assembledContent Json?
+  validationReport Json?
+  qualityReport    Json?
+
+  generationProgress Int     @default(0)
+  currentStep        String?
+  repairRounds       Int     @default(0)
+  failureCode        String?
+  failureMessage     String?
+
+  generatedByJobId String?
+  generatedByModel String?
+  promptVersion    String?
+
+  approvedById String?
+  approvedBy   User?     @relation("LearningDocumentVersionApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+  approvedAt   DateTime?
+  publishedAt  DateTime?
+
+  sections         DocumentGenerationSection[]
+  moderation       DocumentModeration?
+  processingEvents DocumentProcessingEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  activeForDocument LearningDocument? @relation("ActiveDocumentVersion")
+
+  @@unique([documentId, versionNumber])
+  @@index([documentId, status])
+  @@index([contentHash])
+  @@index([checksum])
+}
+
+model DocumentGenerationSection {
+  id        String                  @id @default(uuid())
+  versionId String
+  version   LearningDocumentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+
+  sectionKey  String
+  sectionType String
+  orderIndex  Int
+  title       String?
+  required    Boolean                         @default(true)
+  status      DocumentGenerationSectionStatus @default(PENDING)
+
+  content          Json?
+  validationReport Json?
+
+  promptVersion String?
+  modelName     String?
+  attemptCount  Int     @default(0)
+
+  startedAt      DateTime?
+  completedAt    DateTime?
+  failureCode    String?
+  failureMessage String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([versionId, sectionKey])
+  @@index([versionId, status])
+}
+
+model DocumentModeration {
+  id         String                  @id @default(uuid())
+  documentId String                  @unique
+  document   LearningDocument        @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  versionId  String                  @unique
+  version    LearningDocumentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+
+  decision              DocumentModerationDecision
+  confidence            Float                      @default(0)
+  qualityScore          Float                      @default(0)
+  completenessScore     Float                      @default(0)
+  languageAccuracyScore Float                      @default(0)
+  levelSuitabilityScore Float                      @default(0)
+
+  detectedLanguage  String?
+  detectedLevel     String?
+  suggestedCategory String?
+  suggestedSkills   Json?
+
+  summary              String?
+  suggestedTitle       String?
+  suggestedDescription String?
+
+  copyrightRisk       DocumentRiskLevel @default(LOW)
+  personalDataRisk    DocumentRiskLevel @default(LOW)
+  unsafeContentRisk   DocumentRiskLevel @default(LOW)
+  spamRisk            DocumentRiskLevel @default(LOW)
+  promptInjectionRisk DocumentRiskLevel @default(LOW)
+
+  warnings              Json?
+  rejectionReasons      Json?
+  requiredChanges       Json?
+  duplicateOfDocumentId String?
+
+  modelName     String?
+  promptVersion String?
+  durationMs    Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([decision])
+}
+
+model DocumentModerationHistory {
+  id         String           @id @default(uuid())
+  documentId String
+  document   LearningDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  action     String
+  fromStatus String?
+  toStatus   String?
+
+  actorId       String?
+  actor         User?   @relation("DocumentModerationHistoryActor", fields: [actorId], references: [id], onDelete: SetNull)
+  isSystemActor Boolean @default(false)
+
+  internalReason    String?
+  userFacingReason  String?
+  requiredChanges   Json?
+  allowResubmission Boolean @default(true)
+  metadata          Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([documentId, createdAt])
+  @@index([actorId, createdAt])
+}
+
+model DocumentBookmark {
+  id         String           @id @default(uuid())
+  documentId String
+  document   LearningDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime         @default(now())
+
+  @@unique([userId, documentId])
+  @@index([documentId])
+}
+
+model DocumentRating {
+  id         String           @id @default(uuid())
+  documentId String
+  document   LearningDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  value      Int
+  comment    String?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@unique([userId, documentId])
+  @@index([documentId])
+}
+
+model DocumentDownload {
+  id         String           @id @default(uuid())
+  documentId String
+  document   LearningDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  versionId  String
+  userId     String
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipHash     String?
+  createdAt  DateTime         @default(now())
+
+  @@index([documentId, userId, createdAt])
+  @@index([documentId, createdAt])
+}
+
+model DocumentReport {
+  id         String           @id @default(uuid())
+  documentId String
+  document   LearningDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  reporterId String
+  reporter   User             @relation("DocumentReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  reason      DocumentReportReason
+  description String?
+  status      DocumentReportStatus @default(OPEN)
+
+  resolution   String?
+  resolvedById String?
+  resolvedBy   User?     @relation("DocumentReportResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolvedAt   DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([documentId, status])
+  @@index([reporterId, createdAt])
+}
+
+model DocumentProcessingEvent {
+  id         String                   @id @default(uuid())
+  documentId String
+  document   LearningDocument         @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  versionId  String?
+  version    LearningDocumentVersion? @relation(fields: [versionId], references: [id], onDelete: Cascade)
+
+  step     String
+  status   String
+  progress Int     @default(0)
+  message  String?
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([versionId, createdAt])
+  @@index([documentId, createdAt])
 }

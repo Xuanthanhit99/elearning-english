@@ -36,6 +36,10 @@ import { NotificationsSettingsListener } from './settings-updated.listener';
     NotificationScheduler,
     NotificationsSettingsListener,
   ],
-  exports: [NotificationsService, NotificationEventPublisher],
+  // NotificationCookieAuthService is generic JWT-cookie socket auth (not
+  // notification-specific) — exported so other realtime gateways (e.g.
+  // DocumentProgressGateway) can reuse it instead of re-implementing the
+  // same cookie-parsing + JWT-verify logic.
+  exports: [NotificationsService, NotificationEventPublisher, NotificationCookieAuthService],
 })
 export class NotificationsModule {}

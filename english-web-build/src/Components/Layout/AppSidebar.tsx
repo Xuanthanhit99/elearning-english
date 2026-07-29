@@ -9,6 +9,7 @@ import {
   Bell,
   CheckCircle2,
   Compass,
+  FileText,
   Headphones,
   History,
   Home,
@@ -16,9 +17,9 @@ import {
   MessageCircle,
   Mic2,
   NotebookPen,
-  PawPrint,
   Settings,
   ShieldCheck,
+  Sparkles,
   TrendingUp,
   Trophy,
   Users,
@@ -30,6 +31,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { useTranslation } from "@/src/hooks/useTranslation";
+import { useAuthStore } from "@/src/store/authStore";
 
 type SidebarItem = {
   label: string;
@@ -49,8 +51,8 @@ type AppSidebarProps = {
   onMobileOpenChange: (value: boolean) => void;
 };
 
-function buildGroups(t: (key: string) => string): SidebarGroup[] {
-  return [
+function buildGroups(t: (key: string) => string, role?: string | null): SidebarGroup[] {
+  const groups: SidebarGroup[] = [
     {
       title: "Chính",
       items: [
@@ -100,6 +102,23 @@ function buildGroups(t: (key: string) => string): SidebarGroup[] {
       ],
     },
   ];
+
+  // Document Library admin routes are gated to ADMIN only (the backend's
+  // RolesGuard on /admin/documents/* only accepts ADMIN, not MODERATOR) —
+  // this nav entry is UX-only, matching the pattern already used by
+  // app/(main)/admin/page.tsx for its own access gate.
+  if (role === "ADMIN") {
+    groups.push({
+      title: t("sidebar.groupAdmin"),
+      items: [
+        { label: t("sidebar.documentLibrary"), href: "/admin/documents", icon: FileText },
+        { label: t("sidebar.documentModeration"), href: "/admin/documents/moderation", icon: ShieldCheck },
+        { label: t("sidebar.documentGenerator"), href: "/admin/documents/generator", icon: Sparkles },
+      ],
+    });
+  }
+
+  return groups;
 }
 
 function isActive(pathname: string, item: SidebarItem) {
@@ -117,7 +136,8 @@ export default function AppSidebar({
 }: AppSidebarProps) {
   const pathname = usePathname();
   const { t } = useTranslation();
-  const groups = buildGroups(t);
+  const currentUser = useAuthStore((s) => s.user);
+  const groups = buildGroups(t, currentUser?.role);
 
   useEffect(() => {
     onMobileOpenChange(false);

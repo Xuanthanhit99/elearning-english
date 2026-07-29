@@ -7,6 +7,18 @@ const REQUIRED_PRODUCTION_ENV = [
   'AUTH_COOKIE_DOMAIN',
 ];
 
+// Document Library storage: only required when documents are enabled and
+// the provider is R2 (the production default — see
+// document-storage.config.ts). Skipped entirely when
+// DOCUMENTS_ENABLED=false or DOCUMENT_STORAGE_PROVIDER=local, so this
+// never blocks deploys of environments that haven't turned the feature on.
+const REQUIRED_R2_ENV = [
+  'R2_ACCOUNT_ID',
+  'R2_ACCESS_KEY_ID',
+  'R2_SECRET_ACCESS_KEY',
+  'R2_BUCKET_NAME',
+];
+
 const PLACEHOLDER_PATTERNS = [
   /replace-with/i,
   /example\.com/i,
@@ -52,6 +64,15 @@ export function validateProductionEnvironment() {
     Boolean(process.env.REDIS_URL?.trim()) ||
     Boolean(process.env.REDIS_HOST?.trim());
 
+  const documentsEnabled = process.env.DOCUMENTS_ENABLED?.trim().toLowerCase() !== 'false';
+  const documentStorageProvider = (
+    process.env.DOCUMENT_STORAGE_PROVIDER?.trim().toLowerCase() || 'r2'
+  );
+  const missingR2 =
+    documentsEnabled && documentStorageProvider !== 'local'
+      ? REQUIRED_R2_ENV.filter((name) => !String(process.env[name] ?? '').trim())
+      : [];
+
   const problems = [
     ...missing.map((name) => `${name} is required`),
     ...insecure.map((name) => `${name} still looks like a placeholder`),
@@ -65,6 +86,9 @@ export function validateProductionEnvironment() {
     ...(duplicatedSecrets
       ? ['JWT_ACCESS_SECRET and JWT_REFRESH_SECRET must be different']
       : []),
+    ...missingR2.map(
+      (name) => `${name} is required (DOCUMENTS_ENABLED=true, DOCUMENT_STORAGE_PROVIDER=r2)`,
+    ),
   ];
 
   if (problems.length > 0) {

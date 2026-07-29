@@ -80,6 +80,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { SearchModule } from './modules/search/search.module';
 import { HealthController } from './health.controller';
 import { getRedisConnectionOptions } from './config/redis.config';
+import { DocumentsModule } from './modules/documents/documents.module';
 
 @Module({
   imports: [
@@ -183,6 +184,7 @@ import { getRedisConnectionOptions } from './config/redis.config';
     StudyRoomModule,
     AnalyticsModule,
     SearchModule,
+    DocumentsModule,
   ],
   providers: [
     GeminiService,
