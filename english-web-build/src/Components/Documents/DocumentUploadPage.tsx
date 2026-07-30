@@ -7,11 +7,14 @@ import { FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from "reac
 import {
   BeaconVieButton,
   BeaconVieCard,
+  BeaconVieLoadingState,
   BeaconVieProgress,
   BeaconVieSectionHeader,
+  BeaconVieState,
 } from "@/src/Components/UI/BeaconVie";
 import { getApiErrorMessage } from "@/src/lib/api-error";
 import { DocumentLevel, uploadDocument } from "@/src/lib/documents-api";
+import { useCommunityUploadAccess } from "@/src/lib/use-community-upload-access";
 import {
   connectDocumentsSocket,
   subscribeToDocument,
@@ -70,6 +73,7 @@ export default function DocumentUploadPage() {
   const [error, setError] = useState("");
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [result, setResult] = useState<{ documentId: string } | null>(null);
+  const { canUpload, loading: accessLoading } = useCommunityUploadAccess();
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -154,6 +158,30 @@ export default function DocumentUploadPage() {
 
   if (result) {
     return <UploadProgressView documentId={result.documentId} onDone={() => router.push(`/my-documents?highlight=${result.documentId}`)} />;
+  }
+
+  // UX-only gate — the backend (CommunityDocumentUploadGuard) is the
+  // real enforcement even if this were bypassed entirely.
+  if (accessLoading || canUpload === null) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-6 lg:px-8">
+        <BeaconVieLoadingState label="Đang kiểm tra quyền truy cập..." />
+      </div>
+    );
+  }
+
+  if (!canUpload) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-6 lg:px-8">
+        <BeaconVieState
+          tone="soft"
+          title="Tính năng đang trong giai đoạn thử nghiệm nội bộ"
+          description="Đăng tải tài liệu cộng đồng hiện chỉ dành cho một nhóm người dùng thử nghiệm. Vui lòng quay lại sau."
+          actionLabel="Về Thư viện tài liệu"
+          onAction={() => router.push("/documents")}
+        />
+      </div>
+    );
   }
 
   return (

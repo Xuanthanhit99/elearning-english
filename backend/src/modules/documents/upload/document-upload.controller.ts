@@ -17,6 +17,7 @@ import { CreateDocumentUploadDto } from '../dto/document-upload.dto';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { getDocumentMaxFileSizeMb } from '../../../config/document-storage.config';
+import { CommunityDocumentUploadGuard } from './community-upload.guard';
 
 // Registered before DocumentsController in DocumentsModule so the
 // literal `/documents/uploads` segment is matched before that
@@ -26,8 +27,13 @@ import { getDocumentMaxFileSizeMb } from '../../../config/document-storage.confi
 // arrays coming from multipart string fields) would validate correctly
 // but reach the handler untransformed — this local override ensures the
 // handler actually receives real booleans/arrays, not raw strings.
+//
+// CommunityDocumentUploadGuard applies to every method here (upload,
+// resubmit, create-revision) — all three can introduce a new file into
+// the community pipeline, so the internal-beta allowlist gates all of
+// them, not just the initial upload. Must come after JwtAuthGuard.
 @Controller('documents/uploads')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, CommunityDocumentUploadGuard)
 @UsePipes(
   new ValidationPipe({
     transform: true,

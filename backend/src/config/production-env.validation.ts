@@ -64,13 +64,21 @@ export function validateProductionEnvironment() {
     Boolean(process.env.REDIS_URL?.trim()) ||
     Boolean(process.env.REDIS_HOST?.trim());
 
-  const documentsEnabled = process.env.DOCUMENTS_ENABLED?.trim().toLowerCase() !== 'false';
-  const documentStorageProvider = (
-    process.env.DOCUMENT_STORAGE_PROVIDER?.trim().toLowerCase() || 'r2'
-  );
+  const documentsEnabled =
+    process.env.DOCUMENTS_ENABLED?.trim().toLowerCase() !== 'false';
+  const documentStorageProvider =
+    process.env.DOCUMENT_STORAGE_PROVIDER?.trim().toLowerCase() || 'r2';
+  // "local" is a dev/test-only fallback (ephemeral disk, local-signed://
+  // URLs) — never valid once NODE_ENV=production, even if someone sets
+  // it by mistake in Railway. This is a hard fail, not a fallback: we
+  // never silently switch the provider, only refuse to boot.
+  const localProviderInProduction =
+    documentsEnabled && documentStorageProvider === 'local';
   const missingR2 =
     documentsEnabled && documentStorageProvider !== 'local'
-      ? REQUIRED_R2_ENV.filter((name) => !String(process.env[name] ?? '').trim())
+      ? REQUIRED_R2_ENV.filter(
+          (name) => !String(process.env[name] ?? '').trim(),
+        )
       : [];
 
   const problems = [
@@ -87,8 +95,14 @@ export function validateProductionEnvironment() {
       ? ['JWT_ACCESS_SECRET and JWT_REFRESH_SECRET must be different']
       : []),
     ...missingR2.map(
-      (name) => `${name} is required (DOCUMENTS_ENABLED=true, DOCUMENT_STORAGE_PROVIDER=r2)`,
+      (name) =>
+        `${name} is required (DOCUMENTS_ENABLED=true, DOCUMENT_STORAGE_PROVIDER=r2)`,
     ),
+    ...(localProviderInProduction
+      ? [
+          'DOCUMENT_STORAGE_PROVIDER=local is not allowed in production (ephemeral disk, local-signed:// URLs) — set it to r2, or set DOCUMENTS_ENABLED=false',
+        ]
+      : []),
   ];
 
   if (problems.length > 0) {

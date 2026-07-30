@@ -6,7 +6,8 @@
 export type DocumentStorageProvider = 'r2' | 'local';
 
 export function getDocumentStorageProvider(): DocumentStorageProvider {
-  const configured = process.env.DOCUMENT_STORAGE_PROVIDER?.trim().toLowerCase();
+  const configured =
+    process.env.DOCUMENT_STORAGE_PROVIDER?.trim().toLowerCase();
   return configured === 'local' ? 'local' : 'r2';
 }
 
@@ -31,7 +32,10 @@ export function getDocumentSignedUrlTtlSeconds(): number {
 }
 
 export function getDocumentLocalStorageDir(): string {
-  return process.env.DOCUMENT_LOCAL_STORAGE_DIR?.trim() || 'private-storage/documents';
+  return (
+    process.env.DOCUMENT_LOCAL_STORAGE_DIR?.trim() ||
+    'private-storage/documents'
+  );
 }
 
 export function getDocumentMaxFileSizeMb(): number {
@@ -59,7 +63,10 @@ export function getDocumentAllowedMimeTypes(): string[] {
       'text/plain',
     ];
   }
-  return raw.split(',').map((v) => v.trim()).filter(Boolean);
+  return raw
+    .split(',')
+    .map((v) => v.trim())
+    .filter(Boolean);
 }
 
 export function getDocumentUserDailyUploadLimit(): number {
@@ -73,7 +80,9 @@ export function getDocumentUserMaxActiveUploads(): number {
 }
 
 export function isDocumentAutoPublishEnabled(): boolean {
-  return process.env.DOCUMENT_AUTO_PUBLISH_ENABLED?.trim().toLowerCase() === 'true';
+  return (
+    process.env.DOCUMENT_AUTO_PUBLISH_ENABLED?.trim().toLowerCase() === 'true'
+  );
 }
 
 export function getDocumentAutoApproveConfidence(): number {
@@ -127,4 +136,34 @@ export function getDocumentArchivedVersionRetentionDays(): number {
 export function isDocumentsEnabled(): boolean {
   const raw = process.env.DOCUMENTS_ENABLED?.trim().toLowerCase();
   return raw !== 'false';
+}
+
+// Community upload internal-beta gating (spec: backend must be the real
+// enforcement, frontend visibility is UX only). Admins always pass
+// regardless of these — see CommunityDocumentUploadAccessService.
+export function isDocumentCommunityUploadEnabled(): boolean {
+  return (
+    process.env.DOCUMENT_COMMUNITY_UPLOAD_ENABLED?.trim().toLowerCase() ===
+    'true'
+  );
+}
+
+function parseCsvList(raw: string | undefined): string[] {
+  if (!raw) return [];
+  return raw
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
+export function getDocumentCommunityUploadAllowedUserIds(): string[] {
+  return parseCsvList(process.env.DOCUMENT_COMMUNITY_UPLOAD_ALLOWED_USER_IDS);
+}
+
+/** Always lowercased — callers must normalize the email they're checking
+ * the same way before comparing. */
+export function getDocumentCommunityUploadAllowedEmails(): string[] {
+  return parseCsvList(process.env.DOCUMENT_COMMUNITY_UPLOAD_ALLOWED_EMAILS).map(
+    (email) => email.toLowerCase(),
+  );
 }

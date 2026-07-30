@@ -13,6 +13,7 @@ import {
 } from "@/src/Components/UI/BeaconVie";
 import { useAuthStore } from "@/src/store/authStore";
 import { buildLoginUrl } from "@/src/lib/auth-redirect";
+import { useCommunityUploadAccess } from "@/src/lib/use-community-upload-access";
 import { getApiErrorMessage } from "@/src/lib/api-error";
 import { formatNumber } from "@/src/lib/locale-format";
 import {
@@ -139,6 +140,12 @@ export default function DocumentsLibraryPage() {
   }
 
   const uploadHref = user ? "/documents/upload" : buildLoginUrl("/documents/upload");
+  // UX only — backend (CommunityDocumentUploadGuard) is the real gate.
+  // Guests still see the CTA (it routes to login, then the upload page
+  // itself checks access); only hide it for a logged-in user we know is
+  // denied.
+  const { canUpload } = useCommunityUploadAccess();
+  const showUploadCta = !user || canUpload !== false;
 
   async function toggleBookmark(document: DocumentCard) {
     if (!user) {
@@ -207,12 +214,14 @@ export default function DocumentsLibraryPage() {
         title="Thư viện tài liệu học tiếng Anh"
         description="Khám phá tài liệu chính thức từ BeaconVie và tài liệu do cộng đồng chia sẻ — tải về, lưu lại và đánh giá."
         action={
-          <Link href={uploadHref}>
-            <BeaconVieButton>
-              <Upload aria-hidden className="h-4 w-4" />
-              Đăng tài liệu
-            </BeaconVieButton>
-          </Link>
+          showUploadCta ? (
+            <Link href={uploadHref}>
+              <BeaconVieButton>
+                <Upload aria-hidden className="h-4 w-4" />
+                Đăng tài liệu
+              </BeaconVieButton>
+            </Link>
+          ) : undefined
         }
       />
 

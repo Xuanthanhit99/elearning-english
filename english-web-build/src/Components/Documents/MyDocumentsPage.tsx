@@ -28,6 +28,7 @@ import {
 } from "@/src/Components/UI/BeaconVie";
 import { getApiErrorMessage } from "@/src/lib/api-error";
 import { formatDate, formatNumber } from "@/src/lib/locale-format";
+import { useCommunityUploadAccess } from "@/src/lib/use-community-upload-access";
 import {
   DocumentLevel,
   LearningDocumentStatus,
@@ -87,6 +88,8 @@ export default function MyDocumentsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(highlightId);
   const [details, setDetails] = useState<Record<string, MyDocumentDetail>>({});
   const [detailLoading, setDetailLoading] = useState<string | null>(null);
+  // UX only — backend (CommunityDocumentUploadGuard) is the real gate.
+  const { canUpload } = useCommunityUploadAccess();
   const [editTarget, setEditTarget] = useState<MyDocumentSummary | null>(null);
   const highlightRef = useRef<HTMLDivElement | null>(null);
   const expandedIdRef = useRef<string | null>(expandedId);
@@ -214,12 +217,14 @@ export default function MyDocumentsPage() {
         title="Tài liệu của tôi"
         description="Theo dõi trạng thái kiểm duyệt, chỉnh sửa hoặc gửi lại tài liệu bạn đã đăng."
         action={
-          <Link href="/documents/upload">
-            <BeaconVieButton>
-              <Upload aria-hidden className="h-4 w-4" />
-              Đăng tài liệu mới
-            </BeaconVieButton>
-          </Link>
+          canUpload !== false ? (
+            <Link href="/documents/upload">
+              <BeaconVieButton>
+                <Upload aria-hidden className="h-4 w-4" />
+                Đăng tài liệu mới
+              </BeaconVieButton>
+            </Link>
+          ) : undefined
         }
       />
 
@@ -258,8 +263,8 @@ export default function MyDocumentsPage() {
         <BeaconVieState
           title={items && items.length > 0 ? "Không có tài liệu ở trạng thái này" : "Bạn chưa đăng tài liệu nào"}
           description="Chia sẻ tài liệu học tiếng Anh đầu tiên của bạn với cộng đồng BeaconVie."
-          actionLabel="Đăng tài liệu"
-          onAction={() => router.push("/documents/upload")}
+          actionLabel={canUpload !== false ? "Đăng tài liệu" : undefined}
+          onAction={canUpload !== false ? () => router.push("/documents/upload") : undefined}
         />
       )}
 

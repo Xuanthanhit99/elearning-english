@@ -20,6 +20,8 @@ import { MyDocumentsService } from './my-documents.service';
 import { DocumentUploadController } from './upload/document-upload.controller';
 import { DocumentUploadService } from './upload/document-upload.service';
 import { FileValidationService } from './upload/file-validation.service';
+import { CommunityDocumentUploadAccessService } from './upload/community-upload-access.service';
+import { CommunityDocumentUploadGuard } from './upload/community-upload.guard';
 
 import { ContentExtractionService } from './processing/content-extraction.service';
 import { DuplicateCheckService } from './processing/duplicate-check.service';
@@ -80,6 +82,8 @@ import { DocumentsController } from './documents.controller';
 
     DocumentUploadService,
     FileValidationService,
+    CommunityDocumentUploadAccessService,
+    CommunityDocumentUploadGuard,
 
     ContentExtractionService,
     DuplicateCheckService,

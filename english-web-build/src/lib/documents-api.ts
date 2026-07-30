@@ -466,6 +466,16 @@ export async function getMyDocument(documentId: string) {
   return response.data;
 }
 
+export async function getCommunityUploadAccess() {
+  // Backend is the real gate (CommunityDocumentUploadGuard on the
+  // upload endpoints) — this only drives whether the UI shows/hides the
+  // upload CTA, never the allowlist itself.
+  const response = await api.get<{ canUploadCommunityDocuments: boolean }>(
+    "/documents/me/upload-access",
+  );
+  return response.data;
+}
+
 export async function listMyBookmarks(params: { page?: number } = {}) {
   const response = await api.get<DocumentBookmarksResponse>("/documents/me/bookmarks", {
     params: { page: params.page ?? 1 },
