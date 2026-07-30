@@ -88,7 +88,6 @@ export default function DocumentsLibraryPage() {
 
   useEffect(() => {
     setSearchInput(filters.keyword ?? "");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.keyword]);
 
   const filterKey = JSON.stringify(filters);

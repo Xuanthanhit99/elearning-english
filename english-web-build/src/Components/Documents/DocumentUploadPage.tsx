@@ -507,7 +507,7 @@ function UploadProgressView({ documentId, onDone }: { documentId: string; onDone
         )}
 
         <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
-          <BeaconVieButton onClick={onDone}>Xem trong "Tài liệu của tôi"</BeaconVieButton>
+          <BeaconVieButton onClick={onDone}>Xem trong &quot;Tài liệu của tôi&quot;</BeaconVieButton>
           <Link href="/documents">
             <BeaconVieButton tone="ghost">Về Thư viện tài liệu</BeaconVieButton>
           </Link>

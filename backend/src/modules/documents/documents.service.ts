@@ -171,7 +171,12 @@ export class DocumentsService {
         ])
       : [false, null];
 
-    const hiddenVersionKeys = ['sourceStorageKey', 'contentStorageKey', 'storageKey', 'previewStorageKey'];
+    const hiddenVersionKeys = [
+      'sourceStorageKey',
+      'contentStorageKey',
+      'storageKey',
+      'previewStorageKey',
+    ];
     const safeVersion: Record<string, unknown> = { ...document.activeVersion };
     for (const key of hiddenVersionKeys) delete safeVersion[key];
 

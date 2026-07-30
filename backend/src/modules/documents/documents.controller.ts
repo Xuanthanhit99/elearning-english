@@ -65,7 +65,8 @@ export class DocumentsController {
     @CurrentUser('id') userId?: string,
   ) {
     const cookies = req.cookies as Record<string, string> | undefined;
-    const dedupeKey = userId ?? cookies?.anon_session_id ?? req.ip ?? 'anonymous';
+    const dedupeKey =
+      userId ?? cookies?.anon_session_id ?? req.ip ?? 'anonymous';
     return this.documentsService.recordView(id, String(dedupeKey));
   }
 

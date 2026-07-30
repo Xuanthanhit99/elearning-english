@@ -1,6 +1,5 @@
 import { createHash } from 'node:crypto';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { fileTypeFromBuffer } from 'file-type';
 import AdmZip from 'adm-zip';
 import {
   getDocumentAllowedMimeTypes,
@@ -14,23 +13,7 @@ export interface FileValidationResult {
   checksum: string;
 }
 
-// Extension -> the set of MIME types `file-type` (magic-byte sniffing) is
-// allowed to report for that extension. DOCX/PPTX/XLSX all share the
-// generic "application/zip" magic signature, so file-type resolves them
-// by inspecting the zip's internal manifest — we still cross-check its
-// verdict against the extension the user claimed.
-const EXTENSION_MIME_MAP: Record<string, string[]> = {
-  pdf: ['application/pdf'],
-  docx: [
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/zip',
-  ],
-  pptx: [
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    'application/zip',
-  ],
-  txt: ['text/plain'],
-};
+const SUPPORTED_EXTENSIONS = new Set(['pdf', 'docx', 'pptx', 'txt']);
 
 const ZIP_MAX_ENTRIES = 2000;
 // Guards against a zip bomb: a tiny DOCX/PPTX whose entries decompress to
@@ -44,6 +27,15 @@ const ZIP_MAX_UNCOMPRESSED_BYTES = 200 * 1024 * 1024;
 export class FileValidationService {
   private readonly logger = new Logger(FileValidationService.name);
 
+  // Must stay `async` even though every check inside is now synchronous
+  // (magic-byte checks no longer need the ESM-only `file-type` package —
+  // see assertOfficeOpenXml): dropping `async` turns every validation
+  // failure into a SYNCHRONOUS throw instead of a rejected Promise,
+  // which breaks every `await expect(this.fileValidation.validate(...))
+  // .rejects.toThrow(...)` call site (the throw happens while
+  // evaluating the argument, before `expect()` ever runs) — confirmed by
+  // the test suite regressing when this was tried.
+  // eslint-disable-next-line @typescript-eslint/require-await
   async validate(input: {
     buffer: Buffer;
     originalName: string;
@@ -63,7 +55,7 @@ export class FileValidationService {
     }
 
     const extension = this.extractSafeExtension(originalName);
-    if (!extension || !(extension in EXTENSION_MIME_MAP)) {
+    if (!extension || !SUPPORTED_EXTENSIONS.has(extension)) {
       throw new BadRequestException('Định dạng file không được hỗ trợ.');
     }
 
@@ -72,32 +64,21 @@ export class FileValidationService {
       throw new BadRequestException('Loại file không được hỗ trợ.');
     }
 
-    // Magic-byte sniff — never trust the client's declared MIME/extension
-    // alone. `txt` has no reliable magic signature, so we fall back to a
-    // printable-text heuristic instead of rejecting every .txt upload.
-    if (extension === 'txt') {
-      this.assertLooksLikeText(buffer);
-    } else {
-      const sniffed = await fileTypeFromBuffer(buffer);
-      if (!sniffed) {
-        throw new BadRequestException(
-          'Không thể xác định định dạng thực của file (magic bytes không hợp lệ).',
-        );
-      }
-      const allowedForExtension = EXTENSION_MIME_MAP[extension];
-      if (!allowedForExtension.includes(sniffed.mime)) {
-        throw new BadRequestException(
-          `Nội dung file không khớp với phần mở rộng .${extension} (phát hiện: ${sniffed.mime}).`,
-        );
-      }
-    }
-
-    if (extension === 'docx' || extension === 'pptx') {
-      this.assertSafeZipContainer(buffer);
-    }
-
+    // Magic-byte / structural sniff — never trust the client's declared
+    // MIME/extension alone. Each branch verifies the file is genuinely
+    // what its extension claims, not just "some zip" or "some text".
+    // (No generic magic-byte-sniffing library is used here: for
+    // DOCX/PPTX specifically, off-the-shelf sniffers only resolve as far
+    // as "application/zip" — checking for the format-specific manifest
+    // entry below is strictly more precise.)
     if (extension === 'pdf') {
       this.assertSafePdfHeader(buffer);
+    } else if (extension === 'docx') {
+      this.assertOfficeOpenXml(buffer, 'word/document.xml', 'DOCX');
+    } else if (extension === 'pptx') {
+      this.assertOfficeOpenXml(buffer, 'ppt/presentation.xml', 'PPTX');
+    } else if (extension === 'txt') {
+      this.assertLooksLikeText(buffer);
     }
 
     const checksum = createHash('sha256').update(buffer).digest('hex');
@@ -150,8 +131,19 @@ export class FileValidationService {
   }
 
   /** DOCX/PPTX are zip containers — guard against zip bombs and
-   * over-large archives before anything downstream ever extracts them. */
+   * over-large archives before anything downstream ever extracts them.
+   * Returns the parsed entries so callers can additionally check for a
+   * format-specific manifest entry (see assertOfficeOpenXml). */
   private assertSafeZipContainer(buffer: Buffer) {
+    // ZIP local-file-header magic bytes ("PK\x03\x04"). DOCX/PPTX are
+    // always standard zip archives — this is the real first-line check,
+    // ahead of ever asking AdmZip to parse untrusted bytes.
+    if (buffer.length < 4 || buffer.readUInt32LE(0) !== 0x04034b50) {
+      throw new BadRequestException(
+        'File DOCX/PPTX không hợp lệ (thiếu magic bytes ZIP).',
+      );
+    }
+
     let zip: AdmZip;
     try {
       zip = new AdmZip(buffer);
@@ -215,6 +207,28 @@ export class FileValidationService {
     if (hasEmbeddedOle) {
       this.logger.warn(
         'DOCX/PPTX upload contains embedded OLE objects — flagged for review.',
+      );
+    }
+
+    return entries;
+  }
+
+  /** DOCX and PPTX are both zip containers, distinguished only by which
+   * manifest entry they contain — requiring the format-specific entry
+   * catches a plain-zip-renamed-to-.docx trick that magic bytes alone
+   * (identical for any zip) can't. */
+  private assertOfficeOpenXml(
+    buffer: Buffer,
+    requiredEntry: string,
+    label: 'DOCX' | 'PPTX',
+  ) {
+    const entries = this.assertSafeZipContainer(buffer);
+    const hasRequiredEntry = entries.some(
+      (entry) => entry.entryName === requiredEntry,
+    );
+    if (!hasRequiredEntry) {
+      throw new BadRequestException(
+        `Nội dung file không khớp với định dạng ${label} (thiếu ${requiredEntry}).`,
       );
     }
   }

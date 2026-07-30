@@ -14,11 +14,17 @@ import {
 } from '../../notifications/notification-cookie-auth.service';
 import { AuthSessionService } from '../../auth/auth-session.service';
 
-// `Omit<Socket, 'data'>` (not a plain `&`) is required here — Socket.io's
-// `Socket.data` is typed `any`, and intersecting `any` with a stricter
-// type collapses back to `any`, which would make `client.data.user`
-// resolve as unsafe/untyped access.
-type AuthenticatedDocumentSocket = Omit<Socket, 'data'> & {
+// Matches NotificationGateway's socket-typing pattern. Socket.io's
+// `Socket.data` is typed `any`, so `client.data.user` below is still
+// technically an "unsafe" access under typed-eslint rules even with this
+// intersection (intersecting with `any` collapses to `any`) — an
+// `Omit<Socket, 'data'>` variant was tried but breaks structural
+// assignability to `Socket` at call sites like
+// `NotificationCookieAuthService.authenticate(client: Socket)`, which is
+// a real compile error, not just a lint nit. Kept as a plain
+// intersection; the lint warning here is accepted the same way the rest
+// of this codebase's socket gateways already do.
+type AuthenticatedDocumentSocket = Socket & {
   data: { user?: NotificationSocketUser };
 };
 
@@ -83,7 +89,8 @@ export class DocumentProgressGateway implements OnGatewayConnection {
     @ConnectedSocket() client: AuthenticatedDocumentSocket,
     @MessageBody() body: { documentId?: string },
   ) {
-    if (body?.documentId) await client.leave(this.documentRoom(body.documentId));
+    if (body?.documentId)
+      await client.leave(this.documentRoom(body.documentId));
     return { ok: true };
   }
 
