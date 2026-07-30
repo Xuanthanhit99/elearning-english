@@ -5,7 +5,6 @@
 
 export const DOCUMENT_PROCESSING_QUEUE = 'document-processing';
 export const DOCUMENT_GENERATION_QUEUE = 'document-generation';
-export const DOCUMENT_CLEANUP_QUEUE = 'document-cleanup';
 
 export enum CommunityDocumentJobName {
   SCAN_FILE = 'SCAN_FILE',
@@ -31,44 +30,46 @@ export enum DocumentGenerationJobName {
   FINALIZE_VERSION = 'FINALIZE_VERSION',
 }
 
-export enum DocumentCleanupJobName {
-  SWEEP = 'SWEEP',
-}
-
+// BullMQ rejects custom job IDs containing ":" (it uses colons as the
+// Redis key delimiter internally — confirmed via real E2E testing:
+// `admin/documents/generate` threw "Custom Id cannot contain :" the
+// first time this was exercised against a live queue). "." is used as
+// the separator instead everywhere a job ID is built, here and at every
+// call site that appends a suffix (e.g. ":retry:" -> ".retry.").
 export const DocumentJobId = {
-  scan: (documentId: string) => `community-document:${documentId}:scan`,
-  extract: (documentId: string) => `community-document:${documentId}:extract`,
+  scan: (documentId: string) => `community-document.${documentId}.scan`,
+  extract: (documentId: string) => `community-document.${documentId}.extract`,
   duplicate: (documentId: string) =>
-    `community-document:${documentId}:duplicate`,
-  moderate: (documentId: string) => `community-document:${documentId}:moderate`,
-  preview: (documentId: string) => `community-document:${documentId}:preview`,
+    `community-document.${documentId}.duplicate`,
+  moderate: (documentId: string) => `community-document.${documentId}.moderate`,
+  preview: (documentId: string) => `community-document.${documentId}.preview`,
   prepareReview: (documentId: string) =>
-    `community-document:${documentId}:prepare-review`,
+    `community-document.${documentId}.prepare-review`,
 
   outline: (documentId: string, version: number) =>
-    `generated-document:${documentId}:version:${version}:outline`,
+    `generated-document.${documentId}.version.${version}.outline`,
   section: (documentId: string, version: number, sectionKey: string) =>
-    `generated-document:${documentId}:version:${version}:section:${sectionKey}`,
+    `generated-document.${documentId}.version.${version}.section.${sectionKey}`,
   finalTest: (documentId: string, version: number) =>
-    `generated-document:${documentId}:version:${version}:final-test`,
+    `generated-document.${documentId}.version.${version}.final-test`,
   answerKey: (documentId: string, version: number) =>
-    `generated-document:${documentId}:version:${version}:answer-key`,
+    `generated-document.${documentId}.version.${version}.answer-key`,
   summary: (documentId: string, version: number) =>
-    `generated-document:${documentId}:version:${version}:summary`,
+    `generated-document.${documentId}.version.${version}.summary`,
   studyPlan: (documentId: string, version: number) =>
-    `generated-document:${documentId}:version:${version}:study-plan`,
+    `generated-document.${documentId}.version.${version}.study-plan`,
   assemble: (documentId: string, version: number) =>
-    `generated-document:${documentId}:version:${version}:assemble`,
+    `generated-document.${documentId}.version.${version}.assemble`,
   qualityReview: (documentId: string, version: number) =>
-    `generated-document:${documentId}:version:${version}:quality-review`,
+    `generated-document.${documentId}.version.${version}.quality-review`,
   validateContent: (documentId: string, version: number) =>
-    `generated-document:${documentId}:version:${version}:validate-content`,
+    `generated-document.${documentId}.version.${version}.validate-content`,
   render: (documentId: string, version: number) =>
-    `generated-document:${documentId}:version:${version}:render`,
+    `generated-document.${documentId}.version.${version}.render`,
   validatePdf: (documentId: string, version: number) =>
-    `generated-document:${documentId}:version:${version}:validate-pdf`,
+    `generated-document.${documentId}.version.${version}.validate-pdf`,
   finalize: (documentId: string, version: number) =>
-    `generated-document:${documentId}:version:${version}:finalize`,
+    `generated-document.${documentId}.version.${version}.finalize`,
 };
 
 export const DEFAULT_JOB_OPTIONS = {

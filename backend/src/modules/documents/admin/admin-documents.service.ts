@@ -252,6 +252,14 @@ export class AdminDocumentsService {
     }
 
     assertVersionTransition(version.status, 'APPROVED');
+    // Both the version AND the parent document must move to APPROVED —
+    // publishVersion() below asserts a DOCUMENT transition of
+    // APPROVED -> PUBLISHED, which fails if the document itself was
+    // left sitting at PENDING_ADMIN_REVIEW (confirmed by real E2E
+    // testing: publish immediately after approve threw "Invalid
+    // document status transition: PENDING_ADMIN_REVIEW -> PUBLISHED"
+    // because only the version row was being updated here).
+    assertDocumentTransition(document.status, 'APPROVED');
     await this.prisma.learningDocumentVersion.update({
       where: { id: version.id },
       data: {
@@ -259,6 +267,10 @@ export class AdminDocumentsService {
         approvedById: adminId,
         approvedAt: new Date(),
       },
+    });
+    await this.prisma.learningDocument.update({
+      where: { id: documentId },
+      data: { status: 'APPROVED' },
     });
     await this.prisma.documentModerationHistory.create({
       data: {
@@ -571,7 +583,7 @@ export class AdminDocumentsService {
         { documentId, versionId: version.id },
         {
           ...DEFAULT_JOB_OPTIONS,
-          jobId: `${DocumentJobId.scan(documentId)}:retry:${Date.now()}`,
+          jobId: `${DocumentJobId.scan(documentId)}.retry.${Date.now()}`,
         },
       );
     }

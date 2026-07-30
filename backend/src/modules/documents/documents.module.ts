@@ -5,7 +5,6 @@ import { GeminiModule } from '../gemini/gemini.module';
 import { AuditLogModule } from '../audit-log/audit-log.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import {
-  DOCUMENT_CLEANUP_QUEUE,
   DOCUMENT_GENERATION_QUEUE,
   DOCUMENT_PROCESSING_QUEUE,
 } from './documents.constants';
@@ -59,7 +58,6 @@ import { DocumentsController } from './documents.controller';
     BullModule.registerQueue(
       { name: DOCUMENT_PROCESSING_QUEUE },
       { name: DOCUMENT_GENERATION_QUEUE },
-      { name: DOCUMENT_CLEANUP_QUEUE },
     ),
   ],
   controllers: [

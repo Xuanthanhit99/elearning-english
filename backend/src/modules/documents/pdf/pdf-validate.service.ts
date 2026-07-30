@@ -45,7 +45,9 @@ export class PdfValidationService {
     let text = '';
     let pageCount = 0;
     try {
-      const pdfParse = (await import('pdf-parse')).default;
+      // See content-extraction.service.ts for why this imports the inner
+      // lib file directly rather than the `pdf-parse` package root.
+      const { default: pdfParse } = await import('pdf-parse/lib/pdf-parse.js');
       const parsed = await pdfParse(buffer);
       text = parsed.text ?? '';
       pageCount = parsed.numpages ?? 0;

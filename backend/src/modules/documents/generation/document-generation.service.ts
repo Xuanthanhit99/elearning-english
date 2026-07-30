@@ -190,7 +190,7 @@ export class DocumentGenerationService {
         versionNumber: version.versionNumber,
       },
       {
-        jobId: `${DocumentJobId.outline(documentId, version.versionNumber)}:retry:${Date.now()}`,
+        jobId: `${DocumentJobId.outline(documentId, version.versionNumber)}.retry.${Date.now()}`,
         ...DEFAULT_JOB_OPTIONS,
       },
     );
@@ -221,7 +221,7 @@ export class DocumentGenerationService {
             documentId,
             section.version.versionNumber,
             sectionKey,
-          ) + `:retry:${Date.now()}`,
+          ) + `.retry.${Date.now()}`,
         attempts: getDocumentGenerationJobAttempts(),
         backoff: DEFAULT_JOB_OPTIONS.backoff,
       },

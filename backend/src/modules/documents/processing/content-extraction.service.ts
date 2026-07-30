@@ -36,10 +36,16 @@ export class ContentExtractionService {
 
   private async extractPdf(buffer: Buffer): Promise<ExtractedContent> {
     try {
-      // pdf-parse ships a CJS default export; dynamic import keeps this
-      // module tree-shakeable and avoids pulling its debug test-harness
-      // (which reads a local fixture path on require) into every request.
-      const pdfParse = (await import('pdf-parse')).default;
+      // Import the inner lib file directly, NOT the `pdf-parse` package
+      // root. Confirmed via real E2E testing: pdf-parse@1.1.1's
+      // index.js re-export runs `let isDebugMode = !module.parent;` —
+      // under dynamic `import()`, `module.parent` resolves falsy even
+      // though this isn't the entry module, so it incorrectly triggers
+      // pdf-parse's own internal self-test (which tries to read a
+      // fixture file that doesn't exist outside its repo, e.g.
+      // "ENOENT ... ./test/data/05-versions-space.pdf") on every call.
+      // lib/pdf-parse.js has no such debug branch.
+      const { default: pdfParse } = await import('pdf-parse/lib/pdf-parse.js');
       const result = await pdfParse(buffer);
       const { text, truncated } = this.cap(result.text ?? '');
       return { text, pageCount: result.numpages ?? null, truncated };

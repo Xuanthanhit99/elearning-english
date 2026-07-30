@@ -10,12 +10,14 @@ import { renderDocumentHtml } from './pdf-template';
 /**
  * Structured content -> HTML template -> headless Chromium -> PDF (spec
  * §19). A single shared Browser instance is launched lazily and reused
- * across renders — each render opens/closes its own page. Requires the
- * `chromium` package + its shared-lib dependencies to be present in the
- * backend Docker image (Alpine needs extra apk packages) — see final
- * report for the required Dockerfile change, which has NOT been applied
- * in this pass since it couldn't be verified without a container build
- * in this environment.
+ * across renders — each render opens/closes its own page.
+ *
+ * Production runs on Alpine, whose Puppeteer's own bundled Chromium
+ * (glibc) does not work under musl libc — the backend Dockerfile
+ * instead installs Alpine's native `chromium` apk package and points
+ * here via PUPPETEER_EXECUTABLE_PATH. When that env var is unset (local
+ * dev on Windows/macOS/glibc Linux), Puppeteer falls back to its own
+ * downloaded Chromium.
  */
 @Injectable()
 export class PdfRenderService {
@@ -24,9 +26,11 @@ export class PdfRenderService {
 
   private async getBrowser(): Promise<Browser> {
     if (!this.browserPromise) {
+      const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || undefined;
       this.browserPromise = puppeteer
         .launch({
           headless: true,
+          executablePath,
           args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',

@@ -106,7 +106,9 @@ export class DocumentGenerationProcessor extends WorkerHost {
     jobIdSuffix: string,
   ) {
     await this.queue.add(name, payload, {
-      jobId: `generated-document:${payload.documentId}:version:${payload.versionNumber}:${jobIdSuffix}`,
+      // "." not ":" — BullMQ rejects custom job IDs containing a colon
+      // (see the comment on DocumentJobId in documents.constants.ts).
+      jobId: `generated-document.${payload.documentId}.version.${payload.versionNumber}.${jobIdSuffix}`,
       attempts: getDocumentGenerationJobAttempts(),
       backoff: DEFAULT_JOB_OPTIONS.backoff,
       removeOnComplete: DEFAULT_JOB_OPTIONS.removeOnComplete,
@@ -183,7 +185,7 @@ export class DocumentGenerationProcessor extends WorkerHost {
         versionNumber,
         sectionKey: `lesson-${outline.lessons[0].lessonNumber}`,
       },
-      `section:lesson-${outline.lessons[0].lessonNumber}`,
+      `section.lesson-${outline.lessons[0].lessonNumber}`,
     );
   }
 
@@ -324,7 +326,7 @@ export class DocumentGenerationProcessor extends WorkerHost {
           versionNumber,
           sectionKey: `lesson-${nextLesson.lessonNumber}`,
         },
-        `section:lesson-${nextLesson.lessonNumber}`,
+        `section.lesson-${nextLesson.lessonNumber}`,
       );
       return;
     }
