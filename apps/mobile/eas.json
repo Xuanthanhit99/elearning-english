@@ -1,0 +1,42 @@
+{
+  "cli": {
+    "version": ">= 15.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://10.0.2.2:3002",
+        "EXPO_PUBLIC_SOCKET_URL": "http://10.0.2.2:3002"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.beaconvie.com",
+        "EXPO_PUBLIC_SOCKET_URL": "https://api.beaconvie.com"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.beaconvie.com",
+        "EXPO_PUBLIC_SOCKET_URL": "https://api.beaconvie.com"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

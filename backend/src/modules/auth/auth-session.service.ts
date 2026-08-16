@@ -73,7 +73,7 @@ export class AuthSessionService {
    * treat that as "refresh token không hợp lệ".
    */
   async rotate(oldJti: string, newJti: string): Promise<SessionPointer | null> {
-    const pointer = await this.getPointer(oldJti);
+    const pointer = await this.claimPointer(oldJti);
 
     if (!pointer) {
       return null;
@@ -84,9 +84,6 @@ export class AuthSessionService {
     });
 
     if (!session || session.revokedAt || session.userId !== pointer.userId) {
-      await this.redis
-        .del(refreshSessionRedisKey(oldJti))
-        .catch(() => undefined);
       return null;
     }
 
@@ -95,16 +92,7 @@ export class AuthSessionService {
       data: { refreshTokenId: newJti, lastActiveAt: new Date() },
     });
 
-    await this.redis
-      .multi()
-      .del(refreshSessionRedisKey(oldJti))
-      .set(
-        refreshSessionRedisKey(newJti),
-        JSON.stringify(pointer),
-        'EX',
-        REFRESH_TOKEN_TTL_SECONDS,
-      )
-      .exec();
+    await this.pointJti(newJti, pointer);
 
     return pointer;
   }
@@ -247,14 +235,19 @@ export class AuthSessionService {
     );
   }
 
-  private async getPointer(jti: string): Promise<SessionPointer | null> {
+  private async claimPointer(jti: string): Promise<SessionPointer | null> {
     const raw = await this.redis
-      .get(refreshSessionRedisKey(jti))
+      .eval(
+        "local v = redis.call('GET', KEYS[1]); if v then redis.call('DEL', KEYS[1]); end; return v",
+        1,
+        refreshSessionRedisKey(jti),
+      )
       .catch(() => null);
+
     if (!raw) return null;
 
     try {
-      return JSON.parse(raw) as SessionPointer;
+      return JSON.parse(String(raw)) as SessionPointer;
     } catch {
       this.logger.warn(`Corrupted session pointer for jti=${jti}`);
       return null;

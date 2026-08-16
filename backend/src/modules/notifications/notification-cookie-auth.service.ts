@@ -13,16 +13,9 @@ export class NotificationCookieAuthService {
   constructor(private readonly jwtService: JwtService) {}
 
   authenticate(client: Socket): NotificationSocketUser {
-    const cookieHeader = client.handshake.headers.cookie;
-
-    if (!cookieHeader) {
-      throw new UnauthorizedException('Missing authentication cookie.');
-    }
-
-    const token = this.parseCookies(cookieHeader).access_token;
-
+    const token = this.extractSocketAccessToken(client);
     if (!token) {
-      throw new UnauthorizedException('Missing access token cookie.');
+      throw new UnauthorizedException('Missing socket access token.');
     }
 
     const payload = this.jwtService.verify<{
@@ -44,6 +37,20 @@ export class NotificationCookieAuthService {
       id: userId,
       role: payload.role,
     };
+  }
+
+  extractSocketAccessToken(client: Socket): string | null {
+    const authToken = client.handshake.auth?.token;
+    if (typeof authToken === 'string' && authToken.trim()) {
+      return authToken.trim();
+    }
+
+    const cookieHeader = client.handshake.headers.cookie;
+    if (!cookieHeader) {
+      return null;
+    }
+
+    return this.parseCookies(cookieHeader).access_token || null;
   }
 
   private parseCookies(cookieHeader: string) {

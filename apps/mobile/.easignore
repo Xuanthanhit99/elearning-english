@@ -1,0 +1,17 @@
+node_modules
+.expo
+.expo-export-*
+dist
+web-build
+
+expo-*.log
+expo-*.err.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+.env
+.env*.local
+
+android
+ios

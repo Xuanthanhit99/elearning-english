@@ -1,0 +1,17 @@
+apps/mobile/node_modules
+apps/mobile/.expo
+apps/mobile/.expo-export-*
+apps/mobile/dist
+apps/mobile/web-build
+
+apps/mobile/expo-*.log
+apps/mobile/expo-*.err.log
+apps/mobile/npm-debug.*
+apps/mobile/yarn-debug.*
+apps/mobile/yarn-error.*
+
+apps/mobile/.env
+apps/mobile/.env*.local
+
+apps/mobile/android
+apps/mobile/ios

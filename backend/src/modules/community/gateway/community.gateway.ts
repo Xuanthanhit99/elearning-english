@@ -7,17 +7,16 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { JwtService } from '@nestjs/jwt';
 import { Server, Socket } from 'socket.io';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { getAllowedOrigins } from '../../../config/cors.config';
-import { getJwtAccessSecret } from '../../auth/auth-secrets.util';
 import { AuthSessionService } from '../../auth/auth-session.service';
+import {
+  NotificationCookieAuthService,
+  NotificationSocketUser,
+} from '../../notifications/notification-cookie-auth.service';
 
-type CommunitySocketUser = {
-  id: string;
-  role?: string;
-};
+type CommunitySocketUser = NotificationSocketUser;
 
 type AuthenticatedCommunitySocket = Socket & {
   data: {
@@ -36,9 +35,9 @@ export class CommunityGateway
   server!: Server;
 
   constructor(
-    private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
     private readonly authSession: AuthSessionService,
+    private readonly socketAuth: NotificationCookieAuthService,
   ) {}
 
   async handleConnection(client: AuthenticatedCommunitySocket) {
@@ -237,38 +236,11 @@ export class CommunityGateway
   }
 
   private authenticate(client: Socket): CommunitySocketUser | null {
-    const cookieHeader = client.handshake.headers.cookie;
-    if (!cookieHeader) return null;
-
-    const token = this.parseCookies(cookieHeader).access_token;
-    if (!token) return null;
-
     try {
-      const payload = this.jwtService.verify<{
-        sub?: string;
-        id?: string;
-        userId?: string;
-        role?: string;
-      }>(token, {
-        secret: getJwtAccessSecret(),
-      });
-      const userId = payload.sub ?? payload.id ?? payload.userId;
-      return userId ? { id: userId, role: payload.role } : null;
+      return this.socketAuth.authenticate(client);
     } catch {
       return null;
     }
-  }
-
-  private parseCookies(cookieHeader: string) {
-    return Object.fromEntries(
-      cookieHeader
-        .split(';')
-        .map((item) => {
-          const [key, ...rest] = item.trim().split('=');
-          return [key, decodeURIComponent(rest.join('='))];
-        })
-        .filter(([key]) => Boolean(key)),
-    );
   }
 
   private async isConversationMember(userId: string, conversationId: string) {

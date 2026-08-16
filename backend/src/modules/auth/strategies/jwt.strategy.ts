@@ -21,11 +21,16 @@ const cookieExtractor = (req: Request): string | null => {
   return req.cookies['access_token'] || null;
 };
 
+export const extractJwtFromRequest = (req: Request): string | null => {
+  const bearerToken = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+  return bearerToken || cookieExtractor(req);
+};
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(private readonly authSessionService: AuthSessionService) {
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
+      jwtFromRequest: ExtractJwt.fromExtractors([extractJwtFromRequest]),
       secretOrKey: getJwtAccessSecret(),
     });
   }

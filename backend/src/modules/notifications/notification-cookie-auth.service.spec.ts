@@ -28,6 +28,18 @@ describe('NotificationCookieAuthService', () => {
     expect(user).toEqual({ id: 'user-1', role: 'USER' });
   });
 
+  it('authenticates the user from a mobile Socket.IO auth token', () => {
+    const token = jwt.sign(
+      { sub: 'user-1', role: 'USER' },
+      { secret: 'test-access-secret' },
+    );
+    const user = service.authenticate({
+      handshake: { auth: { token }, headers: {} },
+    } as Socket);
+
+    expect(user).toEqual({ id: 'user-1', role: 'USER' });
+  });
+
   it('rejects missing cookies', () => {
     expect(() =>
       service.authenticate({ handshake: { headers: {} } } as Socket),
@@ -40,6 +52,19 @@ describe('NotificationCookieAuthService', () => {
     expect(() =>
       service.authenticate({
         handshake: { headers: { cookie: `access_token=${token}` } },
+      } as Socket),
+    ).toThrow();
+  });
+
+  it('rejects expired mobile Socket.IO auth tokens', () => {
+    const token = jwt.sign(
+      { sub: 'user-1' },
+      { secret: 'test-access-secret', expiresIn: -1 },
+    );
+
+    expect(() =>
+      service.authenticate({
+        handshake: { auth: { token }, headers: {} },
       } as Socket),
     ).toThrow();
   });

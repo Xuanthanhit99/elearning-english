@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AuthSessionService } from '../../auth/auth-session.service';
+import { NotificationCookieAuthService } from '../../notifications/notification-cookie-auth.service';
 import { CommunityGateway } from './community.gateway';
 
 // Covers the realtime-ban-enforcement fix shared (identical pattern) by
@@ -12,13 +12,13 @@ import { CommunityGateway } from './community.gateway';
 describe('CommunityGateway', () => {
   let gateway: CommunityGateway;
 
-  const jwtServiceMock = { verify: jest.fn() };
   const prismaMock = {};
   const authSessionMock = { isBanned: jest.fn() };
+  const socketAuthMock = { authenticate: jest.fn() };
 
-  function fakeClient(cookie?: string) {
+  function fakeClient(cookie?: string, token?: string) {
     return {
-      handshake: { headers: { cookie } },
+      handshake: { auth: token ? { token } : {}, headers: { cookie } },
       data: {} as any,
       emit: jest.fn(),
       disconnect: jest.fn(),
@@ -32,9 +32,9 @@ describe('CommunityGateway', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CommunityGateway,
-        { provide: JwtService, useValue: jwtServiceMock },
         { provide: PrismaService, useValue: prismaMock },
         { provide: AuthSessionService, useValue: authSessionMock },
+        { provide: NotificationCookieAuthService, useValue: socketAuthMock },
       ],
     }).compile();
 
@@ -42,7 +42,7 @@ describe('CommunityGateway', () => {
   });
 
   it('disconnects a banned user even with a valid, unexpired JWT', async () => {
-    jwtServiceMock.verify.mockReturnValue({ sub: 'user-1' });
+    socketAuthMock.authenticate.mockReturnValue({ id: 'user-1' });
     authSessionMock.isBanned.mockResolvedValue(true);
     const client = fakeClient('access_token=valid.jwt.token');
 
@@ -57,7 +57,7 @@ describe('CommunityGateway', () => {
   });
 
   it('allows a non-banned, correctly-authenticated user through', async () => {
-    jwtServiceMock.verify.mockReturnValue({ sub: 'user-1' });
+    socketAuthMock.authenticate.mockReturnValue({ id: 'user-1' });
     authSessionMock.isBanned.mockResolvedValue(false);
     const client = fakeClient('access_token=valid.jwt.token');
 
@@ -68,8 +68,21 @@ describe('CommunityGateway', () => {
     expect(client.join).toHaveBeenCalledWith('user:user-1');
   });
 
+  it('allows a mobile handshake auth token through the shared socket auth service', async () => {
+    socketAuthMock.authenticate.mockReturnValue({ id: 'user-1', role: 'USER' });
+    authSessionMock.isBanned.mockResolvedValue(false);
+    const client = fakeClient(undefined, 'valid.jwt.token');
+
+    await gateway.handleConnection(client);
+
+    expect(socketAuthMock.authenticate).toHaveBeenCalledWith(client);
+    expect(client.disconnect).not.toHaveBeenCalled();
+    expect(client.data.user).toEqual({ id: 'user-1', role: 'USER' });
+    expect(client.join).toHaveBeenCalledWith('user:user-1');
+  });
+
   it('still rejects an invalid token without ever checking ban status', async () => {
-    jwtServiceMock.verify.mockImplementation(() => {
+    socketAuthMock.authenticate.mockImplementation(() => {
       throw new Error('invalid signature');
     });
     const client = fakeClient('access_token=garbage');

@@ -38,6 +38,10 @@ const LOGIN_LOCKOUT_DURATION_MS = 15 * 60 * 1000;
 const PASSWORD_RESET_TOKEN_TTL_MS = 30 * 60 * 1000;
 const EMAIL_VERIFICATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 
+type TokenResponseOptions = {
+  includeTokens?: boolean;
+};
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -98,7 +102,12 @@ export class AuthService {
     };
   }
 
-  async login(dto: LoginDto, req: Request, res: Response) {
+  async login(
+    dto: LoginDto,
+    req: Request,
+    res: Response,
+    options: TokenResponseOptions = {},
+  ) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -238,6 +247,7 @@ export class AuthService {
         role: user.role,
         status: user.status,
       },
+      ...(options.includeTokens ? { accessToken, refreshToken } : {}),
     };
   }
 
@@ -443,7 +453,11 @@ export class AuthService {
     return { message: '?ã gửi lại email xác minh.' };
   }
 
-  async refreshToken(refreshToken: string, res: Response) {
+  async refreshToken(
+    refreshToken: string | undefined,
+    res: Response,
+    options: TokenResponseOptions = {},
+  ) {
     if (!refreshToken) {
       throw new UnauthorizedException('Không có refresh token');
     }
@@ -558,6 +572,9 @@ export class AuthService {
     return {
       success: true,
       message: 'Refresh token thành công',
+      ...(options.includeTokens
+        ? { accessToken, refreshToken: newRefreshToken }
+        : {}),
       data: {
         user: {
           id: dbUser.id,

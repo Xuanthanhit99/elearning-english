@@ -18,6 +18,8 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { LogoutDto } from './dto/logout.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -34,6 +36,10 @@ import {
   authCookieOptions,
   visibleCookieOptions,
 } from './auth-cookie.util';
+
+const AUTH_TRANSPORT_HEADER = 'x-beaconvie-auth-transport';
+const BEARER_AUTH_TRANSPORT = 'bearer';
+
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -56,23 +62,32 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return this.authService.login(dto, req, res);
+    return this.authService.login(dto, req, res, {
+      includeTokens: this.shouldReturnBearerTokens(req),
+    });
   }
 
   @Post('refresh')
   @UseGuards(ThrottlerGuard)
   @Throttle({ default: { limit: 20, ttl: 60_000 } })
   async refresh(
+    @Body() dto: RefreshTokenDto,
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const refreshToken = req.cookies?.refresh_token;
-    return this.authService.refreshToken(refreshToken, res);
+    const refreshToken = dto.refreshToken || req.cookies?.refresh_token;
+    return this.authService.refreshToken(refreshToken, res, {
+      includeTokens: Boolean(dto.refreshToken) || this.shouldReturnBearerTokens(req),
+    });
   }
 
   @Post('logout')
-  logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    return this.authService.logout(req.cookies?.refresh_token, res);
+  logout(
+    @Body() dto: LogoutDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.logout(dto.refreshToken || req.cookies?.refresh_token, res);
   }
 
   @Post('forgot-password')
@@ -227,5 +242,9 @@ export class AuthController {
   @Roles(UserRole.ADMIN)
   generateWeeklyPool() {
     return this.vocabularyJobService.generateWeeklyTopicPools();
+  }
+
+  private shouldReturnBearerTokens(req: Request) {
+    return req.get(AUTH_TRANSPORT_HEADER)?.toLowerCase() === BEARER_AUTH_TRANSPORT;
   }
 }

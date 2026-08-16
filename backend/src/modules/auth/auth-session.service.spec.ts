@@ -20,7 +20,7 @@ describe('AuthSessionService', () => {
     set: jest.fn(),
     del: jest.fn(),
     get: jest.fn(),
-    multi: jest.fn(),
+    eval: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -29,6 +29,7 @@ describe('AuthSessionService', () => {
     prismaMock.userDeviceSession.updateMany.mockResolvedValue({ count: 0 });
     redisMock.set.mockResolvedValue('OK');
     redisMock.del.mockResolvedValue(1);
+    redisMock.eval.mockResolvedValue(null);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -39,6 +40,54 @@ describe('AuthSessionService', () => {
     }).compile();
 
     service = module.get<AuthSessionService>(AuthSessionService);
+  });
+
+  describe('rotate', () => {
+    it('claims the old refresh pointer atomically before issuing the next pointer', async () => {
+      redisMock.eval.mockResolvedValueOnce(
+        JSON.stringify({ userId: 'user-1', sessionId: 'session-1' }),
+      );
+      prismaMock.userDeviceSession.findUnique.mockResolvedValueOnce({
+        id: 'session-1',
+        userId: 'user-1',
+        revokedAt: null,
+      });
+
+      await expect(service.rotate('old-jti', 'new-jti')).resolves.toEqual({
+        userId: 'user-1',
+        sessionId: 'session-1',
+      });
+
+      expect(redisMock.eval).toHaveBeenCalledWith(
+        expect.stringContaining("redis.call('GET'"),
+        1,
+        expect.stringContaining('old-jti'),
+      );
+      expect(prismaMock.userDeviceSession.update).toHaveBeenCalledWith({
+        where: { id: 'session-1' },
+        data: { refreshTokenId: 'new-jti', lastActiveAt: expect.any(Date) },
+      });
+      expect(redisMock.set).toHaveBeenCalledWith(
+        expect.stringContaining('new-jti'),
+        JSON.stringify({ userId: 'user-1', sessionId: 'session-1' }),
+        'EX',
+        expect.any(Number),
+      );
+    });
+
+    it('rejects a refresh token when the old pointer was already claimed', async () => {
+      redisMock.eval.mockResolvedValueOnce(null);
+
+      await expect(service.rotate('old-jti', 'new-jti')).resolves.toBeNull();
+
+      expect(prismaMock.userDeviceSession.update).not.toHaveBeenCalled();
+      expect(redisMock.set).not.toHaveBeenCalledWith(
+        expect.stringContaining('new-jti'),
+        expect.any(String),
+        'EX',
+        expect.any(Number),
+      );
+    });
   });
 
   describe('suspendUser', () => {
