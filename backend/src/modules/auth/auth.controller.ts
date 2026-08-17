@@ -34,6 +34,8 @@ import {
   authCookieOptions,
   visibleCookieOptions,
 } from './auth-cookie.util';
+import { MobileRefreshDto } from './dto/mobile-refresh.dto';
+import { MobileLogoutDto } from './dto/mobile-logout.dto';
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -59,6 +61,13 @@ export class AuthController {
     return this.authService.login(dto, req, res);
   }
 
+  @Post('mobile/login')
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  mobileLogin(@Body() dto: LoginDto, @Req() req: Request) {
+    return this.authService.login(dto, req, undefined, true);
+  }
+
   @Post('refresh')
   @UseGuards(ThrottlerGuard)
   @Throttle({ default: { limit: 20, ttl: 60_000 } })
@@ -70,9 +79,21 @@ export class AuthController {
     return this.authService.refreshToken(refreshToken, res);
   }
 
+  @Post('mobile/refresh')
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  mobileRefresh(@Body() dto: MobileRefreshDto) {
+    return this.authService.refreshToken(dto.refreshToken, undefined, true);
+  }
+
   @Post('logout')
   logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     return this.authService.logout(req.cookies?.refresh_token, res);
+  }
+
+  @Post('mobile/logout')
+  mobileLogout(@Body() dto: MobileLogoutDto) {
+    return this.authService.logout(dto.refreshToken);
   }
 
   @Post('forgot-password')

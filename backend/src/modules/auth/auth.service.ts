@@ -98,7 +98,12 @@ export class AuthService {
     };
   }
 
-  async login(dto: LoginDto, req: Request, res: Response) {
+  async login(
+    dto: LoginDto,
+    req: Request,
+    res: Response,
+    returnTokens = false,
+  ) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -218,6 +223,32 @@ export class AuthService {
       userAgent: req.headers?.['user-agent'],
     });
 
+    const response = {
+      success: true,
+      message: 'Đăng nhập thành công',
+      user: {
+        id: user.id,
+        fullname: user.fullname,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+      },
+    };
+
+    if (returnTokens) {
+      return {
+        ...response,
+        accessToken,
+        refreshToken,
+        expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
+      };
+    }
+
+    if (!res) {
+      throw new Error(
+        'Response object is required for cookie-based authentication',
+      );
+    }
     res.cookie(
       'refresh_token',
       refreshToken,
@@ -228,17 +259,7 @@ export class AuthService {
 
     res.cookie('logged_in', 'true', visibleCookieOptions(maxAge));
 
-    return {
-      success: true,
-      message: '?ăng nhập thành công',
-      user: {
-        id: user.id,
-        fullname: user.fullname,
-        email: user.email,
-        role: user.role,
-        status: user.status,
-      },
-    };
+    return response;
   }
 
   /**
@@ -443,7 +464,7 @@ export class AuthService {
     return { message: '?ã gửi lại email xác minh.' };
   }
 
-  async refreshToken(refreshToken: string, res: Response) {
+  async refreshToken(refreshToken: string, res: Response, returnTokens = false,) {
     if (!refreshToken) {
       throw new UnauthorizedException('Không có refresh token');
     }
@@ -530,6 +551,32 @@ export class AuthService {
       },
     );
 
+    if (returnTokens) {
+  return {
+    success: true,
+    message: 'Refresh token thành công',
+    accessToken,
+    refreshToken: newRefreshToken,
+    expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
+    data: {
+      user: {
+        id: dbUser.id,
+        fullName: dbUser.fullname,
+        email: dbUser.email,
+        role: dbUser.role,
+        status: dbUser.status,
+        avatar: dbUser.avatar,
+      },
+    },
+  };
+}
+
+if (!res) {
+  throw new Error(
+    'Response object is required for cookie-based authentication',
+  );
+}
+
     res.cookie(
       'access_token',
       accessToken,
@@ -599,7 +646,7 @@ export class AuthService {
 
     clearAllAuthCookies(res);
     return {
-      message: '?ăng xuất thành công',
+      message: 'Đăng xuất thành công',
     };
   }
 

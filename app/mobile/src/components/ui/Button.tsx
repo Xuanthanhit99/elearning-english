@@ -1,17 +1,18 @@
+import React from "react";
 import {
   ActivityIndicator,
   Pressable,
   PressableProps,
   StyleSheet,
+  Text,
 } from "react-native";
+
+import { colors, radius, spacing } from "@/theme";
 
 type ButtonProps = PressableProps & {
   title?: string;
   loading?: boolean;
 };
-
-import React from "react";
-import { colors, radius, spacing } from "@/theme";
 
 const Button = ({
   title,
@@ -21,13 +22,15 @@ const Button = ({
   ...props
 }: ButtonProps) => {
   const isDisabled = disabled || loading;
+
   return (
     <Pressable
       {...props}
       disabled={isDisabled}
       style={({ pressed }) => [
         styles.button,
-        pressed && styles.pressed,
+        pressed && !isDisabled && styles.pressed,
+        isDisabled && styles.disabled,
         typeof style === "function" ? style({ pressed }) : style,
       ]}
     >
@@ -46,9 +49,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: spacing.xl,
-
     backgroundColor: colors.primary,
-
     borderRadius: radius.lg,
   },
 

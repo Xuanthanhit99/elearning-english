@@ -1,6 +1,6 @@
 import { env } from "@/config/env";
 import { ApiError } from "./ApiError";
-
+import { tokenManager } from '@/lib/auth/tokenManager';
 
 type RequestOptions = RequestInit & {
   token?: string | null;
@@ -11,7 +11,8 @@ async function request<T>(
   options: RequestOptions = {},
 ): Promise<T> {
   const { token, headers, ...requestOptions } = options;
-
+  const accessToken =
+  token ?? tokenManager.getAccessToken();
   const response = await fetch(
     `${env.API_URL}${path}`,
     {
@@ -23,7 +24,7 @@ async function request<T>(
 
         ...(token
           ? {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${accessToken}`,
             }
           : {}),
 
