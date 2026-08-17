@@ -51,6 +51,17 @@ export default function RootLayout({
         <LanguageInitializer />
         <AuthInitializer />
         {children}
+		<!-- Google tag (gtag.js) -->
+<script src="https://www.googletagmanager.com/gtag/js?id=G-3JDRS4SY66" strategy="afterInteractive" />
+<Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-3JDRS4SY66');
+          `}
+        </Script>
       </body>
     </html>
   );
