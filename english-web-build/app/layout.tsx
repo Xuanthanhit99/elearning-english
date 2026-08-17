@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 import ThemeInitializer, {
@@ -46,14 +47,20 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeAntiFlashScript }} />
       </head>
+
       <body className="BeaconVie-theme-compat min-h-screen antialiased">
         <ThemeInitializer />
         <LanguageInitializer />
         <AuthInitializer />
+
         {children}
-		<!-- Google tag (gtag.js) -->
-<script src="https://www.googletagmanager.com/gtag/js?id=G-3JDRS4SY66" strategy="afterInteractive" />
-<Script id="google-analytics" strategy="afterInteractive">
+
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-3JDRS4SY66"
+          strategy="afterInteractive"
+        />
+
+        <Script id="google-analytics" strategy="afterInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
