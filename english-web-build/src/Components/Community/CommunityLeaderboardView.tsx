@@ -79,7 +79,7 @@ export function CommunityLeaderboardView() {
               )}
             </div>
             <img
-              src={item.user.avatar || '/brand/beaconvie-ai-mascot.png'}
+              src={item.user.avatar || '/brand/beaconvie-ai-mascot.webp'}
               alt=""
               className="h-11 w-11 rounded-full object-cover"
             />

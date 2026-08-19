@@ -166,8 +166,8 @@ export const ACHIEVEMENT_CATALOG: AchievementSeedDefinition[] = [
   },
   {
     code: 'placement_completed',
-    title: 'Bat dau dung trinh do',
-    description: 'Hoan thanh Placement Test dau tien.',
+    title: 'Bắt đầu đúng trình độ',
+    description: 'Hoàn thành bài kiểm tra trình độ đầu tiên.',
     icon: 'sparkles',
     category: AchievementCategory.PLACEMENT,
     rarity: AchievementRarity.RARE,
@@ -258,7 +258,8 @@ export const ACHIEVEMENT_CATALOG: AchievementSeedDefinition[] = [
     // catalog updates), giving a real 30-day limited-time achievement.
     code: 'early_adopter_launch',
     title: 'Nguoi dong hanh dau tien',
-    description: 'Hoan thanh mot nhiem vu trong 30 ngay dau ra mat Achievement 2.0.',
+    description:
+      'Hoan thanh mot nhiem vu trong 30 ngay dau ra mat Achievement 2.0.',
     icon: 'sparkles',
     category: AchievementCategory.SPECIAL,
     rarity: AchievementRarity.RARE,

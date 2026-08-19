@@ -21,7 +21,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { trackEvent } from "@/src/lib/ga";
 import { DashboardData, DashboardMission, getDashboard } from "@/src/lib/dashboard-api";
 import { getWeeklyLeaderboard } from "@/src/lib/leaderboard-api";
 import type { LeaderboardResponse } from "@/src/types/leaderboard";
@@ -57,7 +58,7 @@ const skillModules = [
     key: "VOCABULARY",
     fallbackKey: "vocabulary",
     label: "Từ vựng",
-    description: "Review words, SRS and topic vocabulary.",
+    description: "Ôn từ theo chủ đề và lịch lặp lại ngắt quãng.",
     href: "/vocabulary",
     icon: BookOpen,
     accent: "from-emerald-500/16 via-teal-400/10 to-cyan-400/10",
@@ -67,7 +68,7 @@ const skillModules = [
     key: "GRAMMAR",
     fallbackKey: "grammar",
     label: "Ngữ pháp",
-    description: "Practice rules through focused lessons.",
+    description: "Luyện quy tắc ngữ pháp qua các bài học tập trung.",
     href: "/grammar",
     icon: CheckCircle2,
     accent: "from-blue-500/16 via-sky-400/10 to-cyan-400/10",
@@ -77,7 +78,7 @@ const skillModules = [
     key: "READING",
     fallbackKey: "reading",
     label: "Luyện đọc",
-    description: "Read and strengthen comprehension.",
+    description: "Đọc bài và nâng khả năng hiểu văn bản.",
     href: "/reading",
     icon: FileText,
     accent: "from-amber-500/16 via-orange-400/10 to-yellow-400/10",
@@ -87,7 +88,7 @@ const skillModules = [
     key: "LISTENING",
     fallbackKey: "listening",
     label: "Luyện nghe",
-    description: "Train active listening and dictation.",
+    description: "Rèn kỹ năng nghe hiểu và nghe chép chính tả.",
     href: "/listening",
     icon: Headphones,
     accent: "from-violet-500/16 via-indigo-400/10 to-blue-400/10",
@@ -97,7 +98,7 @@ const skillModules = [
     key: "SPEAKING",
     fallbackKey: "speaking",
     label: "Luyện nói",
-    description: "Practice pronunciation and fluency.",
+    description: "Luyện phát âm và sự trôi chảy khi nói.",
     href: "/speaking",
     icon: Mic2,
     accent: "from-fuchsia-500/16 via-pink-400/10 to-rose-400/10",
@@ -107,7 +108,7 @@ const skillModules = [
     key: "WRITING",
     fallbackKey: "writing",
     label: "Luyện viết",
-    description: "Improve writing with structured feedback.",
+    description: "Cải thiện bài viết với góp ý có cấu trúc.",
     href: "/writing",
     icon: FileText,
     accent: "from-rose-500/16 via-orange-400/10 to-amber-400/10",
@@ -268,13 +269,28 @@ export default function DashboardPage() {
     return Math.max(...(data?.weeklyActivity.map((item) => item.xp) ?? [0]), 1);
   }, [data]);
 
+  const prevGoalCompletedRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    const isGoalCompleted = data?.today?.isGoalCompleted;
+    if (isGoalCompleted === undefined) return;
+
+    // Only fire on a false -> true transition observed while mounted, not
+    // for a goal that was already complete on the first fetch (prevents
+    // re-firing on every refetch/rerender once it's already true).
+    if (prevGoalCompletedRef.current === false && isGoalCompleted === true) {
+      trackEvent("daily_goal_complete");
+    }
+
+    prevGoalCompletedRef.current = isGoalCompleted;
+  }, [data?.today?.isGoalCompleted]);
+
   if (loading) return <DashboardSkeleton />;
 
   if (error || !data) {
     return (
       <BeaconVieState
         title={error ?? d.noData}
-        description="Your session may have expired or the dashboard service may be unavailable."
+        description="Phiên đăng nhập có thể đã hết hạn hoặc dịch vụ tạm thời gián đoạn."
         actionLabel={d.retry}
         onAction={loadDashboard}
         tone="error"
@@ -358,10 +374,21 @@ function WelcomeHero({
   dailyPercent: number;
   cta: DashboardData["currentLesson"] | DashboardData["recommendedLesson"] | DashboardData["recommendations"][number] | null;
 }) {
+  const { dict } = useTranslation();
+  const d = dict.dashboard;
   const coachHeadline = useCoachHeadline();
-  const title = cta?.title ?? "Bắt đầu hoạt động học tiếp theo";
-  const href = cta?.href ?? "/learning-path";
-  const subtitle = cta?.subtitle ?? data.learningPath?.currentPhase?.title ?? "Mở lộ trình học để tiếp tục.";
+  // A brand-new account has no lesson to resume and no englishLevel yet
+  // (englishLevel is only set once a placement result exists). Point that
+  // learner at the placement test instead of a generic learning-path link
+  // with nothing behind it yet.
+  const needsPlacement = !cta && !data.user.englishLevel;
+  const title = needsPlacement
+    ? "Kiểm tra trình độ"
+    : (cta?.title ?? "Bắt đầu hoạt động học tiếp theo");
+  const href = needsPlacement ? "/placement" : (cta?.href ?? "/learning-path");
+  const subtitle = needsPlacement
+    ? "Chỉ mất vài phút để biết trình độ thật của bạn và nhận lộ trình phù hợp."
+    : (cta?.subtitle ?? data.learningPath?.currentPhase?.title ?? "Mở lộ trình học để tiếp tục.");
 
   return (
     <section className="relative isolate overflow-hidden rounded-[2rem] border border-white/50 bg-[linear-gradient(135deg,var(--BeaconVie-primary-strong),var(--BeaconVie-primary)_48%,var(--BeaconVie-violet))] p-5 text-white shadow-[0_28px_80px_rgba(20,103,232,0.22)] sm:p-7">
@@ -369,20 +396,22 @@ function WelcomeHero({
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
         <div className="min-w-0">
           <BeaconVieBadge className="border-white/20 bg-white/12 text-white">
-            Continue learning
+            {needsPlacement ? "Bắt đầu" : d.continueLearning}
           </BeaconVieBadge>
           <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
-            Hi {firstName(data.user.fullname)}, ready for your next step?
+            {d.greeting.replace("{name}", firstName(data.user.fullname))}
           </h1>
           <p className="mt-3 max-w-3xl text-sm font-semibold leading-6 text-white/82 sm:text-base">
-            Level {data.user.englishLevel || data.user.level}. Your dashboard is organized around the next real activity, daily goal, missions and skill progress.
+            {needsPlacement
+              ? "Bạn chưa làm bài kiểm tra trình độ — đây là cách nhanh nhất để có lộ trình phù hợp với bạn."
+              : `Trình độ ${data.user.englishLevel || data.user.level}. Trang tổng quan được sắp xếp quanh hoạt động tiếp theo, mục tiêu hôm nay, nhiệm vụ và tiến độ kỹ năng.`}
           </p>
 
           <div className="mt-6 max-w-3xl rounded-3xl border border-white/16 bg-white/12 p-4 backdrop-blur">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <p className="text-xs font-black uppercase tracking-[0.16em] text-cyan-100">
-                  {cta?.type ?? "Learning path"}
+                  {needsPlacement ? "Bắt đầu" : (cta?.type ?? d.learningPath)}
                 </p>
                 <h2 className="mt-1 truncate text-2xl font-black">{title}</h2>
                 <p className="mt-1 line-clamp-2 text-sm font-semibold text-white/78">
@@ -394,7 +423,7 @@ function WelcomeHero({
                 className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 font-black text-[var(--BeaconVie-primary-strong)] transition hover:-translate-y-0.5"
               >
                 <Play aria-hidden className="h-5 w-5" fill="currentColor" />
-                Continue
+                {needsPlacement ? "Bắt đầu" : d.continueCta}
               </Link>
             </div>
           </div>
@@ -403,8 +432,8 @@ function WelcomeHero({
         <div className="rounded-[1.75rem] border border-white/16 bg-white/12 p-4 backdrop-blur">
           <div className="flex items-center gap-4">
             <Image
-              src="/brand/beaconvie-ai-mascot.png"
-              alt="BeaconVie mascot"
+              src="/brand/beaconvie-ai-mascot.webp"
+              alt="Linh vật BeaconVie"
               width={112}
               height={112}
               priority
@@ -414,13 +443,13 @@ function WelcomeHero({
             <div className="min-w-0">
               <p className="text-sm font-black text-cyan-100">Beacon Coach</p>
               <p className="mt-1 line-clamp-2 text-sm font-semibold text-white/78">
-                {coachHeadline ?? "Analyzing your recent progress…"}
+                {coachHeadline ?? "Đang phân tích tiến độ gần đây của bạn…"}
               </p>
             </div>
           </div>
           <div className="mt-5">
             <div className="mb-2 flex justify-between text-xs font-black text-white/78">
-              <span>Daily goal</span>
+              <span>{d.todayGoal}</span>
               <span>{clampPercent(dailyPercent)}%</span>
             </div>
             <BeaconVieProgress value={dailyPercent} className="bg-white/20 [&>div]:bg-white" />
@@ -433,7 +462,7 @@ function WelcomeHero({
 
 function QuickActions({ actions }: { actions: DashboardData["quickActions"] }) {
   return (
-    <section aria-label="Quick actions" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    <section aria-label="Thao tác nhanh" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
       {actions.map((action) => (
         <Link
           key={action.id}
@@ -464,8 +493,8 @@ function SkillsPanel({ data }: { data: DashboardData }) {
   return (
     <BeaconVieCard className="p-5">
       <BeaconVieSectionHeader
-        title="Learning modules"
-        description="Six core skills with progress from real learning results when available."
+        title="Các phần học"
+        description="Sáu kỹ năng cốt lõi cùng tiến độ thực tế của bạn."
       />
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {skillModules.map((module) => {
@@ -499,14 +528,14 @@ function SkillsPanel({ data }: { data: DashboardData }) {
               {skill ? (
                 <>
                   <div className="mt-4 flex items-center justify-between text-xs font-black text-[var(--BeaconVie-muted)]">
-                    <span>Progress</span>
+                    <span>Tiến độ</span>
                     <span>{clampPercent(skill.percent)}%</span>
                   </div>
                   <BeaconVieProgress value={skill.percent} className="mt-2 h-2" />
                 </>
               ) : (
                 <p className="mt-4 rounded-2xl border border-dashed border-[var(--BeaconVie-border)] px-3 py-2 text-xs font-black text-[var(--BeaconVie-muted)]">
-                  No progress yet
+                  Chưa có tiến độ
                 </p>
               )}
             </Link>
@@ -518,14 +547,17 @@ function SkillsPanel({ data }: { data: DashboardData }) {
 }
 
 function LearningPathPanel({ data }: { data: DashboardData }) {
+  const { dict } = useTranslation();
+  const d = dict.dashboard;
+
   return (
     <BeaconVieCard className="p-5">
       <BeaconVieSectionHeader
-        title="Learning path"
-        description="Current stage and nearby phases from your real learning path."
+        title={d.learningPath}
+        description={d.learningPathDesc}
         action={
           <Link href="/learning-path" className="BeaconVie-button-soft text-sm">
-            View path
+            {d.view}
           </Link>
         }
       />
@@ -533,13 +565,13 @@ function LearningPathPanel({ data }: { data: DashboardData }) {
         <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-3xl bg-[var(--BeaconVie-primary-soft)] p-5">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--BeaconVie-primary)]">
-              Current level
+              {d.level}
             </p>
             <p className="mt-2 text-4xl font-black text-[var(--BeaconVie-ink)]">
               {data.learningPath.overallLevel}
             </p>
             <p className="mt-2 text-sm font-bold text-[var(--BeaconVie-muted)]">
-              {data.learningPath.currentPhase?.title ?? "No active phase yet"}
+              {data.learningPath.currentPhase?.title ?? "Chưa có giai đoạn nào đang học"}
             </p>
             <BeaconVieProgress value={data.learningPath.progressPercent} className="mt-5" />
           </div>
@@ -550,7 +582,7 @@ function LearningPathPanel({ data }: { data: DashboardData }) {
                   <div className="min-w-0">
                     <p className="truncate font-black text-[var(--BeaconVie-ink)]">{phase.title}</p>
                     <p className="text-xs font-bold text-[var(--BeaconVie-muted)]">
-                      Phase {phase.phase}{phase.targetLevel ? ` - ${phase.targetLevel}` : ""}
+                      Giai đoạn {phase.phase}{phase.targetLevel ? ` - ${phase.targetLevel}` : ""}
                     </p>
                   </div>
                   <span className="text-sm font-black text-[var(--BeaconVie-primary)]">
@@ -562,7 +594,7 @@ function LearningPathPanel({ data }: { data: DashboardData }) {
           </ol>
         </div>
       ) : (
-        <BeaconVieState title="No learning path yet." description="Take the placement test to build a personalized route." tone="empty" />
+        <BeaconVieState title={d.noLearningPath} tone="empty" />
       )}
     </BeaconVieCard>
   );
@@ -577,18 +609,21 @@ function WeeklyActivityPanel({
   locale: string;
   maxWeeklyXp: number;
 }) {
+  const { dict } = useTranslation();
+  const d = dict.dashboard;
+
   if (!data.weeklyActivity.length) {
     return (
       <BeaconVieCard className="p-5">
-        <BeaconVieSectionHeader title="Weekly activity" description="XP and activity will appear after you complete lessons." />
-        <BeaconVieState title="No weekly activity yet." tone="empty" />
+        <BeaconVieSectionHeader title={d.weeklyActivity} description={d.weeklyActivityDesc} />
+        <BeaconVieState title="Chưa có hoạt động trong tuần này." tone="empty" />
       </BeaconVieCard>
     );
   }
 
   return (
     <BeaconVieCard className="p-5">
-      <BeaconVieSectionHeader title="Weekly activity" description="XP, lessons and study time over the last 7 days." />
+      <BeaconVieSectionHeader title={d.weeklyActivity} description={d.weeklyActivityDesc} />
       <div className="grid h-56 grid-cols-7 items-end gap-2 sm:gap-4">
         {data.weeklyActivity.map((item) => (
           <div key={item.date} className="flex h-full min-w-0 flex-col justify-end gap-2">
@@ -615,7 +650,7 @@ function WeeklyActivityPanel({
 function RecentActivityPanel({ data, locale }: { data: DashboardData; locale: string }) {
   return (
     <BeaconVieCard className="p-5">
-      <BeaconVieSectionHeader title="Recent activity" description="Completed sessions from your real learning history." />
+      <BeaconVieSectionHeader title="Hoạt động gần đây" description="Các phiên học bạn đã hoàn thành." />
       {data.recentSessions.length > 0 ? (
         <div className="divide-y divide-[var(--BeaconVie-border)]">
           {data.recentSessions.map((session) => (
@@ -651,12 +686,15 @@ function MissionsPanel({
   missions: DashboardMission[];
   summary: DashboardData["todayMissions"]["summary"];
 }) {
+  const { dict } = useTranslation();
+  const d = dict.dashboard;
+
   return (
     <BeaconVieCard className="p-5">
       <BeaconVieSectionHeader
-        title="Daily missions"
-        description={`${summary.completed}/${summary.total} completed`}
-        action={<Link href="/missions" className="text-sm font-black text-[var(--BeaconVie-primary)]">View</Link>}
+        title={d.todayMissions}
+        description={`${summary.completed}/${summary.total} hoàn thành`}
+        action={<Link href="/missions" className="text-sm font-black text-[var(--BeaconVie-primary)]">{d.view}</Link>}
       />
       {missions.length > 0 ? (
         <div className="space-y-3">
@@ -675,13 +713,13 @@ function MissionsPanel({
               </div>
               <div className="mt-3 flex items-center gap-2">
                 <BeaconVieProgress value={mission.progressPercent} className="h-2 flex-1" />
-                {mission.completed ? <CheckCircle2 aria-label="Completed" className="h-5 w-5 text-emerald-500" /> : null}
+                {mission.completed ? <CheckCircle2 aria-label="Đã hoàn thành" className="h-5 w-5 text-emerald-500" /> : null}
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <BeaconVieState title="No missions today." tone="empty" />
+        <BeaconVieState title={d.noTodayMissions} tone="empty" />
       )}
     </BeaconVieCard>
   );
@@ -694,6 +732,8 @@ function TodayGoalPanel({
   data: DashboardData;
   dailyPercent: number;
 }) {
+  const { dict } = useTranslation();
+  const d = dict.dashboard;
   const targetMinutes = data.today?.targetStudyMinutes ?? 0;
   const studyMinutes = data.today?.studyMinutes ?? 0;
   const activeDays = data.week?.activeDays ?? 0;
@@ -702,11 +742,11 @@ function TodayGoalPanel({
   return (
     <BeaconVieCard className="p-5">
       <BeaconVieSectionHeader
-        title="Today's goal"
+        title={d.todayGoal}
         description={
           targetMinutes > 0
-            ? `${studyMinutes}/${targetMinutes} minutes studied`
-            : "Daily goal data appears after settings and study activity are available."
+            ? `Đã học ${studyMinutes}/${targetMinutes} phút`
+            : "Mục tiêu hôm nay sẽ hiện sau khi bạn bắt đầu học."
         }
       />
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
@@ -728,10 +768,10 @@ function TodayGoalPanel({
             </span>
             <div className="min-w-0">
               <p className="font-black text-[var(--BeaconVie-ink)]">
-                {targetDays > 0 ? `${activeDays}/${targetDays} active days` : `${activeDays} active days`}
+                {targetDays > 0 ? `${activeDays}/${targetDays} ngày hoạt động` : `${activeDays} ngày hoạt động`}
               </p>
               <p className="text-xs font-bold text-[var(--BeaconVie-muted)]">
-                Weekly rhythm from real activity
+                Nhịp độ học trong tuần
               </p>
             </div>
           </div>
@@ -744,15 +784,14 @@ function TodayGoalPanel({
 function LeaderboardPanel({ state }: { state: LeaderboardState }) {
   const entries = state.status === "ready" ? state.data.entries.slice(0, 5) : [];
   const currentUser = state.status === "ready" ? state.data.currentUser : null;
-  console.log("entries", entries);
   return (
     <BeaconVieCard className="p-5">
       <BeaconVieSectionHeader
-        title="Weekly leaderboard"
-        description="Top learners from the current leaderboard period."
+        title="Bảng xếp hạng tuần"
+        description="Những người học dẫn đầu trong kỳ xếp hạng hiện tại."
         action={
           <Link href="/leaderboard" className="text-sm font-black text-[var(--BeaconVie-primary)]">
-            View all
+            Xem tất cả
           </Link>
         }
       />
@@ -765,7 +804,7 @@ function LeaderboardPanel({ state }: { state: LeaderboardState }) {
       ) : state.status === "error" ? (
         <BeaconVieState title="Bảng xếp hạng chưa khả dụng" description={state.error} tone="error" />
       ) : state.status === "empty" ? (
-        <BeaconVieState title="No leaderboard entries yet." tone="empty" />
+        <BeaconVieState title="Chưa có dữ liệu xếp hạng." tone="empty" />
       ) : (
         <div className="space-y-3">
           {entries.map((entry) => (
@@ -805,7 +844,7 @@ function LeaderboardPanel({ state }: { state: LeaderboardState }) {
           ))}
           {currentUser && !entries.some((entry) => entry.isCurrentUser) ? (
             <div className="rounded-2xl border border-blue-200 bg-blue-50/70 p-3 text-sm font-black text-[var(--BeaconVie-primary)] dark:border-blue-400/30 dark:bg-blue-400/10">
-              Your rank: #{currentUser.rank} · {currentUser.periodXp.toLocaleString()} XP
+              Hạng của bạn: #{currentUser.rank} · {currentUser.periodXp.toLocaleString()} XP
             </div>
           ) : null}
         </div>
@@ -815,17 +854,19 @@ function LeaderboardPanel({ state }: { state: LeaderboardState }) {
 }
 
 function PetPanel({ data }: { data: DashboardData }) {
+  const { dict } = useTranslation();
+  const d = dict.dashboard;
   const pet = data.pet;
 
   if (pet?.isChosen) {
     return (
       <BeaconVieCard className="p-5">
         <BeaconVieSectionHeader
-          title="BeaconVie companion"
-          description="Real companion data from your account."
+          title={d.yourPet}
+          description={d.yourPetDesc}
           action={
             <Link href="/profile" className="text-sm font-black text-[var(--BeaconVie-primary)]">
-              Profile
+              Hồ sơ
             </Link>
           }
         />
@@ -839,16 +880,16 @@ function PetPanel({ data }: { data: DashboardData }) {
                 {pet.petName}
               </p>
               <p className="mt-1 text-sm font-bold text-[var(--BeaconVie-muted)]">
-                Level {pet.level} · {pet.xp.toLocaleString()} XP
+                Cấp {pet.level} · {pet.xp.toLocaleString()} XP
               </p>
             </div>
           </div>
           <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs font-black text-[var(--BeaconVie-muted)]">
             <span className="rounded-2xl bg-emerald-50 px-2 py-2 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200">
-              Energy {pet.energy}
+              Năng lượng {pet.energy}
             </span>
             <span className="rounded-2xl bg-pink-50 px-2 py-2 text-pink-700 dark:bg-pink-400/15 dark:text-pink-200">
-              Happy {pet.happiness}
+              Vui vẻ {pet.happiness}
             </span>
             <span className="rounded-2xl bg-amber-50 px-2 py-2 text-amber-700 dark:bg-amber-400/15 dark:text-amber-200">
               HP {pet.hp}
@@ -862,11 +903,11 @@ function PetPanel({ data }: { data: DashboardData }) {
   return (
     <BeaconVieCard className="p-5">
       <BeaconVieSectionHeader
-        title="BeaconVie companion"
-        description="This companion experience is planned, but it is not active yet."
+        title={d.yourPet}
+        description="Tính năng bạn đồng hành đang được chuẩn bị."
         action={
           <Link href="/profile" className="text-sm font-black text-[var(--BeaconVie-primary)]">
-            Profile
+            Hồ sơ
           </Link>
         }
       />
@@ -877,10 +918,10 @@ function PetPanel({ data }: { data: DashboardData }) {
           </div>
           <div className="min-w-0">
             <p className="truncate text-lg font-black text-[var(--BeaconVie-ink)]">
-              Coming soon
+              Sắp ra mắt
             </p>
             <p className="mt-1 text-sm font-bold text-[var(--BeaconVie-muted)]">
-              No pet selection, pet API, or required setup is used here.
+              Bạn chưa cần làm gì ở đây.
             </p>
           </div>
         </div>
@@ -890,9 +931,12 @@ function PetPanel({ data }: { data: DashboardData }) {
 }
 
 function AchievementsPanel({ data }: { data: DashboardData }) {
+  const { dict } = useTranslation();
+  const d = dict.dashboard;
+
   return (
     <BeaconVieCard className="p-5">
-      <BeaconVieSectionHeader title="Thành tích" description="Huy hiệu và phần thưởng vừa đạt được." />
+      <BeaconVieSectionHeader title={d.recentAchievements} description="Huy hiệu và phần thưởng vừa đạt được." />
       {data.recentAchievements.length > 0 ? (
         <div className="space-y-3">
           {data.recentAchievements.slice(0, 4).map((achievement) => (
@@ -908,19 +952,22 @@ function AchievementsPanel({ data }: { data: DashboardData }) {
           ))}
         </div>
       ) : (
-        <BeaconVieState title="No new achievements yet." tone="empty" />
+        <BeaconVieState title={d.noRecentAchievements} tone="empty" />
       )}
     </BeaconVieCard>
   );
 }
 
 function NotificationsPanel({ data }: { data: DashboardData }) {
+  const { dict } = useTranslation();
+  const d = dict.dashboard;
+
   return (
     <BeaconVieCard className="p-5">
       <BeaconVieSectionHeader
-        title="Thông báo"
-        description="Recent messages from the platform."
-        action={<Link href="/notifications" className="text-sm font-black text-[var(--BeaconVie-primary)]">Open</Link>}
+        title={d.notifications}
+        description="Thông báo gần đây từ hệ thống."
+        action={<Link href="/notifications" className="text-sm font-black text-[var(--BeaconVie-primary)]">Mở</Link>}
       />
       {data.notificationsPreview.length > 0 ? (
         <div className="space-y-3">
@@ -939,7 +986,7 @@ function NotificationsPanel({ data }: { data: DashboardData }) {
           ))}
         </div>
       ) : (
-        <BeaconVieState title="No new notifications." tone="empty" />
+        <BeaconVieState title={d.noNotifications} tone="empty" />
       )}
     </BeaconVieCard>
   );

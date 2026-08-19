@@ -75,7 +75,7 @@ export default function PlacementSpeakingQuestion({
       setError("");
 
       if (!navigator.mediaDevices?.getUserMedia) {
-        throw new Error("This browser does not support microphone recording. Use a recent Chrome or Edge browser.");
+        throw new Error("Trình duyệt này không hỗ trợ ghi âm. Hãy dùng Chrome hoặc Edge bản mới.");
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -108,7 +108,7 @@ export default function PlacementSpeakingQuestion({
       setRecording(true);
       recorder.start(250);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Microphone access failed.");
+      setError(err instanceof Error ? err.message : "Không thể truy cập micro.");
     }
   }
 
@@ -153,7 +153,7 @@ export default function PlacementSpeakingQuestion({
       });
       await onSubmitted();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Speaking upload failed.");
+      setError(err instanceof Error ? err.message : "Không thể gửi bài nói.");
     } finally {
       setSubmitting(false);
     }
@@ -174,7 +174,7 @@ export default function PlacementSpeakingQuestion({
       setSkipAction(null);
       await onSubmitted();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Speaking status could not be updated.");
+      setError(err instanceof Error ? err.message : "Không thể cập nhật trạng thái phần Nói.");
     } finally {
       setSubmitting(false);
     }
@@ -189,10 +189,10 @@ export default function PlacementSpeakingQuestion({
       <div>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <span className="rounded-full bg-blue-50 px-4 py-2 text-sm font-black text-blue-700">
-            Speaking • {level}
+            Nói • {level}
           </span>
           <span className="text-sm font-bold text-slate-500">
-            Recommended answer: 30-60 seconds
+            Nên trả lời trong 30-60 giây
           </span>
         </div>
 
@@ -210,10 +210,10 @@ export default function PlacementSpeakingQuestion({
           </p>
           <p className="mt-2 text-sm font-semibold leading-6 text-slate-600" aria-live="polite">
             {recording
-              ? "Recording. Speak clearly and naturally."
+              ? "Đang ghi âm. Nói rõ ràng và tự nhiên."
               : recordedBlob
-                ? "Recording ready. Listen back before submitting."
-                : "Record now, skip, or defer Speaking through the existing backend flow."}
+                ? "Đã ghi âm xong. Nghe lại trước khi gửi."
+                : "Bấm ghi âm để trả lời, hoặc bỏ qua / để đánh giá phần Nói sau."}
           </p>
 
           <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -225,7 +225,7 @@ export default function PlacementSpeakingQuestion({
                 className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-blue-600 px-6 py-3 font-black text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:opacity-60"
               >
                 <Mic2 aria-hidden className="h-5 w-5" />
-                Start recording
+                Bắt đầu ghi âm
               </button>
             ) : null}
 
@@ -236,7 +236,7 @@ export default function PlacementSpeakingQuestion({
                 className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-rose-600 px-6 py-3 font-black text-white transition hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-300"
               >
                 <CircleStop aria-hidden className="h-5 w-5" />
-                Stop
+                Dừng
               </button>
             ) : null}
 
@@ -249,7 +249,7 @@ export default function PlacementSpeakingQuestion({
                   className="inline-flex min-h-12 items-center gap-2 rounded-2xl border border-blue-200 bg-white px-5 py-3 font-black text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:opacity-60"
                 >
                   {playing ? <Pause aria-hidden className="h-5 w-5" /> : <Play aria-hidden className="h-5 w-5" />}
-                  {playing ? "Pause" : "Listen back"}
+                  {playing ? "Tạm dừng" : "Nghe lại"}
                 </button>
                 <button
                   type="button"
@@ -258,7 +258,7 @@ export default function PlacementSpeakingQuestion({
                   className="inline-flex min-h-12 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 font-black text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:opacity-60"
                 >
                   <RotateCcw aria-hidden className="h-5 w-5" />
-                  Record again
+                  Ghi âm lại
                 </button>
               </>
             ) : null}
@@ -272,15 +272,15 @@ export default function PlacementSpeakingQuestion({
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           <SkipCard
             icon={SkipForward}
-            title="Skip and continue"
-            description="Use the existing skip endpoint. Speaking is not included in the overall score."
+            title="Bỏ qua và tiếp tục"
+            description="Câu này sẽ không tính vào điểm tổng."
             disabled={submitting}
             onClick={() => setSkipAction("SKIPPED")}
           />
           <SkipCard
             icon={CalendarClock}
-            title="Assess Speaking later"
-            description="Use the existing deferred endpoint and continue this placement session."
+            title="Đánh giá phần Nói sau"
+            description="Tiếp tục bài kiểm tra, quay lại phần Nói sau."
             disabled={submitting}
             onClick={() => setSkipAction("DEFERRED")}
           />
@@ -288,7 +288,7 @@ export default function PlacementSpeakingQuestion({
 
         <div className="mt-5 flex items-start gap-3 rounded-2xl bg-amber-50 p-4 text-sm font-semibold leading-6 text-amber-900">
           <Volume2 aria-hidden className="mt-0.5 h-5 w-5 shrink-0" />
-          This indicator is not an audio waveform. It only shows recording state.
+          Biểu tượng này chỉ cho biết trạng thái ghi âm, không phải sóng âm thanh.
         </div>
 
         {error ? (
@@ -306,7 +306,7 @@ export default function PlacementSpeakingQuestion({
               className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-violet-600 px-7 py-3.5 font-black text-white shadow-[0_14px_34px_rgba(124,58,237,0.24)] transition hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-300 disabled:opacity-60"
             >
               {submitting ? <Loader2 aria-hidden className="h-5 w-5 animate-spin" /> : <Send aria-hidden className="h-5 w-5" />}
-              Submit speaking
+              Gửi bài nói
             </button>
           </div>
         ) : null}
@@ -382,12 +382,12 @@ function SkipDialog({
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 id="speaking-skip-title" className="text-2xl font-black text-slate-950">
-              {deferred ? "Assess Speaking later?" : "Skip Speaking?"}
+              {deferred ? "Đánh giá phần Nói sau?" : "Bỏ qua phần Nói?"}
             </h2>
             <p className="mt-3 text-sm font-semibold leading-6 text-slate-600">
               {deferred
-                ? "The session will continue and Speaking will be marked as pending by the existing API."
-                : "Speaking will be marked as not evaluated through the existing skip endpoint."}
+                ? "Bài kiểm tra sẽ tiếp tục, phần Nói được đánh dấu để làm sau."
+                : "Phần Nói sẽ không được tính điểm cho lần này."}
             </p>
           </div>
           <button
@@ -408,7 +408,7 @@ function SkipDialog({
             disabled={loading}
             className="rounded-2xl border border-slate-200 px-5 py-3 font-black text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
           >
-            Go back
+            Quay lại
           </button>
           <button
             type="button"
@@ -417,7 +417,7 @@ function SkipDialog({
             className="inline-flex items-center justify-center gap-2 rounded-2xl bg-violet-600 px-5 py-3 font-black text-white transition hover:bg-violet-700 disabled:opacity-60"
           >
             {loading ? <Loader2 aria-hidden className="h-5 w-5 animate-spin" /> : null}
-            {deferred ? "Defer Speaking" : "Skip Speaking"}
+            {deferred ? "Để sau" : "Bỏ qua"}
           </button>
         </div>
       </div>

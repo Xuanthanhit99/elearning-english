@@ -74,7 +74,7 @@ export function CommunityClubMembers({
             <img
               src={
                 member.user.avatar ||
-                '/brand/beaconvie-ai-mascot.png'
+                '/brand/beaconvie-ai-mascot.webp'
               }
               alt={member.user.fullname}
               className="h-11 w-11 rounded-full object-cover"

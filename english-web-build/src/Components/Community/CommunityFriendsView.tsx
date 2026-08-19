@@ -128,7 +128,7 @@ export function CommunityFriendsView({
                 className="flex items-center gap-3 py-3"
               >
                 <img
-                  src={user.avatar || '/brand/beaconvie-ai-mascot.png'}
+                  src={user.avatar || '/brand/beaconvie-ai-mascot.webp'}
                   alt=""
                   className="h-11 w-11 rounded-full object-cover"
                 />
@@ -187,7 +187,7 @@ export function CommunityFriendsView({
                 <img
                   src={
                     request.requester.avatar ||
-                    '/brand/beaconvie-ai-mascot.png'
+                    '/brand/beaconvie-ai-mascot.webp'
                   }
                   alt=""
                   className="h-10 w-10 rounded-full object-cover"
@@ -240,7 +240,7 @@ export function CommunityFriendsView({
                 className="flex items-center gap-3 rounded-2xl border p-3"
               >
                 <img
-                  src={friend.avatar || '/brand/beaconvie-ai-mascot.png'}
+                  src={friend.avatar || '/brand/beaconvie-ai-mascot.webp'}
                   alt=""
                   className="h-10 w-10 rounded-full object-cover"
                 />

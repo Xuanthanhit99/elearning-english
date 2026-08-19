@@ -32,7 +32,7 @@ export default function HeroProfileCard() {
       <div className="relative z-10 mt-8 flex flex-col items-center text-center">
         {isLoggedIn ? (
           <AvatarFrame
-            avatar={user.avatar || "/brand/beaconvie-ai-mascot.png"}
+            avatar={user.avatar || "/brand/beaconvie-ai-mascot.webp"}
             name={user.fullname || "User"}
             streak={streak}
           />
@@ -78,7 +78,7 @@ function GuestMascot() {
         <div className="absolute inset-0 rounded-full bg-[#ff6b00]/15 blur-3xl" />
 
         <Image
-          src="/brand/beaconvie-ai-mascot.png"
+          src="/brand/beaconvie-ai-mascot.webp"
           alt="Beacon mascot"
           width={320}
           height={320}

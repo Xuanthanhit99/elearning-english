@@ -112,7 +112,7 @@ export function CommunityClubChat({
             <img
               src={
                 message.sender.avatar ||
-                '/brand/beaconvie-ai-mascot.png'
+                '/brand/beaconvie-ai-mascot.webp'
               }
               alt={message.sender.fullname}
               className="h-9 w-9 rounded-full object-cover"

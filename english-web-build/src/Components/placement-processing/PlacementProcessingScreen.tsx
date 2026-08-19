@@ -52,6 +52,22 @@ const skillIcons = {
   WRITING: PencilLine,
 };
 
+const skillLabels: Record<keyof typeof skillIcons, string> = {
+  VOCABULARY: "Từ vựng",
+  GRAMMAR: "Ngữ pháp",
+  LISTENING: "Nghe",
+  READING: "Đọc",
+  SPEAKING: "Nói",
+  WRITING: "Viết",
+};
+
+const processingStatusLabels: Record<string, string> = {
+  WAITING: "Đang chờ",
+  PROCESSING: "Đang xử lý",
+  COMPLETED: "Hoàn tất",
+  FAILED: "Thất bại",
+};
+
 export default function PlacementProcessingScreen({ sessionId }: { sessionId: string }) {
   const router = useRouter();
   const [data, setData] = useState<PlacementProcessingSnapshot | null>(null);
@@ -76,7 +92,7 @@ export default function PlacementProcessingScreen({ sessionId }: { sessionId: st
       setError("");
       applySnapshot(await startPlacementProcessing(sessionId));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Processing could not be started.");
+      setError(err instanceof Error ? err.message : "Không thể bắt đầu xử lý kết quả.");
     } finally {
       setStarting(false);
     }
@@ -86,7 +102,7 @@ export default function PlacementProcessingScreen({ sessionId }: { sessionId: st
     try {
       applySnapshot(await getPlacementProcessing(sessionId));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Processing status could not be refreshed.");
+      setError(err instanceof Error ? err.message : "Không thể làm mới trạng thái xử lý.");
     }
   }, [applySnapshot, sessionId]);
 
@@ -130,10 +146,10 @@ export default function PlacementProcessingScreen({ sessionId }: { sessionId: st
         <BeaconVieCard className="w-full max-w-lg p-8 text-center">
           <Loader2 aria-hidden className="mx-auto h-10 w-10 animate-spin text-[var(--BeaconVie-primary)]" />
           <h1 className="mt-5 text-2xl font-black text-[var(--BeaconVie-ink)]">
-            Starting placement analysis
+            Đang bắt đầu phân tích
           </h1>
           <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
-            The backend is preparing the processing job for this test.
+            BeaconVie đang chuẩn bị phân tích kết quả bài kiểm tra của bạn.
           </p>
           {error ? (
             <p className="mt-4 rounded-2xl bg-rose-50 p-4 text-sm font-bold text-rose-600" role="alert">
@@ -154,22 +170,22 @@ export default function PlacementProcessingScreen({ sessionId }: { sessionId: st
         <BeaconVieCard className="p-6 lg:p-8">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
             <section>
-              <BeaconVieBadge>{data.status}</BeaconVieBadge>
+              <BeaconVieBadge>{processingStatusLabels[data.status] ?? data.status}</BeaconVieBadge>
               <h1 className="mt-4 max-w-4xl text-3xl font-black tracking-tight text-[var(--BeaconVie-ink)] sm:text-5xl">
                 {failed
-                  ? "Analysis needs attention"
+                  ? "Cần thử lại việc phân tích"
                   : completed
-                    ? "Analysis complete"
-                    : "Analyzing your placement test"}
+                    ? "Đã phân tích xong"
+                    : "BeaconVie đang phân tích kết quả của bạn"}
               </h1>
               <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-[var(--BeaconVie-muted)]">
-                Progress, steps, logs, skill states, and redirect are driven by
-                the existing placement processing API. No progress is simulated.
+                Chỉ mất một chút thời gian để tính điểm từng kỹ năng và chuẩn bị
+                lộ trình phù hợp với bạn.
               </p>
 
               <div className="mt-7">
                 <div className="flex items-center justify-between text-sm font-black text-[var(--BeaconVie-muted)]">
-                  <span>Overall progress</span>
+                  <span>Tiến độ chung</span>
                   <span>{data.progress}%</span>
                 </div>
                 <BeaconVieProgress value={data.progress} className="mt-2 h-4" />
@@ -185,8 +201,8 @@ export default function PlacementProcessingScreen({ sessionId }: { sessionId: st
             <BeaconVieCard className="border-slate-100 bg-white/70 p-5">
               <ConnectionStatus connecting={connecting} failed={failed} />
               <div className="mt-5 space-y-4">
-                <Fact icon={Clock3} label="Estimated remaining" value={formatDuration(data.estimatedRemainingSeconds)} />
-                <Fact icon={activeStep ? stepIcons[activeStep.key] : Circle} label="Current step" value={activeStep?.title ?? "Waiting"} />
+                <Fact icon={Clock3} label="Thời gian còn lại (ước tính)" value={formatDuration(data.estimatedRemainingSeconds)} />
+                <Fact icon={activeStep ? stepIcons[activeStep.key] : Circle} label="Bước hiện tại" value={activeStep?.title ?? "Đang chờ"} />
               </div>
               {failed ? (
                 <BeaconVieButton
@@ -194,12 +210,12 @@ export default function PlacementProcessingScreen({ sessionId }: { sessionId: st
                   loading={starting}
                   onClick={() => void initializeProcessing()}
                 >
-                  Retry processing
+                  Thử lại
                   <RefreshCw aria-hidden className="h-4 w-4" />
                 </BeaconVieButton>
               ) : completed && data.nextUrl ? (
                 <BeaconVieButton className="mt-6 w-full" onClick={() => router.replace(data.nextUrl as string)}>
-                  Open result
+                  Xem kết quả
                   <ArrowRight aria-hidden className="h-4 w-4" />
                 </BeaconVieButton>
               ) : null}
@@ -210,9 +226,9 @@ export default function PlacementProcessingScreen({ sessionId }: { sessionId: st
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
           <BeaconVieCard className="p-6">
             <BeaconVieSectionHeader
-              eyebrow="Pipeline"
-              title="Processing steps"
-              description="Each step uses the status and progress returned by the backend snapshot."
+              eyebrow="Các bước"
+              title="Quá trình xử lý"
+              description="BeaconVie đang thực hiện lần lượt các bước dưới đây."
             />
             <div className="grid gap-4 md:grid-cols-2">
               {data.steps.map((step) => (
@@ -244,10 +260,10 @@ function ConnectionStatus({ connecting, failed }: { connecting: boolean; failed:
       </span>
       <div>
         <p className="font-black text-[var(--BeaconVie-ink)]">
-          {failed ? "Failed" : connecting ? "Connecting" : "Live updates"}
+          {failed ? "Thất bại" : connecting ? "Đang kết nối" : "Đang cập nhật trực tiếp"}
         </p>
         <p className="text-xs font-bold text-[var(--BeaconVie-muted)]">
-          SSE with polling fallback
+          Kết quả sẽ tự động cập nhật
         </p>
       </div>
     </div>
@@ -291,9 +307,9 @@ function SkillPanel({ skills }: { skills: PlacementProcessingSnapshot["skills"] 
   return (
     <BeaconVieCard className="p-6">
       <BeaconVieSectionHeader
-        eyebrow="Skills"
-        title="Skill evaluation"
-        description="Skill status, score, level, and message come directly from the processing snapshot."
+        eyebrow="Kỹ năng"
+        title="Đánh giá kỹ năng"
+        description="Điểm, mức trình độ và nhận xét cho từng kỹ năng."
       />
       <div className="grid gap-3 md:grid-cols-2">
         {skills.map((item) => {
@@ -306,7 +322,7 @@ function SkillPanel({ skills }: { skills: PlacementProcessingSnapshot["skills"] 
                     <Icon aria-hidden className="h-5 w-5" />
                   </span>
                   <div>
-                    <p className="font-black text-[var(--BeaconVie-ink)]">{item.skill}</p>
+                    <p className="font-black text-[var(--BeaconVie-ink)]">{skillLabels[item.skill]}</p>
                     <p className="text-xs font-bold text-[var(--BeaconVie-muted)]">
                       {item.level ?? statusLabel(item.status)}
                     </p>
@@ -340,12 +356,12 @@ function LogPanel({
   return (
     <BeaconVieCard className="p-5">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">Processing log</h2>
+        <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">Nhật ký xử lý</h2>
         <span className={[
           "rounded-full px-3 py-1 text-xs font-black",
           failed ? "bg-rose-50 text-rose-600" : connecting ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-700",
         ].join(" ")}>
-          {failed ? "FAILED" : connecting ? "CONNECTING" : "LIVE"}
+          {failed ? "THẤT BẠI" : connecting ? "ĐANG KẾT NỐI" : "TRỰC TIẾP"}
         </span>
       </div>
       <div className="mt-5 max-h-[520px] space-y-4 overflow-auto pr-1">
@@ -366,7 +382,7 @@ function LogPanel({
           ))
         ) : (
           <p className="rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-[var(--BeaconVie-muted)]">
-            Waiting for the backend to publish processing logs.
+            Đang chờ nhật ký xử lý...
           </p>
         )}
       </div>
@@ -377,7 +393,7 @@ function LogPanel({
 function InsightPanel({ insights }: { insights: string[] }) {
   return (
     <BeaconVieCard className="p-5">
-      <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">Insights</h2>
+      <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">Nhận xét</h2>
       <div className="mt-4 space-y-3">
         {insights.length ? (
           insights.slice(-5).map((insight, index) => (
@@ -387,7 +403,7 @@ function InsightPanel({ insights }: { insights: string[] }) {
           ))
         ) : (
           <p className="rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-[var(--BeaconVie-muted)]">
-            Insights will appear here if the backend returns them.
+            Nhận xét sẽ xuất hiện tại đây khi có.
           </p>
         )}
       </div>
@@ -405,11 +421,11 @@ function StatusIcon({ status }: { status: ProcessingItemStatus }) {
 
 function statusLabel(status: ProcessingItemStatus) {
   const labels: Record<ProcessingItemStatus, string> = {
-    WAITING: "Waiting",
-    PROCESSING: "Processing",
-    COMPLETED: "Completed",
-    SKIPPED: "Skipped",
-    FAILED: "Failed",
+    WAITING: "Đang chờ",
+    PROCESSING: "Đang xử lý",
+    COMPLETED: "Hoàn tất",
+    SKIPPED: "Đã bỏ qua",
+    FAILED: "Thất bại",
   };
   return labels[status];
 }

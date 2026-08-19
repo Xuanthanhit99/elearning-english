@@ -19,6 +19,14 @@ import {
   resumeLearningPathLesson,
   startLearningPathLesson,
 } from "@/src/lib/learning-path-api";
+import { trackEvent } from "@/src/lib/ga";
+
+const lessonStatusLabels: Record<string, string> = {
+  LOCKED: "Đã khoá",
+  AVAILABLE: "Chưa bắt đầu",
+  IN_PROGRESS: "Đang học",
+  COMPLETED: "Đã hoàn thành",
+};
 
 export default function LearningPathLessonPage() {
   const router = useRouter();
@@ -46,7 +54,7 @@ export default function LearningPathLessonPage() {
       setData(await resumeLearningPathLesson(lessonId, controller.signal));
     } catch (err) {
       if (axios.isCancel(err)) return;
-      setError(err instanceof Error ? err.message : "Khong the tai bai hoc.");
+      setError(err instanceof Error ? err.message : "Không thể tải bài học.");
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
@@ -64,9 +72,11 @@ export default function LearningPathLessonPage() {
     try {
       setSaving(true);
       setError("");
-      setData(await startLearningPathLesson(lessonId));
+      const result = await startLearningPathLesson(lessonId);
+      setData(result);
+      trackEvent("lesson_start", { lesson_type: "learning_path" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Khong the bat dau bai hoc.");
+      setError(err instanceof Error ? err.message : "Không thể bắt đầu bài học.");
     } finally {
       setSaving(false);
     }
@@ -80,8 +90,17 @@ export default function LearningPathLessonPage() {
       setError("");
       const result = await completeLearningPathLesson(lessonId);
       setData(result);
+
+      // `alreadyCompleted` means this lesson was completed before this
+      // click (e.g. re-visiting a finished lesson) — don't recount it.
+      if (!result.alreadyCompleted) {
+        trackEvent("lesson_complete", { lesson_type: "learning_path" });
+        if (result.learningPath.completedLessons === 1) {
+          trackEvent("first_lesson_complete", { lesson_type: "learning_path" });
+        }
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Khong the hoan thanh bai hoc.");
+      setError(err instanceof Error ? err.message : "Không thể hoàn thành bài học.");
     } finally {
       setSaving(false);
     }
@@ -92,7 +111,7 @@ export default function LearningPathLessonPage() {
       <main className="flex min-h-[70vh] items-center justify-center p-6">
         <div className="text-center">
           <Loader2 className="mx-auto h-10 w-10 animate-spin text-violet-600" />
-          <p className="mt-4 font-black text-slate-900">Dang tai bai hoc...</p>
+          <p className="mt-4 font-black text-slate-900">Đang tải bài học...</p>
         </div>
       </main>
     );
@@ -102,14 +121,14 @@ export default function LearningPathLessonPage() {
     return (
       <main className="mx-auto max-w-3xl p-6">
         <div className="rounded-3xl border border-red-100 bg-red-50 p-6">
-          <p className="font-black text-red-700">{error || "Khong co du lieu bai hoc."}</p>
+          <p className="font-black text-red-700">{error || "Không có dữ liệu bài học."}</p>
           <button
             type="button"
             onClick={loadLesson}
             className="mt-4 inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 font-black text-white"
           >
             <RefreshCcw size={17} />
-            Thu lai
+            Thử lại
           </button>
         </div>
       </main>
@@ -128,7 +147,7 @@ export default function LearningPathLessonPage() {
           className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 font-black text-slate-700"
         >
           <ArrowLeft size={17} />
-          Quay lai lo trinh
+          Quay lại lộ trình
         </Link>
 
         {error ? (
@@ -144,7 +163,7 @@ export default function LearningPathLessonPage() {
               <h1 className="mt-2 text-4xl font-black text-slate-950">{lesson.title}</h1>
               <p className="mt-3 flex items-center gap-2 text-sm font-semibold text-slate-500">
                 <Clock size={16} />
-                {lesson.duration ? `${lesson.duration} phut` : "Thoi luong linh hoat"}
+                {lesson.duration ? `${lesson.duration} phút` : "Thời lượng linh hoạt"}
               </p>
             </div>
 
@@ -152,31 +171,31 @@ export default function LearningPathLessonPage() {
               <p className="text-3xl font-black text-violet-700">
                 {data.learningPath.progressPercent}%
               </p>
-              <p className="text-sm font-bold text-slate-500">Tien do lo trinh</p>
+              <p className="text-sm font-bold text-slate-500">Tiến độ lộ trình</p>
             </div>
           </div>
 
           <div className="mt-8 rounded-3xl bg-slate-50 p-6">
-            <h2 className="text-2xl font-black text-slate-950">Noi dung bai hoc</h2>
+            <h2 className="text-2xl font-black text-slate-950">Nội dung bài học</h2>
             <p className="mt-3 leading-7 text-slate-600">
-              Bai hoc nay nam trong Learning Path cua ban. Hay hoc noi dung theo module
-              tuong ung, sau do danh dau hoan thanh de mo khoa bai tiep theo va dong bo
-              tien do tren dashboard.
+              Bài học này nằm trong lộ trình học của bạn. Hãy học nội dung theo
+              phần tương ứng, sau đó đánh dấu hoàn thành để mở khoá bài tiếp
+              theo và đồng bộ tiến độ trên trang tổng quan.
             </p>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl bg-white p-4">
-                <p className="text-sm font-bold text-slate-500">Trang thai</p>
-                <p className="mt-1 font-black text-slate-950">{lesson.status}</p>
+                <p className="text-sm font-bold text-slate-500">Trạng thái</p>
+                <p className="mt-1 font-black text-slate-950">{lessonStatusLabels[lesson.status] ?? lesson.status}</p>
               </div>
               <div className="rounded-2xl bg-white p-4">
-                <p className="text-sm font-bold text-slate-500">Da hoc</p>
+                <p className="text-sm font-bold text-slate-500">Đã học</p>
                 <p className="mt-1 font-black text-slate-950">
                   {data.learningPath.completedLessons}/{data.learningPath.totalLessons}
                 </p>
               </div>
               <div className="rounded-2xl bg-white p-4">
-                <p className="text-sm font-bold text-slate-500">Khoa hoc</p>
+                <p className="text-sm font-bold text-slate-500">Khoá học</p>
                 <p className="mt-1 truncate font-black text-slate-950">{lesson.courseSlug}</p>
               </div>
             </div>
@@ -191,7 +210,7 @@ export default function LearningPathLessonPage() {
                 className="inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-6 py-3 font-black text-white disabled:opacity-60"
               >
                 {saving ? <Loader2 className="animate-spin" size={18} /> : null}
-                Bat dau bai hoc
+                Bắt đầu bài học
               </button>
             ) : null}
 
@@ -202,7 +221,7 @@ export default function LearningPathLessonPage() {
               className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3 font-black text-white disabled:opacity-60"
             >
               {saving ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle2 size={18} />}
-              {completed ? "Da hoan thanh" : "Danh dau hoan thanh"}
+              {completed ? "Đã hoàn thành" : "Đánh dấu hoàn thành"}
             </button>
 
             {data.learningPath.nextLesson ? (
@@ -211,7 +230,7 @@ export default function LearningPathLessonPage() {
                 onClick={() => router.push(data.learningPath.nextLesson?.href ?? "/learning-path")}
                 className="inline-flex items-center gap-2 rounded-2xl border border-violet-200 bg-white px-6 py-3 font-black text-violet-700"
               >
-                Bai tiep theo
+                Bài tiếp theo
               </button>
             ) : null}
           </div>
@@ -222,17 +241,17 @@ export default function LearningPathLessonPage() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-2xl font-black text-slate-950">
-                  {data.rewards.applied ? "Phan thuong vua nhan" : "Bai hoc da duoc xu ly"}
+                  {data.rewards.applied ? "Phần thưởng vừa nhận" : "Bài học đã được ghi nhận"}
                 </h2>
                 <p className="mt-1 text-sm font-semibold text-slate-500">
                   {data.rewards.applied
-                    ? "Tien do, nhiem vu va diem cua ban da duoc dong bo tu backend."
-                    : "Lan goi nay khong cong lai XP, coins hay streak."}
+                    ? "Tiến độ, nhiệm vụ và điểm của bạn đã được cập nhật."
+                    : "Lần này không cộng thêm XP, coins hay streak."}
                 </p>
               </div>
               {data.rewards.leaderboard.queued ? (
                 <span className="rounded-full bg-violet-50 px-4 py-2 text-sm font-black text-violet-700">
-                  Leaderboard da dong bo
+                  Bảng xếp hạng đã cập nhật
                 </span>
               ) : null}
             </div>
@@ -253,14 +272,14 @@ export default function LearningPathLessonPage() {
                 <p className="text-2xl font-black text-emerald-700">
                   {data.rewards.missionUpdates.length}
                 </p>
-                <p className="text-xs font-bold text-slate-500">Mission cap nhat</p>
+                <p className="text-xs font-bold text-slate-500">Nhiệm vụ cập nhật</p>
               </div>
               <div className="rounded-2xl bg-violet-50 p-4">
                 <RefreshCcw className="mb-2 text-violet-600" size={20} />
                 <p className="text-2xl font-black text-violet-700">
                   {data.rewards.streak.current ?? "-"}
                 </p>
-                <p className="text-xs font-bold text-slate-500">Streak hien tai</p>
+                <p className="text-xs font-bold text-slate-500">Streak hiện tại</p>
               </div>
             </div>
           </section>

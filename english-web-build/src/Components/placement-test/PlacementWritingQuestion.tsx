@@ -70,7 +70,7 @@ export default function PlacementWritingQuestion({
       window.localStorage.removeItem(storageKey);
       await onSubmitted();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Writing submission failed.");
+      setError(err instanceof Error ? err.message : "Không thể gửi bài viết.");
     } finally {
       setSubmitting(false);
     }
@@ -80,10 +80,10 @@ export default function PlacementWritingQuestion({
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="rounded-full bg-cyan-50 px-4 py-2 text-sm font-black text-cyan-700">
-          Writing • {level}
+          Viết • {level}
         </span>
         <span className="text-sm font-bold text-slate-500">
-          {minWords}-{maxWords} words
+          {minWords}-{maxWords} từ
         </span>
       </div>
 
@@ -95,9 +95,9 @@ export default function PlacementWritingQuestion({
         <div className="flex gap-3">
           <Lightbulb aria-hidden className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
           <p className="text-sm font-semibold leading-6 text-slate-600">
-            Write a complete response with a clear opening, supporting details,
-            and a short conclusion. Your draft is saved locally for this
-            question only and removed after successful submission.
+            Viết một bài hoàn chỉnh có mở đầu rõ ràng, phần thân với ý hỗ trợ,
+            và kết luận ngắn gọn. Bản nháp được lưu trên máy bạn cho riêng câu
+            này và sẽ bị xoá sau khi gửi thành công.
           </p>
         </div>
       </div>
@@ -106,7 +106,7 @@ export default function PlacementWritingQuestion({
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50 px-5 py-3">
           <label htmlFor="placement-writing-editor" className="flex items-center gap-2 font-black text-slate-700">
             <FileText aria-hidden className="h-5 w-5 text-violet-600" />
-            Your response
+            Bài viết của bạn
           </label>
           <span
             className={[
@@ -119,7 +119,7 @@ export default function PlacementWritingQuestion({
             ].join(" ")}
             aria-live="polite"
           >
-            {wordCount}/{maxWords} words
+            {wordCount}/{maxWords} từ
           </span>
         </div>
 
@@ -128,7 +128,7 @@ export default function PlacementWritingQuestion({
           value={content}
           onChange={(event) => setContent(event.target.value)}
           disabled={submitting}
-          placeholder="Start writing here..."
+          placeholder="Bắt đầu viết tại đây..."
           className="min-h-[340px] w-full resize-y border-0 p-5 text-base font-medium leading-8 text-slate-800 outline-none placeholder:text-slate-400 disabled:opacity-60"
         />
 
@@ -136,19 +136,19 @@ export default function PlacementWritingQuestion({
           <span className="inline-flex items-center gap-2 font-semibold text-slate-500" aria-live="polite">
             <Save aria-hidden className="h-4 w-4 text-emerald-500" />
             {savedAt
-              ? `Draft saved at ${savedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
-              : "Draft saves on this device"}
+              ? `Đã lưu nháp lúc ${savedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+              : "Bản nháp được lưu trên máy này"}
           </span>
 
           {tooShort ? (
             <span className="font-bold text-amber-700">
-              Add {minWords - wordCount} more word{minWords - wordCount === 1 ? "" : "s"}
+              Cần viết thêm {minWords - wordCount} từ
             </span>
           ) : null}
 
           {tooLong ? (
             <span className="font-bold text-rose-600">
-              Remove {wordCount - maxWords} word{wordCount - maxWords === 1 ? "" : "s"}
+              Bớt {wordCount - maxWords} từ
             </span>
           ) : null}
         </div>
@@ -168,7 +168,7 @@ export default function PlacementWritingQuestion({
           className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-violet-600 px-7 py-3.5 font-black text-white shadow-[0_14px_34px_rgba(124,58,237,0.24)] transition hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-300 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {submitting ? <Loader2 aria-hidden className="h-5 w-5 animate-spin" /> : <Send aria-hidden className="h-5 w-5" />}
-          Submit writing
+          Gửi bài viết
         </button>
       </div>
     </div>

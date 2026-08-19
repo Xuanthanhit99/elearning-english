@@ -485,7 +485,7 @@ export default function ListeningPage() {
         <section className="min-w-0 flex-1">
           <ListeningTopBar
             displayName={user?.fullname || "Minh Anh"}
-            avatar={user?.avatar || "/brand/beaconvie-ai-mascot.png"}
+            avatar={user?.avatar || "/brand/beaconvie-ai-mascot.webp"}
           />
 
           <div className="grid gap-8 px-4 py-7 lg:px-8 xl:grid-cols-[1fr_420px]">

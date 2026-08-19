@@ -106,6 +106,7 @@ export type Dictionary = {
     successWelcome: string;
     successDescription: string;
     successLoginNow: string;
+    successContinue: string;
   };
   sidebar: {
     groupLearning: string;

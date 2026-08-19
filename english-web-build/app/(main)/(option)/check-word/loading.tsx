@@ -4,7 +4,7 @@ export default function Loading() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--background)] px-6">
       <Image
-        src="/brand/beaconvie-ai-mascot.png"
+        src="/brand/beaconvie-ai-mascot.webp"
         alt="Đang tải"
         width={120}
         height={120}

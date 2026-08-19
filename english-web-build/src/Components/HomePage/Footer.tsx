@@ -47,7 +47,7 @@ export default function Footer() {
             <div className="flex justify-center lg:justify-end">
               <div className="rounded-[34px] border border-white/20 bg-white/10 p-5 backdrop-blur">
                 <Image
-                  src="/brand/beaconvie-ai-mascot.png"
+                  src="/brand/beaconvie-ai-mascot.webp"
                   alt="Beacon mascot"
                   width={220}
                   height={220}

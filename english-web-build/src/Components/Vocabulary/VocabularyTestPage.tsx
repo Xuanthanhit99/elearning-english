@@ -52,7 +52,7 @@ type WeeklyPlan = {
 export default function VocabularyTestPage() {
   const user = useAuthStore((state) => state.user);
   const displayName = user?.fullname || "Minh Anh";
-  const avatar = user?.avatar || "/brand/beaconvie-ai-mascot.png";
+  const avatar = user?.avatar || "/brand/beaconvie-ai-mascot.webp";
   const [weeklyTest, setWeeklyTest] = useState<WeeklyTest | null>(null);
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyPlan | null>(null);
   const [reviewTotal, setReviewTotal] = useState(0);

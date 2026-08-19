@@ -119,7 +119,7 @@ export function CommunityClubOverview({
               </span>
               <div className="mt-3 flex items-center gap-3">
                 <img
-                  src={club.owner.avatar || '/brand/beaconvie-ai-mascot.png'}
+                  src={club.owner.avatar || '/brand/beaconvie-ai-mascot.webp'}
                   alt={club.owner.fullname}
                   className="h-10 w-10 rounded-full object-cover"
                 />

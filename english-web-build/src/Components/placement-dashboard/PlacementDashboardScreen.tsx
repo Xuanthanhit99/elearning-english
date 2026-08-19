@@ -226,11 +226,11 @@ export default function PlacementDashboardScreen() {
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-black text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
                   <CheckCircle2 aria-hidden className="h-4 w-4" />
-                  ?ã hoàn thành
+                  Đã hoàn thành
                 </div>
 
                 <h1 className="mt-4 text-4xl font-black text-[var(--BeaconVie-ink)]">
-                  Placement Test!
+                  Kiểm tra trình độ hoàn tất!
                 </h1>
 
                 <p className="mt-2 leading-7 text-[var(--BeaconVie-muted)]">
@@ -400,7 +400,7 @@ export default function PlacementDashboardScreen() {
                       </div>
 
                       <span className="self-start rounded-full bg-black/5 px-3 py-1 text-center text-xs font-bold text-[var(--BeaconVie-muted)] dark:bg-white/8">
-                        {item.label ?? '?ã đánh giá'}
+                        {item.label ?? 'Đã đánh giá'}
                       </span>
 
                       <div className="text-sm leading-6 text-[var(--BeaconVie-muted)]">
@@ -631,7 +631,7 @@ function RadarChart(props: { points: string; overall: number; summary: string })
         />
         <circle cx="110" cy="110" r="30" fill="var(--BeaconVie-card)" />
         <text x="110" y="106" textAnchor="middle" fontSize="12" fill="var(--BeaconVie-muted)">
-          Overall
+          Tổng
         </text>
         <text
           x="110"
@@ -800,7 +800,7 @@ function ComparisonPanel(props: {
         </div>
       ) : (
         <p className="mt-5 rounded-2xl bg-black/[0.03] p-5 text-sm text-[var(--BeaconVie-muted)] dark:bg-white/5">
-          ?ây là kết quả đầu tiên. Sau lần kiểm tra tiếp theo, hệ thống sẽ
+          Đây là kết quả đầu tiên. Sau lần kiểm tra tiếp theo, hệ thống sẽ
           hiển thị tiến bộ tại đây.
         </p>
       )}
@@ -884,9 +884,9 @@ function RetakeDialog(props: {
     <BeaconVieDialog open={props.open} onClose={props.onClose} titleId="dashboard-retake-title">
       <div className="flex items-start justify-between gap-4">
         <h2 id="dashboard-retake-title" className="text-2xl font-black text-[var(--BeaconVie-ink)]">
-          Làm lại Placement Test?
+          Làm lại bài kiểm tra trình độ?
         </h2>
-        <BeaconVieDialogCloseButton onClose={props.onClose} label="?óng hộp thoại" />
+        <BeaconVieDialogCloseButton onClose={props.onClose} label="Đóng hộp thoại" />
       </div>
       <p className="mt-3 leading-7 text-[var(--BeaconVie-muted)]">
         {props.message}

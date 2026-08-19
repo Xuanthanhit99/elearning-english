@@ -30,7 +30,7 @@ export default function PlacementTextQuestion({
         <article className="mb-6 max-h-[44vh] overflow-auto rounded-3xl border border-slate-200 bg-slate-50 p-5 text-base font-medium leading-8 text-slate-700">
           <div className="mb-3 flex items-center gap-2 text-sm font-black uppercase tracking-[0.12em] text-slate-500">
             <FileText aria-hidden className="h-4 w-4" />
-            Reading passage
+            Đoạn văn
           </div>
           {passage}
         </article>
@@ -44,19 +44,19 @@ export default function PlacementTextQuestion({
         <div className="mt-7">
           <label htmlFor="placement-fill-answer" className="mb-2 flex items-center gap-2 text-sm font-black text-slate-700">
             <Keyboard aria-hidden className="h-4 w-4 text-violet-600" />
-            Your answer
+            Câu trả lời của bạn
           </label>
           <input
             id="placement-fill-answer"
             value={selectedAnswer ?? ""}
             disabled={disabled}
             onChange={(event) => onSelectAnswer(event.target.value)}
-            placeholder="Type your answer here"
+            placeholder="Nhập câu trả lời tại đây"
             className="min-h-14 w-full rounded-2xl border border-slate-200 bg-white px-4 text-lg font-bold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-violet-400 focus:ring-2 focus:ring-violet-100 disabled:opacity-60"
           />
         </div>
       ) : (
-        <div className="mt-7 space-y-3" role="group" aria-label="Answer options">
+        <div className="mt-7 space-y-3" role="group" aria-label="Các lựa chọn trả lời">
           {options.map((option) => (
             <PlacementOptionButton
               key={option.key}

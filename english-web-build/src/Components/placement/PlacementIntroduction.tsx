@@ -27,6 +27,7 @@ import {
   PlacementStepKey,
   startPlacementTest,
 } from "@/src/lib/placement-api";
+import { trackEvent } from "@/src/lib/ga";
 import {
   BeaconVieBadge,
   BeaconVieButton,
@@ -36,10 +37,10 @@ import {
 } from "@/src/Components/UI/BeaconVie";
 
 const readinessChecklist = [
-  { icon: Wifi, text: "Stable internet connection" },
-  { icon: Headphones, text: "Headphones for Listening questions" },
-  { icon: Mic2, text: "Microphone ready for the Speaking section" },
-  { icon: VolumeX, text: "A quiet environment with no interruptions" },
+  { icon: Wifi, text: "Kết nối internet ổn định" },
+  { icon: Headphones, text: "Tai nghe cho phần Nghe" },
+  { icon: Mic2, text: "Micro sẵn sàng cho phần Nói" },
+  { icon: VolumeX, text: "Không gian yên tĩnh, không bị làm phiền" },
 ];
 
 const stepIcons: Record<PlacementStepKey, typeof Type> = {
@@ -62,6 +63,22 @@ const skillLabels: Record<string, string> = {
   WRITING: "Luyện viết",
 };
 
+const stepLabels: Record<PlacementStepKey, string> = {
+  INTRODUCTION: "Giới thiệu",
+  VOCABULARY: skillLabels.VOCABULARY,
+  GRAMMAR: skillLabels.GRAMMAR,
+  LISTENING: skillLabels.LISTENING,
+  READING: skillLabels.READING,
+  SPEAKING: skillLabels.SPEAKING,
+  WRITING: skillLabels.WRITING,
+  RESULT: "Kết quả",
+};
+
+const modeLabels: Record<string, string> = {
+  LEVEL_BASED: "Theo trình độ",
+  ADAPTIVE: "Thích ứng",
+};
+
 export default function PlacementIntroduction() {
   const router = useRouter();
   const [data, setData] = useState<PlacementIntroductionData | null>(null);
@@ -78,7 +95,7 @@ export default function PlacementIntroduction() {
       setError(
         err instanceof Error
           ? err.message
-          : "We could not load placement preparation.",
+          : "Không thể tải phần chuẩn bị kiểm tra trình độ.",
       );
     } finally {
       setLoading(false);
@@ -94,10 +111,13 @@ export default function PlacementIntroduction() {
       setStarting(true);
       setError("");
       const result = await startPlacementTest();
+      trackEvent("placement_test_start", {
+        resumed: data?.test.hasActiveSession ?? false,
+      });
       router.push(result.nextUrl);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "We could not start the test.",
+        err instanceof Error ? err.message : "Không thể bắt đầu bài kiểm tra.",
       );
     } finally {
       setStarting(false);
@@ -125,9 +145,9 @@ export default function PlacementIntroduction() {
   if (!data) {
     return (
       <BeaconVieState
-        title="Preparation is unavailable"
+        title="Không thể mở phần chuẩn bị"
         description={error}
-        actionLabel="Try again"
+        actionLabel="Thử lại"
         tone="error"
         onAction={() => void loadIntroduction()}
       />
@@ -138,9 +158,9 @@ export default function PlacementIntroduction() {
     <main className="min-h-screen px-3 py-5 sm:px-4 lg:px-6">
       <div className="mx-auto grid max-w-7xl gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
         <BeaconVieCard className="p-5">
-          <BeaconVieBadge>Checklist</BeaconVieBadge>
+          <BeaconVieBadge>Danh sách chuẩn bị</BeaconVieBadge>
           <h2 className="mt-4 text-xl font-black text-[var(--BeaconVie-ink)]">
-            Test flow
+            Các bước kiểm tra
           </h2>
           <ol className="mt-5 space-y-4">
             {data.content.steps.map((step) => {
@@ -184,7 +204,7 @@ export default function PlacementIntroduction() {
           <BeaconVieCard className="p-6 lg:p-8">
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
               <div>
-                <BeaconVieBadge>{data.test.mode.replace("_", " ")} mode</BeaconVieBadge>
+                <BeaconVieBadge>Chế độ {modeLabels[data.test.mode] ?? data.test.mode}</BeaconVieBadge>
                 <h1 className="mt-4 max-w-3xl text-3xl font-black tracking-tight text-[var(--BeaconVie-ink)] sm:text-5xl">
                   {data.content.title}
                 </h1>
@@ -209,7 +229,7 @@ export default function PlacementIntroduction() {
 
               <BeaconVieCard className="border-slate-100 bg-white/75 p-5">
                 <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">
-                  Readiness checklist
+                  Cần chuẩn bị gì
                 </h2>
                 <ul className="mt-4 space-y-3">
                   {readinessChecklist.map((item) => (
@@ -223,13 +243,13 @@ export default function PlacementIntroduction() {
                 </ul>
 
                 <h2 className="mt-6 text-lg font-black text-[var(--BeaconVie-ink)]">
-                  Before you begin
+                  Trước khi bắt đầu
                 </h2>
                 <div className="mt-4 space-y-3">
-                  <PrepItem icon={Mic2} text="Microphone permission is requested only when Speaking starts." />
-                  <PrepItem icon={Clock3} text={`Estimated time: about ${data.content.estimatedMinutes} minutes.`} />
-                  <PrepItem icon={SkipForward} text="Skip keeps the existing server behavior." />
-                  <PrepItem icon={Flag} text="Flag saves a question for review when the backend supports it." />
+                  <PrepItem icon={Mic2} text="BeaconVie chỉ xin quyền dùng micro khi bạn vào phần Nói." />
+                  <PrepItem icon={Clock3} text={`Thời gian dự kiến: khoảng ${data.content.estimatedMinutes} phút.`} />
+                  <PrepItem icon={SkipForward} text="Bạn có thể bỏ qua một câu và quay lại sau." />
+                  <PrepItem icon={Flag} text="Đánh dấu câu hỏi để xem lại trước khi nộp bài." />
                   <PrepItem icon={ShieldCheck} text={data.content.autosaveMessage} />
                 </div>
               </BeaconVieCard>
@@ -239,7 +259,7 @@ export default function PlacementIntroduction() {
           <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
             <BeaconVieCard className="p-6">
               <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">
-                Skills in this test
+                Kỹ năng trong bài kiểm tra
               </h2>
               <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {data.content.skills.map((skill) => {
@@ -263,17 +283,17 @@ export default function PlacementIntroduction() {
 
             <BeaconVieCard className="p-6">
               <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">
-                Session status
+                Tình trạng bài làm
               </h2>
               {data.test.hasActiveSession ? (
                 <div className="mt-4 rounded-2xl bg-amber-50 p-4">
                   <RotateCcw aria-hidden className="h-6 w-6 text-amber-600" />
                   <p className="mt-3 font-black text-[var(--BeaconVie-ink)]">
-                    Active test found
+                    Bạn có bài làm dở
                   </p>
                   <p className="mt-1 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
-                    {data.test.answeredQuestions} answered questions. Current
-                    step: {data.test.currentStep}.
+                    Đã trả lời {data.test.answeredQuestions} câu. Đang ở phần{" "}
+                    {stepLabels[data.test.currentStep] ?? data.test.currentStep}.
                   </p>
                   <div className="mt-4 h-3 overflow-hidden rounded-full bg-white">
                     <div
@@ -284,8 +304,8 @@ export default function PlacementIntroduction() {
                 </div>
               ) : (
                 <p className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
-                  No active session yet. The session is created only after you
-                  press the start button.
+                  Bạn chưa bắt đầu. Bài làm sẽ được tạo khi bạn bấm nút bắt đầu
+                  bên dưới.
                 </p>
               )}
 
@@ -311,7 +331,7 @@ export default function PlacementIntroduction() {
                   className="w-full"
                 >
                   <ArrowLeft aria-hidden className="h-4 w-4" />
-                  Back
+                  Quay lại
                 </BeaconVieButton>
               </div>
             </BeaconVieCard>

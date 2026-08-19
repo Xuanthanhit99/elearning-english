@@ -3,7 +3,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { AppIcon, LegacyIcon } from "@/src/Components/UI/AppIcon";
+import { AppIcon } from "@/src/Components/UI/AppIcon";
 
 type Props = {
   open: boolean;
@@ -15,7 +15,7 @@ type Props = {
 export default function WelcomeLoginModal({
   open,
   fullname = "bạn",
-  avatar = "/brand/beaconvie-ai-mascot.png",
+  avatar = "/brand/beaconvie-ai-mascot.webp",
   onClose,
 }: Props) {
   const [countdown, setCountdown] = useState(10);
@@ -56,7 +56,7 @@ export default function WelcomeLoginModal({
         <button
           type="button"
           onClick={onClose}
-          aria-label="?óng"
+          aria-label="Đóng"
           className="absolute right-6 top-5 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white/20 text-2xl font-bold text-white backdrop-blur hover:bg-white/30"
         >
           <span aria-hidden>×</span>
@@ -103,28 +103,20 @@ export default function WelcomeLoginModal({
         </div>
 
         <div className="px-8 py-8">
-          <div className="grid gap-4 md:grid-cols-3">
-            <StatCard icon="🔥" value="12" label="ngày liên tiếp" />
-            <StatCard icon="" value="320" label="XP tích lũy" />
-            <StatCard icon="" value="68%" label="tiến độ tuần" />
-          </div>
-
-          <div className="mt-6 rounded-[24px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-5">
-            <h3 className="text-2xl font-extrabold text-[var(--BeaconVie-ink)]">
-              Nhiệm vụ gợi ý hôm nay
-            </h3>
-
-            <div className="mt-4 space-y-3">
-              <Mission icon="🔤" title="Check 5 từ mới" time="3 phút" />
-              <Mission icon="🎧" title="Nghe 1 đoạn hội thoại" time="5 phút" />
-              <Mission icon="🎙️" title="Nói lại 2 mẫu câu" time="2 phút" />
-            </div>
+          <div className="rounded-[24px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-5">
+            <p className="text-lg font-bold leading-7 text-[var(--BeaconVie-ink)]">
+              Ghé trang tổng quan để xem chuỗi ngày học, XP và nhiệm vụ hôm nay
+              của bạn.
+            </p>
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <button className="rounded-2xl bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] px-7 py-4 font-extrabold text-white shadow-lg shadow-blue-200/40 transition hover:opacity-95 dark:shadow-black/20">
-              Bắt đầu nhiệm vụ
-            </button>
+            <a
+              href="/dashboard"
+              className="rounded-2xl bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] px-7 py-4 font-extrabold text-white shadow-lg shadow-blue-200/40 transition hover:opacity-95 dark:shadow-black/20"
+            >
+              Xem trang tổng quan
+            </a>
 
             <button
               type="button"
@@ -140,44 +132,6 @@ export default function WelcomeLoginModal({
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function StatCard({
-  icon,
-  value,
-  label,
-}: {
-  icon: string;
-  value: string;
-  label: string;
-}) {
-  return (
-    <div className="rounded-[22px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-5 text-center">
-      <div className="flex items-center justify-center gap-2 text-2xl font-extrabold text-[#ff6b00]">
-        <LegacyIcon icon={icon || "⭐"} label={label} tone="orange" size={16} /> {value}
-      </div>
-      <p className="mt-2 font-extrabold text-[var(--BeaconVie-muted)]">{label}</p>
-    </div>
-  );
-}
-
-function Mission({
-  icon,
-  title,
-  time,
-}: {
-  icon: string;
-  title: string;
-  time: string;
-}) {
-  return (
-    <div className="flex items-center justify-between rounded-2xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] px-4 py-3 font-extrabold text-[var(--BeaconVie-ink)]">
-      <span className="inline-flex items-center gap-2">
-        <LegacyIcon icon={icon} label={title} tone="purple" className="h-8 w-8" size={16} /> {title}
-      </span>
-      <span className="text-emerald-600">{time}</span>
     </div>
   );
 }

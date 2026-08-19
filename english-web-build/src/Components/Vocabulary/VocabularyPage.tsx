@@ -273,7 +273,7 @@ export default function VocabularyPage() {
   const c = vocab[locale];
   const user = useAuthStore((state) => state.user);
   const displayName = user?.fullname || "Minh Anh";
-  const avatar = user?.avatar || "/brand/beaconvie-ai-mascot.png";
+  const avatar = user?.avatar || "/brand/beaconvie-ai-mascot.webp";
 
   const [today, setToday] = useState<TodayVocabulary | null>(null);
   const [dailyWords, setDailyWords] = useState<DailyWordItem[]>([]);
@@ -3572,7 +3572,7 @@ function LessonCompletedModal({
           </p>
 
           <img
-            src="/brand/beaconvie-ai-mascot.png"
+            src="/brand/beaconvie-ai-mascot.webp"
             alt="Beacon"
             className="mx-auto mt-5 h-48 object-contain"
           />

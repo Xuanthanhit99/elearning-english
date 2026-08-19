@@ -44,7 +44,7 @@ export default function PlacementListeningQuestion({
         setPlaying(false);
       }
     } catch {
-      setAudioError("Audio could not be played. Check your connection and try again.");
+      setAudioError("Không phát được âm thanh. Kiểm tra kết nối mạng và thử lại.");
     }
   }
 
@@ -59,7 +59,7 @@ export default function PlacementListeningQuestion({
       setPlayCount((value) => value + 1);
       setAudioError("");
     } catch {
-      setAudioError("Audio replay failed. Please try again.");
+      setAudioError("Không nghe lại được. Vui lòng thử lại.");
     }
   }
 
@@ -80,11 +80,11 @@ export default function PlacementListeningQuestion({
           </div>
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-black text-slate-950">
-              Listen carefully
+              Nghe kỹ
             </h2>
             <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
-              Play the audio, then answer the question below. Transcript is not
-              shown unless the backend provides it in the question prompt.
+              Bấm phát âm thanh rồi trả lời câu hỏi bên dưới. Bạn có thể nghe
+              lại nhiều lần trước khi chọn đáp án.
             </p>
           </div>
         </div>
@@ -104,7 +104,7 @@ export default function PlacementListeningQuestion({
           }}
           onError={() => {
             setPlaying(false);
-            setAudioError("Audio is unavailable or the URL is invalid.");
+            setAudioError("Không tải được âm thanh cho câu hỏi này.");
           }}
           className="hidden"
         />
@@ -115,7 +115,7 @@ export default function PlacementListeningQuestion({
               type="button"
               onClick={() => void togglePlay()}
               disabled={disabled}
-              aria-label={playing ? "Pause audio" : "Play audio"}
+              aria-label={playing ? "Tạm dừng" : "Phát âm thanh"}
               className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-500 text-white transition hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-300 disabled:opacity-60"
             >
               {playing ? <Pause aria-hidden className="h-6 w-6" /> : <Play aria-hidden className="ml-0.5 h-6 w-6" />}
@@ -124,7 +124,7 @@ export default function PlacementListeningQuestion({
             <div className="min-w-0 flex-1">
               <input
                 type="range"
-                aria-label="Audio progress"
+                aria-label="Tiến trình phát âm thanh"
                 min={0}
                 max={duration || 0}
                 step={0.1}
@@ -150,10 +150,10 @@ export default function PlacementListeningQuestion({
               className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-orange-100 px-4 py-2 text-sm font-black text-orange-700 transition hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-200 disabled:opacity-60"
             >
               <RotateCcw aria-hidden className="h-4 w-4" />
-              Replay
+              Nghe lại
             </button>
             <span className="text-xs font-bold text-slate-500">
-              Played {playCount} time{playCount === 1 ? "" : "s"}
+              Đã nghe {playCount} lần
             </span>
           </div>
         </div>

@@ -7,9 +7,12 @@ import { features } from "@/src/config/features";
 import {
   BeaconVieBadge,
   BeaconVieCard,
+  BeaconVieProgress,
   BeaconVieSectionHeader,
 } from "@/src/Components/UI/BeaconVie";
 import { buildLoginUrl } from "@/src/lib/auth-redirect";
+import { trackEvent } from "@/src/lib/ga";
+import { useAuthStore } from "@/src/store/authStore";
 import {
   ArrowRight,
   BookOpen,
@@ -20,7 +23,6 @@ import {
   MessageCircle,
   Mic2,
   NotebookPen,
-  PawPrint,
   Sparkles,
   Target,
   Trophy,
@@ -50,6 +52,7 @@ const navItems = [
   { label: "Lộ trình học", href: "#learning-path" },
   { label: "Kỹ năng", href: "#skills" },
   { label: "Học cùng AI", href: "#ai-learning" },
+  { label: "Tiến độ", href: "#progress" },
   { label: "Cộng đồng", href: "#community" },
 ];
 
@@ -110,16 +113,16 @@ const skills: Feature[] = [
   },
 ];
 
+const placementOutputs = [
+  "Mức trình độ ước tính theo khung CEFR (A1-C1)",
+  "Phân tích riêng cho từng kỹ năng: từ vựng, ngữ pháp, nghe, nói, đọc, viết",
+  "Điểm mạnh và điểm cần cải thiện",
+  "Lộ trình học đề xuất theo mục tiêu tiếp theo",
+];
+
+const cefrLevels = ["A1", "A2", "B1", "B2", "C1"];
+
 const productPillars: Feature[] = [
-  {
-    icon: Compass,
-    title: "Xác định trình độ",
-    description:
-      "Bắt đầu bằng bài kiểm tra trình độ và nhận lộ trình phù hợp với năng lực hiện tại.",
-    href: "/placement",
-    accent: "from-blue-50 via-white to-violet-50 dark:from-blue-500/10 dark:via-white/5 dark:to-violet-500/10",
-    iconBackground: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300",
-  },
   {
     icon: Target,
     title: "Giữ nhịp học mỗi ngày",
@@ -130,10 +133,10 @@ const productPillars: Feature[] = [
     iconBackground: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300",
   },
   {
-    icon: PawPrint,
-    title: "Học cùng bạn đồng hành",
+    icon: Sparkles,
+    title: "Có Beacon đồng hành",
     description:
-      "Trải nghiệm bạn đồng hành học tập đang được chuẩn bị để hỗ trợ hành trình của bạn.",
+      "Beacon theo dõi tiến độ thực tế của bạn và gợi ý nên tập trung vào đâu tiếp theo, dựa trên dữ liệu học tập của chính bạn.",
     href: "#companion",
     accent: "from-orange-50 via-white to-pink-50 dark:from-orange-500/10 dark:via-white/5 dark:to-pink-500/10",
     iconBackground: "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300",
@@ -148,22 +151,24 @@ const stats = [
 
 export default function HomePage() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const user = useAuthStore((state) => state.user);
 
   return (
     <main className="min-h-screen overflow-x-clip bg-[var(--BeaconVie-bg)] text-[var(--BeaconVie-ink)]">
       <PublicHeader
-        user={null}
+        user={user}
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
       />
 
-      <Hero user={null} />
+      <Hero user={user} />
       <TrustStrip />
-      <ProductPillars />
+      <ProductPillars user={user} />
       <SkillsSection />
       <AiLearningSection />
+      <ProgressSection />
       <CommunitySection />
-      <FinalCta user={null} />
+      <FinalCta user={user} />
       <Footer />
     </main>
   );
@@ -213,6 +218,7 @@ function PublicHeader({
               </Link>
               <Link
                 href={buildLoginUrl("/placement")}
+                onClick={() => trackEvent("placement_test_click", { source: "header" })}
                 className="BeaconVie-button-primary text-sm"
               >
                 Kiểm tra trình độ
@@ -259,7 +265,10 @@ function PublicHeader({
 
             <Link
               href={user ? "/dashboard" : buildLoginUrl("/placement")}
-              onClick={() => setMobileOpen(false)}
+              onClick={() => {
+                if (!user) trackEvent("placement_test_click", { source: "header_mobile" });
+                setMobileOpen(false);
+              }}
               className="BeaconVie-button-primary mt-2"
             >
               {user ? "Mở tổng quan" : "Kiểm tra trình độ"}
@@ -288,23 +297,26 @@ function Hero({ user }: { user: UserSummary | null }) {
           <BeaconVieBadge>Dẫn đường. Kết nối. Phát triển.</BeaconVieBadge>
 
           <h1 className="mt-6 max-w-4xl text-4xl font-black leading-[1.03] tracking-[-0.04em] sm:text-5xl lg:text-7xl">
-            BeaconVie - nền tảng học tiếng Anh ứng dụng AI
+            Học tiếng Anh mỗi ngày.
             <span className="mt-1 block bg-gradient-to-r from-blue-600 via-violet-600 to-pink-500 bg-clip-text text-transparent">
-              dành cho mọi người.
+              Và thực sự nhìn thấy mình tiến bộ.
             </span>
           </h1>
 
           <p className="mt-6 max-w-2xl text-base font-semibold leading-8 text-[var(--BeaconVie-muted)] sm:text-lg">
-            Học thông minh hơn với AI, xây dựng thói quen mỗi ngày, kết nối
-            cộng đồng và theo dõi sự tiến bộ của bạn trên một nền tảng duy nhất.
+            Kiểm tra trình độ, biết chính xác hôm nay nên học gì và theo dõi
+            tiến bộ của bạn qua từng tuần trên một nền tảng duy nhất.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
               href={protectedPrimaryHref}
+              onClick={() => {
+                if (!user) trackEvent("placement_test_click", { source: "hero" });
+              }}
               className="BeaconVie-button-primary min-h-14 px-7 py-4 text-base"
             >
-              {user ? "Tiếp tục học" : "Bắt đầu miễn phí"}
+              {user ? "Tiếp tục học" : "Kiểm tra trình độ miễn phí"}
               <ArrowRight aria-hidden className="h-5 w-5" />
             </Link>
 
@@ -333,7 +345,7 @@ function Hero({ user }: { user: UserSummary | null }) {
           </div>
         </div>
 
-        <div className="relative">
+        <div id="companion" className="relative scroll-mt-24">
           <div
             aria-hidden
             className="absolute -inset-6 -z-10 rounded-[3rem] bg-gradient-to-br from-blue-400/20 via-violet-400/20 to-pink-400/20 blur-3xl"
@@ -371,7 +383,7 @@ function Hero({ user }: { user: UserSummary | null }) {
 
               <div className="relative z-10 mt-5 flex justify-center">
                 <Image
-                  src="/brand/beaconvie-ai-mascot.png"
+                  src="/brand/beaconvie-ai-mascot.webp"
                   alt="Linh vật học tập BeaconVie"
                   width={420}
                   height={420}
@@ -383,7 +395,7 @@ function Hero({ user }: { user: UserSummary | null }) {
 
               <div className="relative z-10 -mt-3 grid grid-cols-3 gap-3">
                 <MiniMetric label="Kiểm tra trình độ" value="Cá nhân hóa" />
-                <MiniMetric label="Mục tiêu ngày" value="20 phút" />
+                <MiniMetric label="Mục tiêu" value="Mỗi ngày" />
                 <MiniMetric label="Lộ trình" value="A1-C1" />
               </div>
             </div>
@@ -409,7 +421,9 @@ function TrustStrip() {
   );
 }
 
-function ProductPillars() {
+function ProductPillars({ user }: { user: UserSummary | null }) {
+  const placementHref = user ? "/placement" : buildLoginUrl("/placement");
+
   return (
     <Section
       id="learning-path"
@@ -417,7 +431,68 @@ function ProductPillars() {
       title="Lộ trình học được cá nhân hóa theo trình độ và mục tiêu của bạn."
       description="BeaconVie đóng vai trò như ngọn hải đăng: xác định điểm xuất phát, gợi ý bài học tiếp theo và giúp bạn nhìn rõ tiến bộ từng ngày."
     >
-      <div className="grid gap-5 md:grid-cols-3">
+      <BeaconVieCard className="relative overflow-hidden p-6 sm:p-8">
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[radial-gradient(circle_at_10%_10%,rgba(42,126,255,0.1),transparent_35%),radial-gradient(circle_at_90%_90%,rgba(167,67,255,0.1),transparent_35%)]"
+        />
+        <div className="relative z-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
+          <div>
+            <BeaconVieBadge>Điểm khởi đầu</BeaconVieBadge>
+            <h3 className="mt-4 max-w-xl text-2xl font-black text-[var(--BeaconVie-ink)] sm:text-3xl">
+              Bạn đang thực sự ở trình độ nào?
+            </h3>
+            <p className="mt-3 max-w-xl text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)] sm:text-base">
+              Làm bài kiểm tra trình độ để nhận:
+            </p>
+
+            <ul className="mt-4 space-y-2.5">
+              {placementOutputs.map((item) => (
+                <li key={item} className="flex items-start gap-2.5 text-sm font-semibold leading-6 text-[var(--BeaconVie-ink)]">
+                  <CheckCircle2 aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+
+            <Link
+              href={placementHref}
+              onClick={() => {
+                if (!user) trackEvent("placement_test_click", { source: "placement_hook" });
+              }}
+              className="BeaconVie-button-primary mt-7"
+            >
+              Kiểm tra ngay
+              <ArrowRight aria-hidden className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="flex flex-col justify-center rounded-3xl border border-[var(--BeaconVie-border)] bg-white/70 p-6 dark:bg-white/5">
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-muted)]">
+              Khung trình độ CEFR
+            </p>
+            <div className="mt-5 flex items-center justify-between">
+              {cefrLevels.map((level) => (
+                <span
+                  key={level}
+                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--BeaconVie-border)] bg-white text-sm font-black text-[var(--BeaconVie-ink)] dark:bg-white/10"
+                >
+                  {level}
+                </span>
+              ))}
+            </div>
+            <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-[var(--BeaconVie-border)]">
+              <div className="h-full w-full rounded-full bg-gradient-to-r from-blue-500 via-violet-500 to-pink-500" />
+            </div>
+            <p className="mt-4 text-xs font-semibold leading-5 text-[var(--BeaconVie-muted)]">
+              Bài kiểm tra xác định vị trí thật của bạn trên thang này, không
+              giả định bạn bắt đầu từ A1.
+            </p>
+          </div>
+        </div>
+      </BeaconVieCard>
+
+      <div className="mt-5 grid gap-5 md:grid-cols-2">
         {productPillars.map((feature, index) => (
         <FeatureCard
             key={feature.href}
@@ -435,8 +510,8 @@ function SkillsSection() {
     <Section
       id="skills"
       eyebrow="Sáu kỹ năng cốt lõi"
-      title="Luyện mọi phần của tiếng Anh trong một hệ thống liền mạch."
-      description="Chuyển giữa từ vựng, ngữ pháp, nghe, nói, đọc và viết mà không mất tiến độ."
+      title="6 kỹ năng. Một lộ trình."
+      description="Từ vựng, ngữ pháp, nghe, nói, đọc, viết — tất cả cùng đóng góp vào một hành trình tiến bộ duy nhất, không phải sáu sản phẩm rời rạc."
     >
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {skills.map((feature) => (
@@ -484,18 +559,88 @@ function AiLearningSection() {
         </BeaconVieCard>
 
         <div className="grid gap-5">
+          <WritingDemoCard />
           <InfoBlock
             icon={Mic2}
             title="Luyện nói"
             text="Mở chủ đề nói thật, ghi âm phiên luyện tập và nhận phản hồi từ luồng hiện có."
           />
-          <InfoBlock
-            icon={NotebookPen}
-            title="Cải thiện viết"
-            text="Viết theo đề thật, nộp bài và xem phản hồi kết quả có cấu trúc."
-          />
         </div>
       </div>
+    </Section>
+  );
+}
+
+const demoSkillProgress = [
+  { label: "Từ vựng", value: 72 },
+  { label: "Nghe", value: 58 },
+  { label: "Ngữ pháp", value: 65 },
+];
+
+function ProgressSection() {
+  return (
+    <Section
+      id="progress"
+      eyebrow="Nhìn thấy sự tiến bộ"
+      title="Tiến bộ phải nhìn thấy được."
+      description="BeaconVie giúp bạn nhìn thấy mình đang tiến bộ hay không, không chỉ đưa ra thêm bài học."
+    >
+      <BeaconVieCard className="relative overflow-hidden p-6 sm:p-8">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-muted)]">
+            Ví dụ minh hoạ trang tổng quan
+          </span>
+        </div>
+
+        <div className="mt-6 grid gap-5 lg:grid-cols-3">
+          <div className="rounded-3xl border border-[var(--BeaconVie-border)] bg-white/70 p-5 dark:bg-white/5">
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-muted)]">
+              Chuỗi ngày học
+            </p>
+            <p className="mt-3 text-3xl font-black text-[var(--BeaconVie-ink)]">
+              🔥 12 ngày
+            </p>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
+              Mục tiêu hôm nay
+            </p>
+            <BeaconVieProgress value={80} className="mt-2" />
+          </div>
+
+          <div className="rounded-3xl border border-[var(--BeaconVie-border)] bg-white/70 p-5 dark:bg-white/5">
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-muted)]">
+              Tiến độ kỹ năng tuần này
+            </p>
+            <div className="mt-4 space-y-3">
+              {demoSkillProgress.map((skill) => (
+                <div key={skill.label}>
+                  <div className="flex items-center justify-between text-xs font-bold text-[var(--BeaconVie-muted)]">
+                    <span>{skill.label}</span>
+                    <span>{skill.value}%</span>
+                  </div>
+                  <BeaconVieProgress value={skill.value} className="mt-1.5" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-[var(--BeaconVie-border)] bg-white/70 p-5 dark:bg-white/5">
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-muted)]">
+              Lộ trình CEFR
+            </p>
+            <p className="mt-3 text-2xl font-black text-[var(--BeaconVie-ink)]">
+              A2 <ArrowRight aria-hidden className="inline h-5 w-5 text-[var(--BeaconVie-muted)]" /> B1
+            </p>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
+              Dựa trên kết quả kiểm tra trình độ và các phiên học đã hoàn thành.
+            </p>
+          </div>
+        </div>
+
+        <p className="relative z-10 mt-6 text-xs font-semibold text-[var(--BeaconVie-muted)]">
+          Đây là ví dụ minh hoạ cho trang tổng quan thật. Số liệu của bạn sẽ
+          xuất hiện sau khi bạn hoàn thành bài kiểm tra trình độ và bắt đầu học.
+        </p>
+      </BeaconVieCard>
     </Section>
   );
 }
@@ -543,20 +688,25 @@ function FinalCta({ user }: { user: UserSummary | null }) {
             </BeaconVieBadge>
 
             <h2 className="mt-5 max-w-3xl text-3xl font-black tracking-tight sm:text-5xl">
-              Tìm đúng trình độ và bắt đầu hành trình BeaconVie.
+              Bạn không cần học nhiều hơn.
+              <span className="block">Bạn cần biết mình nên học gì tiếp theo.</span>
             </h2>
 
             <p className="mt-4 max-w-2xl text-base font-semibold leading-7 text-white/80">
-              Bắt đầu bằng bài kiểm tra trình độ hoặc tiếp tục từ trang tổng
-              quan khi tài khoản đã có tiến độ học.
+              {user
+                ? "Quay lại trang tổng quan để tiếp tục đúng chỗ bạn đã dừng lại."
+                : "Bắt đầu từ trình độ hiện tại của bạn — bài kiểm tra chỉ mất vài phút."}
             </p>
           </div>
 
           <Link
             href={user ? "/dashboard" : buildLoginUrl("/placement")}
+            onClick={() => {
+              if (!user) trackEvent("placement_test_click", { source: "final_cta" });
+            }}
             className="inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-white px-7 py-4 font-black text-[#2230a8] shadow-xl transition hover:-translate-y-0.5"
           >
-            {user ? "Mở tổng quan" : "Làm bài kiểm tra trình độ"}
+            {user ? "Tiếp tục học" : "Kiểm tra trình độ miễn phí"}
             <ArrowRight aria-hidden className="h-5 w-5" />
           </Link>
         </div>
@@ -661,6 +811,37 @@ function FeatureCard({
         />
       </span>
     </Link>
+  );
+}
+
+function WritingDemoCard() {
+  return (
+    <BeaconVieCard className="h-full p-6">
+      <div className="flex items-center justify-between gap-3">
+        <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--BeaconVie-primary)]/10 text-[var(--BeaconVie-primary)]">
+          <NotebookPen aria-hidden className="h-6 w-6" />
+        </span>
+        <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-muted)]">
+          Ví dụ minh hoạ
+        </span>
+      </div>
+
+      <h3 className="mt-5 text-xl font-black text-[var(--BeaconVie-ink)]">
+        Cải thiện viết
+      </h3>
+
+      <div className="mt-4 space-y-2 text-sm font-semibold leading-6">
+        <p className="rounded-2xl bg-rose-50 px-4 py-3 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
+          I very like this movie.
+        </p>
+        <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+          I really like this movie.
+        </p>
+        <p className="text-[var(--BeaconVie-muted)]">
+          &quot;Very&quot; không đứng trực tiếp trước &quot;like&quot;.
+        </p>
+      </div>
+    </BeaconVieCard>
   );
 }
 

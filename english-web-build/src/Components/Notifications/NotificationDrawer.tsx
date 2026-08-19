@@ -32,10 +32,10 @@ const iconMap = {
 function timeAgo(value: string) {
   const diff = Date.now() - new Date(value).getTime();
   const minutes = Math.max(1, Math.round(diff / 60000));
-  if (minutes < 60) return `${minutes} phut truoc`;
+  if (minutes < 60) return `${minutes} phút trước`;
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours} gio truoc`;
-  return `${Math.round(hours / 24)} ngay truoc`;
+  if (hours < 24) return `${hours} giờ trước`;
+  return `${Math.round(hours / 24)} ngày trước`;
 }
 
 export default function NotificationDrawer({
@@ -67,7 +67,7 @@ export default function NotificationDrawer({
     <>
       {open && (
         <button
-          aria-label="Dong thong bao"
+          aria-label="Đóng thông báo"
           className="fixed inset-0 z-40 bg-black/45 backdrop-blur-sm sm:hidden"
           onClick={onClose}
         />
@@ -87,9 +87,9 @@ export default function NotificationDrawer({
       >
         <div className="flex h-16 items-center justify-between border-b border-[var(--BeaconVie-border)] px-5">
           <div>
-            <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">Thong bao</h2>
+            <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">Thông báo</h2>
             <p className="text-xs font-bold text-[var(--BeaconVie-muted)]">
-              {unreadCount} chua doc
+              {unreadCount} chưa đọc
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -98,11 +98,11 @@ export default function NotificationDrawer({
               onClick={() => void markAllRead()}
               className="rounded-xl bg-[var(--BeaconVie-card-soft)] px-3 py-2 text-xs font-black text-[var(--BeaconVie-primary)] transition hover:bg-[var(--BeaconVie-hover-tint)]"
             >
-              Doc tat ca
+              Đọc tất cả
             </button>
             <button
               type="button"
-              aria-label="Dong thong bao"
+              aria-label="Đóng thông báo"
               onClick={onClose}
               className="grid h-9 w-9 place-items-center rounded-xl border border-[var(--BeaconVie-border)] text-[var(--BeaconVie-muted)] transition hover:bg-[var(--BeaconVie-card-soft)] hover:text-[var(--BeaconVie-ink)]"
             >
@@ -129,7 +129,7 @@ export default function NotificationDrawer({
                 onClick={() => void load(1)}
                 className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-black text-white"
               >
-                Thu lai
+                Thử lại
               </button>
             </div>
           ) : items.length ? (
@@ -171,7 +171,7 @@ export default function NotificationDrawer({
                       </div>
                       <button
                         type="button"
-                        aria-label="Luu tru thong bao"
+                        aria-label="Lưu trữ thông báo"
                         onClick={() => void archive(item.id)}
                         className="grid h-8 w-8 shrink-0 place-items-center rounded-xl text-[var(--BeaconVie-muted)] transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-200"
                       >
@@ -186,17 +186,17 @@ export default function NotificationDrawer({
                 onClick={onClose}
                 className="flex h-12 items-center justify-center rounded-2xl border border-[var(--BeaconVie-border)] font-black text-[var(--BeaconVie-primary)] transition hover:bg-[var(--BeaconVie-card-soft)]"
               >
-                Xem tat ca
+                Xem tất cả
               </Link>
             </div>
           ) : (
             <div className="rounded-3xl border border-dashed border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-8 text-center">
               <Bell className="mx-auto text-[var(--BeaconVie-muted)]" size={42} />
               <h3 className="mt-4 font-black text-[var(--BeaconVie-ink)]">
-                Chua co thong bao
+                Chưa có thông báo
               </h3>
               <p className="mt-2 text-sm font-bold text-[var(--BeaconVie-muted)]">
-                Khi co nhiem vu, thanh tich hoac nhac hoc moi, ban se thay o day.
+                Khi có nhiệm vụ, thành tích hoặc nhắc học mới, bạn sẽ thấy ở đây.
               </p>
             </div>
           )}

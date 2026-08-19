@@ -134,16 +134,16 @@ export function createNotificationTemplateRegistry(
         const achievementTitle = getText(
           metadata,
           'achievementTitle',
-          'thanh tich moi',
+          'thành tích mới',
         );
-        const rewardLabel = getText(metadata, 'rewardLabel', 'phan thuong');
+        const rewardLabel = getText(metadata, 'rewardLabel', 'phần thưởng');
         return safeResult({
           templateKey: 'achievement-unlocked.v1',
-          title: getText(metadata, 'title', 'Mo khoa thanh tich moi'),
+          title: getText(metadata, 'title', 'Mở khóa thành tích mới'),
           body: getText(
             metadata,
             'message',
-            `Ban vua mo khoa ${achievementTitle}. ${rewardLabel} dang san sang de nhan.`,
+            `Bạn vừa mở khóa ${achievementTitle}. ${rewardLabel} đang sẵn sàng để nhận.`,
           ),
           actionUrl: getInternalHref(urls, metadata, urls.achievements()),
           metadata: { achievementTitle, rewardLabel },
@@ -337,7 +337,11 @@ export function createNotificationTemplateRegistry(
         safeResult({
           templateKey: 'document-upload-received.v1',
           title: getText(metadata, 'title', 'Đã nhận tài liệu của bạn'),
-          body: getText(metadata, 'message', 'Tài liệu của bạn đang được xử lý.'),
+          body: getText(
+            metadata,
+            'message',
+            'Tài liệu của bạn đang được xử lý.',
+          ),
           actionUrl: getInternalHref(urls, metadata, '/my-documents'),
         }),
     },
@@ -349,7 +353,11 @@ export function createNotificationTemplateRegistry(
         safeResult({
           templateKey: 'document-processing-failed.v1',
           title: getText(metadata, 'title', 'Xử lý tài liệu thất bại'),
-          body: getText(metadata, 'message', 'Có lỗi khi xử lý tài liệu của bạn.'),
+          body: getText(
+            metadata,
+            'message',
+            'Có lỗi khi xử lý tài liệu của bạn.',
+          ),
           actionUrl: getInternalHref(urls, metadata, '/my-documents'),
         }),
     },
@@ -361,7 +369,11 @@ export function createNotificationTemplateRegistry(
         safeResult({
           templateKey: 'document-pending-review.v1',
           title: getText(metadata, 'title', 'Tài liệu đang chờ duyệt'),
-          body: getText(metadata, 'message', 'Tài liệu của bạn đang chờ Admin xem xét.'),
+          body: getText(
+            metadata,
+            'message',
+            'Tài liệu của bạn đang chờ Admin xem xét.',
+          ),
           actionUrl: getInternalHref(urls, metadata, '/my-documents'),
         }),
     },
@@ -373,7 +385,11 @@ export function createNotificationTemplateRegistry(
         safeResult({
           templateKey: 'document-changes-requested.v1',
           title: getText(metadata, 'title', 'Cần chỉnh sửa tài liệu'),
-          body: getText(metadata, 'message', 'Admin yêu cầu bạn chỉnh sửa tài liệu trước khi xuất bản.'),
+          body: getText(
+            metadata,
+            'message',
+            'Admin yêu cầu bạn chỉnh sửa tài liệu trước khi xuất bản.',
+          ),
           actionUrl: getInternalHref(urls, metadata, '/my-documents'),
         }),
     },
@@ -385,7 +401,11 @@ export function createNotificationTemplateRegistry(
         safeResult({
           templateKey: 'document-approved.v1',
           title: getText(metadata, 'title', 'Tài liệu đã được duyệt'),
-          body: getText(metadata, 'message', 'Tài liệu của bạn đã được duyệt và sẽ sớm xuất bản.'),
+          body: getText(
+            metadata,
+            'message',
+            'Tài liệu của bạn đã được duyệt và sẽ sớm xuất bản.',
+          ),
           actionUrl: getInternalHref(urls, metadata, '/my-documents'),
         }),
     },
@@ -398,8 +418,16 @@ export function createNotificationTemplateRegistry(
         return safeResult({
           templateKey: 'document-published.v1',
           title: getText(metadata, 'title', 'Tài liệu đã được xuất bản'),
-          body: getText(metadata, 'message', 'Tài liệu của bạn đã xuất bản trên Thư viện tài liệu.'),
-          actionUrl: getInternalHref(urls, metadata, slug ? `/documents/${slug}` : '/my-documents'),
+          body: getText(
+            metadata,
+            'message',
+            'Tài liệu của bạn đã xuất bản trên Thư viện tài liệu.',
+          ),
+          actionUrl: getInternalHref(
+            urls,
+            metadata,
+            slug ? `/documents/${slug}` : '/my-documents',
+          ),
         });
       },
     },
@@ -411,7 +439,11 @@ export function createNotificationTemplateRegistry(
         safeResult({
           templateKey: 'document-rejected.v1',
           title: getText(metadata, 'title', 'Tài liệu bị từ chối'),
-          body: getText(metadata, 'message', 'Tài liệu của bạn không được chấp nhận.'),
+          body: getText(
+            metadata,
+            'message',
+            'Tài liệu của bạn không được chấp nhận.',
+          ),
           actionUrl: getInternalHref(urls, metadata, '/my-documents'),
         }),
     },
@@ -423,7 +455,11 @@ export function createNotificationTemplateRegistry(
         safeResult({
           templateKey: 'document-hidden.v1',
           title: getText(metadata, 'title', 'Tài liệu đã bị ẩn'),
-          body: getText(metadata, 'message', 'Tài liệu của bạn tạm thời bị ẩn khỏi Thư viện tài liệu.'),
+          body: getText(
+            metadata,
+            'message',
+            'Tài liệu của bạn tạm thời bị ẩn khỏi Thư viện tài liệu.',
+          ),
           actionUrl: getInternalHref(urls, metadata, '/my-documents'),
         }),
     },
@@ -435,7 +471,11 @@ export function createNotificationTemplateRegistry(
         safeResult({
           templateKey: 'document-removed.v1',
           title: getText(metadata, 'title', 'Tài liệu đã bị gỡ'),
-          body: getText(metadata, 'message', 'Tài liệu của bạn đã bị gỡ khỏi Thư viện tài liệu.'),
+          body: getText(
+            metadata,
+            'message',
+            'Tài liệu của bạn đã bị gỡ khỏi Thư viện tài liệu.',
+          ),
           actionUrl: getInternalHref(urls, metadata, '/my-documents'),
         }),
     },
@@ -447,7 +487,11 @@ export function createNotificationTemplateRegistry(
         safeResult({
           templateKey: 'document-report-resolved.v1',
           title: getText(metadata, 'title', 'Báo cáo của bạn đã được xử lý'),
-          body: getText(metadata, 'message', 'Admin đã xử lý báo cáo tài liệu bạn gửi.'),
+          body: getText(
+            metadata,
+            'message',
+            'Admin đã xử lý báo cáo tài liệu bạn gửi.',
+          ),
           actionUrl: getInternalHref(urls, metadata, '/documents'),
         }),
     },
@@ -459,8 +503,16 @@ export function createNotificationTemplateRegistry(
         safeResult({
           templateKey: 'document-generation-completed.v1',
           title: getText(metadata, 'title', 'Tạo tài liệu AI hoàn tất'),
-          body: getText(metadata, 'message', 'Tài liệu do Gemini tạo đã sẵn sàng để duyệt.'),
-          actionUrl: getInternalHref(urls, metadata, '/admin/documents/moderation'),
+          body: getText(
+            metadata,
+            'message',
+            'Tài liệu do Gemini tạo đã sẵn sàng để duyệt.',
+          ),
+          actionUrl: getInternalHref(
+            urls,
+            metadata,
+            '/admin/documents/moderation',
+          ),
         }),
     },
     {
@@ -471,8 +523,16 @@ export function createNotificationTemplateRegistry(
         safeResult({
           templateKey: 'document-generation-failed.v1',
           title: getText(metadata, 'title', 'Tạo tài liệu AI thất bại'),
-          body: getText(metadata, 'message', 'Quá trình tạo tài liệu bằng Gemini gặp lỗi.'),
-          actionUrl: getInternalHref(urls, metadata, '/admin/documents/generator'),
+          body: getText(
+            metadata,
+            'message',
+            'Quá trình tạo tài liệu bằng Gemini gặp lỗi.',
+          ),
+          actionUrl: getInternalHref(
+            urls,
+            metadata,
+            '/admin/documents/generator',
+          ),
         }),
     },
     {

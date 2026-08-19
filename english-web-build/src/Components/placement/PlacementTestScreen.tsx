@@ -43,6 +43,15 @@ const skillMeta: Record<
   WRITING: { label: "Luyện viết", icon: PencilLine, accent: "text-cyan-700 bg-cyan-50" },
 };
 
+const questionTypeLabels: Record<string, string> = {
+  MULTIPLE_CHOICE: "Trắc nghiệm",
+  FILL_BLANK: "Điền từ",
+  LISTENING: "Nghe",
+  READING: "Đọc",
+  SPEAKING: "Nói",
+  WRITING: "Viết",
+};
+
 export default function PlacementTestScreen({ sessionId }: { sessionId: string }) {
   const router = useRouter();
   const [data, setData] = useState<PlacementTestScreenData | null>(null);
@@ -72,7 +81,7 @@ export default function PlacementTestScreen({ sessionId }: { sessionId: string }
       setRemainingSeconds(calculateRemaining(result));
       questionStartedAt.current = Date.now();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "We could not load this placement session.");
+      setError(err instanceof Error ? err.message : "Không thể tải bài kiểm tra này.");
     } finally {
       setLoading(false);
     }
@@ -111,7 +120,7 @@ export default function PlacementTestScreen({ sessionId }: { sessionId: string }
       });
       applyNextResult(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "We could not save this answer.");
+      setError(err instanceof Error ? err.message : "Không thể lưu câu trả lời này.");
     } finally {
       setSaving(false);
     }
@@ -130,7 +139,7 @@ export default function PlacementTestScreen({ sessionId }: { sessionId: string }
       });
       applyNextResult(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "We could not skip this question.");
+      setError(err instanceof Error ? err.message : "Không thể bỏ qua câu hỏi này.");
     } finally {
       setSaving(false);
     }
@@ -164,7 +173,7 @@ export default function PlacementTestScreen({ sessionId }: { sessionId: string }
         };
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "We could not update the flag.");
+      setError(err instanceof Error ? err.message : "Không thể cập nhật đánh dấu.");
     } finally {
       setFlagging(false);
     }
@@ -188,7 +197,7 @@ export default function PlacementTestScreen({ sessionId }: { sessionId: string }
   }
 
   if (redirecting) {
-    return <CenteredState icon={Loader2} spinning title="Opening analysis" description="Your completed session is moving to the processing screen." />;
+    return <CenteredState icon={Loader2} spinning title="Đang mở kết quả phân tích" description="Bài làm đã hoàn thành đang được chuyển sang màn hình xử lý." />;
   }
 
   if (loading) {
@@ -199,9 +208,9 @@ export default function PlacementTestScreen({ sessionId }: { sessionId: string }
     return (
       <CenteredState
         icon={RotateCcw}
-        title="Test session unavailable"
-        description={error || "The session may have finished or expired."}
-        actionLabel="Try again"
+        title="Không thể mở bài kiểm tra"
+        description={error || "Bài làm có thể đã kết thúc hoặc đã hết hạn."}
+        actionLabel="Thử lại"
         onAction={() => void loadTest()}
       />
     );
@@ -226,10 +235,10 @@ export default function PlacementTestScreen({ sessionId }: { sessionId: string }
             </span>
             <div className="min-w-0">
               <p className="truncate text-sm font-black uppercase tracking-[0.12em] text-violet-700">
-                {meta.label} placement
+                Kiểm tra {meta.label}
               </p>
               <p className="text-sm font-semibold text-slate-500">
-                Question {question.globalOrder} of {data.session.totalQuestions}
+                Câu {question.globalOrder} / {data.session.totalQuestions}
               </p>
             </div>
           </div>
@@ -247,7 +256,7 @@ export default function PlacementTestScreen({ sessionId }: { sessionId: string }
                 aria-hidden
                 className={`h-5 w-5 ${question.isFlagged ? "fill-amber-400 text-amber-500" : "text-slate-500"}`}
               />
-              <span className="hidden sm:inline">{question.isFlagged ? "Flagged" : "Flag"}</span>
+              <span className="hidden sm:inline">{question.isFlagged ? "Đã đánh dấu" : "Đánh dấu"}</span>
             </button>
           </div>
         </div>
@@ -259,14 +268,14 @@ export default function PlacementTestScreen({ sessionId }: { sessionId: string }
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-black text-violet-700">
-                  Section {question.sectionOrder} / {question.sectionTotal}
+                  Phần {question.sectionOrder} / {question.sectionTotal}
                 </p>
                 <p className="mt-1 text-xs font-semibold text-slate-500">
-                  Level target: {question.level}
+                  Mức trình độ: {question.level}
                 </p>
               </div>
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
-                {question.type.replace("_", " ")}
+                {questionTypeLabels[question.type] ?? question.type.replace("_", " ")}
               </span>
             </div>
             <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={sectionProgress}>
@@ -300,7 +309,7 @@ export default function PlacementTestScreen({ sessionId }: { sessionId: string }
           <footer className="sticky bottom-0 border-t border-slate-100 bg-white/95 px-5 py-4 backdrop-blur sm:px-7">
             {isSpecialQuestion ? (
               <div className="flex items-center justify-between gap-3 text-sm font-bold text-slate-500">
-                <span>Specialized response is saved through its own endpoint.</span>
+                <span>Câu trả lời của bạn được lưu ngay khi gửi.</span>
                 <span>{question.globalOrder} / {data.session.totalQuestions}</span>
               </div>
             ) : (
@@ -312,11 +321,11 @@ export default function PlacementTestScreen({ sessionId }: { sessionId: string }
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-slate-200 px-5 py-3 font-black text-slate-600 disabled:opacity-60"
                 >
                   <SkipForward aria-hidden className="h-5 w-5" />
-                  Skip
+                  Bỏ qua
                 </button>
                 <div className="flex items-center justify-center gap-2 text-sm font-bold text-emerald-700" aria-live="polite">
                   <Cloud aria-hidden className="h-4 w-4" />
-                  Saved {formatSavedAt(data.autosave.savedAt)}
+                  Đã lưu lúc {formatSavedAt(data.autosave.savedAt)}
                 </div>
                 <button
                   type="button"
@@ -325,7 +334,7 @@ export default function PlacementTestScreen({ sessionId }: { sessionId: string }
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-violet-600 px-6 py-3 font-black text-white shadow-[0_14px_34px_rgba(124,58,237,0.24)] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {saving ? <Loader2 aria-hidden className="h-5 w-5 animate-spin" /> : null}
-                  Save and continue
+                  Lưu và tiếp tục
                   <ArrowRight aria-hidden className="h-5 w-5" />
                 </button>
               </div>
@@ -368,7 +377,7 @@ function QuestionBody({
     if (!question.audioUrl) {
       return (
         <div className="rounded-2xl border border-rose-100 bg-rose-50 p-5 text-sm font-bold text-rose-700">
-          Audio is unavailable for this Listening question. Please retry later.
+          Không tải được âm thanh cho câu hỏi Nghe này. Vui lòng thử lại sau.
         </div>
       );
     }
@@ -448,12 +457,12 @@ function Timer({ seconds, total }: { seconds: number; total: number }) {
 function ProgressPanel({ data }: { data: PlacementTestScreenData }) {
   return (
     <section className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="font-black text-slate-950">Overall progress</h2>
+      <h2 className="font-black text-slate-950">Tiến độ chung</h2>
       <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-valuenow={data.session.progressPercent} aria-valuemin={0} aria-valuemax={100}>
         <div className="h-full rounded-full bg-violet-600" style={{ width: `${data.session.progressPercent}%` }} />
       </div>
       <p className="mt-3 text-sm font-bold text-slate-500">
-        {data.session.answeredTotal} answered of {data.session.totalQuestions}
+        Đã trả lời {data.session.answeredTotal} / {data.session.totalQuestions}
       </p>
       <div className="mt-4 space-y-2">
         {data.sections.map((section) => {
@@ -479,7 +488,7 @@ function ProgressPanel({ data }: { data: PlacementTestScreenData }) {
 function NavigatorPanel({ items }: { items: PlacementTestScreenData["questionNavigator"] }) {
   return (
     <section className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="font-black text-slate-950">Questions</h2>
+      <h2 className="font-black text-slate-950">Câu hỏi</h2>
       <div className="mt-4 grid grid-cols-6 gap-2 lg:grid-cols-5">
         {items.map((item) => (
           <span
@@ -520,7 +529,7 @@ function ToolPanel({
 }) {
   return (
     <section className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="font-black text-slate-950">Tools</h2>
+      <h2 className="font-black text-slate-950">Công cụ</h2>
       <div className="mt-4 grid gap-2">
         <button
           type="button"
@@ -529,7 +538,7 @@ function ToolPanel({
           className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 text-left font-black text-slate-700 disabled:opacity-60"
         >
           <Bookmark aria-hidden className={`h-5 w-5 ${flagged ? "fill-amber-400 text-amber-500" : "text-violet-600"}`} />
-          {flagged ? "Remove flag" : "Flag question"}
+          {flagged ? "Bỏ đánh dấu" : "Đánh dấu câu hỏi"}
         </button>
         <button
           type="button"
@@ -538,7 +547,7 @@ function ToolPanel({
           className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 text-left font-black text-slate-700 disabled:opacity-60"
         >
           <SkipForward aria-hidden className="h-5 w-5 text-violet-600" />
-          Skip question
+          Bỏ qua câu hỏi
         </button>
       </div>
     </section>
@@ -603,6 +612,6 @@ function formatTime(seconds: number) {
 
 function formatSavedAt(value: string) {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "recently";
+  if (Number.isNaN(date.getTime())) return "vừa xong";
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }

@@ -3,6 +3,13 @@ export const LOGIN_PATH = "/login";
 
 const BLOCKED_PREFIXES = ["/auth", "/login", "/register"];
 
+// Placeholder base for resolving a relative candidate through the URL
+// parser so we can inspect its origin/pathname safely. Must stay lowercase:
+// URL always normalizes the *parsed* origin's hostname to lowercase, so
+// comparing against a mixed-case literal here would never match and would
+// silently reject every candidate.
+const SAFE_ORIGIN = "https://beaconvie.local";
+
 function decodeOnce(value: string) {
   try {
     return decodeURIComponent(value);
@@ -34,8 +41,8 @@ export function isSafeRedirectPath(value: string | null | undefined) {
   }
 
   try {
-    const parsed = new URL(candidate, "https://BeaconVie.local");
-    if (parsed.origin !== "https://BeaconVie.local") return false;
+    const parsed = new URL(candidate, SAFE_ORIGIN);
+    if (parsed.origin !== SAFE_ORIGIN) return false;
     return !BLOCKED_PREFIXES.some((prefix) => parsed.pathname.startsWith(prefix));
   } catch {
     return false;

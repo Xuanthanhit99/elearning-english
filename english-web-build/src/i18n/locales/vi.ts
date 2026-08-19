@@ -89,6 +89,7 @@ const vi: Dictionary = {
     successDescription:
       "Tài khoản của bạn đã được tạo thành công. Hãy đăng nhập để bắt đầu hành trình học tiếng Anh.",
     successLoginNow: "Đăng nhập ngay",
+    successContinue: "Vào học ngay",
   },
   sidebar: {
     groupLearning: "Học tập",

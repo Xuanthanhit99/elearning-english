@@ -26,6 +26,7 @@ import {
   LearningSkill,
   PlacementResultData,
 } from "@/src/lib/placement-result-api";
+import { trackEvent } from "@/src/lib/ga";
 import {
   BeaconVieBadge,
   BeaconVieButton,
@@ -54,9 +55,15 @@ export default function PlacementResultScreen({ testId }: { testId: string }) {
     try {
       setLoading(true);
       setError("");
-      setData(await generatePlacementResult(testId));
+      const result = await generatePlacementResult(testId);
+      setData(result);
+      if (result.status === "READY") {
+        trackEvent("placement_result_view", {
+          level: result.overview.overallLevel,
+        });
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "We could not load your placement result.");
+      setError(err instanceof Error ? err.message : "Không thể tải kết quả kiểm tra trình độ của bạn.");
     } finally {
       setLoading(false);
     }
@@ -78,10 +85,10 @@ export default function PlacementResultScreen({ testId }: { testId: string }) {
         <BeaconVieCard className="w-full max-w-lg p-8 text-center">
           <Loader2 aria-hidden className="mx-auto h-10 w-10 animate-spin text-[var(--BeaconVie-primary)]" />
           <h1 className="mt-5 text-2xl font-black text-[var(--BeaconVie-ink)]">
-            Preparing your result
+            Đang chuẩn bị kết quả của bạn
           </h1>
           <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
-            The result is generated through the existing placement result API.
+            Chỉ mất một chút thời gian thôi.
           </p>
         </BeaconVieCard>
       </main>
@@ -91,9 +98,9 @@ export default function PlacementResultScreen({ testId }: { testId: string }) {
   if (!data) {
     return (
       <BeaconVieState
-        title="Result is unavailable"
-        description={error}
-        actionLabel="Try again"
+        title="Chưa thể tải kết quả"
+        description={error || "Hãy thử lại sau ít phút."}
+        actionLabel="Thử lại"
         tone="error"
         onAction={() => void loadResult()}
       />
@@ -106,9 +113,9 @@ export default function PlacementResultScreen({ testId }: { testId: string }) {
         <BeaconVieCard className="overflow-hidden p-0">
           <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:p-8">
             <section>
-              <BeaconVieBadge>Placement Result</BeaconVieBadge>
+              <BeaconVieBadge>Kết quả kiểm tra trình độ</BeaconVieBadge>
               <h1 className="mt-4 max-w-4xl text-3xl font-black tracking-tight text-[var(--BeaconVie-ink)] sm:text-5xl">
-                Your current level is {data.overview.overallLevel}
+                Trình độ hiện tại của bạn là {data.overview.overallLevel}
               </h1>
               {data.overview.summary ? (
                 <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-[var(--BeaconVie-muted)]">
@@ -118,18 +125,18 @@ export default function PlacementResultScreen({ testId }: { testId: string }) {
 
               <div className="mt-6 grid gap-3 sm:grid-cols-4">
                 <Metric icon={Trophy} label="CEFR" value={data.overview.overallLevel} />
-                <Metric icon={BarChart3} label="Score" value={`${Math.round(data.overview.overallScore)}/100`} />
+                <Metric icon={BarChart3} label="Điểm" value={`${Math.round(data.overview.overallScore)}/100`} />
                 {data.overview.confidence !== null ? (
-                  <Metric icon={ShieldCheck} label="Confidence" value={`${data.overview.confidence}%`} />
+                  <Metric icon={ShieldCheck} label="Độ tin cậy" value={`${data.overview.confidence}%`} />
                 ) : null}
                 {data.overview.percentile !== null ? (
-                  <Metric icon={Target} label="Percentile" value={`${data.overview.percentile}`} />
+                  <Metric icon={Target} label="Vượt qua" value={`${data.overview.percentile}%`} />
                 ) : null}
               </div>
 
               {completedDate ? (
                 <p className="mt-5 text-sm font-bold text-[var(--BeaconVie-muted)]">
-                  Completed {completedDate}
+                  Hoàn thành lúc {completedDate}
                 </p>
               ) : null}
             </section>
@@ -137,8 +144,8 @@ export default function PlacementResultScreen({ testId }: { testId: string }) {
             <BeaconVieCard className="border-blue-100 bg-blue-50/45 p-5">
               <div className="relative mx-auto h-36 w-full max-w-[220px]">
                 <Image
-                  src="/images/placement/BeaconVie-result.png"
-                  alt="Beacon celebrating your placement result"
+                  src="/brand/beaconvie-ai-mascot.webp"
+                  alt="Beacon chúc mừng kết quả kiểm tra trình độ của bạn"
                   fill
                   priority
                   className="object-contain"
@@ -146,7 +153,7 @@ export default function PlacementResultScreen({ testId }: { testId: string }) {
               </div>
               <div className="mt-5 text-center">
                 <p className="text-sm font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-muted)]">
-                  Overall level
+                  Trình độ tổng quát
                 </p>
                 <p className="mt-2 text-6xl font-black text-[var(--BeaconVie-primary)]">
                   {data.overview.overallLevel}
@@ -168,9 +175,9 @@ export default function PlacementResultScreen({ testId }: { testId: string }) {
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
           <BeaconVieCard className="p-6">
             <BeaconVieSectionHeader
-              eyebrow="Skills"
-              title="Skill breakdown"
-              description="Every score, status, level and feedback item below comes from the result API."
+              eyebrow="Kỹ năng"
+              title="Chi tiết theo kỹ năng"
+              description="Điểm, mức trình độ và nhận xét cho từng kỹ năng."
             />
             <div className="grid gap-4 md:grid-cols-2">
               {data.skills.map((skill) => (
@@ -180,8 +187,8 @@ export default function PlacementResultScreen({ testId }: { testId: string }) {
           </BeaconVieCard>
 
           <aside className="space-y-5">
-            <InsightList title="Strengths" items={data.overview.strengths} positive />
-            <InsightList title="Areas to improve" items={data.overview.improvements} />
+            <InsightList title="Điểm mạnh" items={data.overview.strengths} positive />
+            <InsightList title="Kỹ năng cần cải thiện" items={data.overview.improvements} />
             <ProjectionCard data={data} />
           </aside>
         </section>
@@ -194,19 +201,19 @@ export default function PlacementResultScreen({ testId }: { testId: string }) {
         <BeaconVieCard className="p-6">
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <BeaconVieButton onClick={() => router.push(data.actions.startLearningUrl)}>
-              Continue learning
+              Bắt đầu lộ trình của tôi
               <ArrowRight aria-hidden className="h-4 w-4" />
             </BeaconVieButton>
             <BeaconVieButton tone="soft" onClick={() => router.push(data.actions.retryTestUrl)}>
-              Retake test
+              Làm lại bài kiểm tra
               <RefreshCw aria-hidden className="h-4 w-4" />
             </BeaconVieButton>
             <BeaconVieButton tone="soft" onClick={() => router.push(data.actions.chooseOtherPathUrl)}>
-              Choose another path
+              Chọn lộ trình khác
               <Route aria-hidden className="h-4 w-4" />
             </BeaconVieButton>
             <BeaconVieButton tone="ghost" onClick={() => router.push(data.actions.detailedAnalysisUrl)}>
-              Detailed analysis
+              Xem chi tiết
               <BarChart3 aria-hidden className="h-4 w-4" />
             </BeaconVieButton>
           </div>
@@ -247,7 +254,7 @@ function SkillCard({ skill }: { skill: PlacementResultData["skills"][number] }) 
       ) : null}
       {skill.improvements.length ? (
         <p className="mt-3 text-sm font-bold leading-6 text-amber-700">
-          Improve: {skill.improvements[0]}
+          Cần cải thiện: {skill.improvements[0]}
         </p>
       ) : null}
     </article>
@@ -277,7 +284,7 @@ function InsightList({
         </div>
       ) : (
         <p className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-[var(--BeaconVie-muted)]">
-          No items returned by the backend.
+          Chưa có dữ liệu cho mục này.
         </p>
       )}
     </BeaconVieCard>
@@ -293,24 +300,24 @@ function ProjectionCard({ data }: { data: PlacementResultData }) {
   return (
     <BeaconVieCard className="p-5">
       <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">
-        Recommended direction
+        Hướng đi đề xuất
       </h2>
       {hasProjection ? (
         <p className="mt-4 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
-          The backend projects{" "}
+          Nếu duy trì học đều, bạn có thể đạt{" "}
           {data.overview.projectedLevel ? (
             <strong className="text-[var(--BeaconVie-primary)]">{data.overview.projectedLevel}</strong>
           ) : (
-            "your next level"
+            "trình độ tiếp theo"
           )}{" "}
           {data.overview.projectedWeeksMin !== null || data.overview.projectedWeeksMax !== null
-            ? `in ${data.overview.projectedWeeksMin ?? "?"}-${data.overview.projectedWeeksMax ?? "?"} weeks`
-            : "with continued practice"}
+            ? `trong khoảng ${data.overview.projectedWeeksMin ?? "?"}-${data.overview.projectedWeeksMax ?? "?"} tuần`
+            : "khi tiếp tục luyện tập"}
           .
         </p>
       ) : (
         <p className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-[var(--BeaconVie-muted)]">
-          No projection was returned by the backend.
+          Chưa có dự đoán lộ trình cho kết quả này.
         </p>
       )}
     </BeaconVieCard>
@@ -321,15 +328,15 @@ function LearningDirection({ data }: { data: PlacementResultData }) {
   return (
     <BeaconVieCard className="p-6">
       <BeaconVieSectionHeader
-        eyebrow="Path"
-        title="Learning path preview"
-        description="Phases and priorities are shown only from backend result data."
+        eyebrow="Lộ trình"
+        title="Bạn nên học gì tiếp theo?"
+        description="Các giai đoạn học được đề xuất riêng cho bạn."
       />
       <div className="grid gap-4 md:grid-cols-3">
         {data.learningPath.phases.map((phase) => (
           <article key={phase.phase} className="rounded-3xl border border-[var(--BeaconVie-border)] bg-white/75 p-4">
             <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-primary)]">
-              Phase {phase.phase}
+              Giai đoạn {phase.phase}
               {phase.targetLevel ? ` • ${phase.targetLevel}` : ""}
             </p>
             <h3 className="mt-3 font-black text-[var(--BeaconVie-ink)]">{phase.title}</h3>
@@ -349,7 +356,7 @@ function CertificateCard({ data }: { data: PlacementResultData }) {
     <BeaconVieCard className="p-5">
       <Trophy aria-hidden className="h-9 w-9 text-amber-500" />
       <h2 className="mt-4 text-xl font-black text-[var(--BeaconVie-ink)]">
-        Certificate
+        Chứng nhận
       </h2>
       <p className="mt-2 text-4xl font-black text-[var(--BeaconVie-primary)]">
         {data.certificate.level}
@@ -361,12 +368,12 @@ function CertificateCard({ data }: { data: PlacementResultData }) {
       ) : null}
       {data.certificate.url ? (
         <Link href={data.certificate.url} className="BeaconVie-button-soft mt-5 w-full" target="_blank">
-          Download certificate
+          Tải chứng nhận
           <Download aria-hidden className="h-4 w-4" />
         </Link>
       ) : (
         <p className="mt-5 rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-[var(--BeaconVie-muted)]">
-          No certificate file URL was returned by the backend.
+          Chứng nhận chưa sẵn sàng để tải.
         </p>
       )}
     </BeaconVieCard>
@@ -389,12 +396,12 @@ function Metric({ icon: Icon, label, value }: { icon: typeof Trophy; label: stri
 
 function levelLabel(level: string) {
   const labels: Record<string, string> = {
-    A1: "Beginner",
-    A2: "Elementary",
-    B1: "Intermediate",
-    B2: "Upper intermediate",
-    C1: "Advanced",
-    C2: "Proficient",
+    A1: "Mới bắt đầu",
+    A2: "Cơ bản",
+    B1: "Trung cấp",
+    B2: "Trung cấp cao",
+    C1: "Nâng cao",
+    C2: "Thành thạo",
   };
 
   return labels[level] ?? level;

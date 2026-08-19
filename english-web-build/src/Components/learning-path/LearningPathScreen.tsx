@@ -37,10 +37,27 @@ import {
 } from "@/src/Components/UI/BeaconVie";
 
 const statusCopy: Record<LearningPathLesson["status"], string> = {
-  LOCKED: "Locked",
+  LOCKED: "Đã khoá",
   AVAILABLE: "Bắt đầu",
   IN_PROGRESS: "Tiếp tục",
   COMPLETED: "Ôn tập",
+};
+
+const skillLabels: Record<string, string> = {
+  VOCABULARY: "Từ vựng",
+  GRAMMAR: "Ngữ pháp",
+  LISTENING: "Nghe",
+  READING: "Đọc",
+  SPEAKING: "Nói",
+  WRITING: "Viết",
+};
+
+// item.status is a free-form string from the backend (not a typed enum), so
+// this only covers values actually observed in the product; anything else
+// falls back to the raw value rather than crashing.
+const skillStatusLabels: Record<string, string> = {
+  SKIPPED: "Đã bỏ qua",
+  NOT_ASSESSED: "Chưa đánh giá",
 };
 
 /** Distinguishes the full PLACEMENT lesson shape from the DEFAULT_FOUNDATION starting-lesson pointer. */
@@ -69,7 +86,7 @@ export default function LearningPathScreen() {
       // path (see LearningPathService.buildDefaultFoundationPath). A
       // request can still fail for genuine errors (network, 5xx), which
       // this catch handles the same way as before.
-      setError(err instanceof Error ? err.message : "We could not load your learning path.");
+      setError(err instanceof Error ? err.message : "Không thể tải lộ trình học của bạn.");
     } finally {
       setLoading(false);
     }
@@ -88,7 +105,7 @@ export default function LearningPathScreen() {
       await startLearningPathLesson(lesson.id);
       router.push(lesson.href);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "We could not open this lesson.");
+      setError(err instanceof Error ? err.message : "Không thể mở bài học này.");
     } finally {
       setStartingLessonId(null);
     }
@@ -104,9 +121,9 @@ export default function LearningPathScreen() {
   if (!data) {
     return (
       <BeaconVieState
-        title="Learning path is unavailable"
+        title="Không thể mở lộ trình học"
         description={error}
-        actionLabel="Try again"
+        actionLabel="Thử lại"
         tone="error"
         onAction={() => void loadLearningPath()}
       />
@@ -119,31 +136,31 @@ export default function LearningPathScreen() {
         <BeaconVieCard className="overflow-hidden p-0">
           <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:p-8">
             <section>
-              <BeaconVieBadge>Learning Path</BeaconVieBadge>
+              <BeaconVieBadge>Lộ trình học</BeaconVieBadge>
               <h1 className="mt-4 max-w-4xl text-3xl font-black tracking-tight text-[var(--BeaconVie-ink)] sm:text-5xl">
                 {data.title}
               </h1>
               <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-[var(--BeaconVie-muted)]">
                 {data.source === "PLACEMENT" ? (
                   <>
-                    Your path is generated from placement result {data.overallLevel}
-                    {" "}({Math.round(data.overallScore ?? 0)}/100) and stays synced
-                    with real lesson progress.
+                    Lộ trình này được xây dựng từ kết quả kiểm tra trình độ{" "}
+                    {data.overallLevel} ({Math.round(data.overallScore ?? 0)}/100)
+                    và luôn đồng bộ với tiến độ học thực tế của bạn.
                   </>
                 ) : (
                   <>
-                    You haven&apos;t completed a placement test yet — here&apos;s a
-                    foundation starting point for every skill. Take the placement
-                    test any time for personalized recommendations.
+                    Bạn chưa làm bài kiểm tra trình độ — đây là điểm khởi đầu cơ
+                    bản cho từng kỹ năng. Bạn có thể làm bài kiểm tra bất cứ lúc
+                    nào để nhận gợi ý phù hợp hơn.
                   </>
                 )}
               </p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-4">
-                <HeroMetric icon={GraduationCap} label="Level" value={data.overallLevel ?? "—"} />
-                <HeroMetric icon={Target} label="Progress" value={`${data.progressPercent}%`} />
-                <HeroMetric icon={CheckCircle2} label="Completed" value={`${data.completedLessons}`} />
-                <HeroMetric icon={BookOpen} label="Lessons" value={`${data.totalLessons}`} />
+                <HeroMetric icon={GraduationCap} label="Trình độ" value={data.overallLevel ?? "—"} />
+                <HeroMetric icon={Target} label="Tiến độ" value={`${data.progressPercent}%`} />
+                <HeroMetric icon={CheckCircle2} label="Đã hoàn thành" value={`${data.completedLessons}`} />
+                <HeroMetric icon={BookOpen} label="Bài học" value={`${data.totalLessons}`} />
               </div>
             </section>
 
@@ -167,9 +184,9 @@ export default function LearningPathScreen() {
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
           <BeaconVieCard className="p-6">
             <BeaconVieSectionHeader
-              eyebrow="Journey"
-              title="Milestones and lesson map"
-              description="Nodes keep their real lock, progress and lesson links. Locked lessons are not clickable."
+              eyebrow="Hành trình"
+              title="Bản đồ bài học"
+              description="Bài đã khoá sẽ mở ra khi bạn hoàn thành các bài trước đó."
             />
             {allLessons.length ? (
               <PathTimeline
@@ -179,14 +196,14 @@ export default function LearningPathScreen() {
               />
             ) : data.source === "DEFAULT_FOUNDATION" ? (
               <BeaconVieState
-                title="Foundation path — see your skill breakdown"
-                description="Take the placement test to unlock a personalized milestone map. Each skill's starting lesson is listed in the panel to the right."
+                title="Lộ trình cơ bản — xem chi tiết theo kỹ năng"
+                description="Làm bài kiểm tra trình độ để mở bản đồ học cá nhân hoá. Bài học khởi đầu cho từng kỹ năng đã có ở khung bên phải."
                 tone="soft"
               />
             ) : (
               <BeaconVieState
-                title="No lessons in this path yet"
-                description="The backend returned an empty path. Retake placement or refresh after path generation finishes."
+                title="Chưa có bài học trong lộ trình này"
+                description="Hãy làm lại bài kiểm tra trình độ hoặc thử tải lại trang."
                 tone="empty"
               />
             )}
@@ -204,9 +221,9 @@ export default function LearningPathScreen() {
         {data.courses.length ? (
           <BeaconVieCard className="p-6">
             <BeaconVieSectionHeader
-              eyebrow="Courses"
-              title="Recommended course groups"
-              description="Course cards are shown only from the learning path response."
+              eyebrow="Khoá học"
+              title="Nhóm khoá học đề xuất"
+              description="Các khoá học phù hợp với lộ trình của bạn."
             />
             <div className="grid gap-4 lg:grid-cols-2">
               {data.courses.map((course) => (
@@ -234,10 +251,10 @@ function NextLessonCard({
       <BeaconVieCard className="p-5">
         <Compass aria-hidden className="h-9 w-9 text-[var(--BeaconVie-primary)]" />
         <h2 className="mt-4 text-2xl font-black text-[var(--BeaconVie-ink)]">
-          Path is ready
+          Lộ trình đã sẵn sàng
         </h2>
         <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
-          There is no current lesson from the API yet. Check the timeline below.
+          Chưa có bài học hiện tại. Xem bản đồ bài học bên dưới.
         </p>
       </BeaconVieCard>
     );
@@ -245,13 +262,13 @@ function NextLessonCard({
 
   return (
     <BeaconVieCard className="border-[var(--BeaconVie-primary)]/20 bg-[var(--BeaconVie-primary-soft)] p-5">
-      <BeaconVieBadge>Next lesson</BeaconVieBadge>
+      <BeaconVieBadge>Bài học tiếp theo</BeaconVieBadge>
       <h2 className="mt-4 text-2xl font-black text-[var(--BeaconVie-ink)]">
         {lesson.title}
       </h2>
       <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
         {lesson.sectionTitle}
-        {lesson.duration ? ` • ${lesson.duration} min` : ""}
+        {lesson.duration ? ` • ${lesson.duration} phút` : ""}
       </p>
       <BeaconVieButton
         className="mt-6 w-full"
@@ -259,12 +276,12 @@ function NextLessonCard({
         disabled={lesson.status === "LOCKED"}
         onClick={() => onStart(lesson)}
       >
-        {lesson.status === "IN_PROGRESS" ? "Continue lesson" : "Start lesson"}
+        {lesson.status === "IN_PROGRESS" ? "Tiếp tục bài học" : "Bắt đầu bài học"}
         <ArrowRight aria-hidden className="h-4 w-4" />
       </BeaconVieButton>
       {lesson.status === "LOCKED" ? (
         <p className="mt-3 text-xs font-bold text-[var(--BeaconVie-muted)]">
-          This lesson is locked by the current path order.
+          Bài học này sẽ mở khi bạn hoàn thành các bài trước đó.
         </p>
       ) : null}
     </BeaconVieCard>
@@ -295,7 +312,7 @@ function PathTimeline({
               </div>
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-primary)]">
-                  Stage {courseIndex + 1}
+                  Chặng {courseIndex + 1}
                 </p>
                 <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">
                   {course.title}
@@ -316,8 +333,8 @@ function PathTimeline({
 
           {!course.available ? (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-bold text-amber-800">
-              This course is not linked to live lesson content yet. Its lessons
-              are kept disabled because the API marks the course unavailable.
+              Khoá học này chưa có nội dung bài học. Các bài học tạm thời chưa
+              thể mở.
             </div>
           ) : (
             <ol className="relative ml-3 space-y-4 border-l-2 border-dashed border-[var(--BeaconVie-border)] pl-6">
@@ -397,7 +414,7 @@ function PathNode({
               {lesson.duration ? (
                 <span className="inline-flex items-center gap-1">
                   <Clock3 aria-hidden className="h-4 w-4" />
-                  {lesson.duration} min
+                  {lesson.duration} phút
                 </span>
               ) : null}
               <span>{statusCopy[lesson.status]}</span>
@@ -407,11 +424,11 @@ function PathNode({
           {locked ? (
             <span aria-disabled="true" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-[var(--BeaconVie-disabled)]/20 px-4 py-3 text-sm font-black text-[var(--BeaconVie-muted)]">
               <Lock aria-hidden className="h-4 w-4" />
-              Locked
+              Đã khoá
             </span>
           ) : completed ? (
             <Link href={lesson.href} className="BeaconVie-button-soft text-sm">
-              Review <ArrowRight aria-hidden className="h-4 w-4" />
+              Ôn tập <ArrowRight aria-hidden className="h-4 w-4" />
             </Link>
           ) : (
             <button
@@ -428,7 +445,7 @@ function PathNode({
 
         {locked ? (
           <p className="mt-3 rounded-2xl bg-[var(--BeaconVie-card-soft)] p-3 text-xs font-bold leading-5 text-[var(--BeaconVie-muted)]">
-            Complete the previous available lessons to unlock this node.
+            Hoàn thành các bài học trước để mở bài này.
           </p>
         ) : null}
       </article>
@@ -440,13 +457,13 @@ function PhasePanel({ phases }: { phases: LearningPathData["phases"] }) {
   return (
     <BeaconVieCard className="p-5">
       <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">
-        Stages
+        Các chặng
       </h2>
       <div className="mt-4 space-y-3">
         {phases.map((phase) => (
           <div key={phase.id} className="rounded-2xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-4">
             <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-primary)]">
-              Phase {phase.phase}
+              Giai đoạn {phase.phase}
               {phase.targetLevel ? ` • ${phase.targetLevel}` : ""}
             </p>
             <h3 className="mt-2 font-black text-[var(--BeaconVie-ink)]">
@@ -467,7 +484,7 @@ function PriorityPanel({ priorities }: { priorities: LearningPathData["prioritie
   return (
     <BeaconVieCard className="p-5">
       <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">
-        Skill priorities
+        Kỹ năng ưu tiên
       </h2>
       <div className="mt-4 space-y-3">
         {priorities.map((item) => (
@@ -477,7 +494,7 @@ function PriorityPanel({ priorities }: { priorities: LearningPathData["prioritie
             </span>
             <div>
               <p className="font-black text-[var(--BeaconVie-ink)]">
-                {item.skill}
+                {skillLabels[item.skill] ?? item.skill}
               </p>
               <p className="mt-1 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
                 {item.reason}
@@ -494,17 +511,17 @@ function SkillPanel({ skills }: { skills: LearningPathData["skills"] }) {
   return (
     <BeaconVieCard className="p-5">
       <h2 className="text-lg font-black text-[var(--BeaconVie-ink)]">
-        Skill baseline
+        Trình độ theo kỹ năng
       </h2>
       <div className="mt-4 space-y-3">
         {skills.map((item) => (
           <div key={item.skill} className="rounded-2xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-4">
             <div className="flex items-center justify-between gap-3">
               <p className="font-black text-[var(--BeaconVie-ink)]">
-                {item.skill}
+                {skillLabels[item.skill] ?? item.skill}
               </p>
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
-                {item.level ?? item.status ?? "—"}
+                {item.level ?? (item.status ? (skillStatusLabels[item.status] ?? item.status) : "—")}
               </span>
             </div>
             {typeof item.score === "number" ? (
@@ -515,7 +532,7 @@ function SkillPanel({ skills }: { skills: LearningPathData["skills"] }) {
                 href={item.startingLesson.href}
                 className="mt-3 inline-flex items-center gap-1 text-sm font-black text-[var(--BeaconVie-primary)]"
               >
-                Start: {item.startingLesson.title}
+                Bắt đầu: {item.startingLesson.title}
                 <ArrowRight aria-hidden className="h-4 w-4" />
               </Link>
             ) : null}
@@ -544,7 +561,7 @@ function CourseSummary({ course }: { course: LearningPathCourse }) {
             </h3>
             {!course.available ? (
               <span className="rounded-full bg-amber-100 px-2 py-1 text-[11px] font-black text-amber-700">
-                Not linked
+                Chưa có nội dung
               </span>
             ) : null}
           </div>
@@ -554,7 +571,7 @@ function CourseSummary({ course }: { course: LearningPathCourse }) {
           <div className="mt-3 flex flex-wrap gap-3 text-xs font-bold text-[var(--BeaconVie-muted)]">
             <span className="inline-flex items-center gap-1">
               <BookOpen aria-hidden className="h-4 w-4" />
-              {course.lessonCount} lessons
+              {course.lessonCount} bài học
             </span>
             {course.rating !== null ? (
               <span className="inline-flex items-center gap-1">

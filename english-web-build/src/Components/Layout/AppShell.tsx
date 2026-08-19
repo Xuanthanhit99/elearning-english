@@ -126,7 +126,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <WelcomeLoginModal
         open={showWelcome}
         fullname={user?.fullname}
-        avatar="/brand/beaconvie-ai-mascot.png"
+        avatar="/brand/beaconvie-ai-mascot.webp"
         onClose={() => setShowWelcome(false)}
       />
       <main

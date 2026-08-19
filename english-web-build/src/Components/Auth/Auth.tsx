@@ -7,6 +7,8 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { api } from "@/src/lib/axios";
 import { normalizeRedirectPath } from "@/src/lib/auth-redirect";
+import { initializeAuth } from "@/src/lib/auth-init";
+import { trackEvent } from "@/src/lib/ga";
 import { useTranslation } from "@/src/hooks/useTranslation";
 import { AuthErrorModal } from "../AuthErrorModal";
 import AppLogo from "../UI/AppLogo";
@@ -152,7 +154,7 @@ function LeftContent() {
 
       <div className="mt-10 flex max-w-md items-center gap-5 rounded-[26px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.06)] dark:shadow-black/20">
         <Image
-          src="/brand/beaconvie-ai-mascot.png"
+          src="/brand/beaconvie-ai-mascot.webp"
           alt="Beacon Mentor"
           width={90}
           height={90}
@@ -331,6 +333,8 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
 }
 
 function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useTranslation();
   const [fullName, setFullname] = useState("");
   const [email, setEmail] = useState("");
@@ -342,6 +346,7 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
   });
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [autoLoggedIn, setAutoLoggedIn] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -350,6 +355,7 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
 
     try {
       setIsSubmitting(true);
+      trackEvent("signup_start");
       const res = await api.post("/auth/register", {
         fullName,
         email,
@@ -362,6 +368,22 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
           message: res.data?.message || t("auth.registerFailed"),
         });
         return;
+      }
+
+      trackEvent("signup_complete");
+
+      // Registration alone doesn't establish a session (see backend
+      // AuthController#register). Log in with the same credentials right
+      // away so the learner isn't forced to retype them — falls back to
+      // the manual login tab below if this doesn't cleanly succeed.
+      try {
+        const loginRes = await api.post("/auth/login", { email, password });
+        setAutoLoggedIn(
+          !loginRes.data?.twoFactorRequired &&
+            loginRes.data?.user?.status === "ACTIVE",
+        );
+      } catch {
+        setAutoLoggedIn(false);
       }
 
       setShowSuccessModal(true);
@@ -379,6 +401,13 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
 
   const handleSuccessClose = () => {
     setShowSuccessModal(false);
+
+    if (autoLoggedIn) {
+      void initializeAuth();
+      router.replace(normalizeRedirectPath(searchParams.get("redirect")));
+      return;
+    }
+
     setFullname("");
     setEmail("");
     setPassword("");
@@ -447,6 +476,7 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
 
       <RegisterSuccessModal
         open={showSuccessModal}
+        autoLoggedIn={autoLoggedIn}
         onClose={handleSuccessClose}
       />
 
@@ -538,9 +568,11 @@ function Input({
 
 function RegisterSuccessModal({
   open,
+  autoLoggedIn,
   onClose,
 }: {
   open: boolean;
+  autoLoggedIn: boolean;
   onClose: () => void;
 }) {
   const { t } = useTranslation();
@@ -573,7 +605,7 @@ function RegisterSuccessModal({
             onClick={onClose}
             className="mt-6 w-full rounded-2xl bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] py-4 font-extrabold text-white transition hover:opacity-95"
           >
-            {t("auth.successLoginNow")}
+            {autoLoggedIn ? t("auth.successContinue") : t("auth.successLoginNow")}
           </button>
         </div>
       </div>

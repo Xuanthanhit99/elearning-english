@@ -41,12 +41,12 @@ import {
 
 const CEFR_LEVELS: CefrLevel[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 const CEFR_LEVEL_LABELS: Record<CefrLevel, string> = {
-  A1: "Cơ bản",
-  A2: "Elementary",
+  A1: "Mới bắt đầu",
+  A2: "Cơ bản",
   B1: "Trung cấp",
-  B2: "Upper-intermediate",
+  B2: "Trung cấp cao",
   C1: "Nâng cao",
-  C2: "Proficient",
+  C2: "Thành thạo",
 };
 
 const assessedSkills = [
@@ -79,7 +79,7 @@ export default function PlacementEntry() {
       setError(
         err instanceof Error
           ? err.message
-          : "We could not load your placement status.",
+          : "Không thể tải trạng thái kiểm tra trình độ.",
       );
     } finally {
       setLoading(false);
@@ -114,7 +114,7 @@ export default function PlacementEntry() {
         return;
       }
 
-      setError(response?.message ?? "We could not start a new placement test.");
+      setError(response?.message ?? "Không thể bắt đầu bài kiểm tra mới.");
     } finally {
       setRetaking(false);
     }
@@ -130,7 +130,7 @@ export default function PlacementEntry() {
       setManualLevelError(
         err instanceof Error
           ? err.message
-          : "We could not save the selected level.",
+          : "Không thể lưu trình độ đã chọn.",
       );
     } finally {
       setSavingManualLevel(false);
@@ -142,8 +142,8 @@ export default function PlacementEntry() {
     if (data?.state !== "IN_PROGRESS" || !data.currentTest) return null;
     return {
       label: data.currentTest.startedAt
-        ? `Started ${new Date(data.currentTest.startedAt).toLocaleDateString()}`
-        : "Your answers are saved on the server.",
+        ? `Bắt đầu ${new Date(data.currentTest.startedAt).toLocaleDateString()}`
+        : "Câu trả lời của bạn đã được lưu.",
       href: data.currentTest.testUrl,
     };
   }, [data]);
@@ -165,7 +165,7 @@ export default function PlacementEntry() {
       <BeaconVieState
         title="Chưa mở được bài kiểm tra trình độ"
         description={error}
-        actionLabel="Try again"
+        actionLabel="Thử lại"
         tone="error"
         onAction={() => void loadPlacement()}
       />
@@ -178,20 +178,20 @@ export default function PlacementEntry() {
         <BeaconVieCard className="overflow-hidden p-0">
           <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)] lg:p-8">
             <section>
-              <BeaconVieBadge>Placement Test</BeaconVieBadge>
+              <BeaconVieBadge>Kiểm tra trình độ</BeaconVieBadge>
               <h1 className="mt-4 max-w-3xl text-3xl font-black tracking-tight text-[var(--BeaconVie-ink)] sm:text-5xl">
-                Find your real English starting point.
+                Xác định trình độ tiếng Anh thực sự của bạn.
               </h1>
               <p className="mt-4 max-w-2xl text-base font-semibold leading-7 text-[var(--BeaconVie-muted)]">
-                The adaptive placement test checks the six core skills and uses
-                your real result to unlock a personal learning path. Opening this
-                page never creates a new session.
+                Bài kiểm tra thích ứng đánh giá 6 kỹ năng cốt lõi và dùng kết quả
+                thật của bạn để xây lộ trình học cá nhân hoá. Mở trang này không
+                tạo bài làm mới.
               </p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                <Fact icon={Clock3} label="Duration" value="Adaptive" />
-                <Fact icon={ShieldCheck} label="Saving" value="Autosaved" />
-                <Fact icon={BarChart3} label="Outcome" value="CEFR level" />
+                <Fact icon={Clock3} label="Thời lượng" value="Thích ứng" />
+                <Fact icon={ShieldCheck} label="Lưu bài" value="Tự động" />
+                <Fact icon={BarChart3} label="Kết quả" value="Mức CEFR" />
               </div>
 
               {error ? (
@@ -226,11 +226,11 @@ export default function PlacementEntry() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">
-                  Skills assessed
+                  Kỹ năng được đánh giá
                 </h2>
                 <p className="mt-1 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
-                  The test keeps each skill separate so your path can target the
-                  areas that need the most support.
+                  Mỗi kỹ năng được đánh giá riêng để lộ trình của bạn tập trung
+                  đúng vào phần cần cải thiện nhất.
                 </p>
               </div>
               <Target aria-hidden className="h-7 w-7 text-[var(--BeaconVie-primary)]" />
@@ -258,23 +258,23 @@ export default function PlacementEntry() {
 
           <BeaconVieCard className="p-6">
             <h2 className="text-xl font-black text-[var(--BeaconVie-ink)]">
-              How adaptive testing works
+              Cách bài kiểm tra thích ứng hoạt động
             </h2>
             <div className="mt-5 grid gap-3">
               <Step
                 number="1"
                 title="Bắt đầu với bộ câu hỏi cân bằng"
-                description="The session starts with a broad skill check and keeps your progress on the server."
+                description="Bài làm bắt đầu bằng các câu hỏi tổng quát và tiến độ được lưu lại."
               />
               <Step
                 number="2"
-                title="Adjust by answer quality"
-                description="Câu hỏi và bài nộp luyện nói/luyện viết chuyên biệt tiếp tục đi qua luồng backend hiện có."
+                title="Điều chỉnh theo chất lượng câu trả lời"
+                description="Độ khó thay đổi theo câu trả lời của bạn, kể cả phần Nói và Viết."
               />
               <Step
                 number="3"
-                title="Generate result and path"
-                description="Processing, result generation, and learning-path gate remain controlled by the current API."
+                title="Tạo kết quả và lộ trình"
+                description="Sau khi hoàn thành, hệ thống phân tích kết quả và mở lộ trình học của bạn."
               />
             </div>
           </BeaconVieCard>
@@ -322,11 +322,11 @@ function StatePanel({
       <BeaconVieCard className="border-blue-100 bg-blue-50/45 p-5">
         <Play aria-hidden className="h-8 w-8 text-[var(--BeaconVie-primary)]" />
         <h2 className="mt-4 text-2xl font-black text-[var(--BeaconVie-ink)]">
-          Ready for your first placement?
+          Sẵn sàng làm bài kiểm tra đầu tiên?
         </h2>
         <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
-          Review the preparation screen before the session starts. No microphone
-          permission is requested until a Speaking question needs it.
+          Xem qua phần chuẩn bị trước khi bắt đầu. BeaconVie chỉ xin quyền dùng
+          micro khi bạn vào phần Nói.
         </p>
         <Link href="/placement/introduction" className="BeaconVie-button-primary mt-6 w-full">
           Bắt đầu chuẩn bị <ArrowRight aria-hidden className="h-4 w-4" />
@@ -337,7 +337,7 @@ function StatePanel({
           onClick={onSelectManualLevel}
         >
           <ListChecks aria-hidden className="h-4 w-4" />
-          Choose my level manually
+          Tự chọn trình độ
         </BeaconVieButton>
       </BeaconVieCard>
     );
@@ -348,13 +348,13 @@ function StatePanel({
       <BeaconVieCard className="border-amber-100 bg-amber-50/55 p-5">
         <RefreshCw aria-hidden className="h-8 w-8 text-amber-600" />
         <h2 className="mt-4 text-2xl font-black text-[var(--BeaconVie-ink)]">
-          Resume your current test
+          Tiếp tục bài làm dở
         </h2>
         <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
           {progress.label}
         </p>
         <Link href={progress.href} className="BeaconVie-button-primary mt-6 w-full">
-          Resume test <ArrowRight aria-hidden className="h-4 w-4" />
+          Tiếp tục <ArrowRight aria-hidden className="h-4 w-4" />
         </Link>
       </BeaconVieCard>
     );
@@ -365,17 +365,16 @@ function StatePanel({
       <BeaconVieCard className="border-violet-100 bg-violet-50/55 p-5">
         <Loader2 aria-hidden className="h-8 w-8 animate-spin text-[var(--BeaconVie-primary)]" />
         <h2 className="mt-4 text-2xl font-black text-[var(--BeaconVie-ink)]">
-          Your result is being prepared
+          Kết quả của bạn đang được chuẩn bị
         </h2>
         <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
-          Tiếp tục đến màn hình xử lý trực tiếp. Tiến độ đến từ
-          existing processing API.
+          Xem tiến trình phân tích trực tiếp tại màn hình xử lý.
         </p>
         <Link
           href={data.currentTest?.processingUrl ?? "/placement/dashboard"}
           className="BeaconVie-button-primary mt-6 w-full"
         >
-          View processing <ArrowRight aria-hidden className="h-4 w-4" />
+          Xem tiến trình <ArrowRight aria-hidden className="h-4 w-4" />
         </Link>
       </BeaconVieCard>
     );
@@ -385,7 +384,7 @@ function StatePanel({
     <BeaconVieCard className="border-emerald-100 bg-emerald-50/50 p-5">
       <CheckCircle2 aria-hidden className="h-8 w-8 text-emerald-600" />
       <h2 className="mt-4 text-2xl font-black text-[var(--BeaconVie-ink)]">
-        Current level: {latest?.overallLevel ?? "Ready"}
+        Trình độ hiện tại: {latest?.overallLevel ?? "Sẵn sàng"}
       </h2>
       {latest ? (
         <>
@@ -393,8 +392,8 @@ function StatePanel({
             Hoàn thành{" "}
             {latest.completedAt
               ? new Date(latest.completedAt).toLocaleDateString()
-              : "recently"}
-            . Score {Math.round(latest.overallScore)}/100.
+              : "gần đây"}
+            . Điểm {Math.round(latest.overallScore)}/100.
           </p>
           <div className="mt-4">
             <BeaconVieProgress value={Math.round(latest.overallScore)} />
@@ -403,11 +402,11 @@ function StatePanel({
       ) : null}
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
         <Link href="/learning-path" className="BeaconVie-button-primary">
-          Continue learning
+          Tiếp tục học
         </Link>
         {data.actions.resultUrl ? (
           <Link href={data.actions.resultUrl} className="BeaconVie-button-soft">
-            View result
+            Xem kết quả
           </Link>
         ) : null}
       </div>
@@ -417,7 +416,7 @@ function StatePanel({
         className="mt-3 w-full"
         onClick={onRetake}
       >
-        Retake placement
+        Làm lại bài kiểm tra
       </BeaconVieButton>
     </BeaconVieCard>
   );
@@ -484,19 +483,19 @@ function RetakeDialog({
     <BeaconVieDialog open={open} onClose={onClose} titleId="retake-title">
       <div className="flex items-start justify-between gap-4">
         <h2 id="retake-title" className="text-2xl font-black text-[var(--BeaconVie-ink)]">
-          Retake placement now?
+          Làm lại bài kiểm tra ngay?
         </h2>
         <BeaconVieDialogCloseButton onClose={onClose} label="Đóng hộp thoại" />
       </div>
       <p className="mt-3 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
-        {message || "A new attempt will start through the existing retake API."}
+        {message || "Một lượt làm mới sẽ bắt đầu, kết quả cũ vẫn được giữ lại."}
       </p>
       <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <BeaconVieButton tone="ghost" disabled={loading} onClick={onClose}>
-          Cancel
+          Huỷ
         </BeaconVieButton>
         <BeaconVieButton loading={loading} onClick={onConfirm}>
-          Retake anyway
+          Vẫn làm lại
         </BeaconVieButton>
       </div>
     </BeaconVieDialog>
@@ -526,11 +525,11 @@ function ManualLevelDialog({
         <div>
           <BeaconVieBadge>CEFR</BeaconVieBadge>
           <h2 id="manual-level-title" className="mt-3 text-2xl font-black text-[var(--BeaconVie-ink)]">
-            Choose your starting level
+            Chọn trình độ khởi điểm
           </h2>
           <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
-            We will use this as the starting point for every skill. You can
-            retake the adaptive test later to refine it.
+            Trình độ này sẽ là điểm khởi đầu cho mọi kỹ năng. Bạn có thể làm bài
+            kiểm tra thích ứng sau để có kết quả chính xác hơn.
           </p>
         </div>
         <BeaconVieDialogCloseButton onClose={onClose} label="Đóng hộp thoại" />
@@ -577,7 +576,7 @@ function ManualLevelDialog({
 
       <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <BeaconVieButton tone="ghost" disabled={saving} onClick={onClose}>
-          Cancel
+          Huỷ
         </BeaconVieButton>
         <BeaconVieButton loading={saving} onClick={onConfirm}>
           Bắt đầu từ {level}

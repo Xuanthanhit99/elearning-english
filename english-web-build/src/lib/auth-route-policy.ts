@@ -3,6 +3,10 @@
   normalizeRedirectPath,
 } from "./auth-redirect";
 
+// /about, /privacy and /terms used to be listed here, but no page files
+// exist for them anywhere in the app and nothing links to them (footer,
+// nav, manifest, mobile app config) — removed rather than left as stale,
+// aspirational entries. Add them back once real pages ship.
 const publicRoutes = [
   "/",
   "/auth",
@@ -11,9 +15,6 @@ const publicRoutes = [
   "/forgot-password",
   "/reset-password",
   "/verify-email",
-  "/about",
-  "/privacy",
-  "/terms",
 ];
 
 const protectedPrefixes = [
@@ -109,4 +110,4 @@ export function getAuthRouteDecision({
   return { type: "next" };
 }
 
-export { DEFAULT_AUTHENTICATED_PATH };
+export { DEFAULT_AUTHENTICATED_PATH, protectedPrefixes };
