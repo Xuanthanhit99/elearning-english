@@ -80,8 +80,18 @@ jobs:
           cache: npm
           cache-dependency-path: english-web-build/package-lock.json
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Refresh dependency lock
+        run: npm install --package-lock-only --ignore-scripts
+
+      - name: Verify clean install
+        run: npm ci --ignore-scripts
+
+      - name: Upload refreshed lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-lockfile
+          path: english-web-build/package-lock.json
+          if-no-files-found: error
 
       # Next 16.2.11 is affected by 2026 critical RCE advisories.
       # Keep the existing lockfile install deterministic, then overlay the
