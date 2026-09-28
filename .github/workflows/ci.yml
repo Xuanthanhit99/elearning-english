@@ -1,5 +1,8 @@
 name: CI
 
+permissions:
+  contents: write
+
 on:
   pull_request:
   push:
@@ -86,12 +89,19 @@ jobs:
       - name: Verify clean install
         run: npm ci --ignore-scripts
 
-      - name: Upload refreshed lockfile
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-lockfile
-          path: english-web-build/package-lock.json
-          if-no-files-found: error
+      - name: Commit refreshed lockfile
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        working-directory: .
+        run: |
+          if git diff --quiet -- english-web-build/package-lock.json; then
+            echo "Lockfile already current"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add english-web-build/package-lock.json
+          git commit -m "chore(web): refresh dependency lockfile"
+          git push origin HEAD:${{ github.head_ref }}
 
       # Next 16.2.11 is affected by 2026 critical RCE advisories.
       # Keep the existing lockfile install deterministic, then overlay the
