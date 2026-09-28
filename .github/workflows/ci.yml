@@ -9,6 +9,7 @@ on:
     branches:
       - main
       - master
+      - fix/railway-build-20260928
 
 jobs:
   backend:
