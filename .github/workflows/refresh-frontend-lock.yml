@@ -1,0 +1,33 @@
+name: Refresh Frontend Lock
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fix/railway-build-20260928
+    paths:
+      - .github/workflows/refresh-frontend-lock.yml
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: english-web-build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: english-web-build/package-lock.json
+      - name: Refresh lockfile
+        run: npm install --package-lock-only --ignore-scripts
+      - name: Verify clean install
+        run: npm ci --ignore-scripts
+      - name: Upload refreshed lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-lockfile
+          path: english-web-build/package-lock.json
+          if-no-files-found: error
