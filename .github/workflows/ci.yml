@@ -87,7 +87,10 @@ jobs:
       # Keep the existing lockfile install deterministic, then overlay the
       # upstream patched release until the dependency refresh is committed.
       - name: Apply patched Next.js runtime
-        run: npm install --no-save --package-lock=false next@16.3.3
+        run: npm install --no-save --package-lock=false next@16.3.6
+
+      - name: Apply non-breaking dependency security fixes
+        run: npm audit fix --package-lock=false
 
       - name: Typecheck frontend
         run: npm run typecheck
