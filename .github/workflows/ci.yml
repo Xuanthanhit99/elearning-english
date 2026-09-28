@@ -83,6 +83,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Next 16.2.11 is affected by 2026 critical RCE advisories.
+      # Keep the existing lockfile install deterministic, then overlay the
+      # upstream patched release until the dependency refresh is committed.
+      - name: Apply patched Next.js runtime
+        run: npm install --no-save --package-lock=false next@16.3.3
+
       - name: Typecheck frontend
         run: npm run typecheck
 
