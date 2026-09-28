@@ -2,6 +2,9 @@ FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
+# Pin the patched Next.js release used by CI. This keeps Railway images clear
+# of the 16.2.11 critical RCE advisories while preserving the current lockfile.
+RUN npm install --no-save --package-lock=false next@16.3.3
 RUN npm install lightningcss-linux-x64-musl @tailwindcss/oxide-linux-x64-musl --no-save
 
 FROM deps AS build
