@@ -14,6 +14,10 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    env:
+      # Prisma schema validation/generation requires DATABASE_URL to exist,
+      # but these CI gates do not connect to a database.
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
     steps:
       - name: Checkout
         uses: actions/checkout@v4
