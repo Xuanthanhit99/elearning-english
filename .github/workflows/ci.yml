@@ -54,7 +54,7 @@ jobs:
         run: npm run build
 
       - name: Run backend tests
-        run: npm test -- --runInBand
+        run: npm test -- --runInBand --silent --logHeapUsage
 
       - name: Audit critical backend dependencies
         run: npm audit --audit-level=critical
