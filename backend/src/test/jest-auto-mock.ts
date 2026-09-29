@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { Test } from '@nestjs/testing';
 
 const originalCreateTestingModule = Test.createTestingModule.bind(Test);
