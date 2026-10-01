@@ -1,10 +1,9 @@
-import { jest } from '@jest/globals';
 import { Test } from '@nestjs/testing';
 
 const originalCreateTestingModule = Test.createTestingModule.bind(Test);
 
-jest.spyOn(Test, 'createTestingModule').mockImplementation((metadata, options) => {
+Test.createTestingModule = ((metadata, options) => {
   const builder = originalCreateTestingModule(metadata, options);
   builder.useMocker(() => ({}));
   return builder;
-});
+}) as typeof Test.createTestingModule;
