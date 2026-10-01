@@ -17,6 +17,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { getJwtAccessSecret } from '../../auth/auth-secrets.util';
 import { JwtStrategy } from '../../auth/strategies/jwt.strategy';
+import { AuthSessionService } from '../../auth/auth-session.service';
 import { RedisIoAdapter } from '../../../realtime/redis-io.adapter';
 import { ArenaModule } from '../arena.module';
 
@@ -62,7 +63,15 @@ export async function buildArenaTestApp() {
       }),
       ArenaModule,
     ],
-    providers: [JwtStrategy],
+    providers: [
+      JwtStrategy,
+      {
+        provide: AuthSessionService,
+        useValue: {
+          isBanned: async () => false,
+        },
+      },
+    ],
   }).compile();
 
   const app = moduleRef.createNestApplication();
