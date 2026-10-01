@@ -9,7 +9,11 @@ class AutoMockConsumer {
 }
 
 describe('jest auto mock infrastructure', () => {
-  it('preserves createTestingModule -> compile -> get contract', async () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it('preserves createTestingModule -> compile -> get contract after resetAllMocks', async () => {
     const module = await Test.createTestingModule({
       providers: [AutoMockConsumer],
     }).compile();
