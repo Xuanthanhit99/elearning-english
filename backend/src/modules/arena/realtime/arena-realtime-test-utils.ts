@@ -18,6 +18,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { getJwtAccessSecret } from '../../auth/auth-secrets.util';
 import { JwtStrategy } from '../../auth/strategies/jwt.strategy';
 import { AuthSessionService } from '../../auth/auth-session.service';
+import { AuthModule } from '../../auth/auth.module';
 import { RedisIoAdapter } from '../../../realtime/redis-io.adapter';
 import { ArenaModule } from '../arena.module';
 
@@ -52,6 +53,7 @@ export async function buildArenaTestApp() {
     imports: [
       EventEmitterModule.forRoot(),
       PrismaModule,
+      AuthModule,
       PassportModule,
       JwtModule.register({ global: true, secret: getJwtAccessSecret() }),
       BullModule.forRoot({
@@ -66,10 +68,10 @@ export async function buildArenaTestApp() {
     providers: [JwtStrategy],
   });
 
-  // AuthSessionService is consumed from multiple imported modules (HTTP JWT
-  // strategy + ArenaGateway). Override the token at the TestingModuleBuilder
-  // level so every consumer in the module graph receives the same test
-  // implementation instead of an auto-mocked {}.
+  // AuthModule is global in production and is the real owner/exporter of
+  // AuthSessionService. Import it in this integration harness so ArenaGateway
+  // resolves the same provider graph as production, then override only its
+  // external session behavior for deterministic tests.
   moduleBuilder.overrideProvider(AuthSessionService).useValue({
     isBanned: async () => false,
   });
