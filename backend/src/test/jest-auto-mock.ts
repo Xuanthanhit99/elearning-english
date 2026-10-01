@@ -1,11 +1,10 @@
 import { jest } from '@jest/globals';
-import { TestingModuleBuilder } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 
-const originalCompile = TestingModuleBuilder.prototype.compile;
+const originalCreateTestingModule = Test.createTestingModule.bind(Test);
 
-jest
-  .spyOn(TestingModuleBuilder.prototype, 'compile')
-  .mockImplementation(async function (this: TestingModuleBuilder, ...args) {
-    this.useMocker(() => ({}));
-    return await originalCompile.apply(this, args);
-  });
+jest.spyOn(Test, 'createTestingModule').mockImplementation((metadata, options) => {
+  const builder = originalCreateTestingModule(metadata, options);
+  builder.useMocker(() => ({}));
+  return builder;
+});
