@@ -48,7 +48,7 @@ import { ArenaModule } from '../arena.module';
  * production.
  */
 export async function buildArenaTestApp() {
-  const moduleRef = await Test.createTestingModule({
+  const moduleBuilder = Test.createTestingModule({
     imports: [
       EventEmitterModule.forRoot(),
       PrismaModule,
@@ -63,16 +63,18 @@ export async function buildArenaTestApp() {
       }),
       ArenaModule,
     ],
-    providers: [
-      JwtStrategy,
-      {
-        provide: AuthSessionService,
-        useValue: {
-          isBanned: async () => false,
-        },
-      },
-    ],
-  }).compile();
+    providers: [JwtStrategy],
+  });
+
+  // AuthSessionService is consumed from multiple imported modules (HTTP JWT
+  // strategy + ArenaGateway). Override the token at the TestingModuleBuilder
+  // level so every consumer in the module graph receives the same test
+  // implementation instead of an auto-mocked {}.
+  moduleBuilder.overrideProvider(AuthSessionService).useValue({
+    isBanned: async () => false,
+  });
+
+  const moduleRef = await moduleBuilder.compile();
 
   const app = moduleRef.createNestApplication();
   const redisIoAdapter = new RedisIoAdapter(app);
