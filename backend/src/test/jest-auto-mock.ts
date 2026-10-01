@@ -5,7 +5,7 @@ const originalCompile = TestingModuleBuilder.prototype.compile;
 
 jest
   .spyOn(TestingModuleBuilder.prototype, 'compile')
-  .mockImplementation(function (this: TestingModuleBuilder, ...args) {
+  .mockImplementation(async function (this: TestingModuleBuilder, ...args) {
     this.useMocker(() => ({}));
-    return originalCompile.apply(this, args);
+    return await originalCompile.apply(this, args);
   });
