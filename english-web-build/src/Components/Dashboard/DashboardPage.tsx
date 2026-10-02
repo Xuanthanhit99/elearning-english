@@ -155,7 +155,7 @@ function dashboardCta(data: DashboardData) {
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-5 pb-8 sm:space-y-6 sm:pb-10">
       <BeaconVieSkeleton className="h-[360px] rounded-[2rem]" />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }).map((_, index) => (
@@ -310,7 +310,7 @@ export default function DashboardPage() {
       <AchievementCelebration data={data} />
       <WelcomeHero data={data} dailyPercent={dailyPercent} cta={cta} />
 
-      <section aria-label="Quick stats" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section aria-label="Chỉ số nhanh" className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <BeaconVieStatCard
           icon={<Flame aria-hidden className="h-5 w-5" />}
           label={dict.header.streak}
@@ -341,7 +341,7 @@ export default function DashboardPage() {
 
       {data.quickActions.length > 0 ? <QuickActions actions={data.quickActions} /> : null}
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_390px]">
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:gap-6">
         <div className="space-y-6">
           <SkillsPanel data={data} />
           <SkillRadarPanel />
@@ -351,7 +351,7 @@ export default function DashboardPage() {
           <RecentActivityPanel data={data} locale={locale} />
         </div>
 
-        <aside className="space-y-6">
+        <aside className="space-y-5 xl:space-y-6">
           <AiCoachPanel />
           <MissionsPanel missions={data.todayMissions.items} summary={dailySummary} />
           <TodayGoalPanel data={data} dailyPercent={dailyPercent} />
