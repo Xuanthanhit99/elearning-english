@@ -46,6 +46,13 @@ jobs:
       VISUAL_WEB_URL: http://127.0.0.1:3000
       VISUAL_API_URL: http://127.0.0.1:3002
       NODE_ENV: test
+      GOOGLE_CLIENT_ID: visual-ci-google-client-id
+      GOOGLE_CLIENT_SECRET: visual-ci-google-client-secret
+      GOOGLE_CALLBACK_URL: http://127.0.0.1:3002/auth/google/callback
+      FACEBOOK_APP_ID: visual-ci-facebook-app-id
+      FACEBOOK_APP_SECRET: visual-ci-facebook-app-secret
+      FACEBOOK_CALLBACK_URL: http://127.0.0.1:3002/auth/facebook/callback
+      GEMINI_API_KEY: visual-ci-placeholder
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -76,9 +83,18 @@ jobs:
       - name: Start API
         working-directory: backend
         run: nohup node dist/src/main.js > /tmp/beaconvie-api.log 2>&1 &
-      - name: Start Web
+      - name: Prepare standalone Web runtime
         working-directory: english-web-build
-        run: nohup npm start -- -H 127.0.0.1 -p 3000 > /tmp/beaconvie-web.log 2>&1 &
+        run: |
+          cp -r public .next/standalone/public
+          mkdir -p .next/standalone/.next
+          cp -r .next/static .next/standalone/.next/static
+      - name: Start Web
+        working-directory: english-web-build/.next/standalone
+        env:
+          HOSTNAME: 127.0.0.1
+          PORT: 3000
+        run: nohup node server.js > /tmp/beaconvie-web.log 2>&1 &
       - name: Wait for services
         shell: bash
         run: |
