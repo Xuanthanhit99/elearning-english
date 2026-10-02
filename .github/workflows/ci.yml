@@ -81,7 +81,7 @@ jobs:
         run: npm run build
 
       - name: Run backend tests
-        run: npm test -- --runInBand --forceExit --forceExit
+        run: npm test -- --runInBand --forceExit
 
       - name: Audit critical backend dependencies
         run: npm audit --audit-level=critical
