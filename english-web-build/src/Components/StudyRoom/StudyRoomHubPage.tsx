@@ -74,7 +74,7 @@ export default function StudyRoomHubPage() {
         title="Học cùng nhau theo thời gian thực"
         description="Khám phá phòng học đang có, tham gia bằng mã mời hoặc tạo phòng mới. Số thành viên, trạng thái và mục tiêu hiển thị từ dữ liệu Study Rooms hiện tại."
         action={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <BeaconVieButton tone="soft" onClick={() => setShowJoinCode(true)}>
               <KeyRound aria-hidden className="h-4 w-4" />
               Nhập mã mời
@@ -93,11 +93,13 @@ export default function StudyRoomHubPage() {
         </div>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex gap-2" role="tablist" aria-label="Danh sách phòng học">
         {(["BROWSE", "MINE"] as const).map((key) => (
           <button
             key={key}
             type="button"
+            role="tab"
+            aria-selected={tab === key}
             onClick={() => setTab(key)}
             className={`rounded-full px-4 py-2 text-sm font-black transition ${
               tab === key
@@ -218,20 +220,26 @@ function CreateRoomDialog({
         Tạo phòng học nhóm
       </h2>
       <div className="mt-4 space-y-3">
-        <input
-          className="w-full rounded-xl border border-[var(--BeaconVie-border)] bg-transparent px-3 py-2 text-sm font-semibold"
-          placeholder="Tên phòng học"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <input
-          className="w-full rounded-xl border border-[var(--BeaconVie-border)] bg-transparent px-3 py-2 text-sm font-semibold"
-          placeholder="Chủ đề (không bắt buộc)"
-          value={topic}
-          onChange={(e) => setTopic(e.target.value)}
-        />
-        <div className="flex gap-3">
-          <label className="flex-1 text-xs font-bold text-[var(--BeaconVie-muted)]">
+        <label className="block text-xs font-bold text-[var(--BeaconVie-muted)]">
+          Tên phòng học
+          <input
+            className="mt-1 w-full rounded-xl border border-[var(--BeaconVie-border)] bg-transparent px-3 py-2 text-sm font-semibold"
+            placeholder="Ví dụ: Speaking B1 buổi tối"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </label>
+        <label className="block text-xs font-bold text-[var(--BeaconVie-muted)]">
+          Chủ đề <span className="font-semibold">(không bắt buộc)</span>
+          <input
+            className="mt-1 w-full rounded-xl border border-[var(--BeaconVie-border)] bg-transparent px-3 py-2 text-sm font-semibold"
+            placeholder="Ví dụ: Hội thoại du lịch"
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+          />
+        </label>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="min-w-0 text-xs font-bold text-[var(--BeaconVie-muted)]">
             Mục tiêu (phút)
             <input
               type="number"
@@ -242,7 +250,7 @@ function CreateRoomDialog({
               onChange={(e) => setGoalMinutes(Number(e.target.value))}
             />
           </label>
-          <label className="flex-1 text-xs font-bold text-[var(--BeaconVie-muted)]">
+          <label className="min-w-0 text-xs font-bold text-[var(--BeaconVie-muted)]">
             Số thành viên tối đa
             <input
               type="number"
@@ -309,6 +317,7 @@ function JoinByCodeDialog({
       </h2>
       <div className="mt-4 space-y-3">
         <input
+          aria-label="Mã mời phòng học"
           className="w-full rounded-xl border border-[var(--BeaconVie-border)] bg-transparent px-3 py-2 text-sm font-semibold uppercase"
           placeholder="Nhập mã mời"
           value={code}
