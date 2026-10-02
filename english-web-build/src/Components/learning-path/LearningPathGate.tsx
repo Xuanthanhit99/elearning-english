@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import { Loader2 } from 'lucide-react';
+import { BeaconVieCard, BeaconVieState } from '@/src/Components/UI/BeaconVie';
 import { useRouter } from 'next/navigation';
 import {
   ReactNode,
@@ -23,6 +24,7 @@ export default function LearningPathGate({
   const [access, setAccess] =
     useState<LearningPathAccessData | null>(null);
   const [error, setError] = useState('');
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     void (async () => {
@@ -49,18 +51,19 @@ export default function LearningPathGate({
         );
       }
     })();
-  }, [router]);
+  }, [router, retryKey]);
 
   if (error) {
     return (
-      <main className="flex min-h-[70vh] items-center justify-center p-6">
-        <div className="w-full max-w-md rounded-3xl border border-red-100 bg-white p-8 text-center shadow-sm">
-          <p className="font-black text-slate-900">
-            Không thể mở lộ trình học
-          </p>
-          <p className="mt-3 text-sm leading-6 text-red-600">
-            {error}
-          </p>
+      <main className="flex min-h-[70vh] items-center justify-center p-4 sm:p-6">
+        <div className="w-full max-w-lg">
+          <BeaconVieState
+            title="Không thể mở lộ trình học"
+            description={error}
+            actionLabel="Thử lại"
+            tone="error"
+            onAction={() => setRetryKey((value) => value + 1)}
+          />
         </div>
       </main>
     );
@@ -68,18 +71,16 @@ export default function LearningPathGate({
 
   if (!access || !access.allowed) {
     return (
-      <main className="flex min-h-[70vh] items-center justify-center p-6">
-        <div className="text-center">
-          <Loader2 className="mx-auto h-10 w-10 animate-spin text-violet-600" />
-          <p className="mt-4 font-black text-slate-900">
+      <main className="flex min-h-[70vh] items-center justify-center p-4 sm:p-6" aria-live="polite">
+        <BeaconVieCard className="w-full max-w-md p-6 text-center sm:p-8">
+          <Loader2 aria-hidden className="mx-auto h-9 w-9 animate-spin text-[var(--BeaconVie-primary)]" />
+          <p className="mt-4 text-lg font-black text-[var(--BeaconVie-ink)]">
             Đang kiểm tra lộ trình học...
           </p>
-          {access?.message ? (
-            <p className="mt-2 text-sm text-slate-500">
-              {access.message}
-            </p>
-          ) : null}
-        </div>
+          <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
+            {access?.message ?? 'Đang đồng bộ quyền truy cập và tiến độ của bạn.'}
+          </p>
+        </BeaconVieCard>
       </main>
     );
   }

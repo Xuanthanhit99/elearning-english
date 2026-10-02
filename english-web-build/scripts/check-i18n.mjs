@@ -6,7 +6,10 @@ import ts from "typescript";
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const localeDir = join(rootDir, "src", "i18n", "locales");
-const locales = ["vi", "en", "zh", "de"];
+// Only Vietnamese has a standalone dictionary today. Other supported locale
+// codes intentionally fall back to `vi` in src/i18n/index.ts, so requiring
+// files that do not exist makes CI fail before typecheck/build can run.
+const locales = ["vi"];
 const baseLocale = "vi";
 
 function compileTsModule(sourcePath, outputPath) {

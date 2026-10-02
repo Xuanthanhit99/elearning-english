@@ -6,7 +6,7 @@
 // prove anything.
 import { randomUUID } from 'crypto';
 import { BullModule } from '@nestjs/bullmq';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { Global, INestApplication, Module, ValidationPipe } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
@@ -17,8 +17,20 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { getJwtAccessSecret } from '../../auth/auth-secrets.util';
 import { JwtStrategy } from '../../auth/strategies/jwt.strategy';
+import { AuthSessionService } from '../../auth/auth-session.service';
 import { RedisIoAdapter } from '../../../realtime/redis-io.adapter';
 import { ArenaModule } from '../arena.module';
+
+const arenaTestAuthSession = {
+  isBanned: async () => false,
+};
+
+@Global()
+@Module({
+  providers: [{ provide: AuthSessionService, useValue: arenaTestAuthSession }],
+  exports: [AuthSessionService],
+})
+class ArenaTestAuthModule {}
 
 /**
  * Boots a real NestJS app with real Postgres (PrismaModule) and real Redis
@@ -47,10 +59,11 @@ import { ArenaModule } from '../arena.module';
  * production.
  */
 export async function buildArenaTestApp() {
-  const moduleRef = await Test.createTestingModule({
+  const moduleBuilder = Test.createTestingModule({
     imports: [
       EventEmitterModule.forRoot(),
       PrismaModule,
+      ArenaTestAuthModule,
       PassportModule,
       JwtModule.register({ global: true, secret: getJwtAccessSecret() }),
       BullModule.forRoot({
@@ -63,7 +76,9 @@ export async function buildArenaTestApp() {
       ArenaModule,
     ],
     providers: [JwtStrategy],
-  }).compile();
+  });
+
+  const moduleRef = await moduleBuilder.compile();
 
   const app = moduleRef.createNestApplication();
   const redisIoAdapter = new RedisIoAdapter(app);
