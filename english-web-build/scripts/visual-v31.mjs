@@ -1,10 +1,11 @@
-import { chromium } from "playwright";
+import { chromium, request as playwrightRequest } from "playwright";
 import fs from "node:fs/promises";
 
 const WEB = process.env.VISUAL_WEB_URL || "http://127.0.0.1:3000";
 const API = process.env.VISUAL_API_URL || "http://127.0.0.1:3002";
 const email = "visual-v31@beaconvie.test";
 const password = "VisualGate2026!";
+const statePath = "artifacts/visual-v31/auth-state.json";
 const surfaces = [
   ["home", "/dashboard"],
   ["practice", "/learn"],
@@ -15,7 +16,8 @@ const surfaces = [
 
 await fs.mkdir("artifacts/visual-v31", { recursive: true });
 
-async function prepareAuth(request) {
+async function createAuthState() {
+  const request = await playwrightRequest.newContext();
   const register = await request.post(API + "/auth/register", {
     data: { fullName: "Visual V3.1", email, password },
   });
@@ -26,12 +28,19 @@ async function prepareAuth(request) {
     data: { email, password, rememberMe: false },
   });
   if (!login.ok()) throw new Error("Visual fixture login failed: " + login.status());
+  await request.storageState({ path: statePath });
+  await request.dispose();
 }
+
+await createAuthState();
 
 async function capture(name, path, viewport) {
   const browser = await chromium.launch();
-  const context = await browser.newContext({ viewportSize: viewport });
-  await prepareAuth(context.request);
+  const context = await browser.newContext({
+    viewport,
+    storageState: statePath,
+    reducedMotion: "reduce",
+  });
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", (error) => errors.push(String(error)));
@@ -51,8 +60,11 @@ for (const [label, path] of surfaces) {
 // Focus Lesson must be reached from the real Learning Path UI rather than a fabricated lesson id.
 for (const [prefix, viewport] of [["desktop", { width: 1440, height: 1000 }], ["mobile", { width: 390, height: 844 }]]) {
   const browser = await chromium.launch();
-  const context = await browser.newContext({ viewportSize: viewport });
-  await prepareAuth(context.request);
+  const context = await browser.newContext({
+    viewport,
+    storageState: statePath,
+    reducedMotion: "reduce",
+  });
   const page = await context.newPage();
   await page.goto(WEB + "/learning-path", { waitUntil: "networkidle", timeout: 45_000 });
   const lessonLink = page.locator('a[href*="/learning-path/"]').first();
