@@ -140,11 +140,11 @@ export default function LearningPathLessonPage() {
   const started = lesson.status === "IN_PROGRESS" || completed;
 
   return (
-    <main className="min-h-screen px-3 py-5 sm:px-4 sm:py-6">
-      <div className="mx-auto max-w-5xl space-y-5">
+    <main className="min-h-screen px-1 py-2 sm:px-4 sm:py-5">
+      <div className="mx-auto max-w-3xl space-y-4 sm:space-y-5">
         <Link
           href="/learning-path"
-          className="BeaconVie-button-soft inline-flex min-h-11 items-center gap-2 px-4 py-2 font-black"
+          className="inline-flex min-h-11 items-center gap-2 rounded-2xl px-3 py-2 text-sm font-black text-[var(--BeaconVie-muted)] transition hover:bg-[var(--BeaconVie-hover-tint)] hover:text-[var(--BeaconVie-primary)]"
         >
           <ArrowLeft size={17} />
           Quay lại lộ trình
@@ -156,8 +156,8 @@ export default function LearningPathLessonPage() {
           </div>
         ) : null}
 
-        <section className="BeaconVie-surface rounded-[30px] p-5 shadow-sm sm:p-7">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+        <section className="BeaconVie-surface rounded-[26px] p-5 shadow-sm sm:rounded-[30px] sm:p-7">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="font-black text-[var(--BeaconVie-primary)]">{lesson.sectionTitle}</p>
               <h1 className="mt-2 text-3xl font-black text-[var(--BeaconVie-ink)] sm:text-4xl">{lesson.title}</h1>
@@ -167,47 +167,35 @@ export default function LearningPathLessonPage() {
               </p>
             </div>
 
-            <div className="rounded-3xl bg-[var(--BeaconVie-primary-soft)] p-5 text-center">
-              <p className="text-3xl font-black text-[var(--BeaconVie-primary)]">
+            <div className="rounded-2xl bg-[var(--BeaconVie-primary-soft)] px-4 py-3 text-left sm:text-center">
+              <p className="text-2xl font-black text-[var(--BeaconVie-primary)]">
                 {data.learningPath.progressPercent}%
               </p>
               <p className="text-sm font-bold text-[var(--BeaconVie-muted)]">Tiến độ lộ trình</p>
             </div>
           </div>
 
-          <div className="mt-8 rounded-3xl bg-[var(--BeaconVie-card-soft)] p-5 sm:p-6">
-            <h2 className="text-2xl font-black text-[var(--BeaconVie-ink)]">Nội dung bài học</h2>
-            <p className="mt-3 leading-7 text-[var(--BeaconVie-muted)]">
-              Bài học này nằm trong lộ trình học của bạn. Hãy học nội dung theo
-              phần tương ứng, sau đó đánh dấu hoàn thành để mở khoá bài tiếp
-              theo và đồng bộ tiến độ trên trang tổng quan.
+          <div className="mt-6 rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-5 sm:p-6">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--BeaconVie-primary)]">Focus lesson</p>
+            <h2 className="mt-2 text-xl font-black text-[var(--BeaconVie-ink)]">Tập trung vào một bài học</h2>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
+              {started
+                ? "Bạn đang học bài này. Hoàn thành khi đã thực hiện xong nội dung của bài để mở bước tiếp theo."
+                : "Bắt đầu bài để ghi nhận trạng thái học. Sau khi hoàn thành, lộ trình sẽ tự mở bước tiếp theo nếu có."}
             </p>
-
-            <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl bg-white p-4">
-                <p className="text-sm font-bold text-slate-500">Trạng thái</p>
-                <p className="mt-1 font-black text-slate-950">{lessonStatusLabels[lesson.status] ?? lesson.status}</p>
-              </div>
-              <div className="rounded-2xl bg-white p-4">
-                <p className="text-sm font-bold text-slate-500">Đã học</p>
-                <p className="mt-1 font-black text-slate-950">
-                  {data.learningPath.completedLessons}/{data.learningPath.totalLessons}
-                </p>
-              </div>
-              <div className="rounded-2xl bg-white p-4">
-                <p className="text-sm font-bold text-slate-500">Khoá học</p>
-                <p className="mt-1 truncate font-black text-slate-950">{lesson.courseSlug}</p>
-              </div>
+            <div className="mt-4 flex flex-wrap gap-2 text-xs font-black text-[var(--BeaconVie-muted)]">
+              <span className="rounded-full bg-white px-3 py-2">{lessonStatusLabels[lesson.status] ?? lesson.status}</span>
+              <span className="rounded-full bg-white px-3 py-2">{data.learningPath.completedLessons}/{data.learningPath.totalLessons} bài đã hoàn thành</span>
             </div>
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             {!started ? (
               <button
                 type="button"
                 onClick={handleStart}
                 disabled={saving}
-                className="BeaconVie-button-primary inline-flex min-h-12 items-center gap-2 px-6 py-3 font-black disabled:opacity-60"
+                className="BeaconVie-button-primary inline-flex min-h-12 w-full items-center justify-center gap-2 px-6 py-3 font-black disabled:opacity-60 sm:w-auto"
               >
                 {saving ? <Loader2 className="animate-spin" size={18} /> : null}
                 Bắt đầu bài học
@@ -218,7 +206,7 @@ export default function LearningPathLessonPage() {
               type="button"
               onClick={handleComplete}
               disabled={saving || completed}
-              className="BeaconVie-button-primary inline-flex min-h-12 items-center gap-2 px-6 py-3 font-black disabled:opacity-60"
+              className="BeaconVie-button-primary inline-flex min-h-12 w-full items-center justify-center gap-2 px-6 py-3 font-black disabled:opacity-60 sm:w-auto"
             >
               {saving ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle2 size={18} />}
               {completed ? "Đã hoàn thành" : "Đánh dấu hoàn thành"}
@@ -228,7 +216,7 @@ export default function LearningPathLessonPage() {
               <button
                 type="button"
                 onClick={() => router.push(data.learningPath.nextLesson?.href ?? "/learning-path")}
-                className="BeaconVie-button-soft inline-flex min-h-12 items-center gap-2 px-6 py-3 font-black text-[var(--BeaconVie-primary)]"
+                className="BeaconVie-button-soft inline-flex min-h-12 w-full items-center justify-center gap-2 px-6 py-3 font-black text-[var(--BeaconVie-primary)] sm:w-auto"
               >
                 Bài tiếp theo
               </button>
