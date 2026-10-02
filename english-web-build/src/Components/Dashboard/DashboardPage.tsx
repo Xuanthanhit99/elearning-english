@@ -2,6 +2,7 @@
 
 import {
   Award,
+  Compass,
   Bell,
   BookOpen,
   CalendarDays,
@@ -11,6 +12,8 @@ import {
   FileText,
   Flame,
   Headphones,
+  Gamepad2,
+  MessageCircle,
   Mic2,
   PawPrint,
   Play,
@@ -339,7 +342,58 @@ export default function DashboardPage() {
         />
       </section>
 
-      {data.quickActions.length > 0 ? <QuickActions actions={data.quickActions} /> : null}
+      <section aria-labelledby="today-intents-title">
+        <div className="mb-3 flex items-end justify-between gap-3">
+          <div>
+            <h2 id="today-intents-title" className="text-xl font-black text-[var(--BeaconVie-ink)]">
+              Bạn muốn làm gì tiếp theo?
+            </h2>
+            <p className="mt-1 text-sm font-bold text-[var(--BeaconVie-muted)]">
+              Học theo lộ trình hoặc chủ động chọn cách học phù hợp với bạn lúc này.
+            </p>
+          </div>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {[
+            { title: "Tiếp tục lộ trình", description: "Học bài tiếp theo theo kế hoạch cá nhân.", href: "/learning-path", icon: Compass },
+            { title: "Luyện tập kỹ năng", description: "Chọn kỹ năng để luyện nhanh theo nhu cầu.", href: "/learn", icon: Headphones },
+            { title: "Game tiếng Anh", description: "Học qua thử thách và chế độ chơi hiện có.", href: "/arena", icon: Gamepad2 },
+            { title: "Học cùng nhau", description: "Tham gia phòng học và luyện tập cùng người khác.", href: "/study-rooms", icon: MessageCircle },
+          ].map((intent) => {
+            const Icon = intent.icon;
+            return (
+              <Link
+                key={intent.href}
+                href={intent.href}
+                className="group BeaconVie-card flex min-w-0 items-start gap-3 p-4 transition hover:-translate-y-0.5 hover:border-blue-200"
+              >
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]">
+                  <Icon aria-hidden size={20} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-black text-[var(--BeaconVie-ink)]">{intent.title}</span>
+                  <span className="mt-1 block text-sm font-bold leading-5 text-[var(--BeaconVie-muted)]">{intent.description}</span>
+                </span>
+                <ChevronRight aria-hidden className="mt-1 shrink-0 text-[var(--BeaconVie-muted)] transition group-hover:text-[var(--BeaconVie-primary)]" size={18} />
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {data.quickActions.length > 0 ? (
+        <section aria-labelledby="today-recommendations-title">
+          <div className="mb-3">
+            <h2 id="today-recommendations-title" className="text-xl font-black text-[var(--BeaconVie-ink)]">
+              Đề xuất hôm nay cho bạn
+            </h2>
+            <p className="mt-1 text-sm font-bold text-[var(--BeaconVie-muted)]">
+              Dựa trên các hành động học mà hệ thống hiện có cho tài khoản của bạn.
+            </p>
+          </div>
+          <QuickActions actions={data.quickActions} />
+        </section>
+      ) : null}
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:gap-6">
         <div className="space-y-6">
