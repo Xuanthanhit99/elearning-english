@@ -343,18 +343,18 @@ export default function DashboardPage() {
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:gap-6">
         <div className="space-y-6">
+          <LearningPathPanel data={data} />
           <SkillsPanel data={data} />
           <SkillRadarPanel />
-          <LearningPathPanel data={data} />
           <WeeklyActivityPanel data={data} locale={locale} maxWeeklyXp={maxWeeklyXp} />
           <StudyHeatmapPanel />
           <RecentActivityPanel data={data} locale={locale} />
         </div>
 
         <aside className="space-y-5 xl:space-y-6">
-          <AiCoachPanel />
-          <MissionsPanel missions={data.todayMissions.items} summary={dailySummary} />
           <TodayGoalPanel data={data} dailyPercent={dailyPercent} />
+          <MissionsPanel missions={data.todayMissions.items} summary={dailySummary} />
+          <AiCoachPanel />
           <LeaderboardPanel state={leaderboard} />
           <PetPanel data={data} />
           <AchievementsPanel data={data} />

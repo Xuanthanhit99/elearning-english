@@ -327,6 +327,7 @@ export default function AppHeader({
           <button
             type="button"
             aria-expanded={profileOpen}
+            aria-controls="app-header-profile-menu"
             aria-label={t("header.account")}
             onClick={() => setProfileOpen((open) => !open)}
             className="BeaconVie-button-soft h-12 gap-2 px-2.5 text-left"
@@ -359,7 +360,7 @@ export default function AppHeader({
           </button>
 
           {profileOpen && (
-            <div className="BeaconVie-surface absolute right-0 top-14 z-50 w-[min(14rem,calc(100vw-1.5rem))] rounded-3xl p-2">
+            <div id="app-header-profile-menu" className="BeaconVie-surface absolute right-0 top-14 z-50 w-[min(14rem,calc(100vw-1.5rem))] rounded-3xl p-2">
               <DropdownLink href="/profile" icon={<User size={16} />}>
                 {t("header.profile")}
               </DropdownLink>

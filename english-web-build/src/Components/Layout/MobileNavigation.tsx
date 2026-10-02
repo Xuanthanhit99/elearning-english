@@ -1,12 +1,12 @@
 ﻿"use client";
 
-import { BookOpen, Home, Menu, Target, Trophy } from "lucide-react";
+import { Compass, Home, Menu, Target, Trophy } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const primaryItems = [
   { label: "Tổng quan", href: "/dashboard", icon: Home },
-  { label: "Học tập", href: "/learn", icon: BookOpen },
+  { label: "Lộ trình", href: "/learning-path", icon: Compass },
   { label: "Nhiệm vụ", href: "/missions", icon: Target },
   { label: "Xếp hạng", href: "/leaderboard", icon: Trophy },
 ];
