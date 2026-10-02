@@ -6,7 +6,7 @@
 // prove anything.
 import { randomUUID } from 'crypto';
 import { BullModule } from '@nestjs/bullmq';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { Global, INestApplication, Module, ValidationPipe } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
@@ -18,9 +18,19 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { getJwtAccessSecret } from '../../auth/auth-secrets.util';
 import { JwtStrategy } from '../../auth/strategies/jwt.strategy';
 import { AuthSessionService } from '../../auth/auth-session.service';
-import { AuthModule } from '../../auth/auth.module';
 import { RedisIoAdapter } from '../../../realtime/redis-io.adapter';
 import { ArenaModule } from '../arena.module';
+
+const arenaTestAuthSession = {
+  isBanned: async () => false,
+};
+
+@Global()
+@Module({
+  providers: [{ provide: AuthSessionService, useValue: arenaTestAuthSession }],
+  exports: [AuthSessionService],
+})
+class ArenaTestAuthModule {}
 
 /**
  * Boots a real NestJS app with real Postgres (PrismaModule) and real Redis
@@ -53,7 +63,7 @@ export async function buildArenaTestApp() {
     imports: [
       EventEmitterModule.forRoot(),
       PrismaModule,
-      AuthModule,
+      ArenaTestAuthModule,
       PassportModule,
       JwtModule.register({ global: true, secret: getJwtAccessSecret() }),
       BullModule.forRoot({
@@ -66,14 +76,6 @@ export async function buildArenaTestApp() {
       ArenaModule,
     ],
     providers: [JwtStrategy],
-  });
-
-  // AuthModule is global in production and is the real owner/exporter of
-  // AuthSessionService. Import it in this integration harness so ArenaGateway
-  // resolves the same provider graph as production, then override only its
-  // external session behavior for deterministic tests.
-  moduleBuilder.overrideProvider(AuthSessionService).useValue({
-    isBanned: async () => false,
   });
 
   const moduleRef = await moduleBuilder.compile();
