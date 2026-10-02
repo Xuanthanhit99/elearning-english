@@ -1,0 +1,103 @@
+name: Visual V3.1
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  visual-v31:
+    name: Desktop + Mobile visual evidence
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci
+      REDIS_HOST: 127.0.0.1
+      REDIS_PORT: 6379
+      REDIS_URL: redis://127.0.0.1:6379
+      JWT_ACCESS_SECRET: visual-ci-access-secret-at-least-32-characters
+      JWT_REFRESH_SECRET: visual-ci-refresh-secret-at-least-32-characters
+      FRONTEND_URL: http://127.0.0.1:3000
+      CORS_ORIGINS: http://127.0.0.1:3000,http://localhost:3000
+      NEXT_PUBLIC_API_URL: http://127.0.0.1:3002
+      NEXT_PUBLIC_SOCKET_URL: http://127.0.0.1:3002
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+      VISUAL_WEB_URL: http://127.0.0.1:3000
+      VISUAL_API_URL: http://127.0.0.1:3002
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            english-web-build/package-lock.json
+      - name: Install backend
+        working-directory: backend
+        run: npm ci
+      - name: Prepare database and backend
+        working-directory: backend
+        run: |
+          npx prisma generate
+          npx prisma migrate deploy
+          npm run build
+      - name: Install frontend
+        working-directory: english-web-build
+        run: npm ci
+      - name: Install Chromium
+        working-directory: english-web-build
+        run: npx playwright install --with-deps chromium
+      - name: Build frontend
+        working-directory: english-web-build
+        run: npm run build
+      - name: Start API
+        working-directory: backend
+        run: nohup node dist/src/main.js > /tmp/beaconvie-api.log 2>&1 &
+      - name: Start Web
+        working-directory: english-web-build
+        run: nohup npm start -- -H 127.0.0.1 -p 3000 > /tmp/beaconvie-web.log 2>&1 &
+      - name: Wait for services
+        shell: bash
+        run: |
+          for i in {1..60}; do curl -fsS http://127.0.0.1:3002/ >/dev/null 2>&1 && break; sleep 2; done
+          for i in {1..60}; do curl -fsS http://127.0.0.1:3000/ >/dev/null 2>&1 && break; sleep 2; done
+          curl -fsS http://127.0.0.1:3000/ >/dev/null
+      - name: Capture V3.1 evidence
+        working-directory: english-web-build
+        run: node scripts/visual-v31.mjs
+      - name: Upload Desktop + Mobile screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-v31-desktop-mobile
+          path: english-web-build/artifacts/visual-v31/*.png
+          if-no-files-found: error
+          retention-days: 14
+      - name: Print service logs on failure
+        if: failure()
+        run: |
+          echo "=== API ==="; tail -200 /tmp/beaconvie-api.log || true
+          echo "=== WEB ==="; tail -200 /tmp/beaconvie-web.log || true
