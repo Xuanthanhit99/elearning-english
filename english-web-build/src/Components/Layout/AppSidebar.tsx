@@ -15,6 +15,7 @@ import {
   Home,
   Landmark,
   MessageCircle,
+  Gamepad2,
   Mic2,
   NotebookPen,
   Settings,
@@ -54,51 +55,31 @@ type AppSidebarProps = {
 function buildGroups(t: (key: string) => string, role?: string | null): SidebarGroup[] {
   const groups: SidebarGroup[] = [
     {
-      title: "Chính",
+      title: "Học hôm nay",
       items: [
-        { label: t("sidebar.home"), href: "/dashboard", icon: Home },
-        { label: t("sidebar.todayLesson"), href: "/learn", icon: BookOpen },
+        { label: "Hôm nay", href: "/dashboard", icon: Home },
         { label: t("sidebar.learningPath"), href: "/learning-path", icon: Compass },
-        { label: t("sidebar.placement"), href: "/placement", icon: Compass }
+        { label: "Luyện tập", href: "/learn", icon: BookOpen },
       ],
     },
     {
-      title: t("sidebar.groupSkills"),
+      title: "Khám phá",
       items: [
-        { label: t("sidebar.vocabulary"), href: "/vocabulary", icon: BookOpen },
-        { label: "Ngữ pháp", href: "/grammar", icon: CheckCircle2 },
-        { label: t("sidebar.listening"), href: "/listening", icon: Headphones },
-        { label: t("sidebar.speaking"), href: "/speaking", icon: Mic2 },
-        { label: t("sidebar.reading"), href: "/reading", icon: Landmark },
-        { label: t("sidebar.writing"), href: "/writing", icon: NotebookPen },
+        { label: "Game tiếng Anh", href: "/arena", icon: Gamepad2 },
+        { label: "Học cùng nhau", href: "/study-rooms", icon: MessageCircle },
+        { label: t("sidebar.community"), href: "/community", icon: Users },
+        { label: t("sidebar.progress"), href: "/progress", icon: TrendingUp },
       ],
     },
     {
-      title: "Tương tác",
+      title: "Thêm",
       items: [
         { label: t("sidebar.missions"), href: "/missions", icon: Trophy },
-        { label: t("sidebar.community"), href: "/community", icon: Users },
         { label: t("sidebar.leaderboard"), href: "/leaderboard", icon: Trophy },
-        { label: t("header.achievements"), href: "/achievements", icon: CheckCircle2 },
-      ],
-    },
-    {
-      title: "Đồng hành",
-      items: [
-        { label: t("sidebar.Arena"), href: "/arena", icon: MessageCircle },
-        { label: t("sidebar.discover"), href: "/discover", icon: Compass },
-        { label: t("sidebar.studyRooms"), href: "/study-rooms", icon: MessageCircle },
-      ],
-    },
-    {
-      title: t("sidebar.groupSystem"),
-      items: [
-        { label: t("sidebar.analytics"), href: "/analytics", icon: BarChart3 },
-        { label: t("sidebar.progress"), href: "/progress", icon: TrendingUp },
+        { label: t("sidebar.placement"), href: "/placement", icon: Compass },
         { label: t("sidebar.history"), href: "/history", icon: History },
         { label: t("header.notifications"), href: "/notifications", icon: Bell },
         { label: t("sidebar.settings"), href: "/settings", icon: Settings },
-        // { label: t("sidebar.admin"), href: "/admin", icon: ShieldCheck },
       ],
     },
   ];
