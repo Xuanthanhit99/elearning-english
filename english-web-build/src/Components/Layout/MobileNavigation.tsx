@@ -39,7 +39,7 @@ export default function MobileNavigation({
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={[
-                "flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[11px] font-black transition",
+                "flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[11px] font-black transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--BeaconVie-primary)] focus-visible:ring-offset-2",
                 active
                   ? "bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]"
                   : "text-[var(--BeaconVie-muted)] hover:bg-[var(--BeaconVie-hover-tint)] hover:text-[var(--BeaconVie-primary)]",
@@ -55,7 +55,7 @@ export default function MobileNavigation({
           type="button"
           aria-label="Mở toàn bộ menu"
           onClick={onOpenMenu}
-          className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[11px] font-black text-[var(--BeaconVie-muted)] transition hover:bg-[var(--BeaconVie-hover-tint)] hover:text-[var(--BeaconVie-primary)]"
+          className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[11px] font-black text-[var(--BeaconVie-muted)] transition hover:bg-[var(--BeaconVie-hover-tint)] hover:text-[var(--BeaconVie-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--BeaconVie-primary)] focus-visible:ring-offset-2"
         >
           <Menu aria-hidden className="h-5 w-5" strokeWidth={2.5} />
           <span>Thêm</span>
