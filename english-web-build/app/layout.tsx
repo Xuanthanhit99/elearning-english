@@ -21,9 +21,25 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_SITE_URL || "https://beaconvie.com",
   ),
   applicationName: "BeaconVie",
-  title: "BeaconVie",
+  title: {
+    default: "BeaconVie - Học tiếng Anh cùng AI",
+    template: "%s | BeaconVie",
+  },
   description:
     "BeaconVie là nền tảng học tiếng Anh ứng dụng AI, cá nhân hóa lộ trình và đồng hành cùng người học mỗi ngày.",
+  keywords: [
+    "học tiếng Anh",
+    "học tiếng Anh online",
+    "AI học tiếng Anh",
+    "lộ trình học tiếng Anh",
+    "kiểm tra trình độ tiếng Anh",
+    "luyện nghe tiếng Anh",
+    "luyện nói tiếng Anh",
+  ],
+  authors: [{ name: "BeaconVie" }],
+  creator: "BeaconVie",
+  publisher: "BeaconVie",
+  category: "education",
   manifest: "/manifest.json",
   icons: {
     icon: [
