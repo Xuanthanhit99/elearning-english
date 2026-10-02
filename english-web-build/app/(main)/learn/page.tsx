@@ -25,7 +25,7 @@ export default function PracticeHubPage() {
         {practiceItems.map((item) => {
           const Icon = item.icon;
           return (
-            <Link key={item.href} href={item.href} className="group rounded-[1.5rem] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md sm:p-5">
+            <Link key={item.href} href={item.href} className="group min-h-32 rounded-[1.5rem] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--BeaconVie-primary)] focus-visible:ring-offset-2 sm:min-h-0 sm:p-5">
               <span className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl sm:h-12 sm:w-12 ${item.tone}`}>
                 <Icon aria-hidden size={22} />
               </span>
