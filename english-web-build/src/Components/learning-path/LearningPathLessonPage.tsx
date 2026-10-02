@@ -184,8 +184,8 @@ export default function LearningPathLessonPage() {
                 : "Bắt đầu bài để ghi nhận trạng thái học. Sau khi hoàn thành, lộ trình sẽ tự mở bước tiếp theo nếu có."}
             </p>
             <div className="mt-4 flex flex-wrap gap-2 text-xs font-black text-[var(--BeaconVie-muted)]">
-              <span className="rounded-full bg-white px-3 py-2">{lessonStatusLabels[lesson.status] ?? lesson.status}</span>
-              <span className="rounded-full bg-white px-3 py-2">{data.learningPath.completedLessons}/{data.learningPath.totalLessons} bài đã hoàn thành</span>
+              <span className="rounded-full bg-[var(--BeaconVie-card)] px-3 py-2">{lessonStatusLabels[lesson.status] ?? lesson.status}</span>
+              <span className="rounded-full bg-[var(--BeaconVie-card)] px-3 py-2">{data.learningPath.completedLessons}/{data.learningPath.totalLessons} bài đã hoàn thành</span>
             </div>
           </div>
 
