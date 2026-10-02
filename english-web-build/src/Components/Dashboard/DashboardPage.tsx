@@ -365,7 +365,7 @@ export default function DashboardPage() {
               <Link
                 key={intent.href}
                 href={intent.href}
-                className="group BeaconVie-card flex min-w-0 flex-col items-start gap-3 p-3.5 transition hover:-translate-y-0.5 hover:border-blue-200 sm:flex-row sm:p-4"
+                className="group BeaconVie-card flex min-h-32 min-w-0 flex-col items-start gap-3 p-3.5 transition hover:-translate-y-0.5 hover:border-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--BeaconVie-primary)] focus-visible:ring-offset-2 sm:min-h-0 sm:flex-row sm:p-4"
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]">
                   <Icon aria-hidden size={20} />
