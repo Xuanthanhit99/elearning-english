@@ -83,7 +83,7 @@ for (const [prefix, viewport] of [["desktop", { width: 1440, height: 1000 }], ["
     throw new Error("No visible real Focus Lesson CTA available from Learning Path");
   }
   await Promise.all([
-    page.waitForURL((url) => /^\/learning-path\/lessons\/[^/]+$/.test(url.pathname)),
+    page.waitForURL((url) => /^\/learning-path\/lessons\/[^/]+\/?$/.test(url.pathname)),
     lessonCta.click(),
   ]);
   await page.waitForLoadState("networkidle");
