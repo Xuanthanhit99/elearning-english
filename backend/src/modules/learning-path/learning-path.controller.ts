@@ -33,6 +33,16 @@ export class LearningPathController {
     };
   }
 
+  @Post('visual-fixture')
+  async prepareVisualFixture(@Req() req: AuthenticatedRequest) {
+    return {
+      success: true,
+      data: await this.learningPathService.prepareVisualFixture(
+        this.getUserId(req),
+      ),
+    };
+  }
+
   @Post('lessons/:lessonId/start')
   async startLesson(
     @Req() req: AuthenticatedRequest,
