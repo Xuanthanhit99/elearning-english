@@ -289,6 +289,109 @@ export class LearningPathService {
     }
   }
 
+  async prepareVisualFixture(userId: string) {
+    if (process.env.NODE_ENV !== 'test') {
+      throw new NotFoundException();
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Visual fixture user not found.');
+
+    const course = await this.prisma.course.upsert({
+      where: { slug: 'visual-v31-foundation' },
+      create: {
+        teacherId: userId,
+        title: 'BeaconVie Foundation',
+        slug: 'visual-v31-foundation',
+        description: 'Deterministic Visual V3.1 Learning Path fixture.',
+        level: 'A1',
+        status: CourseStatus.APPROVED,
+        sections: {
+          create: {
+            title: 'Start here',
+            order: 1,
+            lessons: {
+              create: {
+                title: 'Your first focused lesson',
+                content: 'Visual V3.1 deterministic lesson content.',
+                duration: 10,
+                order: 1,
+                isPreview: true,
+              },
+            },
+          },
+        },
+      },
+      update: { status: CourseStatus.APPROVED },
+      include: { sections: { include: { lessons: true } } },
+    });
+
+    let lesson = course.sections.flatMap((section) => section.lessons)[0];
+    if (!lesson) {
+      const section = await this.prisma.section.create({
+        data: { courseId: course.id, title: 'Start here', order: 1 },
+      });
+      lesson = await this.prisma.lesson.create({
+        data: {
+          sectionId: section.id,
+          title: 'Your first focused lesson',
+          content: 'Visual V3.1 deterministic lesson content.',
+          duration: 10,
+          order: 1,
+          isPreview: true,
+        },
+      });
+    }
+
+    const test = await this.prisma.placementTest.create({
+      data: {
+        userId,
+        mode: 'ADAPTIVE',
+        status: 'COMPLETED',
+        level: 'A1',
+        score: 60,
+        total: 10,
+        correct: 6,
+        completedAt: new Date(),
+      },
+    });
+
+    await this.prisma.placementResult.create({
+      data: {
+        testId: test.id,
+        userId,
+        status: PlacementResultStatus.READY,
+        overallScore: 60,
+        overallLevel: 'A1',
+        summary: 'Deterministic Visual V3.1 path.',
+        phases: {
+          create: {
+            phase: 1,
+            title: 'Foundation',
+            targetLevel: 'A1',
+            weeksMin: 1,
+            weeksMax: 2,
+            description: 'Build a focused English foundation.',
+            objectives: ['Complete the first focused lesson'],
+            progress: 0,
+          },
+        },
+        courses: {
+          create: {
+            courseId: course.id,
+            title: course.title,
+            slug: course.slug,
+            lessonCount: 1,
+            reason: 'Deterministic Visual V3.1 fixture.',
+            order: 1,
+          },
+        },
+      },
+    });
+
+    return { courseId: course.id, lessonId: lesson.id };
+  }
+
   async startLesson(userId: string, lessonId: string) {
     const lesson = await this.resolvePathLesson(userId, lessonId);
 
