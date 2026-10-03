@@ -2,6 +2,7 @@
 
 import {
   Award,
+  Compass,
   Bell,
   BookOpen,
   CalendarDays,
@@ -11,6 +12,8 @@ import {
   FileText,
   Flame,
   Headphones,
+  Gamepad2,
+  MessageCircle,
   Mic2,
   PawPrint,
   Play,
@@ -306,11 +309,11 @@ export default function DashboardPage() {
   const cta = dashboardCta(data);
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-5 pb-8 sm:space-y-6 sm:pb-10">
       <AchievementCelebration data={data} />
       <WelcomeHero data={data} dailyPercent={dailyPercent} cta={cta} />
 
-      <section aria-label="Chỉ số nhanh" className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+      <section aria-label="Chỉ số nhanh" className="hidden grid-cols-2 gap-3 sm:grid sm:gap-4 xl:grid-cols-4">
         <BeaconVieStatCard
           icon={<Flame aria-hidden className="h-5 w-5" />}
           label={dict.header.streak}
@@ -339,7 +342,58 @@ export default function DashboardPage() {
         />
       </section>
 
-      {data.quickActions.length > 0 ? <QuickActions actions={data.quickActions} /> : null}
+      <section aria-labelledby="today-intents-title">
+        <div className="mb-3 flex items-end justify-between gap-3">
+          <div>
+            <h2 id="today-intents-title" className="text-xl font-black text-[var(--BeaconVie-ink)]">
+              Bạn muốn làm gì tiếp theo?
+            </h2>
+            <p className="mt-1 text-sm font-bold text-[var(--BeaconVie-muted)]">
+              Học theo lộ trình hoặc chủ động chọn cách học phù hợp với bạn lúc này.
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+          {[
+            { title: "Tiếp tục lộ trình", description: "Học bài tiếp theo theo kế hoạch cá nhân.", href: "/learning-path", icon: Compass },
+            { title: "Luyện tập kỹ năng", description: "Chọn kỹ năng để luyện nhanh theo nhu cầu.", href: "/learn", icon: Headphones },
+            { title: "Game tiếng Anh", description: "Học qua thử thách và chế độ chơi hiện có.", href: "/arena", icon: Gamepad2 },
+            { title: "Học cùng nhau", description: "Tham gia phòng học và luyện tập cùng người khác.", href: "/study-rooms", icon: MessageCircle },
+          ].map((intent) => {
+            const Icon = intent.icon;
+            return (
+              <Link
+                key={intent.href}
+                href={intent.href}
+                className="group BeaconVie-card flex min-h-32 min-w-0 flex-col items-start gap-3 p-3.5 transition hover:-translate-y-0.5 hover:border-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--BeaconVie-primary)] focus-visible:ring-offset-2 sm:min-h-0 sm:flex-row sm:p-4"
+              >
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]">
+                  <Icon aria-hidden size={20} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-black text-[var(--BeaconVie-ink)]">{intent.title}</span>
+                  <span className="mt-1 hidden text-sm font-bold leading-5 text-[var(--BeaconVie-muted)] sm:block">{intent.description}</span>
+                </span>
+                <ChevronRight aria-hidden className="hidden shrink-0 text-[var(--BeaconVie-muted)] transition group-hover:text-[var(--BeaconVie-primary)] sm:mt-1 sm:block" size={18} />
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {data.quickActions.length > 0 ? (
+        <section aria-labelledby="today-recommendations-title">
+          <div className="mb-3">
+            <h2 id="today-recommendations-title" className="text-xl font-black text-[var(--BeaconVie-ink)]">
+              Đề xuất hôm nay cho bạn
+            </h2>
+            <p className="mt-1 text-sm font-bold text-[var(--BeaconVie-muted)]">
+              Dựa trên các hành động học mà hệ thống hiện có cho tài khoản của bạn.
+            </p>
+          </div>
+          <QuickActions actions={data.quickActions} />
+        </section>
+      ) : null}
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:gap-6">
         <div className="space-y-6">
@@ -391,23 +445,23 @@ function WelcomeHero({
     : (cta?.subtitle ?? data.learningPath?.currentPhase?.title ?? "Mở lộ trình học để tiếp tục.");
 
   return (
-    <section className="relative isolate overflow-hidden rounded-[2rem] border border-white/50 bg-[linear-gradient(135deg,var(--BeaconVie-primary-strong),var(--BeaconVie-primary)_48%,var(--BeaconVie-violet))] p-5 text-white shadow-[0_28px_80px_rgba(20,103,232,0.22)] sm:p-7">
+    <section className="relative isolate overflow-hidden rounded-[1.6rem] sm:rounded-[2rem] border border-white/50 bg-[linear-gradient(135deg,var(--BeaconVie-primary-strong),var(--BeaconVie-primary)_48%,var(--BeaconVie-violet))] p-4 text-white shadow-[0_28px_80px_rgba(20,103,232,0.22)] sm:p-7">
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_82%_18%,rgba(255,182,72,0.28),transparent_16rem),radial-gradient(circle_at_18%_20%,rgba(23,182,230,0.28),transparent_18rem)]" />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
         <div className="min-w-0">
           <BeaconVieBadge className="border-white/20 bg-white/12 text-white">
             {needsPlacement ? "Bắt đầu" : d.continueLearning}
           </BeaconVieBadge>
-          <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
+          <h1 className="mt-3 text-2xl font-black tracking-tight sm:mt-4 sm:text-4xl lg:text-5xl">
             {d.greeting.replace("{name}", firstName(data.user.fullname))}
           </h1>
-          <p className="mt-3 max-w-3xl text-sm font-semibold leading-6 text-white/82 sm:text-base">
+          <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-white/82 sm:mt-3 sm:text-base">
             {needsPlacement
               ? "Bạn chưa làm bài kiểm tra trình độ — đây là cách nhanh nhất để có lộ trình phù hợp với bạn."
               : `Trình độ ${data.user.englishLevel || data.user.level}. Trang tổng quan được sắp xếp quanh hoạt động tiếp theo, mục tiêu hôm nay, nhiệm vụ và tiến độ kỹ năng.`}
           </p>
 
-          <div className="mt-6 max-w-3xl rounded-3xl border border-white/16 bg-white/12 p-4 backdrop-blur">
+          <div className="mt-4 max-w-3xl rounded-3xl sm:mt-6 border border-white/16 bg-white/12 p-4 backdrop-blur">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <p className="text-xs font-black uppercase tracking-[0.16em] text-cyan-100">
@@ -429,7 +483,7 @@ function WelcomeHero({
           </div>
         </div>
 
-        <div className="rounded-[1.75rem] border border-white/16 bg-white/12 p-4 backdrop-blur">
+        <div className="hidden rounded-[1.75rem] border border-white/16 bg-white/12 p-4 backdrop-blur sm:block">
           <div className="flex items-center gap-4">
             <Image
               src="/brand/beaconvie-ai-mascot.webp"

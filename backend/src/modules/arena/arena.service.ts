@@ -157,7 +157,24 @@ export class ArenaService {
     });
     if (existing) return existing;
 
-    return client.arenaProfile.create({ data: { userId } });
+    try {
+      return await client.arenaProfile.create({ data: { userId } });
+    } catch (error) {
+      // Two Arena reads can initialize the same user's profile concurrently
+      // (for example lobby + current-season on first render). The unique
+      // userId constraint is the authority: if another request won the
+      // create race, return that row instead of leaking P2002 as a 500.
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        const winner = await client.arenaProfile.findUnique({
+          where: { userId },
+        });
+        if (winner) return winner;
+      }
+      throw error;
+    }
   }
 
   async getMyProfile(userId: string) {

@@ -156,7 +156,7 @@ export default function ArenaPage() {
         targetCorrect: Number(form.targetCorrect),
         bestOf: Number(form.bestOf),
       });
-      setMessage("?ã tạo phòng Arena. Đang mở phòng chi tiết...");
+      setMessage("Đã tạo phòng Arena. Đang mở phòng chi tiết...");
       window.location.href = `/arena/rooms?roomId=${res.data.id}`;
     } catch (error: any) {
       console.error(error);
@@ -179,12 +179,12 @@ export default function ArenaPage() {
       });
 
       if (res.data.matched && res.data.room?.id) {
-        setMessage("?ã tìm thấy trận. Đang mở phòng...");
+        setMessage("Đã tìm thấy trận. Đang mở phòng...");
         window.location.href = `/arena/rooms?roomId=${res.data.room.id}`;
         return;
       }
 
-      setMessage("?ã vào hàng chờ. Hệ thống sẽ mở rộng khoảng MMR sau 10s và 20s.");
+      setMessage("Đã vào hàng chờ. Hệ thống sẽ mở rộng khoảng MMR sau 10s và 20s.");
     } catch (error: any) {
       console.error(error);
       setMessage(error?.response?.data?.message || "Chưa vào được hàng chờ.");
@@ -195,7 +195,7 @@ export default function ArenaPage() {
 
   const leaveQueue = async () => {
     await api.post("/arena/queue/leave");
-    setMessage("?ã rời hàng chờ Arena.");
+    setMessage("Đã rời hàng chờ Arena.");
   };
   const joinRoom = async (room: ArenaRoom, password = "") => {
     if (room.visibility === "PRIVATE" && !password) {
@@ -206,7 +206,7 @@ export default function ArenaPage() {
 
     try {
       await api.post(`/arena/rooms/${room.id}/join`, { password });
-      setMessage("?ã tham gia phòng. Realtime trận đấu sẽ được nối ở phase tiếp theo.");
+      setMessage("Đã tham gia phòng. Đang mở phòng trận đấu...");
       setPasswordRoom(null);
       setRoomPassword("");
       window.location.href = `/arena/rooms?roomId=${room.id}`;
@@ -222,9 +222,9 @@ export default function ArenaPage() {
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <div className="BeaconVie-gradient rounded-[34px] p-7 text-white shadow-xl">
             <p className="text-sm font-extrabold uppercase tracking-wide text-white/80">BeaconVie Arena</p>
-            <h1 className="mt-3 text-4xl font-black leading-tight">Đấu trường học tiếng Anh & nuôi linh thú</h1>
+            <h1 className="mt-3 text-4xl font-black leading-tight">Game tiếng Anh — học qua thử thách</h1>
             <p className="mt-4 max-w-3xl text-lg font-bold leading-8 text-white/75">
-              Học bài để nhận năng lượng Arena, đấu PvP để nhận Arena Point, Food, Gold, Trophy, rồi dùng phần thưởng nuôi linh thú tiến hóa.
+              Chọn kỹ năng, độ khó và chế độ chơi để luyện tiếng Anh qua các trận đấu thật. Hồ sơ, phòng chờ và phần thưởng bên dưới đều lấy từ Arena hiện có.
             </p>
 
             <div className="mt-7 grid gap-3 md:grid-cols-4">
@@ -577,7 +577,7 @@ function RewardLoop() {
   const items = ["Học bài", "Nhận năng lượng Arena", "Đấu PvP", "Nhận Point + Food + Gold", "Nuôi linh thú", "Mở skin / hiệu ứng"];
   return (
     <div className="rounded-[30px] border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)] p-6 shadow-[0_24px_70px_rgba(31,42,68,0.08)]">
-      <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--BeaconVie-primary)]">Vòng lặp giữ chân</p>
+      <p className="text-sm font-extrabold uppercase tracking-wide text-[var(--BeaconVie-primary)]">Vòng lặp học & chơi</p>
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         {items.map((item, index) => (
           <div key={item} className="rounded-2xl bg-[var(--BeaconVie-card)] p-4 font-black text-[var(--BeaconVie-ink)]">

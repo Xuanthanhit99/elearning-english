@@ -131,13 +131,13 @@ export default function LearningPathScreen() {
   }
 
   return (
-    <main className="min-h-screen px-3 py-5 sm:px-4 lg:px-6">
-      <div className="mx-auto max-w-7xl space-y-5">
+    <main className="min-h-screen px-1 py-2 sm:px-4 sm:py-5 lg:px-6">
+      <div className="mx-auto max-w-6xl space-y-4 sm:space-y-5">
         <BeaconVieCard className="overflow-hidden p-0">
-          <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:p-8">
+          <div className="grid gap-5 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:p-7">
             <section>
               <BeaconVieBadge>Lộ trình học</BeaconVieBadge>
-              <h1 className="mt-4 max-w-4xl text-3xl font-black tracking-tight text-[var(--BeaconVie-ink)] sm:text-5xl">
+              <h1 className="mt-3 max-w-4xl text-3xl font-black tracking-tight text-[var(--BeaconVie-ink)] sm:text-4xl">
                 {data.title}
               </h1>
               <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-[var(--BeaconVie-muted)]">
@@ -156,7 +156,7 @@ export default function LearningPathScreen() {
                 )}
               </p>
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-4">
+              <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <HeroMetric icon={GraduationCap} label="Trình độ" value={data.overallLevel ?? "—"} />
                 <HeroMetric icon={Target} label="Tiến độ" value={`${data.progressPercent}%`} />
                 <HeroMetric icon={CheckCircle2} label="Đã hoàn thành" value={`${data.completedLessons}`} />
@@ -181,7 +181,7 @@ export default function LearningPathScreen() {
           </p>
         ) : null}
 
-        <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
           <BeaconVieCard className="p-6">
             <BeaconVieSectionHeader
               eyebrow="Hành trình"
@@ -210,16 +210,14 @@ export default function LearningPathScreen() {
           </BeaconVieCard>
 
           <aside className="space-y-5">
-            {data.phases.length ? <PhasePanel phases={data.phases} /> : null}
-            {data.priorities.length ? (
-              <PriorityPanel priorities={data.priorities} />
-            ) : null}
+            {data.priorities.length ? <PriorityPanel priorities={data.priorities} /> : null}
             <SkillPanel skills={data.skills} />
+            {data.phases.length ? <div className="hidden xl:block"><PhasePanel phases={data.phases} /></div> : null}
           </aside>
         </section>
 
         {data.courses.length ? (
-          <BeaconVieCard className="p-6">
+          <BeaconVieCard className="hidden p-6 lg:block">
             <BeaconVieSectionHeader
               eyebrow="Khoá học"
               title="Nhóm khoá học đề xuất"
@@ -248,9 +246,9 @@ function NextLessonCard({
 }) {
   if (!lesson) {
     return (
-      <BeaconVieCard className="p-5">
+      <BeaconVieCard className="p-4 sm:p-5">
         <Compass aria-hidden className="h-9 w-9 text-[var(--BeaconVie-primary)]" />
-        <h2 className="mt-4 text-2xl font-black text-[var(--BeaconVie-ink)]">
+        <h2 className="mt-3 text-xl font-black text-[var(--BeaconVie-ink)] sm:text-2xl">
           Lộ trình đã sẵn sàng
         </h2>
         <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
