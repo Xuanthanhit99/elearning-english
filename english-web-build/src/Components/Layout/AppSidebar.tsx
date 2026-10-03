@@ -268,8 +268,8 @@ function SidebarContent({
                       "flex h-12 min-w-0 items-center rounded-2xl text-sm font-black transition duration-200",
                       collapsed ? "justify-center px-0" : "gap-3 px-3",
                       active
-                        ? "bg-gradient-to-r from-[var(--BeaconVie-primary)] to-[var(--BeaconVie-violet)] text-white shadow-[0_16px_34px_rgba(23,70,255,0.24)]"
-                        : "text-[var(--BeaconVie-muted)] hover:-translate-y-0.5 hover:bg-[var(--BeaconVie-hover-tint)] hover:text-[var(--BeaconVie-primary)]",
+                        ? "bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)] shadow-[inset_3px_0_0_var(--BeaconVie-primary)]"
+                        : "text-[var(--BeaconVie-muted)] hover:bg-[var(--BeaconVie-hover-tint)] hover:text-[var(--BeaconVie-primary)]",
                     ].join(" ")}
                   >
                     <Icon size={19} strokeWidth={2.5} className="shrink-0" />
@@ -299,7 +299,7 @@ function SidebarContent({
         </div>
       ) : (
         <div className="border-t border-[var(--BeaconVie-border)] p-4">
-          <div className="overflow-hidden rounded-3xl border border-white/40 bg-gradient-to-br from-blue-50 via-white to-violet-50 p-4 shadow-[0_14px_32px_rgba(23,70,255,0.12)] dark:border-white/10 dark:from-blue-950/50 dark:via-slate-950 dark:to-violet-950/50">
+          <div className="overflow-hidden rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-primary-soft)] p-4">
             <p className="font-black text-[var(--BeaconVie-primary)]">{t("sidebar.premiumTitle")}</p>
             <p className="mt-1 text-xs font-bold leading-5 text-[var(--BeaconVie-muted)]">
               {t("sidebar.premiumDesc")}
