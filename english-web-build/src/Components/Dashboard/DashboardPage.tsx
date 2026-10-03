@@ -312,6 +312,7 @@ export default function DashboardPage() {
     <div className="space-y-5 pb-8 sm:space-y-6 sm:pb-10">
       <AchievementCelebration data={data} />
       <WelcomeHero data={data} dailyPercent={dailyPercent} cta={cta} />
+      <BeaconTrailPanel data={data} cta={cta} />
 
       <section aria-label="Chỉ số nhanh" className="hidden grid-cols-2 gap-3 md:grid xl:grid-cols-4">
         <BeaconVieStatCard
@@ -396,27 +397,102 @@ export default function DashboardPage() {
         </section>
       ) : null}
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:gap-6">
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:gap-6">
         <div className="space-y-6">
-          <LearningPathPanel data={data} />
           <SkillsPanel data={data} />
-          <SkillRadarPanel />
-          <WeeklyActivityPanel data={data} locale={locale} maxWeeklyXp={maxWeeklyXp} />
-          <StudyHeatmapPanel />
           <RecentActivityPanel data={data} locale={locale} />
         </div>
-
         <aside className="space-y-5 xl:space-y-6">
           <TodayGoalPanel data={data} dailyPercent={dailyPercent} />
           <MissionsPanel missions={data.todayMissions.items} summary={dailySummary} />
+        </aside>
+      </div>
+
+      <details className="BeaconVie-card group p-4 sm:p-5">
+        <summary className="cursor-pointer list-none font-black text-[var(--BeaconVie-ink)]">
+          Xem thêm tiến độ và hoạt động
+          <span className="ml-2 text-sm font-bold text-[var(--BeaconVie-muted)]">Analytics · cộng đồng · thành tích</span>
+        </summary>
+        <div className="mt-5 grid gap-5 xl:grid-cols-2">
+          <SkillRadarPanel />
+          <WeeklyActivityPanel data={data} locale={locale} maxWeeklyXp={maxWeeklyXp} />
+          <StudyHeatmapPanel />
           <AiCoachPanel />
           <LeaderboardPanel state={leaderboard} />
           <PetPanel data={data} />
           <AchievementsPanel data={data} />
           <NotificationsPanel data={data} />
-        </aside>
-      </div>
+          <LearningPathPanel data={data} />
+        </div>
+      </details>
     </div>
+  );
+}
+
+function BeaconTrailPanel({
+  data,
+  cta,
+}: {
+  data: DashboardData;
+  cta: DashboardData["currentLesson"] | DashboardData["recommendedLesson"] | DashboardData["recommendations"][number] | null;
+}) {
+  const level = (data.learningPath?.overallLevel || data.user.englishLevel || "A1").toUpperCase();
+  const progress = clampPercent(data.learningPath?.progressPercent ?? 0);
+  const cefr = ["A1", "A2", "B1", "B2", "C1"];
+  const activeIndex = Math.max(0, cefr.indexOf(level));
+  const nodes = data.learningPath?.phases?.slice(0, 5) ?? [];
+
+  return (
+    <section aria-labelledby="beacon-trail-title" className="overflow-hidden rounded-[2rem] border border-[var(--BeaconVie-border)] bg-white shadow-[var(--BeaconVie-soft-shadow)]">
+      <div className="border-b border-[var(--BeaconVie-border)] p-5 sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--BeaconVie-primary)]">Beacon Trail · CEFR</p>
+            <h2 id="beacon-trail-title" className="mt-1 text-2xl font-black tracking-[-0.025em] text-[var(--BeaconVie-ink)]">Hành trình học của bạn</h2>
+            <p className="mt-1 text-sm font-semibold text-[var(--BeaconVie-muted)]">Biết bạn đang ở đâu, hôm nay học gì và điểm đến tiếp theo.</p>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-black text-[var(--BeaconVie-ink)]">{level}</span>
+            <span className="text-sm font-bold text-[var(--BeaconVie-muted)]">{progress}% hoàn thành</span>
+          </div>
+        </div>
+
+        <div className="mt-6 grid grid-cols-5 gap-1" aria-label="Thang CEFR">
+          {cefr.map((item, index) => (
+            <div key={item} className="text-center">
+              <div className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-xs font-black ${index < activeIndex ? "bg-[var(--BeaconVie-primary)] text-white" : index === activeIndex ? "border-2 border-[var(--BeaconVie-primary)] bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]" : "bg-slate-100 text-slate-400"}`}>{item}</div>
+              {index < cefr.length - 1 ? <div className={`relative -z-0 -mr-[55%] ml-[55%] -mt-5 h-0.5 ${index < activeIndex ? "bg-[var(--BeaconVie-primary)]" : "bg-slate-200"}`} /> : null}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="p-5 sm:p-6">
+        <div className="relative grid gap-3 sm:grid-cols-5 sm:gap-4">
+          {(nodes.length ? nodes : [1,2,3,4,5].map((phase) => ({ id: String(phase), title: `Unit ${phase}`, phase, progress: phase < 3 ? 100 : phase === 3 ? progress : 0, targetLevel: null }))).map((node, index) => {
+            const done = node.progress >= 100;
+            const active = !done && (index === 0 || (nodes[index - 1]?.progress ?? 100) >= 100);
+            return (
+              <div key={node.id} className={`relative rounded-[1.35rem] border p-4 ${active ? "border-blue-300 bg-[var(--BeaconVie-primary-soft)]" : "border-[var(--BeaconVie-border)] bg-[#fbfdff]"}`}>
+                <div className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-black ${done ? "bg-[var(--BeaconVie-primary)] text-white" : active ? "border-2 border-[var(--BeaconVie-primary)] bg-white text-[var(--BeaconVie-primary)]" : "bg-slate-100 text-slate-400"}`}>
+                  {done ? <CheckCircle2 className="h-4 w-4" /> : index + 1}
+                </div>
+                <p className="mt-3 text-xs font-black uppercase tracking-[0.1em] text-[var(--BeaconVie-muted)]">Unit {node.phase}</p>
+                <p className="mt-1 line-clamp-2 text-sm font-black text-[var(--BeaconVie-ink)]">{node.title}</p>
+                <p className="mt-2 text-xs font-bold text-[var(--BeaconVie-muted)]">{done ? "Hoàn thành" : active ? "Đang học" : "Chưa mở"}</p>
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-5 flex flex-col gap-3 rounded-[1.4rem] bg-[#f7faff] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-primary)]">Điểm tiếp theo</p>
+            <p className="mt-1 font-black text-[var(--BeaconVie-ink)]">{cta?.title ?? data.learningPath?.currentPhase?.title ?? "Tiếp tục lộ trình cá nhân"}</p>
+          </div>
+          <Link href={cta?.href ?? "/learning-path"} className="BeaconVie-button-primary min-h-11 shrink-0 px-5">Tiếp tục <ChevronRight className="h-4 w-4" /></Link>
+        </div>
+      </div>
+    </section>
   );
 }
 
