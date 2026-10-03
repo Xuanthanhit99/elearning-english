@@ -42,6 +42,14 @@ async function createAuthState() {
 
 await createAuthState();
 
+async function stabilizePage(page) {
+  const closeWelcome = page.getByRole("button", { name: "Đóng" });
+  if (await closeWelcome.isVisible().catch(() => false)) {
+    await closeWelcome.click();
+    await closeWelcome.waitFor({ state: "hidden" });
+  }
+}
+
 async function capture(name, path, viewport) {
   const browser = await chromium.launch();
   const context = await browser.newContext({
@@ -55,6 +63,7 @@ async function capture(name, path, viewport) {
   const response = await page.goto(WEB + path, { waitUntil: "networkidle", timeout: 45_000 });
   if (!response || response.status() >= 400) throw new Error(name + " navigation failed");
   if (page.url().includes("/login")) throw new Error(name + " redirected to login");
+  await stabilizePage(page);
   await page.screenshot({ path: `artifacts/visual-v31/${name}.png`, fullPage: true });
   if (errors.length) console.warn(name + " page errors:", errors);
   await browser.close();
@@ -75,6 +84,7 @@ for (const [prefix, viewport] of [["desktop", { width: 1440, height: 1000 }], ["
   });
   const page = await context.newPage();
   await page.goto(WEB + "/learning-path", { waitUntil: "networkidle", timeout: 45_000 });
+  await stabilizePage(page);
   const lessonCta = page
     .getByRole("button", { name: /^(Bắt đầu bài học|Tiếp tục bài học|Bắt đầu|Tiếp tục)$/ })
     .filter({ visible: true })
@@ -88,6 +98,9 @@ for (const [prefix, viewport] of [["desktop", { width: 1440, height: 1000 }], ["
   ]);
   await page.waitForLoadState("networkidle");
   if (page.url().includes("/login")) throw new Error("Focus Lesson redirected to login");
+  await stabilizePage(page);
+  await page.getByRole("heading", { name: "Tập trung vào một bài học" }).waitFor({ state: "visible", timeout: 30_000 });
+  await page.getByText("Đang tải bài học...").waitFor({ state: "hidden", timeout: 30_000 }).catch(() => {});
   await page.screenshot({ path: `artifacts/visual-v31/${prefix}-focus-lesson.png`, fullPage: true });
   await browser.close();
 }
