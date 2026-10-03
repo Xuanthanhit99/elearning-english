@@ -28,6 +28,14 @@ async function createAuthState() {
     data: { email, password, rememberMe: false },
   });
   if (!login.ok()) throw new Error("Visual fixture login failed: " + login.status());
+
+  const fixture = await request.post(API + "/learning-path/visual-fixture", {
+    data: {},
+  });
+  if (!fixture.ok()) {
+    throw new Error("Learning Path visual fixture failed: " + fixture.status());
+  }
+
   await request.storageState({ path: statePath });
   await request.dispose();
 }
