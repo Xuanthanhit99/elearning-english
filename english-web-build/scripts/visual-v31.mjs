@@ -43,7 +43,7 @@ async function createAuthState() {
 await createAuthState();
 
 async function stabilizePage(page) {
-  const closeWelcome = page.getByRole("button", { name: "Đóng" });
+  const closeWelcome = page.getByRole("button", { name: "Đóng", exact: true });
   if (await closeWelcome.isVisible().catch(() => false)) {
     await closeWelcome.click();
     await closeWelcome.waitFor({ state: "hidden" });
