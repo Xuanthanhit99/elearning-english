@@ -67,8 +67,19 @@ for (const [prefix, viewport] of [["desktop", { width: 1440, height: 1000 }], ["
   });
   const page = await context.newPage();
   await page.goto(WEB + "/learning-path", { waitUntil: "networkidle", timeout: 45_000 });
-  const lessonLink = page.locator('a[href*="/learning-path/"]').first();
-  if (await lessonLink.count() === 0) throw new Error("No real Focus Lesson link available from Learning Path");
+  const lessonLinks = page.locator('a[href*="/learning-path/"]');
+  let lessonLink = null;
+  for (let index = 0; index < await lessonLinks.count(); index += 1) {
+    const candidate = lessonLinks.nth(index);
+    const href = await candidate.getAttribute("href");
+    if (!href) continue;
+    const pathname = new URL(href, WEB).pathname.replace(/\/+$/, "");
+    if (!pathname.startsWith("/learning-path/")) continue;
+    if (!(await candidate.isVisible())) continue;
+    lessonLink = candidate;
+    break;
+  }
+  if (!lessonLink) throw new Error("No visible real Focus Lesson link available from Learning Path");
   await lessonLink.click();
   await page.waitForLoadState("networkidle");
   if (page.url().includes("/login")) throw new Error("Focus Lesson redirected to login");
