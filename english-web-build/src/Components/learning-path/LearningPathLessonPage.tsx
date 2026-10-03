@@ -140,7 +140,7 @@ export default function LearningPathLessonPage() {
   const started = lesson.status === "IN_PROGRESS" || completed;
 
   return (
-    <main className="min-h-screen px-1 py-2 sm:px-4 sm:py-5">
+    <main className="min-h-screen px-1 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-2 sm:px-4 sm:pb-5 sm:pt-5 lg:pb-5">
       <div className="mx-auto max-w-3xl space-y-4 sm:space-y-5">
         <Link
           href="/learning-path"
