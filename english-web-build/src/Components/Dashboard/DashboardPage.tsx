@@ -408,7 +408,7 @@ export default function DashboardPage() {
         </aside>
       </div>
 
-      <details className="BeaconVie-card group p-4 sm:p-5">
+      <details className="BeaconVie-card group hidden p-4 sm:block sm:p-5">
         <summary className="cursor-pointer list-none font-black text-[var(--BeaconVie-ink)]">
           Xem thêm tiến độ và hoạt động
           <span className="ml-2 text-sm font-bold text-[var(--BeaconVie-muted)]">Analytics · cộng đồng · thành tích</span>
@@ -457,11 +457,11 @@ function BeaconTrailPanel({
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-5 gap-1" aria-label="Thang CEFR">
+        <div className="mt-5 flex w-full items-center" aria-label="Thang CEFR">
           {cefr.map((item, index) => (
-            <div key={item} className="text-center">
-              <div className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-xs font-black ${index < activeIndex ? "bg-[var(--BeaconVie-primary)] text-white" : index === activeIndex ? "border-2 border-[var(--BeaconVie-primary)] bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]" : "bg-slate-100 text-slate-400"}`}>{item}</div>
-              {index < cefr.length - 1 ? <div className={`relative -z-0 -mr-[55%] ml-[55%] -mt-5 h-0.5 ${index < activeIndex ? "bg-[var(--BeaconVie-primary)]" : "bg-slate-200"}`} /> : null}
+            <div key={item} className="flex min-w-0 flex-1 items-center">
+              <div className={`relative z-10 mx-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-black ${index < activeIndex ? "bg-[var(--BeaconVie-primary)] text-white" : index === activeIndex ? "border-2 border-[var(--BeaconVie-primary)] bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]" : "bg-slate-100 text-slate-400"}`}>{item}</div>
+              {index < cefr.length - 1 ? <div aria-hidden className={`-ml-1 h-0.5 flex-1 ${index < activeIndex ? "bg-[var(--BeaconVie-primary)]" : "bg-slate-200"}`} /> : null}
             </div>
           ))}
         </div>
@@ -473,12 +473,12 @@ function BeaconTrailPanel({
             const done = node.progress >= 100;
             const active = !done && (index === 0 || (nodes[index - 1]?.progress ?? 100) >= 100);
             return (
-              <div key={node.id} className={`relative w-[148px] shrink-0 snap-center rounded-[1.35rem] border p-4 sm:w-auto ${active ? "border-blue-300 bg-[var(--BeaconVie-primary-soft)]" : "border-[var(--BeaconVie-border)] bg-[#fbfdff]"}`}>
+              <div key={node.id} className={`relative w-[132px] shrink-0 snap-center rounded-[1.2rem] border p-3 sm:w-auto sm:rounded-[1.35rem] sm:p-4 ${active ? "border-blue-300 bg-[var(--BeaconVie-primary-soft)]" : "border-[var(--BeaconVie-border)] bg-[#fbfdff]"}`}>
                 <div className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-black ${done ? "bg-[var(--BeaconVie-primary)] text-white" : active ? "border-2 border-[var(--BeaconVie-primary)] bg-white text-[var(--BeaconVie-primary)]" : "bg-slate-100 text-slate-400"}`}>
                   {done ? <CheckCircle2 className="h-4 w-4" /> : index + 1}
                 </div>
                 <p className="mt-3 text-xs font-black uppercase tracking-[0.1em] text-[var(--BeaconVie-muted)]">Unit {node.phase}</p>
-                <p className="mt-1 line-clamp-2 text-sm font-black text-[var(--BeaconVie-ink)]">{node.title}</p>
+                <p className="mt-1 line-clamp-1 text-sm font-black text-[var(--BeaconVie-ink)] sm:line-clamp-2">{node.title}</p>
                 <p className="mt-2 text-xs font-bold text-[var(--BeaconVie-muted)]">{done ? "Hoàn thành" : active ? "Đang học" : "Chưa mở"}</p>
               </div>
             );
@@ -579,7 +579,7 @@ function WelcomeHero({
 
 function QuickActions({ actions }: { actions: DashboardData["quickActions"] }) {
   return (
-    <section aria-label="Thao tác nhanh" className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 xl:grid-cols-3">
+    <section aria-label="Thao tác nhanh" className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 sm:gap-3 xl:grid-cols-3">
       {actions.map((action) => (
         <Link
           key={action.id}
@@ -625,7 +625,7 @@ function SkillsPanel({ data }: { data: DashboardData }) {
             <Link
               key={module.key}
               href={href}
-              className={`group w-[172px] shrink-0 snap-start rounded-3xl border border-[var(--BeaconVie-border)] bg-gradient-to-br ${module.accent} p-4 transition hover:border-blue-200 dark:bg-white/6 sm:w-auto`}
+              className={`group min-w-0 rounded-[1.25rem] border border-[var(--BeaconVie-border)] bg-gradient-to-br ${module.accent} p-3 transition hover:border-blue-200 dark:bg-white/6 sm:rounded-3xl sm:p-4`}
             >
               <div className="flex items-start justify-between gap-3">
                 <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${module.iconClass}`}>
