@@ -160,6 +160,25 @@ describe('ArenaService (Phase A hardening)', () => {
   }
 
   // ---------------------------------------------------------------------
+  // Profile initialization concurrency
+  // ---------------------------------------------------------------------
+  describe('profile initialization concurrency', () => {
+    it('returns one shared profile when two first reads race for the same user', async () => {
+      const [first, second] = await Promise.all([
+        service.getMyProfile('profile-race-user'),
+        service.getMyProfile('profile-race-user'),
+      ]);
+
+      expect(first.id).toBe(second.id);
+      expect(
+        fake.arenaProfileTable.rows.filter(
+          (profile) => profile.userId === 'profile-race-user',
+        ),
+      ).toHaveLength(1);
+    });
+  });
+
+  // ---------------------------------------------------------------------
   // Fix 1: answer / spectator redaction
   // ---------------------------------------------------------------------
   describe('answer redaction (getRoom)', () => {
