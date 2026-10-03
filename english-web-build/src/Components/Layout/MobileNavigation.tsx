@@ -27,7 +27,7 @@ export default function MobileNavigation({
     <nav
       data-testid="app-bottom-nav"
       aria-label="Điều hướng chính trên di động"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-shell-surface)] px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-14px_38px_rgba(24,50,118,0.12)] backdrop-blur-2xl lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-[100] border-t border-[var(--BeaconVie-border)] bg-white/98 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_24px_rgba(24,50,118,0.10)] supports-[backdrop-filter]:backdrop-blur-xl lg:hidden" style={{ position: "fixed", bottom: 0, left: 0, right: 0 }}
     >
       <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
         {primaryItems.map((item) => {
