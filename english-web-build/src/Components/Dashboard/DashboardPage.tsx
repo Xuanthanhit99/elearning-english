@@ -313,7 +313,7 @@ export default function DashboardPage() {
       <AchievementCelebration data={data} />
       <WelcomeHero data={data} dailyPercent={dailyPercent} cta={cta} />
 
-      <section aria-label="Chỉ số nhanh" className="hidden grid-cols-2 gap-3 sm:grid sm:gap-4 xl:grid-cols-4">
+      <section aria-label="Chỉ số nhanh" className="hidden grid-cols-2 gap-3 md:grid xl:grid-cols-4">
         <BeaconVieStatCard
           icon={<Flame aria-hidden className="h-5 w-5" />}
           label={dict.header.streak}
@@ -345,11 +345,12 @@ export default function DashboardPage() {
       <section aria-labelledby="today-intents-title">
         <div className="mb-3 flex items-end justify-between gap-3">
           <div>
-            <h2 id="today-intents-title" className="text-xl font-black text-[var(--BeaconVie-ink)]">
-              Bạn muốn làm gì tiếp theo?
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--BeaconVie-primary)]">Luyện nhanh</p>
+            <h2 id="today-intents-title" className="mt-1 text-xl font-black text-[var(--BeaconVie-ink)]">
+              Chọn một hoạt động
             </h2>
             <p className="mt-1 text-sm font-bold text-[var(--BeaconVie-muted)]">
-              Học theo lộ trình hoặc chủ động chọn cách học phù hợp với bạn lúc này.
+              Lộ trình vẫn là trung tâm; các hoạt động này hỗ trợ mục tiêu học hôm nay.
             </p>
           </div>
         </div>
@@ -445,68 +446,55 @@ function WelcomeHero({
     : (cta?.subtitle ?? data.learningPath?.currentPhase?.title ?? "Mở lộ trình học để tiếp tục.");
 
   return (
-    <section className="relative isolate overflow-hidden rounded-[1.6rem] sm:rounded-[2rem] border border-white/50 bg-[linear-gradient(135deg,var(--BeaconVie-primary-strong),var(--BeaconVie-primary)_48%,var(--BeaconVie-violet))] p-4 text-white shadow-[0_28px_80px_rgba(20,103,232,0.22)] sm:p-7">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_82%_18%,rgba(255,182,72,0.28),transparent_16rem),radial-gradient(circle_at_18%_20%,rgba(23,182,230,0.28),transparent_18rem)]" />
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
+    <section className="relative overflow-hidden rounded-[2rem] border border-[var(--BeaconVie-border)] bg-white p-5 shadow-[var(--BeaconVie-soft-shadow)] sm:p-7">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-center">
         <div className="min-w-0">
-          <BeaconVieBadge className="border-white/20 bg-white/12 text-white">
-            {needsPlacement ? "Bắt đầu" : d.continueLearning}
+          <BeaconVieBadge className="border-blue-100 bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]">
+            {needsPlacement ? "Bắt đầu hành trình" : d.continueLearning}
           </BeaconVieBadge>
-          <h1 className="mt-3 text-2xl font-black tracking-tight sm:mt-4 sm:text-4xl lg:text-5xl">
+          <h1 className="mt-4 text-3xl font-black tracking-[-0.035em] text-[var(--BeaconVie-ink)] sm:text-4xl">
             {d.greeting.replace("{name}", firstName(data.user.fullname))}
           </h1>
-          <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-white/82 sm:mt-3 sm:text-base">
+          <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)] sm:text-base">
             {needsPlacement
-              ? "Bạn chưa làm bài kiểm tra trình độ — đây là cách nhanh nhất để có lộ trình phù hợp với bạn."
-              : `Trình độ ${data.user.englishLevel || data.user.level}. Trang tổng quan được sắp xếp quanh hoạt động tiếp theo, mục tiêu hôm nay, nhiệm vụ và tiến độ kỹ năng.`}
+              ? "Làm bài kiểm tra ngắn để BeaconVie đặt bạn vào đúng điểm bắt đầu trên lộ trình."
+              : "Hôm nay học một chút, bạn sẽ tiến gần hơn đến mục tiêu tiếng Anh của mình."}
           </p>
 
-          <div className="mt-4 max-w-3xl rounded-3xl sm:mt-6 border border-white/16 bg-white/12 p-4 backdrop-blur">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-6 rounded-[1.5rem] border border-blue-100 bg-[#f7faff] p-4 sm:p-5">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--BeaconVie-primary)]">
+              {needsPlacement ? "Bước đầu tiên" : "Bài học tiếp theo"}
+            </p>
+            <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
-                <p className="text-xs font-black uppercase tracking-[0.16em] text-cyan-100">
-                  {needsPlacement ? "Bắt đầu" : (cta?.type ?? d.learningPath)}
-                </p>
-                <h2 className="mt-1 truncate text-2xl font-black">{title}</h2>
-                <p className="mt-1 line-clamp-2 text-sm font-semibold text-white/78">
-                  {subtitle}
-                </p>
+                <h2 className="text-xl font-black text-[var(--BeaconVie-ink)] sm:text-2xl">{title}</h2>
+                <p className="mt-1 line-clamp-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">{subtitle}</p>
               </div>
-              <Link
-                href={href}
-                className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 font-black text-[var(--BeaconVie-primary-strong)] transition hover:-translate-y-0.5"
-              >
+              <Link href={href} className="BeaconVie-button-primary min-h-12 shrink-0 px-5">
                 <Play aria-hidden className="h-5 w-5" fill="currentColor" />
-                {needsPlacement ? "Bắt đầu" : d.continueCta}
+                {needsPlacement ? "Kiểm tra trình độ" : "Tiếp tục học"}
               </Link>
             </div>
           </div>
         </div>
 
-        <div className="hidden rounded-[1.75rem] border border-white/16 bg-white/12 p-4 backdrop-blur sm:block">
-          <div className="flex items-center gap-4">
-            <Image
-              src="/brand/beaconvie-ai-mascot.webp"
-              alt="Linh vật BeaconVie"
-              width={112}
-              height={112}
-              priority
-              sizes="112px"
-              className="h-24 w-24 rounded-3xl object-cover ring-4 ring-white/18"
-            />
-            <div className="min-w-0">
-              <p className="text-sm font-black text-cyan-100">Beacon Coach</p>
-              <p className="mt-1 line-clamp-2 text-sm font-semibold text-white/78">
-                {coachHeadline ?? "Đang phân tích tiến độ gần đây của bạn…"}
-              </p>
+        <div className="rounded-[1.5rem] border border-[var(--BeaconVie-border)] bg-[#fbfdff] p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--BeaconVie-muted)]">Beacon Trail</p>
+              <p className="mt-1 text-2xl font-black text-[var(--BeaconVie-ink)]">{data.user.englishLevel || data.user.level}</p>
             </div>
+            <span className="rounded-full bg-[var(--BeaconVie-primary-soft)] px-3 py-1 text-xs font-black text-[var(--BeaconVie-primary)]">CEFR</span>
           </div>
           <div className="mt-5">
-            <div className="mb-2 flex justify-between text-xs font-black text-white/78">
-              <span>{d.todayGoal}</span>
-              <span>{clampPercent(dailyPercent)}%</span>
+            <div className="mb-2 flex justify-between text-xs font-black text-[var(--BeaconVie-muted)]">
+              <span>Mục tiêu hôm nay</span><span>{clampPercent(dailyPercent)}%</span>
             </div>
-            <BeaconVieProgress value={dailyPercent} className="bg-white/20 [&>div]:bg-white" />
+            <BeaconVieProgress value={dailyPercent} />
+          </div>
+          <div className="mt-5 flex items-center justify-between border-t border-[var(--BeaconVie-border)] pt-4">
+            <span className="text-sm font-bold text-[var(--BeaconVie-muted)]">Chuỗi học</span>
+            <span className="flex items-center gap-1 font-black text-[var(--BeaconVie-ink)]"><Flame className="h-4 w-4 text-orange-500" /> {data.currentStreak} ngày</span>
           </div>
         </div>
       </div>
