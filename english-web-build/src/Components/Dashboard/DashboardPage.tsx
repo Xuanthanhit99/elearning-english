@@ -314,7 +314,7 @@ export default function DashboardPage() {
       <WelcomeHero data={data} dailyPercent={dailyPercent} cta={cta} />
       <BeaconTrailPanel data={data} cta={cta} />
 
-      <section aria-label="Chỉ số nhanh" className="hidden grid-cols-2 gap-3 md:grid xl:grid-cols-4">
+      <section aria-label="Chỉ số nhanh" className="hidden grid-cols-2 gap-3 lg:grid xl:grid-cols-4">
         <BeaconVieStatCard
           icon={<Flame aria-hidden className="h-5 w-5" />}
           label={dict.header.streak}
@@ -355,7 +355,7 @@ export default function DashboardPage() {
             </p>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <div className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 xl:grid-cols-4">
           {[
             { title: "Tiếp tục lộ trình", description: "Học bài tiếp theo theo kế hoạch cá nhân.", href: "/learning-path", icon: Compass },
             { title: "Luyện tập kỹ năng", description: "Chọn kỹ năng để luyện nhanh theo nhu cầu.", href: "/learn", icon: Headphones },
@@ -367,7 +367,7 @@ export default function DashboardPage() {
               <Link
                 key={intent.href}
                 href={intent.href}
-                className="group BeaconVie-card flex min-h-32 min-w-0 flex-col items-start gap-3 p-3.5 transition hover:-translate-y-0.5 hover:border-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--BeaconVie-primary)] focus-visible:ring-offset-2 sm:min-h-0 sm:flex-row sm:p-4"
+                className="group BeaconVie-card flex min-h-0 w-[152px] shrink-0 snap-start flex-col items-start gap-3 p-3.5 transition hover:border-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--BeaconVie-primary)] focus-visible:ring-offset-2 sm:w-auto sm:min-w-0 sm:flex-row sm:p-4"
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]">
                   <Icon aria-hidden size={20} />
@@ -384,7 +384,7 @@ export default function DashboardPage() {
       </section>
 
       {data.quickActions.length > 0 ? (
-        <section aria-labelledby="today-recommendations-title">
+        <section aria-labelledby="today-recommendations-title" className="hidden sm:block">
           <div className="mb-3">
             <h2 id="today-recommendations-title" className="text-xl font-black text-[var(--BeaconVie-ink)]">
               Đề xuất hôm nay cho bạn
@@ -400,9 +400,9 @@ export default function DashboardPage() {
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:gap-6">
         <div className="space-y-6">
           <SkillsPanel data={data} />
-          <RecentActivityPanel data={data} locale={locale} />
+          <div className="hidden sm:block"><RecentActivityPanel data={data} locale={locale} /></div>
         </div>
-        <aside className="space-y-5 xl:space-y-6">
+        <aside className="hidden space-y-5 sm:block xl:space-y-6">
           <TodayGoalPanel data={data} dailyPercent={dailyPercent} />
           <MissionsPanel missions={data.todayMissions.items} summary={dailySummary} />
         </aside>
@@ -468,12 +468,12 @@ function BeaconTrailPanel({
       </div>
 
       <div className="p-5 sm:p-6">
-        <div className="relative grid gap-3 sm:grid-cols-5 sm:gap-4">
+        <div className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-2 sm:mx-0 sm:grid sm:grid-cols-5 sm:overflow-visible sm:px-0 sm:pb-0 sm:gap-4">
           {(nodes.length ? nodes : [1,2,3,4,5].map((phase) => ({ id: String(phase), title: `Unit ${phase}`, phase, progress: phase < 3 ? 100 : phase === 3 ? progress : 0, targetLevel: null }))).map((node, index) => {
             const done = node.progress >= 100;
             const active = !done && (index === 0 || (nodes[index - 1]?.progress ?? 100) >= 100);
             return (
-              <div key={node.id} className={`relative rounded-[1.35rem] border p-4 ${active ? "border-blue-300 bg-[var(--BeaconVie-primary-soft)]" : "border-[var(--BeaconVie-border)] bg-[#fbfdff]"}`}>
+              <div key={node.id} className={`relative w-[148px] shrink-0 snap-center rounded-[1.35rem] border p-4 sm:w-auto ${active ? "border-blue-300 bg-[var(--BeaconVie-primary-soft)]" : "border-[var(--BeaconVie-border)] bg-[#fbfdff]"}`}>
                 <div className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-black ${done ? "bg-[var(--BeaconVie-primary)] text-white" : active ? "border-2 border-[var(--BeaconVie-primary)] bg-white text-[var(--BeaconVie-primary)]" : "bg-slate-100 text-slate-400"}`}>
                   {done ? <CheckCircle2 className="h-4 w-4" /> : index + 1}
                 </div>
@@ -522,7 +522,7 @@ function WelcomeHero({
 
   return (
     <section className="relative overflow-hidden rounded-[2rem] border border-[var(--BeaconVie-border)] bg-white p-5 shadow-[var(--BeaconVie-soft-shadow)] sm:p-7">
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-center">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-center">
         <div className="min-w-0">
           <BeaconVieBadge className="border-blue-100 bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]">
             {needsPlacement ? "Bắt đầu hành trình" : d.continueLearning}
@@ -536,7 +536,7 @@ function WelcomeHero({
               : "Hôm nay học một chút, bạn sẽ tiến gần hơn đến mục tiêu tiếng Anh của mình."}
           </p>
 
-          <div className="mt-6 rounded-[1.5rem] border border-blue-100 bg-[#f7faff] p-4 sm:p-5">
+          <div className="mt-4 rounded-[1.5rem] border border-blue-100 bg-[#f7faff] p-4 sm:mt-6 sm:p-5">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--BeaconVie-primary)]">
               {needsPlacement ? "Bước đầu tiên" : "Bài học tiếp theo"}
             </p>
@@ -553,7 +553,7 @@ function WelcomeHero({
           </div>
         </div>
 
-        <div className="rounded-[1.5rem] border border-[var(--BeaconVie-border)] bg-[#fbfdff] p-5">
+        <div className="rounded-[1.25rem] border border-[var(--BeaconVie-border)] bg-[#fbfdff] p-4 sm:rounded-[1.5rem] sm:p-5">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--BeaconVie-muted)]">Beacon Trail</p>
@@ -579,7 +579,7 @@ function WelcomeHero({
 
 function QuickActions({ actions }: { actions: DashboardData["quickActions"] }) {
   return (
-    <section aria-label="Thao tác nhanh" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    <section aria-label="Thao tác nhanh" className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 xl:grid-cols-3">
       {actions.map((action) => (
         <Link
           key={action.id}
@@ -625,7 +625,7 @@ function SkillsPanel({ data }: { data: DashboardData }) {
             <Link
               key={module.key}
               href={href}
-              className={`group rounded-3xl border border-[var(--BeaconVie-border)] bg-gradient-to-br ${module.accent} p-4 transition hover:-translate-y-0.5 hover:border-blue-200 dark:bg-white/6`}
+              className={`group w-[172px] shrink-0 snap-start rounded-3xl border border-[var(--BeaconVie-border)] bg-gradient-to-br ${module.accent} p-4 transition hover:border-blue-200 dark:bg-white/6 sm:w-auto`}
             >
               <div className="flex items-start justify-between gap-3">
                 <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${module.iconClass}`}>
