@@ -75,20 +75,17 @@ for (const [prefix, viewport] of [["desktop", { width: 1440, height: 1000 }], ["
   });
   const page = await context.newPage();
   await page.goto(WEB + "/learning-path", { waitUntil: "networkidle", timeout: 45_000 });
-  const lessonLinks = page.locator('a[href*="/learning-path/"]');
-  let lessonLink = null;
-  for (let index = 0; index < await lessonLinks.count(); index += 1) {
-    const candidate = lessonLinks.nth(index);
-    const href = await candidate.getAttribute("href");
-    if (!href) continue;
-    const pathname = new URL(href, WEB).pathname.replace(/\/+$/, "");
-    if (!pathname.startsWith("/learning-path/")) continue;
-    if (!(await candidate.isVisible())) continue;
-    lessonLink = candidate;
-    break;
+  const lessonCta = page
+    .getByRole("button", { name: /^(Bắt đầu bài học|Tiếp tục bài học|Bắt đầu|Tiếp tục)$/ })
+    .filter({ visible: true })
+    .first();
+  if (await lessonCta.count() === 0) {
+    throw new Error("No visible real Focus Lesson CTA available from Learning Path");
   }
-  if (!lessonLink) throw new Error("No visible real Focus Lesson link available from Learning Path");
-  await lessonLink.click();
+  await Promise.all([
+    page.waitForURL((url) => /^\/learning-path\/lessons\/[^/]+$/.test(url.pathname)),
+    lessonCta.click(),
+  ]);
   await page.waitForLoadState("networkidle");
   if (page.url().includes("/login")) throw new Error("Focus Lesson redirected to login");
   await page.screenshot({ path: `artifacts/visual-v31/${prefix}-focus-lesson.png`, fullPage: true });
