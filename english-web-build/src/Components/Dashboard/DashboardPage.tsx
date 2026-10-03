@@ -431,7 +431,6 @@ function WelcomeHero({
 }) {
   const { dict } = useTranslation();
   const d = dict.dashboard;
-  const coachHeadline = useCoachHeadline();
   // A brand-new account has no lesson to resume and no englishLevel yet
   // (englishLevel is only set once a placement result exists). Point that
   // learner at the placement test instead of a generic learning-path link
