@@ -613,7 +613,7 @@ function SkillsPanel({ data }: { data: DashboardData }) {
         title="Các phần học"
         description="Sáu kỹ năng cốt lõi cùng tiến độ thực tế của bạn."
       />
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <div data-mobile-grid="keep" className="grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-3">
         {skillModules.map((module) => {
           const skill =
             progressByKey.get(module.key.toLowerCase()) ??
@@ -636,10 +636,10 @@ function SkillsPanel({ data }: { data: DashboardData }) {
                   className="h-5 w-5 shrink-0 text-[var(--BeaconVie-muted)] transition group-hover:text-[var(--BeaconVie-primary)]"
                 />
               </div>
-              <p className="mt-4 truncate text-lg font-black text-[var(--BeaconVie-ink)]">
+              <p className="mt-3 truncate text-sm font-black text-[var(--BeaconVie-ink)] sm:mt-4 sm:text-lg">
                 {skill?.label ?? module.label}
               </p>
-              <p className="mt-1 line-clamp-2 min-h-10 text-sm font-bold leading-5 text-[var(--BeaconVie-muted)]">
+              <p className="mt-1 hidden min-h-10 text-sm font-bold leading-5 text-[var(--BeaconVie-muted)] sm:line-clamp-2">
                 {skill?.level ?? skill?.status ?? module.description}
               </p>
               {skill ? (
