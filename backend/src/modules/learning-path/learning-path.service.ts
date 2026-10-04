@@ -304,7 +304,7 @@ export class LearningPathService {
         teacherId: userId,
         title: 'BeaconVie Foundation',
         slug: 'visual-v31-foundation',
-        description: 'Deterministic Visual V3.1 Learning Path fixture.',
+        description: 'Foundation lesson fixture for visual regression testing.',
         level: 'A1',
         status: CourseStatus.APPROVED,
         sections: {
@@ -314,7 +314,7 @@ export class LearningPathService {
             lessons: {
               create: {
                 title: 'Your first focused lesson',
-                content: 'Visual V3.1 deterministic lesson content.',
+                content: 'Hôm nay chúng ta luyện cách giới thiệu bản thân bằng tiếng Anh.\n\nMy name is Minh. I am from Vietnam. I am learning English because I want to communicate with more confidence every day.\n\nGợi ý: Đọc đoạn hội thoại một lần, sau đó thử nói lại bằng lời của bạn.'
                 duration: 10,
                 order: 1,
                 isPreview: true,
@@ -364,7 +364,7 @@ export class LearningPathService {
         status: PlacementResultStatus.READY,
         overallScore: 60,
         overallLevel: 'A1',
-        summary: 'Deterministic Visual V3.1 path.',
+        summary: 'Foundation path for visual regression testing.'
         phases: {
           create: {
             phase: 1,
@@ -383,7 +383,7 @@ export class LearningPathService {
             title: course.title,
             slug: course.slug,
             lessonCount: 1,
-            reason: 'Deterministic Visual V3.1 fixture.',
+            reason: 'Foundation path for visual regression testing.'
             order: 1,
           },
         },
