@@ -298,6 +298,11 @@ export class LearningPathService {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('Visual fixture user not found.');
 
+    const lessonContent =
+      'Hôm nay chúng ta luyện cách giới thiệu bản thân bằng tiếng Anh.\n\n' +
+      'My name is Minh. I am from Vietnam. I am learning English because I want to communicate with more confidence every day.\n\n' +
+      'Gợi ý: Đọc đoạn hội thoại một lần, sau đó thử nói lại bằng lời của bạn.';
+
     const course = await this.prisma.course.upsert({
       where: { slug: 'visual-v31-foundation' },
       create: {
@@ -328,10 +333,6 @@ export class LearningPathService {
     });
 
     let lesson = course.sections.flatMap((section) => section.lessons)[0];
-    const lessonContent =
-      'Hôm nay chúng ta luyện cách giới thiệu bản thân bằng tiếng Anh.\n\n' +
-      'My name is Minh. I am from Vietnam. I am learning English because I want to communicate with more confidence every day.\n\n' +
-      'Gợi ý: Đọc đoạn hội thoại một lần, sau đó thử nói lại bằng lời của bạn.';
     if (lesson) {
       await this.prisma.lesson.update({
         where: { id: lesson.id },
