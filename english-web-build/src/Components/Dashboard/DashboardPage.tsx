@@ -553,23 +553,27 @@ function WelcomeHero({
           </div>
         </div>
 
-        <div className="rounded-[1.25rem] border border-[var(--BeaconVie-border)] bg-[#fbfdff] p-4 sm:rounded-[1.5rem] sm:p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--BeaconVie-muted)]">Beacon Trail</p>
-              <p className="mt-1 text-2xl font-black text-[var(--BeaconVie-ink)]">{data.user.englishLevel || data.user.level}</p>
+        <div className="relative min-h-[220px] overflow-hidden rounded-[1.5rem] border border-[var(--BeaconVie-border)] bg-[#eaf3ff]">
+          <Image
+            src="https://images.unsplash.com/photo-1770235622269-bf3124d85032?auto=format&fit=crop&fm=jpg&q=78&w=1200"
+            alt="Sinh viên học tập trong không gian lớp học hiện đại"
+            fill
+            priority
+            className="object-cover"
+            sizes="(max-width: 1023px) 100vw, 300px"
+          />
+          <div className="absolute inset-x-3 bottom-3 rounded-2xl border border-white/70 bg-white/92 p-3 shadow-lg backdrop-blur-md">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--BeaconVie-primary)]">Beacon Trail</p>
+                <p className="mt-0.5 text-lg font-black text-[var(--BeaconVie-ink)]">{data.user.englishLevel || data.user.level}</p>
+              </div>
+              <span className="rounded-full bg-[var(--BeaconVie-primary-soft)] px-2.5 py-1 text-[10px] font-black text-[var(--BeaconVie-primary)]">CEFR</span>
             </div>
-            <span className="rounded-full bg-[var(--BeaconVie-primary-soft)] px-3 py-1 text-xs font-black text-[var(--BeaconVie-primary)]">CEFR</span>
-          </div>
-          <div className="mt-5">
-            <div className="mb-2 flex justify-between text-xs font-black text-[var(--BeaconVie-muted)]">
-              <span>Mục tiêu hôm nay</span><span>{clampPercent(dailyPercent)}%</span>
+            <div className="mt-2 flex items-center justify-between text-xs font-bold text-[var(--BeaconVie-muted)]">
+              <span>Mục tiêu {clampPercent(dailyPercent)}%</span>
+              <span className="flex items-center gap-1"><Flame className="h-3.5 w-3.5 text-orange-500" /> {data.currentStreak} ngày</span>
             </div>
-            <BeaconVieProgress value={dailyPercent} />
-          </div>
-          <div className="mt-5 flex items-center justify-between border-t border-[var(--BeaconVie-border)] pt-4">
-            <span className="text-sm font-bold text-[var(--BeaconVie-muted)]">Chuỗi học</span>
-            <span className="flex items-center gap-1 font-black text-[var(--BeaconVie-ink)]"><Flame className="h-4 w-4 text-orange-500" /> {data.currentStreak} ngày</span>
           </div>
         </div>
       </div>
