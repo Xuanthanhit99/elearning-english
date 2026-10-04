@@ -30,6 +30,7 @@ export const useThemeStore = create<ThemeState>()(
 export function resolveIsDark(theme: ThemeChoice): boolean {
   if (theme === "DARK") return true;
   if (theme === "LIGHT") return false;
-  if (typeof window === "undefined") return false;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  // V4.3 production visual is light-first. SYSTEM remains light until the dark
+  // theme receives its own visual-fidelity gate.
+  return false;
 }
