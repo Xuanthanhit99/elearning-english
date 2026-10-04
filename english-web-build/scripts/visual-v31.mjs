@@ -65,7 +65,7 @@ async function capture(name, path, viewport) {
   if (!response || response.status() >= 400) throw new Error(name + " navigation failed");
   if (page.url().includes("/login")) throw new Error(name + " redirected to login");
   await stabilizePage(page);
-  await page.screenshot({ path: `artifacts/visual-v31/${name}.png`, fullPage: true });
+  await page.screenshot({ path: `artifacts/visual-v31/${name}.png`, fullPage: viewport.width > 390 });
   if (errors.length) console.warn(name + " page errors:", errors);
   await browser.close();
 }
