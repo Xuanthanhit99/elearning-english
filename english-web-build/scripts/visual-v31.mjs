@@ -56,6 +56,7 @@ async function capture(name, path, viewport) {
     viewport,
     storageState: statePath,
     reducedMotion: "reduce",
+    colorScheme: "light",
   });
   const page = await context.newPage();
   const errors = [];
@@ -64,7 +65,7 @@ async function capture(name, path, viewport) {
   if (!response || response.status() >= 400) throw new Error(name + " navigation failed");
   if (page.url().includes("/login")) throw new Error(name + " redirected to login");
   await stabilizePage(page);
-  await page.screenshot({ path: `artifacts/visual-v31/${name}.png`, fullPage: true });
+  await page.screenshot({ path: `artifacts/visual-v31/${name}.png`, fullPage: viewport.width > 390 });
   if (errors.length) console.warn(name + " page errors:", errors);
   await browser.close();
 }
@@ -81,6 +82,7 @@ for (const [prefix, viewport] of [["desktop", { width: 1440, height: 1000 }], ["
     viewport,
     storageState: statePath,
     reducedMotion: "reduce",
+    colorScheme: "light",
   });
   const page = await context.newPage();
   await page.goto(WEB + "/learning-path", { waitUntil: "networkidle", timeout: 45_000 });
