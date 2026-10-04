@@ -158,7 +158,7 @@ function dashboardCta(data: DashboardData) {
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-5 pb-8 sm:space-y-6 sm:pb-10">
+    <div className="mx-auto max-w-[1240px] space-y-5 pb-8 sm:space-y-6 sm:pb-10">
       <BeaconVieSkeleton className="h-[360px] rounded-[2rem]" />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }).map((_, index) => (
@@ -397,7 +397,7 @@ export default function DashboardPage() {
         </section>
       ) : null}
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:gap-6">
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px] xl:gap-6">
         <div className="space-y-6">
           <SkillsPanel data={data} />
           <div className="hidden sm:block"><RecentActivityPanel data={data} locale={locale} /></div>
@@ -521,8 +521,8 @@ function WelcomeHero({
     : (cta?.subtitle ?? data.learningPath?.currentPhase?.title ?? "Mở lộ trình học để tiếp tục.");
 
   return (
-    <section className="relative overflow-hidden rounded-[1.5rem] border border-[var(--BeaconVie-border)] bg-white p-4 shadow-[var(--BeaconVie-soft-shadow)] sm:rounded-[2rem] sm:p-7">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-center">
+    <section className="relative overflow-hidden rounded-[1.5rem] border border-[var(--BeaconVie-border)] bg-white p-4 shadow-[var(--BeaconVie-soft-shadow)] sm:rounded-[2rem] sm:p-6 lg:p-7">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-stretch">
         <div className="min-w-0">
           <BeaconVieBadge className="border-blue-100 bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]">
             {needsPlacement ? "Bắt đầu hành trình" : d.continueLearning}
@@ -553,14 +553,14 @@ function WelcomeHero({
           </div>
         </div>
 
-        <div className="relative min-h-[170px] overflow-hidden rounded-[1.25rem] border border-[var(--BeaconVie-border)] bg-[#eaf3ff] sm:min-h-[220px] sm:rounded-[1.5rem]">
+        <div className="relative min-h-[160px] overflow-hidden rounded-[1.25rem] border border-[var(--BeaconVie-border)] bg-[#eaf3ff] sm:min-h-[220px] sm:rounded-[1.5rem] lg:min-h-[260px]">
           <Image
             src="https://images.unsplash.com/photo-1770235622269-bf3124d85032?auto=format&fit=crop&fm=jpg&q=78&w=1200"
             alt="Sinh viên học tập trong không gian lớp học hiện đại"
             fill
             priority
             className="object-cover"
-            sizes="(max-width: 1023px) 100vw, 300px"
+            sizes="(max-width: 1023px) 100vw, 360px"
           />
           <div className="absolute inset-x-3 bottom-3 rounded-2xl border border-white/70 bg-white/92 p-3 shadow-lg backdrop-blur-md">
             <div className="flex items-center justify-between gap-3">
