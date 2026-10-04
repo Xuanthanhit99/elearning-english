@@ -328,6 +328,18 @@ export class LearningPathService {
     });
 
     let lesson = course.sections.flatMap((section) => section.lessons)[0];
+    const lessonContent =
+      'Hôm nay chúng ta luyện cách giới thiệu bản thân bằng tiếng Anh.\\n\\n' +
+      'My name is Minh. I am from Vietnam. I am learning English because I want to communicate with more confidence every day.\\n\\n' +
+      'Gợi ý: Đọc đoạn hội thoại một lần, sau đó thử nói lại bằng lời của bạn.';
+    if (lesson) {
+      await this.prisma.lesson.update({
+        where: { id: lesson.id },
+        data: { content: lessonContent },
+      });
+      lesson = { ...lesson, content: lessonContent };
+    }
+
     if (!lesson) {
       const section = await this.prisma.section.create({
         data: { courseId: course.id, title: 'Start here', order: 1 },
