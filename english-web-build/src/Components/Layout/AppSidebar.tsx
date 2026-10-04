@@ -146,7 +146,7 @@ export default function AppSidebar({
         data-testid="app-sidebar-desktop"
         className={[
           "fixed inset-y-0 left-0 z-40 hidden border-r border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-shell-surface)] shadow-[12px_0_44px_rgba(22,45,100,0.08)] backdrop-blur-2xl transition-[width] duration-300 lg:block",
-          collapsed ? "w-[88px]" : "w-[248px]",
+          collapsed ? "w-[88px]" : "w-[212px]",
         ].join(" ")}
       >
         <SidebarContent
