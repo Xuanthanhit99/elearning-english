@@ -209,14 +209,7 @@ export default function AppHeader({
             <span className="truncate text-lg font-black tracking-[-.03em] text-[#08245c]">BeaconVie</span>
           </Link>
         </div>
-        <div className="hidden min-w-[190px] lg:block">
-          <p className="truncate text-sm font-black text-[var(--BeaconVie-ink)]">
-            {t("header.greeting", { name: fullname.split(" ").slice(-1)[0] })}
-          </p>
-          <p className="truncate text-xs font-bold text-[var(--BeaconVie-muted)]">
-            {t("header.readyToday")}
-          </p>
-        </div>
+        <div className="hidden lg:block w-8 shrink-0" aria-hidden="true" />
 
         <form
           ref={searchRef}
