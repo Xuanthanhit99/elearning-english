@@ -132,31 +132,32 @@ export default function LearningPathScreen() {
 
   return (
     <main className="min-h-screen px-1 py-2 sm:px-4 sm:py-5 lg:px-6">
-      <div className="mx-auto max-w-6xl space-y-4 sm:space-y-5">
-        <BeaconVieCard className="overflow-hidden p-0">
-          <div className="grid gap-5 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:p-7">
+      <div className="mx-auto max-w-[1280px] space-y-4 sm:space-y-5">
+        <BeaconVieCard className="overflow-hidden border-[#e4ebf5] p-0 shadow-[0_8px_28px_rgba(25,63,122,.08)]">
+          <div className="grid gap-3 p-4 sm:gap-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:p-7">
             <section>
-              <BeaconVieBadge>Lộ trình học</BeaconVieBadge>
-              <h1 className="mt-3 max-w-4xl text-3xl font-black tracking-tight text-[var(--BeaconVie-ink)] sm:text-4xl">
+              <BeaconVieBadge>Beacon Trail · CEFR</BeaconVieBadge>
+              <h1 className="mt-3 max-w-4xl text-3xl font-black tracking-[-.04em] text-[#08245c] sm:text-4xl">
                 {data.title}
               </h1>
-              <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-[var(--BeaconVie-muted)]">
-                {data.source === "PLACEMENT" ? (
-                  <>
-                    Lộ trình này được xây dựng từ kết quả kiểm tra trình độ{" "}
-                    {data.overallLevel} ({Math.round(data.overallScore ?? 0)}/100)
-                    và luôn đồng bộ với tiến độ học thực tế của bạn.
-                  </>
-                ) : (
-                  <>
-                    Bạn chưa làm bài kiểm tra trình độ — đây là điểm khởi đầu cơ
-                    bản cho từng kỹ năng. Bạn có thể làm bài kiểm tra bất cứ lúc
-                    nào để nhận gợi ý phù hợp hơn.
-                  </>
-                )}
+              <p className="mt-2 max-w-3xl text-sm font-semibold leading-5 text-[#60789d] sm:mt-3 sm:leading-6 sm:text-base">
+                <span className="sm:hidden">
+                  {data.source === "PLACEMENT"
+                    ? `Lộ trình cá nhân hoá theo trình độ ${data.overallLevel} của bạn.`
+                    : "Lộ trình học nền tảng, sẵn sàng để bạn bắt đầu."}
+                </span>
+                <span className="hidden sm:inline">
+                  {data.source === "PLACEMENT" ? (
+                    <>Lộ trình này được xây dựng từ kết quả kiểm tra trình độ {data.overallLevel} ({Math.round(data.overallScore ?? 0)}/100) và luôn đồng bộ với tiến độ học thực tế của bạn.</>
+                  ) : (
+                    <>Bạn chưa làm bài kiểm tra trình độ — đây là điểm khởi đầu cơ bản cho từng kỹ năng. Bạn có thể làm bài kiểm tra bất cứ lúc nào để nhận gợi ý phù hợp hơn.</>
+                  )}
+                </span>
               </p>
 
-              <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <CefrRail level={data.overallLevel} />
+
+              <div className="mt-4 hidden grid-cols-4 gap-3 sm:grid">
                 <HeroMetric icon={GraduationCap} label="Trình độ" value={data.overallLevel ?? "—"} />
                 <HeroMetric icon={Target} label="Tiến độ" value={`${data.progressPercent}%`} />
                 <HeroMetric icon={CheckCircle2} label="Đã hoàn thành" value={`${data.completedLessons}`} />
@@ -164,16 +165,23 @@ export default function LearningPathScreen() {
               </div>
             </section>
 
-            <NextLessonCard
-              lesson={
-                data.currentLesson ??
-                (isFullPathLesson(data.nextLesson) ? data.nextLesson : null)
-              }
-              startingLessonId={startingLessonId}
-              onStart={handleStartLesson}
-            />
+            <div className="hidden sm:block">
+              <NextLessonCard
+                lesson={data.currentLesson ?? (isFullPathLesson(data.nextLesson) ? data.nextLesson : null)}
+                startingLessonId={startingLessonId}
+                onStart={handleStartLesson}
+              />
+            </div>
           </div>
         </BeaconVieCard>
+
+        <div className="sm:hidden">
+          <NextLessonCard
+            lesson={data.currentLesson ?? (isFullPathLesson(data.nextLesson) ? data.nextLesson : null)}
+            startingLessonId={startingLessonId}
+            onStart={handleStartLesson}
+          />
+        </div>
 
         {error ? (
           <p className="rounded-2xl bg-rose-50 p-4 text-sm font-bold text-rose-600">
@@ -181,12 +189,12 @@ export default function LearningPathScreen() {
           </p>
         ) : null}
 
-        <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
-          <BeaconVieCard className="p-6">
+        <section className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <BeaconVieCard className="p-4 sm:p-6">
             <BeaconVieSectionHeader
-              eyebrow="Hành trình"
-              title="Bản đồ bài học"
-              description="Bài đã khoá sẽ mở ra khi bạn hoàn thành các bài trước đó."
+              eyebrow="Beacon Trail"
+              title="Hành trình bài học"
+              description="Đi theo từng chặng của lộ trình; bài tiếp theo sẽ mở dựa trên tiến độ thực tế của bạn."
             />
             {allLessons.length ? (
               <PathTimeline
@@ -209,7 +217,7 @@ export default function LearningPathScreen() {
             )}
           </BeaconVieCard>
 
-          <aside className="space-y-5">
+          <aside className="space-y-4 xl:sticky xl:top-24">
             {data.priorities.length ? <PriorityPanel priorities={data.priorities} /> : null}
             <SkillPanel skills={data.skills} />
             {data.phases.length ? <div className="hidden xl:block"><PhasePanel phases={data.phases} /></div> : null}
@@ -232,6 +240,45 @@ export default function LearningPathScreen() {
         ) : null}
       </div>
     </main>
+  );
+}
+
+function CefrRail({ level }: { level: string | null }) {
+  const cefr = ["A1", "A2", "B1", "B2", "C1"];
+  const normalized = (level ?? "").toUpperCase();
+  const activeIndex = cefr.findIndex((item) => normalized.startsWith(item));
+  const active = activeIndex >= 0 ? activeIndex : null;
+
+  return (
+    <div className="mt-3 rounded-[16px] border border-[#e4ebf5] bg-[#f8fbff] px-3 py-3 sm:mt-5 sm:rounded-[18px] sm:px-4 sm:py-4">
+      <div className="mb-2 flex items-center justify-between gap-3 sm:mb-3">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[.14em] text-[#0867ff]">CEFR</p>
+          <p className="hidden mt-1 text-sm font-black text-[#08245c] sm:block">Bạn đang ở đâu trên Beacon Trail</p>
+        </div>
+        <span className="rounded-full bg-[#e8f1ff] px-3 py-1 text-xs font-black text-[#0867ff]">{level ?? "Chưa xác định"}</span>
+      </div>
+      <div className="flex items-center" aria-label="Thang trình độ CEFR">
+        {cefr.map((item, index) => (
+          <div key={item} className="flex min-w-0 flex-1 items-center">
+            <div className="text-center">
+              <span className={[
+                "mx-auto flex h-9 w-9 items-center justify-center rounded-full border-2 text-xs font-black",
+                active !== null && index < active ? "border-[#19bd96] bg-[#19bd96] text-white" : index === active ? "border-[#0867ff] bg-white text-[#0867ff]" : "border-slate-200 bg-white text-slate-400",
+              ].join(" ")}>{active !== null && index < active ? "✓" : item}</span>
+              <span className={[
+                "mt-1 block text-[10px] font-black",
+                index === active ? "text-[#0867ff]" : "text-slate-400",
+              ].join(" ")}>{item}</span>
+            </div>
+            {index < cefr.length - 1 ? <div className={[
+              "mx-2 h-0.5 flex-1",
+              active !== null && index < active ? "bg-[#19bd96]" : "bg-slate-200",
+            ].join(" ")} /> : null}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -390,7 +437,7 @@ function PathNode({
 
       <article
         className={[
-          "rounded-3xl border p-4 transition",
+          "rounded-[18px] border p-4 shadow-[0_5px_18px_rgba(25,63,122,.05)] transition",
           current
             ? "border-violet-200 bg-violet-50/60"
             : completed
@@ -459,7 +506,7 @@ function PhasePanel({ phases }: { phases: LearningPathData["phases"] }) {
       </h2>
       <div className="mt-4 space-y-3">
         {phases.map((phase) => (
-          <div key={phase.id} className="rounded-2xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-4">
+          <div key={phase.id} className="rounded-xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-2.5 sm:rounded-2xl sm:p-4">
             <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-primary)]">
               Giai đoạn {phase.phase}
               {phase.targetLevel ? ` • ${phase.targetLevel}` : ""}
@@ -599,11 +646,11 @@ function HeroMetric({
 }) {
   return (
     <div className="rounded-2xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-4">
-      <Icon aria-hidden className="h-5 w-5 text-[var(--BeaconVie-primary)]" />
-      <p className="mt-3 text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-muted)]">
+      <Icon aria-hidden className="h-4 w-4 text-[var(--BeaconVie-primary)] sm:h-5 sm:w-5" />
+      <p className="mt-1.5 hidden text-[10px] font-black uppercase tracking-[0.08em] text-[var(--BeaconVie-muted)] sm:mt-3 sm:block sm:text-xs sm:tracking-[0.12em]">
         {label}
       </p>
-      <p className="mt-1 text-xl font-black text-[var(--BeaconVie-ink)]">
+      <p className="mt-0.5 text-sm font-black text-[var(--BeaconVie-ink)] sm:mt-1 sm:text-xl">
         {value}
       </p>
     </div>
