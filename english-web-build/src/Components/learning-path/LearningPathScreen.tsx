@@ -158,7 +158,7 @@ export default function LearningPathScreen() {
 
               <CefrRail level={data.overallLevel} />
 
-              <div className="mt-3 grid grid-cols-4 gap-1.5 sm:mt-5 sm:gap-3">
+              <div className="mt-4 hidden grid-cols-4 gap-3 sm:grid">
                 <HeroMetric icon={GraduationCap} label="Trình độ" value={data.overallLevel ?? "—"} />
                 <HeroMetric icon={Target} label="Tiến độ" value={`${data.progressPercent}%`} />
                 <HeroMetric icon={CheckCircle2} label="Đã hoàn thành" value={`${data.completedLessons}`} />
@@ -173,6 +173,13 @@ export default function LearningPathScreen() {
               }
               startingLessonId={startingLessonId}
               onStart={handleStartLesson}
+            />
+
+            <MobileSummaryStrip
+              level={data.overallLevel}
+              progress={data.progressPercent}
+              completed={data.completedLessons}
+              total={data.totalLessons}
             />
           </div>
         </BeaconVieCard>
@@ -234,6 +241,36 @@ export default function LearningPathScreen() {
         ) : null}
       </div>
     </main>
+  );
+}
+
+function MobileSummaryStrip({
+  level,
+  progress,
+  completed,
+  total,
+}: {
+  level: string | null;
+  progress: number;
+  completed: number;
+  total: number;
+}) {
+  const items = [
+    ["CEFR", level ?? "—"],
+    ["Tiến độ", `${progress}%`],
+    ["Đã học", `${completed}`],
+    ["Tổng bài", `${total}`],
+  ];
+
+  return (
+    <div className="grid grid-cols-4 overflow-hidden rounded-xl border border-[#e4ebf5] bg-[#f8fbff] sm:hidden">
+      {items.map(([label, value], index) => (
+        <div key={label} className={["min-w-0 px-1.5 py-2 text-center", index ? "border-l border-[#e4ebf5]" : ""].join(" ")}>
+          <p className="truncate text-[9px] font-bold text-[#7890b1]">{label}</p>
+          <p className="mt-0.5 truncate text-xs font-black text-[#08245c]">{value}</p>
+        </div>
+      ))}
+    </div>
   );
 }
 
