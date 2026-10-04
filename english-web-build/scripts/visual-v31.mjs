@@ -56,6 +56,7 @@ async function capture(name, path, viewport) {
     viewport,
     storageState: statePath,
     reducedMotion: "reduce",
+    colorScheme: "light",
   });
   const page = await context.newPage();
   const errors = [];
@@ -81,6 +82,7 @@ for (const [prefix, viewport] of [["desktop", { width: 1440, height: 1000 }], ["
     viewport,
     storageState: statePath,
     reducedMotion: "reduce",
+    colorScheme: "light",
   });
   const page = await context.newPage();
   await page.goto(WEB + "/learning-path", { waitUntil: "networkidle", timeout: 45_000 });
