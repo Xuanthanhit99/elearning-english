@@ -281,15 +281,11 @@ export default function AppHeader({
           )}
         </form>
 
-        <div className="hidden items-center gap-2 lg:flex">
-          <HeaderStat icon={<Flame size={18} className="BeaconVie-beacon-glow" />} label={t("header.streak")} locale={locale} value={streak} />
-          <HeaderStat icon={<Star size={18} className="BeaconVie-beacon-glow" />} label={t("header.xp")} locale={locale} value={xp} />
-        </div>
+        <div className="hidden lg:block flex-1" aria-hidden="true" />
 
         <div className="hidden lg:block">{features.languageSwitcher ? (
           <LanguageSwitcher onChange={(locale) => persistPreference({ language: locale.toUpperCase() })} />
         ) : null}</div>
-        <div className="hidden lg:block"><ThemeToggle onChange={(theme) => persistPreference({ theme })} /></div>
 
         <button
           type="button"
