@@ -352,7 +352,7 @@ function BeaconTrailPanel({
         <div className="flex items-center gap-3 rounded-xl border border-[#e4ebf5] px-3 py-2.5">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#0867ff] font-black text-white">{level}</div>
           <div className="min-w-0 flex-1">
-            <p className="font-black text-[#08245c]">{level} <span className="ml-1 text-sm">Intermediate</span></p>
+            <p className="font-black text-[#08245c]">{level} <span className="ml-1 text-sm">CEFR</span></p>
             <div className="mt-1 flex items-center gap-2 text-[10px] font-bold text-[#0867ff]"><span>Hoàn thành {progress}%</span><div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-[#0867ff]" style={{width:`${progress}%`}} /></div></div>
           </div>
         </div>
@@ -402,7 +402,7 @@ function NextLessonPanel({data,cta}:{data:DashboardData;cta:DashboardData["curre
     <h2 className="mb-2 text-[20px] font-black text-[#08245c]">Bài học tiếp theo</h2>
     <div className="grid overflow-hidden rounded-xl bg-[#fbfdff] sm:grid-cols-[48%_52%]">
       <div className="relative min-h-[170px]"><Image src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&fm=jpg&q=82&w=1000" alt="Học viên luyện hội thoại tiếng Anh" fill className="object-cover" sizes="(max-width:640px) 100vw, 430px"/></div>
-      <div className="flex flex-col justify-center p-4 sm:p-5"><span className="w-fit rounded-full bg-[#e8f1ff] px-3 py-1 text-[11px] font-black text-[#0867ff]">🔥 Unit 3 · Everyday Conversations</span><h3 className="mt-2 text-[22px] font-black leading-tight text-[#08245c]">{cta?.title??"Hội thoại thực tế trong cuộc sống hằng ngày"}</h3><div className="mt-3 flex gap-4 text-xs font-semibold text-[#49658f]"><span>◷ 15 phút</span><span>◎ Nghe - Nói</span><span>{data.user.englishLevel||data.user.level}</span></div><p className="mt-2 line-clamp-2 text-xs leading-5 text-[#60789d]">{cta?.subtitle??"Học cách chào hỏi, bắt chuyện và phản xạ trong các tình huống thực tế."}</p><Link href={href} className="mt-3 flex min-h-11 w-fit min-w-[176px] items-center justify-center gap-3 rounded-xl bg-[#0867ff] px-5 font-black text-white">Bắt đầu học <ChevronRight className="h-4 w-4"/></Link></div>
+      <div className="flex flex-col justify-center p-4 sm:p-5"><span className="w-fit rounded-full bg-[#e8f1ff] px-3 py-1 text-[11px] font-black text-[#0867ff]">Bài học tiếp theo</span><h3 className="mt-2 text-[22px] font-black leading-tight text-[#08245c]">{cta?.title??"Hội thoại thực tế trong cuộc sống hằng ngày"}</h3><div className="mt-3 flex gap-4 text-xs font-semibold text-[#49658f]"><span>◎ Học theo lộ trình</span><span>{data.user.englishLevel||data.user.level}</span></div><p className="mt-2 line-clamp-2 text-xs leading-5 text-[#60789d]">{cta?.subtitle??"Học cách chào hỏi, bắt chuyện và phản xạ trong các tình huống thực tế."}</p><Link href={href} className="mt-3 flex min-h-11 w-fit min-w-[176px] items-center justify-center gap-3 rounded-xl bg-[#0867ff] px-5 font-black text-white">Bắt đầu học <ChevronRight className="h-4 w-4"/></Link></div>
     </div>
   </section>;
 }
