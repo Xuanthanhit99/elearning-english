@@ -140,20 +140,19 @@ export default function LearningPathScreen() {
               <h1 className="mt-3 max-w-4xl text-3xl font-black tracking-[-.04em] text-[#08245c] sm:text-4xl">
                 {data.title}
               </h1>
-              <p className="mt-3 max-w-3xl text-sm font-semibold leading-6 text-[#60789d] sm:text-base">
-                {data.source === "PLACEMENT" ? (
-                  <>
-                    Lộ trình này được xây dựng từ kết quả kiểm tra trình độ{" "}
-                    {data.overallLevel} ({Math.round(data.overallScore ?? 0)}/100)
-                    và luôn đồng bộ với tiến độ học thực tế của bạn.
-                  </>
-                ) : (
-                  <>
-                    Bạn chưa làm bài kiểm tra trình độ — đây là điểm khởi đầu cơ
-                    bản cho từng kỹ năng. Bạn có thể làm bài kiểm tra bất cứ lúc
-                    nào để nhận gợi ý phù hợp hơn.
-                  </>
-                )}
+              <p className="mt-2 max-w-3xl text-sm font-semibold leading-5 text-[#60789d] sm:mt-3 sm:leading-6 sm:text-base">
+                <span className="sm:hidden">
+                  {data.source === "PLACEMENT"
+                    ? `Lộ trình cá nhân hoá theo trình độ ${data.overallLevel} của bạn.`
+                    : "Lộ trình học nền tảng, sẵn sàng để bạn bắt đầu."}
+                </span>
+                <span className="hidden sm:inline">
+                  {data.source === "PLACEMENT" ? (
+                    <>Lộ trình này được xây dựng từ kết quả kiểm tra trình độ {data.overallLevel} ({Math.round(data.overallScore ?? 0)}/100) và luôn đồng bộ với tiến độ học thực tế của bạn.</>
+                  ) : (
+                    <>Bạn chưa làm bài kiểm tra trình độ — đây là điểm khởi đầu cơ bản cho từng kỹ năng. Bạn có thể làm bài kiểm tra bất cứ lúc nào để nhận gợi ý phù hợp hơn.</>
+                  )}
+                </span>
               </p>
 
               <CefrRail level={data.overallLevel} />
@@ -166,23 +165,23 @@ export default function LearningPathScreen() {
               </div>
             </section>
 
-            <NextLessonCard
-              lesson={
-                data.currentLesson ??
-                (isFullPathLesson(data.nextLesson) ? data.nextLesson : null)
-              }
-              startingLessonId={startingLessonId}
-              onStart={handleStartLesson}
-            />
-
-            <MobileSummaryStrip
-              level={data.overallLevel}
-              progress={data.progressPercent}
-              completed={data.completedLessons}
-              total={data.totalLessons}
-            />
+            <div className="hidden sm:block">
+              <NextLessonCard
+                lesson={data.currentLesson ?? (isFullPathLesson(data.nextLesson) ? data.nextLesson : null)}
+                startingLessonId={startingLessonId}
+                onStart={handleStartLesson}
+              />
+            </div>
           </div>
         </BeaconVieCard>
+
+        <div className="sm:hidden">
+          <NextLessonCard
+            lesson={data.currentLesson ?? (isFullPathLesson(data.nextLesson) ? data.nextLesson : null)}
+            startingLessonId={startingLessonId}
+            onStart={handleStartLesson}
+          />
+        </div>
 
         {error ? (
           <p className="rounded-2xl bg-rose-50 p-4 text-sm font-bold text-rose-600">
