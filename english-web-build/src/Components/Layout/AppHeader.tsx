@@ -31,6 +31,7 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
 import { useEffect, useRef, useState } from "react";
@@ -198,28 +199,17 @@ export default function AppHeader({
       data-testid="app-header"
       className={[
         "fixed right-0 top-0 z-30 h-[76px] border-b border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-shell-surface)] shadow-[0_10px_34px_rgba(24,50,118,0.08)] backdrop-blur-2xl transition-[left] duration-300",
-        sidebarCollapsed ? "lg:left-[96px]" : "lg:left-[280px]",
+        sidebarCollapsed ? "lg:left-[88px]" : "lg:left-[212px]",
         "left-0",
       ].join(" ")}
     >
       <div className="flex h-full min-w-0 items-center gap-2 px-3 sm:gap-3 sm:px-5 lg:px-7">
-        <button
-          type="button"
-          aria-label={t("header.openMenu")}
-          onClick={onOpenMobileMenu}
-          className="BeaconVie-button-soft h-11 w-11 shrink-0 p-0 lg:hidden"
-        >
-          <Menu size={20} />
-        </button>
-
-        <Link
-          href="/search"
-          aria-label={t("header.searchPlaceholder")}
-          className="BeaconVie-button-soft h-11 w-11 shrink-0 p-0 md:hidden"
-        >
-          <Search size={18} />
-        </Link>
-
+        <div className="flex min-w-0 flex-1 items-center gap-2 md:hidden">
+          <Link href="/dashboard" className="flex min-w-0 items-center gap-2">
+            <Image src="/brand/beaconvie-logo.png" alt="BeaconVie" width={30} height={30} className="h-8 w-8 object-contain" />
+            <span className="truncate text-lg font-black tracking-[-.03em] text-[#08245c]">BeaconVie</span>
+          </Link>
+        </div>
         <div className="hidden min-w-[190px] lg:block">
           <p className="truncate text-sm font-black text-[var(--BeaconVie-ink)]">
             {t("header.greeting", { name: fullname.split(" ").slice(-1)[0] })}
@@ -299,15 +289,15 @@ export default function AppHeader({
           )}
         </form>
 
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-2 lg:flex">
           <HeaderStat icon={<Flame size={18} className="BeaconVie-beacon-glow" />} label={t("header.streak")} locale={locale} value={streak} />
           <HeaderStat icon={<Star size={18} className="BeaconVie-beacon-glow" />} label={t("header.xp")} locale={locale} value={xp} />
         </div>
 
-        {features.languageSwitcher ? (
+        <div className="hidden lg:block">{features.languageSwitcher ? (
           <LanguageSwitcher onChange={(locale) => persistPreference({ language: locale.toUpperCase() })} />
-        ) : null}
-        <ThemeToggle onChange={(theme) => persistPreference({ theme })} />
+        ) : null}</div>
+        <div className="hidden lg:block"><ThemeToggle onChange={(theme) => persistPreference({ theme })} /></div>
 
         <button
           type="button"
