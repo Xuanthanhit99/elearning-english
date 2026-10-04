@@ -34,6 +34,7 @@ type PathLessonStatus = 'LOCKED' | 'AVAILABLE' | 'IN_PROGRESS' | 'COMPLETED';
 type PathLesson = {
   id: string;
   title: string;
+  content: string;
   duration: number | null;
   order: number;
   sectionId: string;
@@ -937,6 +938,7 @@ export class LearningPathService {
           lessons.push({
             id: rawLesson.id,
             title: rawLesson.title,
+            content: rawLesson.content,
             duration: rawLesson.duration,
             order: rawLesson.order,
             sectionId: section.id,
