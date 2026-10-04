@@ -243,40 +243,11 @@ export default function LearningPathScreen() {
   );
 }
 
-function MobileSummaryStrip({
-  level,
-  progress,
-  completed,
-  total,
-}: {
-  level: string | null;
-  progress: number;
-  completed: number;
-  total: number;
-}) {
-  const items = [
-    ["CEFR", level ?? "—"],
-    ["Tiến độ", `${progress}%`],
-    ["Đã học", `${completed}`],
-    ["Tổng bài", `${total}`],
-  ];
-
-  return (
-    <div className="grid grid-cols-4 overflow-hidden rounded-xl border border-[#e4ebf5] bg-[#f8fbff] sm:hidden">
-      {items.map(([label, value], index) => (
-        <div key={label} className={["min-w-0 px-1.5 py-2 text-center", index ? "border-l border-[#e4ebf5]" : ""].join(" ")}>
-          <p className="truncate text-[9px] font-bold text-[#7890b1]">{label}</p>
-          <p className="mt-0.5 truncate text-xs font-black text-[#08245c]">{value}</p>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function CefrRail({ level }: { level: string | null }) {
   const cefr = ["A1", "A2", "B1", "B2", "C1"];
   const normalized = (level ?? "").toUpperCase();
-  const active = Math.max(0, cefr.findIndex((item) => normalized.startsWith(item)));
+  const activeIndex = cefr.findIndex((item) => normalized.startsWith(item));
+  const active = activeIndex >= 0 ? activeIndex : null;
 
   return (
     <div className="mt-3 rounded-[16px] border border-[#e4ebf5] bg-[#f8fbff] px-3 py-3 sm:mt-5 sm:rounded-[18px] sm:px-4 sm:py-4">
@@ -293,8 +264,8 @@ function CefrRail({ level }: { level: string | null }) {
             <div className="text-center">
               <span className={[
                 "mx-auto flex h-9 w-9 items-center justify-center rounded-full border-2 text-xs font-black",
-                index < active ? "border-[#19bd96] bg-[#19bd96] text-white" : index === active ? "border-[#0867ff] bg-white text-[#0867ff]" : "border-slate-200 bg-white text-slate-400",
-              ].join(" ")}>{index < active ? "✓" : item}</span>
+                active !== null && index < active ? "border-[#19bd96] bg-[#19bd96] text-white" : index === active ? "border-[#0867ff] bg-white text-[#0867ff]" : "border-slate-200 bg-white text-slate-400",
+              ].join(" ")}>{active !== null && index < active ? "✓" : item}</span>
               <span className={[
                 "mt-1 block text-[10px] font-black",
                 index === active ? "text-[#0867ff]" : "text-slate-400",
@@ -302,7 +273,7 @@ function CefrRail({ level }: { level: string | null }) {
             </div>
             {index < cefr.length - 1 ? <div className={[
               "mx-2 h-0.5 flex-1",
-              index < active ? "bg-[#19bd96]" : "bg-slate-200",
+              active !== null && index < active ? "bg-[#19bd96]" : "bg-slate-200",
             ].join(" ")} /> : null}
           </div>
         ))}
