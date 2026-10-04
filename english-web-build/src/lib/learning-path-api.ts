@@ -9,6 +9,7 @@ export type LearningPathLessonStatus =
 export type LearningPathLesson = {
   id: string;
   title: string;
+  content: string;
   duration: number | null;
   order: number;
   sectionId: string;
