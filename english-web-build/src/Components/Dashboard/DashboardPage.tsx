@@ -158,22 +158,273 @@ function dashboardCta(data: DashboardData) {
 
 function DashboardSkeleton() {
   return (
-    <div className="mx-auto max-w-[1280px] pb-8 sm:pb-10">
-      <AchievementCelebration data={data} />
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_270px]">
-        <div className="min-w-0 space-y-4">
-          <WelcomeHero data={data} dailyPercent={dailyPercent} cta={cta} />
-          <BeaconTrailPanel data={data} cta={cta} />
-          <NextLessonPanel data={data} cta={cta} />
-          <QuickPracticePanel data={data} />
+    <div className="space-y-5 pb-8 sm:space-y-6 sm:pb-10">
+      <BeaconVieSkeleton className="h-[360px] rounded-[2rem]" />
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <BeaconVieSkeleton key={index} className="h-36 rounded-3xl" />
+        ))}
+      </div>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="space-y-6">
+          <BeaconVieSkeleton className="h-72 rounded-3xl" />
+          <BeaconVieSkeleton className="h-80 rounded-3xl" />
         </div>
-        <aside className="hidden space-y-3 xl:block">
-          <StreakPanel data={data} />
-          <WeeklyGoalPanel data={data} dailyPercent={dailyPercent} />
-          <CompactSkillsPanel data={data} />
+        <div className="space-y-6">
+          <BeaconVieSkeleton className="h-72 rounded-3xl" />
+          <BeaconVieSkeleton className="h-64 rounded-3xl" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function DashboardPage() {
+  const { dict, locale } = useTranslation();
+  const d = dict.dashboard;
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardState>({
+    status: "loading",
+    data: null,
+    error: null,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  async function loadDashboard() {
+    setLoading(true);
+    setError(null);
+    setLeaderboard({ status: "loading", data: null, error: null });
+    try {
+      const [dashboardResult, leaderboardResult] = await Promise.allSettled([
+        getDashboard(),
+        getWeeklyLeaderboard(),
+      ]);
+
+      if (dashboardResult.status === "fulfilled") {
+        setData(dashboardResult.value);
+      } else {
+        setData(null);
+        setError(d.loadError);
+      }
+
+      if (leaderboardResult.status === "fulfilled") {
+        setLeaderboard(
+          leaderboardResult.value.entries.length > 0 || leaderboardResult.value.currentUser
+            ? { status: "ready", data: leaderboardResult.value, error: null }
+            : { status: "empty", data: null, error: null },
+        );
+      } else {
+        setLeaderboard({
+          status: "error",
+          data: null,
+          error: "Bảng xếp hạng tạm thời chưa khả dụng.",
+        });
+      }
+    } catch {
+      setError(d.loadError);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    let mounted = true;
+
+    Promise.allSettled([getDashboard(), getWeeklyLeaderboard()]).then(
+      ([dashboardResult, leaderboardResult]) => {
+        if (!mounted) return;
+
+        if (dashboardResult.status === "fulfilled") {
+          setData(dashboardResult.value);
+          setError(null);
+        } else {
+          setData(null);
+          setError(d.loadError);
+        }
+
+        if (leaderboardResult.status === "fulfilled") {
+          setLeaderboard(
+            leaderboardResult.value.entries.length > 0 ||
+              leaderboardResult.value.currentUser
+              ? { status: "ready", data: leaderboardResult.value, error: null }
+              : { status: "empty", data: null, error: null },
+          );
+        } else {
+          setLeaderboard({
+            status: "error",
+            data: null,
+            error: "Bảng xếp hạng tạm thời chưa khả dụng.",
+          });
+        }
+
+        setLoading(false);
+      },
+    );
+
+    return () => {
+      mounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const maxWeeklyXp = useMemo(() => {
+    return Math.max(...(data?.weeklyActivity.map((item) => item.xp) ?? [0]), 1);
+  }, [data]);
+
+  const prevGoalCompletedRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    const isGoalCompleted = data?.today?.isGoalCompleted;
+    if (isGoalCompleted === undefined) return;
+
+    // Only fire on a false -> true transition observed while mounted, not
+    // for a goal that was already complete on the first fetch (prevents
+    // re-firing on every refetch/rerender once it's already true).
+    if (prevGoalCompletedRef.current === false && isGoalCompleted === true) {
+      trackEvent("daily_goal_complete");
+    }
+
+    prevGoalCompletedRef.current = isGoalCompleted;
+  }, [data?.today?.isGoalCompleted]);
+
+  if (loading) return <DashboardSkeleton />;
+
+  if (error || !data) {
+    return (
+      <BeaconVieState
+        title={error ?? d.noData}
+        description="Phiên đăng nhập có thể đã hết hạn hoặc dịch vụ tạm thời gián đoạn."
+        actionLabel={d.retry}
+        onAction={loadDashboard}
+        tone="error"
+      />
+    );
+  }
+
+  const dailySummary = data.todayMissions.summary;
+  const dailyPercent =
+    dailySummary.total > 0
+      ? Math.round((dailySummary.completed / dailySummary.total) * 100)
+      : data.today?.dailyGoalProgress ?? 0;
+  const cta = dashboardCta(data);
+
+  return (
+    <div className="space-y-5 pb-8 sm:space-y-6 sm:pb-10">
+      <AchievementCelebration data={data} />
+      <WelcomeHero data={data} dailyPercent={dailyPercent} cta={cta} />
+      <BeaconTrailPanel data={data} cta={cta} />
+
+      <section aria-label="Chỉ số nhanh" className="hidden grid-cols-2 gap-3 lg:grid xl:grid-cols-4">
+        <BeaconVieStatCard
+          icon={<Flame aria-hidden className="h-5 w-5" />}
+          label={dict.header.streak}
+          value={data.currentStreak}
+          detail={d.currentStreak}
+        />
+        <BeaconVieStatCard
+          icon={<Star aria-hidden className="h-5 w-5" />}
+          label={d.statXpToday}
+          value={data.xp.today}
+          detail={`${data.xp.total.toLocaleString()} ${d.totalXp}`}
+        />
+        <BeaconVieStatCard
+          icon={<Trophy aria-hidden className="h-5 w-5" />}
+          label={d.level}
+          value={data.user.englishLevel || data.user.level}
+          detail={data.user.learningGoal ?? undefined}
+        />
+        <BeaconVieStatCard
+          icon={<Target aria-hidden className="h-5 w-5" />}
+          label={d.todayGoal}
+          value={`${clampPercent(dailyPercent)}%`}
+          detail={d.tasksDone
+            .replace("{completed}", String(dailySummary.completed))
+            .replace("{total}", String(dailySummary.total))}
+        />
+      </section>
+
+      <section aria-labelledby="today-intents-title">
+        <div className="mb-3 flex items-end justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--BeaconVie-primary)]">Luyện nhanh</p>
+            <h2 id="today-intents-title" className="mt-1 text-xl font-black text-[var(--BeaconVie-ink)]">
+              Chọn một hoạt động
+            </h2>
+            <p className="mt-1 text-sm font-bold text-[var(--BeaconVie-muted)]">
+              Lộ trình vẫn là trung tâm; các hoạt động này hỗ trợ mục tiêu học hôm nay.
+            </p>
+          </div>
+        </div>
+        <div className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 xl:grid-cols-4">
+          {[
+            { title: "Tiếp tục lộ trình", description: "Học bài tiếp theo theo kế hoạch cá nhân.", href: "/learning-path", icon: Compass },
+            { title: "Luyện tập kỹ năng", description: "Chọn kỹ năng để luyện nhanh theo nhu cầu.", href: "/learn", icon: Headphones },
+            { title: "Game tiếng Anh", description: "Học qua thử thách và chế độ chơi hiện có.", href: "/arena", icon: Gamepad2 },
+            { title: "Học cùng nhau", description: "Tham gia phòng học và luyện tập cùng người khác.", href: "/study-rooms", icon: MessageCircle },
+          ].map((intent) => {
+            const Icon = intent.icon;
+            return (
+              <Link
+                key={intent.href}
+                href={intent.href}
+                className="group BeaconVie-card flex min-h-0 w-[152px] shrink-0 snap-start flex-col items-start gap-3 p-3.5 transition hover:border-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--BeaconVie-primary)] focus-visible:ring-offset-2 sm:w-auto sm:min-w-0 sm:flex-row sm:p-4"
+              >
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]">
+                  <Icon aria-hidden size={20} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-black text-[var(--BeaconVie-ink)]">{intent.title}</span>
+                  <span className="mt-1 hidden text-sm font-bold leading-5 text-[var(--BeaconVie-muted)] sm:block">{intent.description}</span>
+                </span>
+                <ChevronRight aria-hidden className="hidden shrink-0 text-[var(--BeaconVie-muted)] transition group-hover:text-[var(--BeaconVie-primary)] sm:mt-1 sm:block" size={18} />
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {data.quickActions.length > 0 ? (
+        <section aria-labelledby="today-recommendations-title" className="hidden sm:block">
+          <div className="mb-3">
+            <h2 id="today-recommendations-title" className="text-xl font-black text-[var(--BeaconVie-ink)]">
+              Đề xuất hôm nay cho bạn
+            </h2>
+            <p className="mt-1 text-sm font-bold text-[var(--BeaconVie-muted)]">
+              Dựa trên các hành động học mà hệ thống hiện có cho tài khoản của bạn.
+            </p>
+          </div>
+          <QuickActions actions={data.quickActions} />
+        </section>
+      ) : null}
+
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:gap-6">
+        <div className="space-y-6">
+          <SkillsPanel data={data} />
+          <div className="hidden sm:block"><RecentActivityPanel data={data} locale={locale} /></div>
+        </div>
+        <aside className="hidden space-y-5 sm:block xl:space-y-6">
+          <TodayGoalPanel data={data} dailyPercent={dailyPercent} />
           <MissionsPanel missions={data.todayMissions.items} summary={dailySummary} />
         </aside>
       </div>
+
+      <details className="BeaconVie-card group hidden p-4 sm:block sm:p-5">
+        <summary className="cursor-pointer list-none font-black text-[var(--BeaconVie-ink)]">
+          Xem thêm tiến độ và hoạt động
+          <span className="ml-2 text-sm font-bold text-[var(--BeaconVie-muted)]">Analytics · cộng đồng · thành tích</span>
+        </summary>
+        <div className="mt-5 grid gap-5 xl:grid-cols-2">
+          <SkillRadarPanel />
+          <WeeklyActivityPanel data={data} locale={locale} maxWeeklyXp={maxWeeklyXp} />
+          <StudyHeatmapPanel />
+          <AiCoachPanel />
+          <LeaderboardPanel state={leaderboard} />
+          <PetPanel data={data} />
+          <AchievementsPanel data={data} />
+          <NotificationsPanel data={data} />
+          <LearningPathPanel data={data} />
+        </div>
+      </details>
     </div>
   );
 }
