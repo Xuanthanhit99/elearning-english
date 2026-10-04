@@ -34,7 +34,7 @@ type PathLessonStatus = 'LOCKED' | 'AVAILABLE' | 'IN_PROGRESS' | 'COMPLETED';
 type PathLesson = {
   id: string;
   title: string;
-  content: string;
+  content: string | null;
   duration: number | null;
   order: number;
   sectionId: string;
