@@ -377,7 +377,7 @@ export class LearningPathService {
         status: PlacementResultStatus.READY,
         overallScore: 60,
         overallLevel: 'A1',
-        summary: 'Foundation path for visual regression testing.'
+        summary: 'Foundation path for visual regression testing.',
         phases: {
           create: {
             phase: 1,
@@ -396,7 +396,7 @@ export class LearningPathService {
             title: course.title,
             slug: course.slug,
             lessonCount: 1,
-            reason: 'Foundation path for visual regression testing.'
+            reason: 'Foundation path for visual regression testing.',
             order: 1,
           },
         },
