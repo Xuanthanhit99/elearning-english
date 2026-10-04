@@ -309,122 +309,22 @@ export default function DashboardPage() {
   const cta = dashboardCta(data);
 
   return (
-    <div className="space-y-5 pb-8 sm:space-y-6 sm:pb-10">
+    <div className="mx-auto max-w-[1280px] pb-8 sm:pb-10">
       <AchievementCelebration data={data} />
-      <WelcomeHero data={data} dailyPercent={dailyPercent} cta={cta} />
-      <BeaconTrailPanel data={data} cta={cta} />
-
-      <section aria-label="Chỉ số nhanh" className="hidden grid-cols-2 gap-3 lg:grid xl:grid-cols-4">
-        <BeaconVieStatCard
-          icon={<Flame aria-hidden className="h-5 w-5" />}
-          label={dict.header.streak}
-          value={data.currentStreak}
-          detail={d.currentStreak}
-        />
-        <BeaconVieStatCard
-          icon={<Star aria-hidden className="h-5 w-5" />}
-          label={d.statXpToday}
-          value={data.xp.today}
-          detail={`${data.xp.total.toLocaleString()} ${d.totalXp}`}
-        />
-        <BeaconVieStatCard
-          icon={<Trophy aria-hidden className="h-5 w-5" />}
-          label={d.level}
-          value={data.user.englishLevel || data.user.level}
-          detail={data.user.learningGoal ?? undefined}
-        />
-        <BeaconVieStatCard
-          icon={<Target aria-hidden className="h-5 w-5" />}
-          label={d.todayGoal}
-          value={`${clampPercent(dailyPercent)}%`}
-          detail={d.tasksDone
-            .replace("{completed}", String(dailySummary.completed))
-            .replace("{total}", String(dailySummary.total))}
-        />
-      </section>
-
-      <section aria-labelledby="today-intents-title">
-        <div className="mb-3 flex items-end justify-between gap-3">
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--BeaconVie-primary)]">Luyện nhanh</p>
-            <h2 id="today-intents-title" className="mt-1 text-xl font-black text-[var(--BeaconVie-ink)]">
-              Chọn một hoạt động
-            </h2>
-            <p className="mt-1 text-sm font-bold text-[var(--BeaconVie-muted)]">
-              Lộ trình vẫn là trung tâm; các hoạt động này hỗ trợ mục tiêu học hôm nay.
-            </p>
-          </div>
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_270px]">
+        <div className="min-w-0 space-y-4">
+          <WelcomeHero data={data} dailyPercent={dailyPercent} cta={cta} />
+          <BeaconTrailPanel data={data} cta={cta} />
+          <NextLessonPanel data={data} cta={cta} />
+          <QuickPracticePanel data={data} />
         </div>
-        <div className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 xl:grid-cols-4">
-          {[
-            { title: "Tiếp tục lộ trình", description: "Học bài tiếp theo theo kế hoạch cá nhân.", href: "/learning-path", icon: Compass },
-            { title: "Luyện tập kỹ năng", description: "Chọn kỹ năng để luyện nhanh theo nhu cầu.", href: "/learn", icon: Headphones },
-            { title: "Game tiếng Anh", description: "Học qua thử thách và chế độ chơi hiện có.", href: "/arena", icon: Gamepad2 },
-            { title: "Học cùng nhau", description: "Tham gia phòng học và luyện tập cùng người khác.", href: "/study-rooms", icon: MessageCircle },
-          ].map((intent) => {
-            const Icon = intent.icon;
-            return (
-              <Link
-                key={intent.href}
-                href={intent.href}
-                className="group BeaconVie-card flex min-h-0 w-[152px] shrink-0 snap-start flex-col items-start gap-3 p-3.5 transition hover:border-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--BeaconVie-primary)] focus-visible:ring-offset-2 sm:w-auto sm:min-w-0 sm:flex-row sm:p-4"
-              >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]">
-                  <Icon aria-hidden size={20} />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block font-black text-[var(--BeaconVie-ink)]">{intent.title}</span>
-                  <span className="mt-1 hidden text-sm font-bold leading-5 text-[var(--BeaconVie-muted)] sm:block">{intent.description}</span>
-                </span>
-                <ChevronRight aria-hidden className="hidden shrink-0 text-[var(--BeaconVie-muted)] transition group-hover:text-[var(--BeaconVie-primary)] sm:mt-1 sm:block" size={18} />
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      {data.quickActions.length > 0 ? (
-        <section aria-labelledby="today-recommendations-title" className="hidden sm:block">
-          <div className="mb-3">
-            <h2 id="today-recommendations-title" className="text-xl font-black text-[var(--BeaconVie-ink)]">
-              Đề xuất hôm nay cho bạn
-            </h2>
-            <p className="mt-1 text-sm font-bold text-[var(--BeaconVie-muted)]">
-              Dựa trên các hành động học mà hệ thống hiện có cho tài khoản của bạn.
-            </p>
-          </div>
-          <QuickActions actions={data.quickActions} />
-        </section>
-      ) : null}
-
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:gap-6">
-        <div className="space-y-6">
-          <SkillsPanel data={data} />
-          <div className="hidden sm:block"><RecentActivityPanel data={data} locale={locale} /></div>
-        </div>
-        <aside className="hidden space-y-5 sm:block xl:space-y-6">
-          <TodayGoalPanel data={data} dailyPercent={dailyPercent} />
+        <aside className="hidden space-y-3 xl:block">
+          <StreakPanel data={data} />
+          <WeeklyGoalPanel data={data} dailyPercent={dailyPercent} />
+          <CompactSkillsPanel data={data} />
           <MissionsPanel missions={data.todayMissions.items} summary={dailySummary} />
         </aside>
       </div>
-
-      <details className="BeaconVie-card group hidden p-4 sm:block sm:p-5">
-        <summary className="cursor-pointer list-none font-black text-[var(--BeaconVie-ink)]">
-          Xem thêm tiến độ và hoạt động
-          <span className="ml-2 text-sm font-bold text-[var(--BeaconVie-muted)]">Analytics · cộng đồng · thành tích</span>
-        </summary>
-        <div className="mt-5 grid gap-5 xl:grid-cols-2">
-          <SkillRadarPanel />
-          <WeeklyActivityPanel data={data} locale={locale} maxWeeklyXp={maxWeeklyXp} />
-          <StudyHeatmapPanel />
-          <AiCoachPanel />
-          <LeaderboardPanel state={leaderboard} />
-          <PetPanel data={data} />
-          <AchievementsPanel data={data} />
-          <NotificationsPanel data={data} />
-          <LearningPathPanel data={data} />
-        </div>
-      </details>
     </div>
   );
 }
@@ -443,59 +343,32 @@ function BeaconTrailPanel({
   const nodes = data.learningPath?.phases?.slice(0, 5) ?? [];
 
   return (
-    <section aria-labelledby="beacon-trail-title" className="overflow-hidden rounded-[2rem] border border-[var(--BeaconVie-border)] bg-white shadow-[var(--BeaconVie-soft-shadow)]">
-      <div className="border-b border-[var(--BeaconVie-border)] p-5 sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--BeaconVie-primary)]">Beacon Trail · CEFR</p>
-            <h2 id="beacon-trail-title" className="mt-1 text-2xl font-black tracking-[-0.025em] text-[var(--BeaconVie-ink)]">Hành trình học của bạn</h2>
-            <p className="mt-1 text-sm font-semibold text-[var(--BeaconVie-muted)]">Biết bạn đang ở đâu, hôm nay học gì và điểm đến tiếp theo.</p>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-[var(--BeaconVie-ink)]">{level}</span>
-            <span className="text-sm font-bold text-[var(--BeaconVie-muted)]">{progress}% hoàn thành</span>
+    <section className="rounded-[18px] border border-[#e4ebf5] bg-white px-4 py-4 shadow-[0_6px_24px_rgba(25,63,122,.06)] sm:px-5 max-sm:py-3">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-[20px] font-black tracking-[-.02em] text-[#08245c]">Hành trình học của bạn</h2>
+        <Link href="/learning-path" className="hidden text-xs font-extrabold text-[#0867ff] sm:flex sm:items-center sm:gap-1">Xem toàn bộ hành trình <ChevronRight className="h-4 w-4" /></Link>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-[270px_minmax(0,1fr)] lg:items-center">
+        <div className="flex items-center gap-3 rounded-xl border border-[#e4ebf5] px-3 py-2.5">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#0867ff] font-black text-white">{level}</div>
+          <div className="min-w-0 flex-1">
+            <p className="font-black text-[#08245c]">{level} <span className="ml-1 text-sm">CEFR</span></p>
+            <div className="mt-1 flex items-center gap-2 text-[10px] font-bold text-[#0867ff]"><span>Hoàn thành {progress}%</span><div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-[#0867ff]" style={{width:`${progress}%`}} /></div></div>
           </div>
         </div>
-
-        <div className="mt-5 flex w-full items-center" aria-label="Thang CEFR">
-          {cefr.map((item, index) => (
-            <div key={item} className="flex min-w-0 flex-1 items-center">
-              <div className={`relative z-10 mx-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-black ${index < activeIndex ? "bg-[var(--BeaconVie-primary)] text-white" : index === activeIndex ? "border-2 border-[var(--BeaconVie-primary)] bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]" : "bg-slate-100 text-slate-400"}`}>{item}</div>
-              {index < cefr.length - 1 ? <div aria-hidden className={`-ml-1 h-0.5 flex-1 ${index < activeIndex ? "bg-[var(--BeaconVie-primary)]" : "bg-slate-200"}`} /> : null}
-            </div>
-          ))}
+        <div className="flex items-center">
+          {cefr.map((item,index)=><div key={item} className="flex min-w-0 flex-1 items-center"><div className="text-center"><div className={`text-xs font-black ${index===activeIndex?"text-[#0867ff]":"text-slate-400"}`}>{item}</div><div className="mt-1 text-[9px] font-semibold text-slate-400">{["Nền tảng","Cơ bản","Trung cấp","Trung cao","Nâng cao"][index]}</div></div>{index<4?<div className={`mx-2 h-0.5 flex-1 ${index<activeIndex?"bg-[#0867ff]":"bg-slate-200"}`} />:null}</div>)}
         </div>
       </div>
-
-      <div className="p-5 sm:p-6">
-        <div className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-2 sm:mx-0 sm:grid sm:grid-cols-5 sm:overflow-visible sm:px-0 sm:pb-0 sm:gap-4">
-          {(nodes.length ? nodes : [1,2,3,4,5].map((phase) => ({ id: String(phase), title: `Unit ${phase}`, phase, progress: phase < 3 ? 100 : phase === 3 ? progress : 0, targetLevel: null }))).map((node, index) => {
-            const done = node.progress >= 100;
-            const active = !done && (index === 0 || (nodes[index - 1]?.progress ?? 100) >= 100);
-            return (
-              <div key={node.id} className={`relative w-[132px] shrink-0 snap-center rounded-[1.2rem] border p-3 sm:w-auto sm:rounded-[1.35rem] sm:p-4 ${active ? "border-blue-300 bg-[var(--BeaconVie-primary-soft)]" : "border-[var(--BeaconVie-border)] bg-[#fbfdff]"}`}>
-                <div className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-black ${done ? "bg-[var(--BeaconVie-primary)] text-white" : active ? "border-2 border-[var(--BeaconVie-primary)] bg-white text-[var(--BeaconVie-primary)]" : "bg-slate-100 text-slate-400"}`}>
-                  {done ? <CheckCircle2 className="h-4 w-4" /> : index + 1}
-                </div>
-                <p className="mt-3 text-xs font-black uppercase tracking-[0.1em] text-[var(--BeaconVie-muted)]">Unit {node.phase}</p>
-                <p className="mt-1 line-clamp-1 text-sm font-black text-[var(--BeaconVie-ink)] sm:line-clamp-2">{node.title}</p>
-                <p className="mt-2 text-xs font-bold text-[var(--BeaconVie-muted)]">{done ? "Hoàn thành" : active ? "Đang học" : "Chưa mở"}</p>
-              </div>
-            );
-          })}
-        </div>
-        <div className="mt-5 flex flex-col gap-3 rounded-[1.4rem] bg-[#f7faff] p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-primary)]">Điểm tiếp theo</p>
-            <p className="mt-1 font-black text-[var(--BeaconVie-ink)]">{cta?.title ?? data.learningPath?.currentPhase?.title ?? "Tiếp tục lộ trình cá nhân"}</p>
-          </div>
-          <Link href={cta?.href ?? "/learning-path"} className="BeaconVie-button-primary min-h-11 shrink-0 px-5">Tiếp tục <ChevronRight className="h-4 w-4" /></Link>
-        </div>
+      <div className="mt-3 flex items-start overflow-x-auto pb-1 sm:mt-4">
+        {(nodes.length?nodes:[1,2,3,4,5].map(phase=>({id:String(phase),title:`Unit ${phase}`,phase,progress:phase<3?100:phase===3?progress:0,targetLevel:null}))).map((node,index)=>{
+          const done=node.progress>=100; const active=!done&&(index===0||(nodes[index-1]?.progress??100)>=100);
+          return <div key={node.id} className="flex min-w-[92px] flex-1 items-start sm:min-w-[118px]"><div className="flex w-full flex-col items-center text-center"><div className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-black ${done?"border-[#19bd96] bg-[#19bd96] text-white":active?"border-[#0867ff] bg-white text-[#0867ff]":"border-slate-200 bg-slate-50 text-slate-400"}`}>{done?<CheckCircle2 className="h-5 w-5"/>:active?<Play className="h-4 w-4" fill="currentColor"/>:<span>🔒</span>}</div><p className={`mt-2 text-xs font-black ${active?"text-[#0867ff]":"text-[#16396d]"}`}>Unit {node.phase}</p><p className="mt-1 line-clamp-1 text-[10px] font-semibold text-slate-500">{node.title}</p></div>{index<4?<div className={`mt-5 h-0.5 min-w-6 flex-1 ${done?"bg-[#19bd96]":"bg-slate-200"}`} />:null}</div>
+        })}
       </div>
     </section>
   );
 }
-
 function WelcomeHero({
   data,
   dailyPercent,
@@ -505,82 +378,46 @@ function WelcomeHero({
   dailyPercent: number;
   cta: DashboardData["currentLesson"] | DashboardData["recommendedLesson"] | DashboardData["recommendations"][number] | null;
 }) {
-  const { dict } = useTranslation();
-  const d = dict.dashboard;
-  // A brand-new account has no lesson to resume and no englishLevel yet
-  // (englishLevel is only set once a placement result exists). Point that
-  // learner at the placement test instead of a generic learning-path link
-  // with nothing behind it yet.
   const needsPlacement = !cta && !data.user.englishLevel;
-  const title = needsPlacement
-    ? "Kiểm tra trình độ"
-    : (cta?.title ?? "Bắt đầu hoạt động học tiếp theo");
   const href = needsPlacement ? "/placement" : (cta?.href ?? "/learning-path");
-  const subtitle = needsPlacement
-    ? "Chỉ mất vài phút để biết trình độ thật của bạn và nhận lộ trình phù hợp."
-    : (cta?.subtitle ?? data.learningPath?.currentPhase?.title ?? "Mở lộ trình học để tiếp tục.");
-
   return (
-    <section className="relative overflow-hidden rounded-[1.5rem] border border-[var(--BeaconVie-border)] bg-white p-4 shadow-[var(--BeaconVie-soft-shadow)] sm:rounded-[2rem] sm:p-7">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-center">
-        <div className="min-w-0">
-          <BeaconVieBadge className="border-blue-100 bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)]">
-            {needsPlacement ? "Bắt đầu hành trình" : d.continueLearning}
-          </BeaconVieBadge>
-          <h1 className="mt-3 text-2xl font-black tracking-[-0.035em] text-[var(--BeaconVie-ink)] sm:mt-4 sm:text-4xl">
-            {d.greeting.replace("{name}", firstName(data.user.fullname))}
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)] sm:text-base">
-            {needsPlacement
-              ? "Làm bài kiểm tra ngắn để BeaconVie đặt bạn vào đúng điểm bắt đầu trên lộ trình."
-              : "Hôm nay học một chút, bạn sẽ tiến gần hơn đến mục tiêu tiếng Anh của mình."}
-          </p>
-
-          <div className="mt-3 rounded-[1.25rem] border border-blue-100 bg-[#f7faff] p-3.5 sm:mt-6 sm:rounded-[1.5rem] sm:p-5">
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--BeaconVie-primary)]">
-              {needsPlacement ? "Bước đầu tiên" : "Bài học tiếp theo"}
-            </p>
-            <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <h2 className="text-xl font-black text-[var(--BeaconVie-ink)] sm:text-2xl">{title}</h2>
-                <p className="mt-1 line-clamp-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">{subtitle}</p>
-              </div>
-              <Link href={href} className="BeaconVie-button-primary min-h-11 shrink-0 px-5 sm:min-h-12">
-                <Play aria-hidden className="h-5 w-5" fill="currentColor" />
-                {needsPlacement ? "Kiểm tra trình độ" : "Tiếp tục học"}
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative min-h-[170px] overflow-hidden rounded-[1.25rem] border border-[var(--BeaconVie-border)] bg-[#eaf3ff] sm:min-h-[220px] sm:rounded-[1.5rem]">
-          <Image
-            src="https://images.unsplash.com/photo-1770235622269-bf3124d85032?auto=format&fit=crop&fm=jpg&q=78&w=1200"
-            alt="Sinh viên học tập trong không gian lớp học hiện đại"
-            fill
-            priority
-            className="object-cover"
-            sizes="(max-width: 1023px) 100vw, 300px"
-          />
-          <div className="absolute inset-x-3 bottom-3 rounded-2xl border border-white/70 bg-white/92 p-3 shadow-lg backdrop-blur-md">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--BeaconVie-primary)]">Beacon Trail</p>
-                <p className="mt-0.5 text-lg font-black text-[var(--BeaconVie-ink)]">{data.user.englishLevel || data.user.level}</p>
-              </div>
-              <span className="rounded-full bg-[var(--BeaconVie-primary-soft)] px-2.5 py-1 text-[10px] font-black text-[var(--BeaconVie-primary)]">CEFR</span>
-            </div>
-            <div className="mt-2 flex items-center justify-between text-xs font-bold text-[var(--BeaconVie-muted)]">
-              <span>Mục tiêu {clampPercent(dailyPercent)}%</span>
-              <span className="flex items-center gap-1"><Flame className="h-3.5 w-3.5 text-orange-500" /> {data.currentStreak} ngày</span>
-            </div>
-          </div>
+    <section className="relative min-h-[270px] overflow-hidden rounded-[20px] border border-[#e4ebf5] bg-white shadow-[0_8px_28px_rgba(25,63,122,.08)] sm:min-h-[300px] xl:min-h-[250px] max-sm:min-h-[265px]">
+      <Image src="https://images.unsplash.com/photo-1770235622269-bf3124d85032?auto=format&fit=crop&fm=jpg&q=84&w=1600" alt="Người học tiếng Anh đang học tập" fill priority className="object-cover object-[68%_38%] max-sm:object-[58%_52%]" sizes="(max-width:1279px) 100vw, 950px" />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,.98)_0%,rgba(255,255,255,.90)_38%,rgba(255,255,255,.18)_68%,rgba(255,255,255,0)_100%)] max-sm:bg-[linear-gradient(180deg,#fff_0%,rgba(255,255,255,.98)_31%,rgba(255,255,255,.68)_45%,rgba(255,255,255,0)_67%)]" />
+      <div className="relative z-10 max-w-[560px] p-4 sm:p-8">
+        <h1 className="text-[24px] font-black tracking-[-.04em] text-[#08245c] sm:text-[36px]">Chào buổi sáng, {firstName(data.user.fullname)}! 👋</h1>
+        <p className="mt-1 max-w-[520px] text-[13px] font-medium leading-5 text-[#49658f] sm:text-[15px] sm:leading-6">Hôm nay học một chút, bạn sẽ tiến gần hơn đến mục tiêu tiếng Anh của mình.</p>
+        <div className="mt-5 flex items-center gap-3 max-sm:absolute max-sm:left-4 max-sm:right-4 max-sm:bottom-3 max-sm:z-20">
+          <Link href={href} className="flex min-h-12 min-w-[178px] items-center justify-center gap-4 rounded-xl bg-[#0867ff] px-6 text-base font-black text-white max-sm:w-full shadow-[0_8px_18px_rgba(8,103,255,.25)] ring-2 ring-white">{needsPlacement?"Kiểm tra trình độ":"Tiếp tục học"} <ChevronRight className="h-5 w-5"/></Link>
+          <span className="hidden items-center gap-2 text-xs font-bold text-[#49658f] sm:flex"><span className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow"><Play className="h-4 w-4 fill-[#08245c] text-[#08245c]"/></span>Xem video<br/>1 phút</span>
         </div>
       </div>
     </section>
   );
 }
 
+function NextLessonPanel({data,cta}:{data:DashboardData;cta:DashboardData["currentLesson"] | DashboardData["recommendedLesson"] | DashboardData["recommendations"][number] | null}) {
+  const href=cta?.href??"/learning-path";
+  return <section className="rounded-[18px] border border-[#e4ebf5] bg-white p-4 shadow-[0_6px_24px_rgba(25,63,122,.06)]">
+    <h2 className="mb-2 text-[20px] font-black text-[#08245c]">Bài học tiếp theo</h2>
+    <div className="grid overflow-hidden rounded-xl bg-[#fbfdff] sm:grid-cols-[48%_52%]">
+      <div className="relative min-h-[170px]"><Image src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&fm=jpg&q=82&w=1000" alt="Học viên luyện hội thoại tiếng Anh" fill className="object-cover" sizes="(max-width:640px) 100vw, 430px"/></div>
+      <div className="flex flex-col justify-center p-4 sm:p-5"><span className="w-fit rounded-full bg-[#e8f1ff] px-3 py-1 text-[11px] font-black text-[#0867ff]">Bài học tiếp theo</span><h3 className="mt-2 text-[22px] font-black leading-tight text-[#08245c]">{cta?.title??"Hội thoại thực tế trong cuộc sống hằng ngày"}</h3><div className="mt-3 flex gap-4 text-xs font-semibold text-[#49658f]"><span>◎ Học theo lộ trình</span><span>{data.user.englishLevel||data.user.level}</span></div><p className="mt-2 line-clamp-2 text-xs leading-5 text-[#60789d]">{cta?.subtitle??"Học cách chào hỏi, bắt chuyện và phản xạ trong các tình huống thực tế."}</p><Link href={href} className="mt-3 flex min-h-11 w-fit min-w-[176px] items-center justify-center gap-3 rounded-xl bg-[#0867ff] px-5 font-black text-white">Bắt đầu học <ChevronRight className="h-4 w-4"/></Link></div>
+    </div>
+  </section>;
+}
+
+function QuickPracticePanel({data}:{data:DashboardData}) {
+  const progress=new Map(data.skillProgress.map(s=>[s.key.toUpperCase(),s]));
+  const items=[["VOCABULARY","Từ vựng","Ôn tập từ vựng theo chủ đề","/vocabulary",BookOpen,"bg-emerald-50 text-emerald-600"],["GRAMMAR","Ngữ pháp","Luyện ngữ pháp qua bài tập ngắn","/grammar",CheckCircle2,"bg-violet-50 text-violet-600"],["LISTENING","Nghe hiểu","Luyện nghe với nội dung thực tế","/listening",Headphones,"bg-sky-50 text-sky-600"],["SPEAKING","Nói tiếng Anh","Luyện nói cùng AI hoặc hội thoại mẫu","/speaking",Mic2,"bg-rose-50 text-rose-600"]] as const;
+  return <section className="rounded-[18px] border border-[#e4ebf5] bg-white p-4 shadow-[0_6px_24px_rgba(25,63,122,.06)]"><h2 className="mb-3 text-[20px] font-black text-[#08245c]">Luyện tập nhanh</h2><div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{items.map(([key,label,desc,href,Icon,cls])=><Link key={key} href={progress.get(key)?.href||href} className="relative min-h-[128px] overflow-hidden rounded-xl border border-[#e7edf6] bg-gradient-to-br from-white to-[#f7faff] p-3"><span className={`flex h-10 w-10 items-center justify-center rounded-xl ${cls}`}><Icon className="h-5 w-5"/></span><p className="mt-2 text-sm font-black text-[#08245c]">{label}</p><p className="mt-1 line-clamp-2 text-[10px] font-semibold leading-4 text-[#60789d]">{desc}</p><ChevronRight className="absolute bottom-3 right-3 h-4 w-4 text-[#0867ff]"/></Link>)}</div></section>;
+}
+
+function StreakPanel({data}:{data:DashboardData}) {return <BeaconVieCard className="p-4"><p className="text-sm font-black text-[#08245c]">Chuỗi ngày học</p><div className="mt-2 flex items-center gap-3"><span className="text-4xl">🔥</span><div><p className="text-[28px] font-black text-[#08245c]">{data.currentStreak} ngày</p><p className="text-xs font-semibold text-[#60789d]">Cố gắng duy trì nhé!</p></div></div><div className="mt-4 flex justify-between">{["T2","T3","T4","T5","T6","T7","CN"].map((x,i)=><div key={x} className="text-center"><span className={`mx-auto flex h-5 w-5 items-center justify-center rounded-full text-[9px] ${i<Math.min(data.currentStreak,6)?"bg-emerald-500 text-white":"bg-slate-100 text-slate-400"}`}>✓</span><span className="mt-1 block text-[9px] font-bold text-[#60789d]">{x}</span></div>)}</div></BeaconVieCard>}
+
+function WeeklyGoalPanel({data,dailyPercent}:{data:DashboardData;dailyPercent:number}) {const active=data.week?.activeDays??0,target=data.week?.targetDays??0,pct=target?Math.round(active/target*100):dailyPercent;return <BeaconVieCard className="p-4"><div className="flex items-center justify-between"><p className="text-sm font-black text-[#08245c]">Mục tiêu tuần này</p><ChevronRight className="h-4 w-4 text-[#0867ff]"/></div><div className="mt-3 flex items-center justify-between"><p className="text-lg font-black text-[#08245c]">{active}/{target||5} bài</p><span className="text-xs font-bold text-[#49658f]">{clampPercent(pct)}%</span></div><BeaconVieProgress value={pct} className="mt-2 h-2"/></BeaconVieCard>}
+
+function CompactSkillsPanel({data}:{data:DashboardData}) {return <BeaconVieCard className="p-4"><div className="mb-3 flex items-center justify-between"><p className="text-sm font-black text-[#08245c]">Kỹ năng của bạn</p><Link href="/progress" className="text-[10px] font-bold text-[#0867ff]">Xem chi tiết →</Link></div><div className="space-y-3">{data.skillProgress.slice(0,4).map((s,i)=><div key={s.key} className="grid grid-cols-[34px_1fr] items-center gap-2"><span className={`flex h-8 w-8 items-center justify-center rounded-full ${["bg-orange-50","bg-rose-50","bg-blue-50","bg-violet-50"][i]}`}>{["🎧","🎙️","📖","✍️"][i]}</span><div><div className="flex justify-between text-[11px] font-black text-[#16396d]"><span>{s.label}</span><span>{clampPercent(s.percent)}%</span></div><BeaconVieProgress value={s.percent} className="mt-1 h-2"/></div></div>)}</div></BeaconVieCard>}
 function QuickActions({ actions }: { actions: DashboardData["quickActions"] }) {
   return (
     <section aria-label="Thao tác nhanh" className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 sm:gap-3 xl:grid-cols-3">

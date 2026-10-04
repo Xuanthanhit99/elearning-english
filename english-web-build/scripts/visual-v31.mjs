@@ -71,12 +71,12 @@ async function capture(name, path, viewport) {
 }
 
 for (const [label, path] of surfaces) {
-  await capture("desktop-" + label, path, { width: 1440, height: 1000 });
+  await capture("desktop-" + label, path, { width: 1536, height: 1024 });
   await capture("mobile-" + label, path, { width: 390, height: 844 });
 }
 
 // Focus Lesson must be reached from the real Learning Path UI rather than a fabricated lesson id.
-for (const [prefix, viewport] of [["desktop", { width: 1440, height: 1000 }], ["mobile", { width: 390, height: 844 }]]) {
+for (const [prefix, viewport] of [["desktop", { width: 1536, height: 1024 }], ["mobile", { width: 390, height: 844 }]]) {
   const browser = await chromium.launch();
   const context = await browser.newContext({
     viewport,
