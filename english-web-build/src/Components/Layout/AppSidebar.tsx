@@ -24,6 +24,7 @@ import {
   TrendingUp,
   Trophy,
   Users,
+  UserRound,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -55,31 +56,33 @@ type AppSidebarProps = {
 function buildGroups(t: (key: string) => string, role?: string | null): SidebarGroup[] {
   const groups: SidebarGroup[] = [
     {
-      title: "Học hôm nay",
+      title: "Học tập",
       items: [
-        { label: "Hôm nay", href: "/dashboard", icon: Home },
-        { label: t("sidebar.learningPath"), href: "/learning-path", icon: Compass },
+        { label: "Trang chủ", href: "/dashboard", icon: Home },
+        { label: "Hành trình học", href: "/learning-path", icon: Compass },
         { label: "Luyện tập", href: "/learn", icon: BookOpen },
+        { label: "Từ vựng", href: "/vocabulary", icon: BookOpen },
+        { label: "Ngữ pháp", href: "/grammar", icon: CheckCircle2 },
+        { label: "Đọc hiểu", href: "/reading", icon: FileText },
+        { label: "Nghe hiểu", href: "/listening", icon: Headphones },
+        { label: "Nói tiếng Anh", href: "/speaking", icon: Mic2 },
+        { label: "Viết tiếng Anh", href: "/writing", icon: NotebookPen },
       ],
     },
     {
-      title: "Khám phá",
+      title: "Kết nối",
       items: [
-        { label: "Game tiếng Anh", href: "/arena", icon: Gamepad2 },
-        { label: "Học cùng nhau", href: "/study-rooms", icon: MessageCircle },
-        { label: t("sidebar.community"), href: "/community", icon: Users },
-        { label: t("sidebar.progress"), href: "/progress", icon: TrendingUp },
+        { label: "Arena", href: "/arena", icon: Gamepad2 },
+        { label: "Cộng đồng", href: "/community", icon: Users },
+        { label: "Nhiệm vụ", href: "/missions", icon: Trophy },
+        { label: "Bảng xếp hạng", href: "/leaderboard", icon: BarChart3 },
       ],
     },
     {
-      title: "Thêm",
+      title: "Tài khoản",
       items: [
-        { label: t("sidebar.missions"), href: "/missions", icon: Trophy },
-        { label: t("sidebar.leaderboard"), href: "/leaderboard", icon: Trophy },
-        { label: t("sidebar.placement"), href: "/placement", icon: Compass },
-        { label: t("sidebar.history"), href: "/history", icon: History },
-        { label: t("header.notifications"), href: "/notifications", icon: Bell },
-        { label: t("sidebar.settings"), href: "/settings", icon: Settings },
+        { label: "Hồ sơ cá nhân", href: "/profile", icon: UserRound },
+        { label: "Cài đặt", href: "/settings", icon: Settings },
       ],
     },
   ];
@@ -143,7 +146,7 @@ export default function AppSidebar({
         data-testid="app-sidebar-desktop"
         className={[
           "fixed inset-y-0 left-0 z-40 hidden border-r border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-shell-surface)] shadow-[12px_0_44px_rgba(22,45,100,0.08)] backdrop-blur-2xl transition-[width] duration-300 lg:block",
-          collapsed ? "w-[96px]" : "w-[280px]",
+          collapsed ? "w-[88px]" : "w-[248px]",
         ].join(" ")}
       >
         <SidebarContent
@@ -244,7 +247,7 @@ function SidebarContent({
         )}
       </div>
 
-      <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-5">
+      <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
         {groups.map((group) => (
           <div key={group.title} className="mb-5">
             {!collapsed && (
@@ -265,7 +268,7 @@ function SidebarContent({
                     aria-current={active ? "page" : undefined}
                     title={collapsed ? item.label : undefined}
                     className={[
-                      "flex h-12 min-w-0 items-center rounded-2xl text-sm font-black transition duration-200",
+                      "flex h-11 min-w-0 items-center rounded-xl text-[13px] font-extrabold transition duration-200",
                       collapsed ? "justify-center px-0" : "gap-3 px-3",
                       active
                         ? "bg-[var(--BeaconVie-primary-soft)] text-[var(--BeaconVie-primary)] shadow-[inset_3px_0_0_var(--BeaconVie-primary)]"
