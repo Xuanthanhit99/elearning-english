@@ -381,14 +381,14 @@ function WelcomeHero({
   const needsPlacement = !cta && !data.user.englishLevel;
   const href = needsPlacement ? "/placement" : (cta?.href ?? "/learning-path");
   return (
-    <section className="relative min-h-[270px] overflow-hidden rounded-[20px] border border-[#e4ebf5] bg-white shadow-[0_8px_28px_rgba(25,63,122,.08)] sm:min-h-[300px] xl:min-h-[250px]">
-      <Image src="https://images.unsplash.com/photo-1770235622269-bf3124d85032?auto=format&fit=crop&fm=jpg&q=84&w=1600" alt="Người học tiếng Anh đang học tập" fill priority className="object-cover object-[68%_38%]" sizes="(max-width:1279px) 100vw, 950px" />
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,.98)_0%,rgba(255,255,255,.90)_38%,rgba(255,255,255,.18)_68%,rgba(255,255,255,0)_100%)] max-sm:bg-[linear-gradient(180deg,#fff_0%,rgba(255,255,255,.98)_38%,rgba(255,255,255,.42)_58%,rgba(255,255,255,0)_78%)]" />
+    <section className="relative min-h-[270px] overflow-hidden rounded-[20px] border border-[#e4ebf5] bg-white shadow-[0_8px_28px_rgba(25,63,122,.08)] sm:min-h-[300px] xl:min-h-[250px] max-sm:min-h-[265px]">
+      <Image src="https://images.unsplash.com/photo-1770235622269-bf3124d85032?auto=format&fit=crop&fm=jpg&q=84&w=1600" alt="Người học tiếng Anh đang học tập" fill priority className="object-cover object-[68%_38%] max-sm:object-[58%_52%]" sizes="(max-width:1279px) 100vw, 950px" />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,.98)_0%,rgba(255,255,255,.90)_38%,rgba(255,255,255,.18)_68%,rgba(255,255,255,0)_100%)] max-sm:bg-[linear-gradient(180deg,#fff_0%,rgba(255,255,255,.98)_31%,rgba(255,255,255,.68)_45%,rgba(255,255,255,0)_67%)]" />
       <div className="relative z-10 max-w-[560px] p-4 sm:p-8">
-        <h1 className="text-[27px] font-black tracking-[-.04em] text-[#08245c] sm:text-[36px]">Chào buổi sáng, {firstName(data.user.fullname)}! 👋</h1>
-        <p className="mt-1 max-w-[520px] text-[15px] font-medium leading-6 text-[#49658f]">Hôm nay học một chút, bạn sẽ tiến gần hơn đến mục tiêu tiếng Anh của mình.</p>
-        <div className="mt-5 flex items-center gap-3 max-sm:absolute max-sm:left-4 max-sm:right-4 max-sm:bottom-3">
-          <Link href={href} className="flex min-h-12 min-w-[178px] items-center justify-center gap-4 rounded-xl bg-[#0867ff] px-6 text-base font-black text-white shadow-[0_8px_18px_rgba(8,103,255,.25)] ring-2 ring-white">{needsPlacement?"Kiểm tra trình độ":"Tiếp tục học"} <ChevronRight className="h-5 w-5"/></Link>
+        <h1 className="text-[24px] font-black tracking-[-.04em] text-[#08245c] sm:text-[36px]">Chào buổi sáng, {firstName(data.user.fullname)}! 👋</h1>
+        <p className="mt-1 max-w-[520px] text-[13px] font-medium leading-5 text-[#49658f] sm:text-[15px] sm:leading-6">Hôm nay học một chút, bạn sẽ tiến gần hơn đến mục tiêu tiếng Anh của mình.</p>
+        <div className="mt-5 flex items-center gap-3 max-sm:absolute max-sm:left-4 max-sm:right-4 max-sm:bottom-3 max-sm:z-20">
+          <Link href={href} className="flex min-h-12 min-w-[178px] items-center justify-center gap-4 rounded-xl bg-[#0867ff] px-6 text-base font-black text-white max-sm:w-full shadow-[0_8px_18px_rgba(8,103,255,.25)] ring-2 ring-white">{needsPlacement?"Kiểm tra trình độ":"Tiếp tục học"} <ChevronRight className="h-5 w-5"/></Link>
           <span className="hidden items-center gap-2 text-xs font-bold text-[#49658f] sm:flex"><span className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow"><Play className="h-4 w-4 fill-[#08245c] text-[#08245c]"/></span>Xem video<br/>1 phút</span>
         </div>
       </div>
