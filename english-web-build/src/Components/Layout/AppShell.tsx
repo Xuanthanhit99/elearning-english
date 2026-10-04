@@ -71,6 +71,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const [showWelcome, setShowWelcome] = useState(false);
   const [prevAuthStatus, setPrevAuthStatus] = useState(authStatus);
   const focusMode = pathname.startsWith("/placement/test/");
+  const lessonFocusMode = pathname.startsWith("/learning-path/lessons/");
 
   // Adjust state during render (React's endorsed pattern for reacting to a
   // value change) instead of in an effect, so showing the welcome modal
@@ -143,7 +144,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         </ResponsiveContainer>
       </main>
 
-      {focusMode ? null : <MobileNavigation onOpenMenu={() => setMobileOpen(true)} />}
+      {focusMode || lessonFocusMode ? null : <MobileNavigation onOpenMenu={() => setMobileOpen(true)} />}
       {focusMode ? null : <MiuChatWidget />}
 
       <style jsx global>{`
