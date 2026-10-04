@@ -134,7 +134,7 @@ export default function LearningPathScreen() {
     <main className="min-h-screen px-1 py-2 sm:px-4 sm:py-5 lg:px-6">
       <div className="mx-auto max-w-[1280px] space-y-4 sm:space-y-5">
         <BeaconVieCard className="overflow-hidden border-[#e4ebf5] p-0 shadow-[0_8px_28px_rgba(25,63,122,.08)]">
-          <div className="grid gap-5 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:p-7">
+          <div className="grid gap-3 p-4 sm:gap-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:p-7">
             <section>
               <BeaconVieBadge>Beacon Trail · CEFR</BeaconVieBadge>
               <h1 className="mt-3 max-w-4xl text-3xl font-black tracking-[-.04em] text-[#08245c] sm:text-4xl">
@@ -158,7 +158,7 @@ export default function LearningPathScreen() {
 
               <CefrRail level={data.overallLevel} />
 
-              <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div className="mt-3 grid grid-cols-4 gap-1.5 sm:mt-5 sm:gap-3">
                 <HeroMetric icon={GraduationCap} label="Trình độ" value={data.overallLevel ?? "—"} />
                 <HeroMetric icon={Target} label="Tiến độ" value={`${data.progressPercent}%`} />
                 <HeroMetric icon={CheckCircle2} label="Đã hoàn thành" value={`${data.completedLessons}`} />
@@ -183,8 +183,8 @@ export default function LearningPathScreen() {
           </p>
         ) : null}
 
-        <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
-          <BeaconVieCard className="p-6">
+        <section className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <BeaconVieCard className="p-4 sm:p-6">
             <BeaconVieSectionHeader
               eyebrow="Beacon Trail"
               title="Hành trình bài học"
@@ -211,7 +211,7 @@ export default function LearningPathScreen() {
             )}
           </BeaconVieCard>
 
-          <aside className="space-y-5">
+          <aside className="space-y-4 xl:sticky xl:top-24">
             {data.priorities.length ? <PriorityPanel priorities={data.priorities} /> : null}
             <SkillPanel skills={data.skills} />
             {data.phases.length ? <div className="hidden xl:block"><PhasePanel phases={data.phases} /></div> : null}
@@ -243,11 +243,11 @@ function CefrRail({ level }: { level: string | null }) {
   const active = Math.max(0, cefr.findIndex((item) => normalized.startsWith(item)));
 
   return (
-    <div className="mt-5 rounded-[18px] border border-[#e4ebf5] bg-[#f8fbff] px-4 py-4">
-      <div className="mb-3 flex items-center justify-between gap-3">
+    <div className="mt-3 rounded-[16px] border border-[#e4ebf5] bg-[#f8fbff] px-3 py-3 sm:mt-5 sm:rounded-[18px] sm:px-4 sm:py-4">
+      <div className="mb-2 flex items-center justify-between gap-3 sm:mb-3">
         <div>
           <p className="text-xs font-black uppercase tracking-[.14em] text-[#0867ff]">CEFR</p>
-          <p className="mt-1 text-sm font-black text-[#08245c]">Bạn đang ở đâu trên Beacon Trail</p>
+          <p className="hidden mt-1 text-sm font-black text-[#08245c] sm:block">Bạn đang ở đâu trên Beacon Trail</p>
         </div>
         <span className="rounded-full bg-[#e8f1ff] px-3 py-1 text-xs font-black text-[#0867ff]">{level ?? "Chưa xác định"}</span>
       </div>
@@ -499,7 +499,7 @@ function PhasePanel({ phases }: { phases: LearningPathData["phases"] }) {
       </h2>
       <div className="mt-4 space-y-3">
         {phases.map((phase) => (
-          <div key={phase.id} className="rounded-2xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-4">
+          <div key={phase.id} className="rounded-xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-2.5 sm:rounded-2xl sm:p-4">
             <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-primary)]">
               Giai đoạn {phase.phase}
               {phase.targetLevel ? ` • ${phase.targetLevel}` : ""}
@@ -639,11 +639,11 @@ function HeroMetric({
 }) {
   return (
     <div className="rounded-2xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-4">
-      <Icon aria-hidden className="h-5 w-5 text-[var(--BeaconVie-primary)]" />
-      <p className="mt-3 text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-muted)]">
+      <Icon aria-hidden className="h-4 w-4 text-[var(--BeaconVie-primary)] sm:h-5 sm:w-5" />
+      <p className="mt-1.5 hidden text-[10px] font-black uppercase tracking-[0.08em] text-[var(--BeaconVie-muted)] sm:mt-3 sm:block sm:text-xs sm:tracking-[0.12em]">
         {label}
       </p>
-      <p className="mt-1 text-xl font-black text-[var(--BeaconVie-ink)]">
+      <p className="mt-0.5 text-sm font-black text-[var(--BeaconVie-ink)] sm:mt-1 sm:text-xl">
         {value}
       </p>
     </div>
