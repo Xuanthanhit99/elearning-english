@@ -199,7 +199,7 @@ export default function LearningPathLessonPage() {
             </div>
           </section>
 
-          <div className="sticky bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-20 -mx-2 mt-4 flex flex-col gap-2 rounded-[18px] border border-[#dfe8f5] bg-white/95 p-2 shadow-[0_-8px_28px_rgba(25,63,122,.10)] backdrop-blur sm:static sm:mx-0 sm:mt-5 sm:flex-row sm:flex-wrap sm:gap-3 sm:rounded-none sm:border-x-0 sm:border-b-0 sm:border-t sm:border-[#edf1f7] sm:bg-transparent sm:p-0 sm:pt-5 sm:shadow-none sm:backdrop-blur-none">
+          <div className="mt-4 flex flex-col gap-2 rounded-[18px] border border-[#dfe8f5] bg-white p-2 sm:mt-5 sm:flex-row sm:flex-wrap sm:gap-3 sm:rounded-none sm:border-x-0 sm:border-b-0 sm:border-t sm:border-[#edf1f7] sm:bg-transparent sm:p-0 sm:pt-5">
             {!started ? (
               <button
                 type="button"
