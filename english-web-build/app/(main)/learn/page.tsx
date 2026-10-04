@@ -45,14 +45,14 @@ export default function PracticeHubPage() {
             {practiceItems.map((item) => {
               const Icon = item.icon;
               return (
-                <Link key={item.href} href={item.href} className="group relative min-h-[150px] overflow-hidden rounded-[20px] border border-[#e4ebf5] bg-white p-4 shadow-[0_5px_18px_rgba(25,63,122,.05)] transition hover:-translate-y-0.5 hover:border-[#b9d2ff] hover:shadow-[0_10px_28px_rgba(25,63,122,.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0867ff] focus-visible:ring-offset-2 sm:min-h-[180px] sm:p-5">
+                <Link key={item.href} href={item.href} className="group relative min-h-[118px] overflow-hidden rounded-[20px] border border-[#e4ebf5] bg-white p-4 shadow-[0_5px_18px_rgba(25,63,122,.05)] transition hover:-translate-y-0.5 hover:border-[#b9d2ff] hover:shadow-[0_10px_28px_rgba(25,63,122,.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0867ff] focus-visible:ring-offset-2 sm:min-h-[180px] sm:p-5">
                   <div className="flex items-start justify-between gap-3">
                     <span className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl sm:h-12 sm:w-12 ${item.tone}`}>
                       <Icon aria-hidden size={22} />
                     </span>
                     <span className="rounded-full bg-[#f5f8fc] px-2.5 py-1 text-[10px] font-black uppercase tracking-[.08em] text-[#7890b1]">{item.label}</span>
                   </div>
-                  <h3 className="mt-4 text-lg font-black tracking-[-.02em] text-[#08245c] sm:text-xl">{item.title}</h3>
+                  <h3 className="mt-2.5 text-base font-black sm:mt-4 sm:text-xl tracking-[-.02em] text-[#08245c] sm:text-xl">{item.title}</h3>
                   <p className="mt-2 hidden text-sm font-semibold leading-6 text-[#60789d] sm:block">{item.desc}</p>
                   <span className="absolute bottom-4 right-4 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#f0f5ff] text-[#0867ff] transition group-hover:bg-[#0867ff] group-hover:text-white">
                     <ArrowRight size={16} aria-hidden />
