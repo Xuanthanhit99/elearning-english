@@ -343,7 +343,7 @@ function BeaconTrailPanel({
   const nodes = data.learningPath?.phases?.slice(0, 5) ?? [];
 
   return (
-    <section className="rounded-[18px] border border-[#e4ebf5] bg-white px-4 py-4 shadow-[0_6px_24px_rgba(25,63,122,.06)] sm:px-5">
+    <section className="rounded-[18px] border border-[#e4ebf5] bg-white px-4 py-4 shadow-[0_6px_24px_rgba(25,63,122,.06)] sm:px-5 max-sm:py-3">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-[20px] font-black tracking-[-.02em] text-[#08245c]">Hành trình học của bạn</h2>
         <Link href="/learning-path" className="hidden text-xs font-extrabold text-[#0867ff] sm:flex sm:items-center sm:gap-1">Xem toàn bộ hành trình <ChevronRight className="h-4 w-4" /></Link>
@@ -360,10 +360,10 @@ function BeaconTrailPanel({
           {cefr.map((item,index)=><div key={item} className="flex min-w-0 flex-1 items-center"><div className="text-center"><div className={`text-xs font-black ${index===activeIndex?"text-[#0867ff]":"text-slate-400"}`}>{item}</div><div className="mt-1 text-[9px] font-semibold text-slate-400">{["Nền tảng","Cơ bản","Trung cấp","Trung cao","Nâng cao"][index]}</div></div>{index<4?<div className={`mx-2 h-0.5 flex-1 ${index<activeIndex?"bg-[#0867ff]":"bg-slate-200"}`} />:null}</div>)}
         </div>
       </div>
-      <div className="mt-4 flex items-start overflow-x-auto pb-1">
+      <div className="mt-3 flex items-start overflow-x-auto pb-1 sm:mt-4">
         {(nodes.length?nodes:[1,2,3,4,5].map(phase=>({id:String(phase),title:`Unit ${phase}`,phase,progress:phase<3?100:phase===3?progress:0,targetLevel:null}))).map((node,index)=>{
           const done=node.progress>=100; const active=!done&&(index===0||(nodes[index-1]?.progress??100)>=100);
-          return <div key={node.id} className="flex min-w-[118px] flex-1 items-start"><div className="flex w-full flex-col items-center text-center"><div className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-black ${done?"border-[#19bd96] bg-[#19bd96] text-white":active?"border-[#0867ff] bg-white text-[#0867ff]":"border-slate-200 bg-slate-50 text-slate-400"}`}>{done?<CheckCircle2 className="h-5 w-5"/>:active?<Play className="h-4 w-4" fill="currentColor"/>:<span>🔒</span>}</div><p className={`mt-2 text-xs font-black ${active?"text-[#0867ff]":"text-[#16396d]"}`}>Unit {node.phase}</p><p className="mt-1 line-clamp-1 text-[10px] font-semibold text-slate-500">{node.title}</p></div>{index<4?<div className={`mt-5 h-0.5 min-w-6 flex-1 ${done?"bg-[#19bd96]":"bg-slate-200"}`} />:null}</div>
+          return <div key={node.id} className="flex min-w-[92px] flex-1 items-start sm:min-w-[118px]"><div className="flex w-full flex-col items-center text-center"><div className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-black ${done?"border-[#19bd96] bg-[#19bd96] text-white":active?"border-[#0867ff] bg-white text-[#0867ff]":"border-slate-200 bg-slate-50 text-slate-400"}`}>{done?<CheckCircle2 className="h-5 w-5"/>:active?<Play className="h-4 w-4" fill="currentColor"/>:<span>🔒</span>}</div><p className={`mt-2 text-xs font-black ${active?"text-[#0867ff]":"text-[#16396d]"}`}>Unit {node.phase}</p><p className="mt-1 line-clamp-1 text-[10px] font-semibold text-slate-500">{node.title}</p></div>{index<4?<div className={`mt-5 h-0.5 min-w-6 flex-1 ${done?"bg-[#19bd96]":"bg-slate-200"}`} />:null}</div>
         })}
       </div>
     </section>
@@ -381,13 +381,13 @@ function WelcomeHero({
   const needsPlacement = !cta && !data.user.englishLevel;
   const href = needsPlacement ? "/placement" : (cta?.href ?? "/learning-path");
   return (
-    <section className="relative min-h-[270px] overflow-hidden rounded-[20px] border border-[#e4ebf5] bg-white shadow-[0_8px_28px_rgba(25,63,122,.08)] sm:min-h-[300px]">
-      <Image src="https://images.unsplash.com/photo-1770235622269-bf3124d85032?auto=format&fit=crop&fm=jpg&q=84&w=1600" alt="Người học tiếng Anh đang học tập" fill priority className="object-cover object-[68%_50%]" sizes="(max-width:1279px) 100vw, 950px" />
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,.98)_0%,rgba(255,255,255,.90)_38%,rgba(255,255,255,.18)_68%,rgba(255,255,255,0)_100%)] max-sm:bg-[linear-gradient(180deg,#fff_0%,rgba(255,255,255,.97)_34%,rgba(255,255,255,.10)_63%,rgba(255,255,255,0)_100%)]" />
-      <div className="relative z-10 max-w-[560px] p-5 sm:p-8">
-        <h1 className="text-[30px] font-black tracking-[-.04em] text-[#08245c] sm:text-[36px]">Chào buổi sáng, {firstName(data.user.fullname)}! 👋</h1>
+    <section className="relative min-h-[270px] overflow-hidden rounded-[20px] border border-[#e4ebf5] bg-white shadow-[0_8px_28px_rgba(25,63,122,.08)] sm:min-h-[300px] xl:min-h-[250px]">
+      <Image src="https://images.unsplash.com/photo-1770235622269-bf3124d85032?auto=format&fit=crop&fm=jpg&q=84&w=1600" alt="Người học tiếng Anh đang học tập" fill priority className="object-cover object-[68%_38%]" sizes="(max-width:1279px) 100vw, 950px" />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,.98)_0%,rgba(255,255,255,.90)_38%,rgba(255,255,255,.18)_68%,rgba(255,255,255,0)_100%)] max-sm:bg-[linear-gradient(180deg,#fff_0%,rgba(255,255,255,.98)_38%,rgba(255,255,255,.42)_58%,rgba(255,255,255,0)_78%)]" />
+      <div className="relative z-10 max-w-[560px] p-4 sm:p-8">
+        <h1 className="text-[27px] font-black tracking-[-.04em] text-[#08245c] sm:text-[36px]">Chào buổi sáng, {firstName(data.user.fullname)}! 👋</h1>
         <p className="mt-1 max-w-[520px] text-[15px] font-medium leading-6 text-[#49658f]">Hôm nay học một chút, bạn sẽ tiến gần hơn đến mục tiêu tiếng Anh của mình.</p>
-        <div className="mt-5 flex items-center gap-3 max-sm:absolute max-sm:left-4 max-sm:right-4 max-sm:top-[205px]">
+        <div className="mt-5 flex items-center gap-3 max-sm:absolute max-sm:left-4 max-sm:right-4 max-sm:bottom-3">
           <Link href={href} className="flex min-h-12 min-w-[178px] items-center justify-center gap-4 rounded-xl bg-[#0867ff] px-6 text-base font-black text-white shadow-[0_8px_18px_rgba(8,103,255,.25)] ring-2 ring-white">{needsPlacement?"Kiểm tra trình độ":"Tiếp tục học"} <ChevronRight className="h-5 w-5"/></Link>
           <span className="hidden items-center gap-2 text-xs font-bold text-[#49658f] sm:flex"><span className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow"><Play className="h-4 w-4 fill-[#08245c] text-[#08245c]"/></span>Xem video<br/>1 phút</span>
         </div>
