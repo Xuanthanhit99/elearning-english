@@ -19,7 +19,7 @@ await fs.mkdir("artifacts/visual-v31", { recursive: true });
 async function createAuthState() {
   const request = await playwrightRequest.newContext();
   const register = await request.post(API + "/auth/register", {
-    data: { fullName: "Visual V3.1", email, password },
+    data: { fullName: "Minh", email, password },
   });
   if (![200, 201, 400].includes(register.status())) {
     throw new Error("Visual fixture registration failed: " + register.status());
