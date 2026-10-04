@@ -37,9 +37,7 @@ export const themeAntiFlashScript = `
   try {
     var raw = localStorage.getItem('BeaconVie-theme');
     var theme = raw ? (JSON.parse(raw).state || {}).theme : 'LIGHT';
-    var isDark = theme === 'DARK' ||
-      ((!theme || theme === 'SYSTEM') &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches);
+    var isDark = theme === 'DARK';
     if (isDark) document.documentElement.classList.add('dark');
   } catch (e) {}
 })();
