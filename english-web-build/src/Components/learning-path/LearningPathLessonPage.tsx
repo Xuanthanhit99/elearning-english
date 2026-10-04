@@ -189,6 +189,16 @@ export default function LearningPathLessonPage() {
             </div>
           </div>
 
+          <section aria-labelledby="lesson-content-title" className="mt-4 rounded-[20px] border border-[#e4ebf5] bg-white p-5 shadow-[0_4px_16px_rgba(25,63,122,.04)] sm:mt-5 sm:p-6">
+            <p className="text-xs font-black uppercase tracking-[.14em] text-[#0867ff]">Nội dung bài học</p>
+            <h2 id="lesson-content-title" className="mt-1.5 text-xl font-black tracking-[-.02em] text-[#08245c]">
+              Học trước khi hoàn thành
+            </h2>
+            <div className="mt-4 whitespace-pre-wrap rounded-[16px] bg-[#f8fbff] p-4 text-sm font-semibold leading-7 text-[#405b82] sm:p-5 sm:text-base">
+              {lesson.content?.trim() || "Bài học này chưa có nội dung văn bản để hiển thị."}
+            </div>
+          </section>
+
           <div className="sticky bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-20 -mx-2 mt-4 flex flex-col gap-2 rounded-[18px] border border-[#dfe8f5] bg-white/95 p-2 shadow-[0_-8px_28px_rgba(25,63,122,.10)] backdrop-blur sm:static sm:mx-0 sm:mt-5 sm:flex-row sm:flex-wrap sm:gap-3 sm:rounded-none sm:border-x-0 sm:border-b-0 sm:border-t sm:border-[#edf1f7] sm:bg-transparent sm:p-0 sm:pt-5 sm:shadow-none sm:backdrop-blur-none">
             {!started ? (
               <button
