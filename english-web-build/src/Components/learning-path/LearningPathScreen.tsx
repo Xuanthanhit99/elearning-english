@@ -132,15 +132,15 @@ export default function LearningPathScreen() {
 
   return (
     <main className="min-h-screen px-1 py-2 sm:px-4 sm:py-5 lg:px-6">
-      <div className="mx-auto max-w-6xl space-y-4 sm:space-y-5">
-        <BeaconVieCard className="overflow-hidden p-0">
+      <div className="mx-auto max-w-[1280px] space-y-4 sm:space-y-5">
+        <BeaconVieCard className="overflow-hidden border-[#e4ebf5] p-0 shadow-[0_8px_28px_rgba(25,63,122,.08)]">
           <div className="grid gap-5 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:p-7">
             <section>
-              <BeaconVieBadge>Lộ trình học</BeaconVieBadge>
-              <h1 className="mt-3 max-w-4xl text-3xl font-black tracking-tight text-[var(--BeaconVie-ink)] sm:text-4xl">
+              <BeaconVieBadge>Beacon Trail · CEFR</BeaconVieBadge>
+              <h1 className="mt-3 max-w-4xl text-3xl font-black tracking-[-.04em] text-[#08245c] sm:text-4xl">
                 {data.title}
               </h1>
-              <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-[var(--BeaconVie-muted)]">
+              <p className="mt-3 max-w-3xl text-sm font-semibold leading-6 text-[#60789d] sm:text-base">
                 {data.source === "PLACEMENT" ? (
                   <>
                     Lộ trình này được xây dựng từ kết quả kiểm tra trình độ{" "}
@@ -155,6 +155,8 @@ export default function LearningPathScreen() {
                   </>
                 )}
               </p>
+
+              <CefrRail level={data.overallLevel} />
 
               <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <HeroMetric icon={GraduationCap} label="Trình độ" value={data.overallLevel ?? "—"} />
@@ -184,9 +186,9 @@ export default function LearningPathScreen() {
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
           <BeaconVieCard className="p-6">
             <BeaconVieSectionHeader
-              eyebrow="Hành trình"
-              title="Bản đồ bài học"
-              description="Bài đã khoá sẽ mở ra khi bạn hoàn thành các bài trước đó."
+              eyebrow="Beacon Trail"
+              title="Hành trình bài học"
+              description="Đi theo từng chặng của lộ trình; bài tiếp theo sẽ mở dựa trên tiến độ thực tế của bạn."
             />
             {allLessons.length ? (
               <PathTimeline
@@ -232,6 +234,44 @@ export default function LearningPathScreen() {
         ) : null}
       </div>
     </main>
+  );
+}
+
+function CefrRail({ level }: { level: string | null }) {
+  const cefr = ["A1", "A2", "B1", "B2", "C1"];
+  const normalized = (level ?? "").toUpperCase();
+  const active = Math.max(0, cefr.findIndex((item) => normalized.startsWith(item)));
+
+  return (
+    <div className="mt-5 rounded-[18px] border border-[#e4ebf5] bg-[#f8fbff] px-4 py-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[.14em] text-[#0867ff]">CEFR</p>
+          <p className="mt-1 text-sm font-black text-[#08245c]">Bạn đang ở đâu trên Beacon Trail</p>
+        </div>
+        <span className="rounded-full bg-[#e8f1ff] px-3 py-1 text-xs font-black text-[#0867ff]">{level ?? "Chưa xác định"}</span>
+      </div>
+      <div className="flex items-center" aria-label="Thang trình độ CEFR">
+        {cefr.map((item, index) => (
+          <div key={item} className="flex min-w-0 flex-1 items-center">
+            <div className="text-center">
+              <span className={[
+                "mx-auto flex h-9 w-9 items-center justify-center rounded-full border-2 text-xs font-black",
+                index < active ? "border-[#19bd96] bg-[#19bd96] text-white" : index === active ? "border-[#0867ff] bg-white text-[#0867ff]" : "border-slate-200 bg-white text-slate-400",
+              ].join(" ")}>{index < active ? "✓" : item}</span>
+              <span className={[
+                "mt-1 block text-[10px] font-black",
+                index === active ? "text-[#0867ff]" : "text-slate-400",
+              ].join(" ")}>{item}</span>
+            </div>
+            {index < cefr.length - 1 ? <div className={[
+              "mx-2 h-0.5 flex-1",
+              index < active ? "bg-[#19bd96]" : "bg-slate-200",
+            ].join(" ")} /> : null}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -390,7 +430,7 @@ function PathNode({
 
       <article
         className={[
-          "rounded-3xl border p-4 transition",
+          "rounded-[18px] border p-4 shadow-[0_5px_18px_rgba(25,63,122,.05)] transition",
           current
             ? "border-violet-200 bg-violet-50/60"
             : completed
