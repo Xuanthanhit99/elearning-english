@@ -206,7 +206,7 @@ export default function AppHeader({
       <div className="flex h-full min-w-0 items-center gap-2 px-3 sm:gap-3 sm:px-5 lg:px-7">
         <div className="flex min-w-0 flex-1 items-center gap-2 md:hidden">
           <Link href="/dashboard" className="flex min-w-0 items-center gap-2">
-            <Image src="/brand/beaconvie-logo.png" alt="BeaconVie" width={30} height={30} className="h-8 w-8 object-contain" />
+            <span aria-hidden className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0867ff] text-lg font-black text-white">B</span>
             <span className="truncate text-lg font-black tracking-[-.03em] text-[#08245c]">BeaconVie</span>
           </Link>
         </div>
