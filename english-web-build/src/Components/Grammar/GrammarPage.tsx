@@ -207,9 +207,9 @@ export default function GrammarPage() {
 
         {message && <div className="mt-5 flex items-center justify-between gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 font-bold text-red-600"><span>{message}</span><button onClick={() => setReloadToken((token) => token + 1)} className="rounded-xl bg-red-600 px-4 py-2 text-sm font-black text-white">Thử lại</button></div>}
 
-        <section className="mt-3 grid grid-cols-2 gap-2 sm:mt-5 sm:gap-3 lg:grid-cols-4">
+        <section className="mt-3 grid !grid-cols-2 gap-2 sm:mt-5 sm:gap-3 lg:!grid-cols-4">
           {stats.map((stat) => { const Icon = stat.icon; return (
-            <div key={stat.label} className="rounded-xl border border-blue-100 bg-white p-3 sm:rounded-2xl sm:p-5">
+            <div key={stat.label} className="min-w-0 rounded-xl border border-blue-100 bg-white p-3 sm:rounded-2xl sm:p-5">
               <div className="flex items-center gap-2 sm:gap-3"><div className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${stat.tone}`}><Icon size={20}/></div>
                 <div className="min-w-0"><p className="text-lg font-black sm:text-2xl">{loading ? "…" : stat.value}</p><p className="truncate text-xs font-bold text-slate-500 sm:text-sm">{stat.label}</p></div>
               </div>
