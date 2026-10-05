@@ -174,8 +174,8 @@ export default function GrammarPage() {
 
   return (
     <div className="min-h-screen bg-[#f7faff] text-[#16325c]">
-      <div className="mx-auto w-full max-w-[1440px] px-4 py-5 sm:px-6 lg:px-8">
-        <section className="rounded-3xl border border-blue-100 bg-gradient-to-r from-blue-50 via-white to-sky-50 p-5 sm:p-7">
+      <div className="mx-auto w-full max-w-[1440px] px-3 py-4 sm:px-6 sm:py-5 lg:px-8">
+        <section className="rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 via-white to-sky-50 p-4 sm:rounded-3xl sm:p-7">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.18em] text-blue-600">Lộ trình ngữ pháp</p>
@@ -196,7 +196,7 @@ export default function GrammarPage() {
           </div>
         </section>
 
-        <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-1 sm:mt-5">
           {levels.map((level) => (
             <button key={level.value} onClick={() => setActiveLevel(level.value)}
               className={`shrink-0 rounded-full px-4 py-2.5 text-sm font-bold ${activeLevel === level.value ? "bg-blue-600 text-white shadow-sm" : "border border-blue-100 bg-white text-slate-600"}`}>
@@ -207,11 +207,11 @@ export default function GrammarPage() {
 
         {message && <div className="mt-5 flex items-center justify-between gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 font-bold text-red-600"><span>{message}</span><button onClick={() => setReloadToken((token) => token + 1)} className="rounded-xl bg-red-600 px-4 py-2 text-sm font-black text-white">Thử lại</button></div>}
 
-        <section className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <section className="mt-3 grid grid-cols-2 gap-2 sm:mt-5 sm:gap-3 lg:grid-cols-4">
           {stats.map((stat) => { const Icon = stat.icon; return (
-            <div key={stat.label} className="rounded-2xl border border-blue-100 bg-white p-4 sm:p-5">
-              <div className="flex items-center gap-3"><div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${stat.tone}`}><Icon size={20}/></div>
-                <div className="min-w-0"><p className="text-xl font-black sm:text-2xl">{loading ? "…" : stat.value}</p><p className="truncate text-xs font-bold text-slate-500 sm:text-sm">{stat.label}</p></div>
+            <div key={stat.label} className="rounded-xl border border-blue-100 bg-white p-3 sm:rounded-2xl sm:p-5">
+              <div className="flex items-center gap-2 sm:gap-3"><div className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${stat.tone}`}><Icon size={20}/></div>
+                <div className="min-w-0"><p className="text-lg font-black sm:text-2xl">{loading ? "…" : stat.value}</p><p className="truncate text-xs font-bold text-slate-500 sm:text-sm">{stat.label}</p></div>
               </div>
             </div>
           );})}
