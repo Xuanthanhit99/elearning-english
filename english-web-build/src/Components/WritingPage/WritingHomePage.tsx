@@ -20,6 +20,18 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { BeaconVieLoadingState } from '@/src/Components/UI/BeaconVie';
 
+const writingLabels: Record<string, string> = {
+  Essay: 'Bài luận',
+  Email: 'Email thực tế',
+  Story: 'Viết truyện',
+  'Sentence Builder': 'Ghép câu',
+  'AI Coach': 'Huấn luyện cùng AI',
+};
+
+function writingLabel(value: string) {
+  return writingLabels[value] || value;
+}
+
 type WritingHome = {
   user: {
     name: string;
@@ -454,7 +466,7 @@ function PracticeCard({
         {iconMap[item.key]}
       </div>
 
-      <h3 className="mt-2 text-sm font-extrabold sm:mt-3 sm:text-lg">{item.title}</h3>
+      <h3 className="mt-2 text-sm font-extrabold sm:mt-3 sm:text-lg">{writingLabel(item.title)}</h3>
       <p className="mt-1 hidden line-clamp-2 text-sm leading-5 text-slate-500 sm:mt-2 sm:block sm:min-h-[40px]">
         {item.description}
       </p>
@@ -497,7 +509,7 @@ function RecommendationCard({
           {item.category}
         </span>
 
-        <h3 className="mt-3 font-extrabold">{item.title}</h3>
+        <h3 className="mt-3 font-extrabold">{writingLabel(item.title)}</h3>
         <p className="mt-1 text-xs text-slate-500">
           {item.level} • {formatType(item.type)}
         </p>
@@ -675,7 +687,7 @@ function HistoryCard({
             </div>
 
             <div className="flex-1">
-              <p className="font-extrabold">{item.title}</p>
+              <p className="font-extrabold">{writingLabel(item.title)}</p>
               <p className="mt-1 text-xs text-slate-500">
                 {formatType(item.type)} • {item.level}
               </p>
@@ -738,7 +750,7 @@ function WritingPathSection({
                 {item.order}
               </div>
 
-              <h3 className="mt-4 font-extrabold">{item.title}</h3>
+              <h3 className="mt-4 font-extrabold">{writingLabel(item.title)}</h3>
 
               <p className="mt-2 line-clamp-2 text-sm leading-5 text-slate-500 sm:min-h-[40px]">
                 {item.description}
