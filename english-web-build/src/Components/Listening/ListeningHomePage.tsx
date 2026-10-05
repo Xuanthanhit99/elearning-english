@@ -24,14 +24,14 @@ import { getApiErrorMessage, unwrap } from "./listening.helpers";
 import { useListeningMissions } from "./useListeningMissions";
 
 const topics = [
-  "Daily Life",
-  "Travel",
-  "Health",
-  "Work",
-  "Technology",
-  "Environment",
-  "Education",
-  "Culture",
+  { value: "Daily Life", label: "Cuộc sống", icon: "☀️" },
+  { value: "Travel", label: "Du lịch", icon: "✈️" },
+  { value: "Health", label: "Sức khỏe", icon: "💚" },
+  { value: "Work", label: "Công việc", icon: "💼" },
+  { value: "Technology", label: "Công nghệ", icon: "💻" },
+  { value: "Environment", label: "Môi trường", icon: "🌿" },
+  { value: "Education", label: "Học tập", icon: "📚" },
+  { value: "Culture", label: "Văn hóa", icon: "🌏" },
 ];
 
 export default function ListeningHomePage() {
@@ -254,25 +254,25 @@ export default function ListeningHomePage() {
                 <section className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:p-6">
                   <h2 className="text-xl font-black">Luyện nghe theo chủ đề</h2>
                   <p className="mt-1 text-sm text-slate-500">
-                    Backend hiện tạo bài theo level và topic.
+                    Chọn chủ đề gần gũi để luyện nghe theo đúng trình độ hiện tại.
                   </p>
 
                   <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-6 sm:gap-4 lg:grid-cols-4">
                     {topics.map((topic) => (
                       <button
-                        key={topic}
+                        key={topic.value}
                         disabled={starting}
                         onClick={() =>
                           startPractice({
                             level: data.level.current,
-                            topic,
+                            topic: topic.value,
                             limit: 10,
                           })
                         }
                         className="rounded-xl bg-slate-50 p-3 text-left transition hover:bg-blue-50 disabled:opacity-50 sm:rounded-2xl sm:p-5"
                       >
-                        <div className="text-3xl">🎧</div>
-                        <h3 className="mt-3 font-black">{topic}</h3>
+                        <div className="text-2xl sm:text-3xl">{topic.icon}</div>
+                        <h3 className="mt-2 font-black sm:mt-3">{topic.label}</h3>
                         <p className="mt-1 text-xs font-bold text-slate-500">
                           {data.level.current} · 10 câu
                         </p>
