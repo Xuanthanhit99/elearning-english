@@ -1,386 +1,124 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
+import { ArrowRight, Clock3, Flame, Mic2, Target, Trophy } from "lucide-react";
 import { BeaconVieLoadingState } from "@/src/Components/UI/BeaconVie";
-import {
-  Bell,
-  BookOpen,
-  ChevronDown,
-  ChevronRight,
-  Flame,
-  Gem,
-  Gift,
-  Home,
-  Search,
-  Star,
-} from "lucide-react";
-import {
-  getSpeakingCategories,
-  SpeakingCategoriesResponse,
-  SpeakingCategoryItem,
-} from "@/src/lib/speaking-api";
+import { getSpeakingHome, type SpeakingHomeData } from "@/src/lib/speaking-api";
 
-export default function SpeakingCategoriesPage() {
+export default function SpeakingPracticePage() {
   const router = useRouter();
-  const [data, setData] = useState<SpeakingCategoriesResponse | null>(null);
-  const [level, setLevel] = useState("all");
+  const [data, setData] = useState<SpeakingHomeData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Aborts the in-flight request when `level` changes again before the
-    // response arrives, so switching levels quickly can't let a stale
-    // response overwrite the categories for the level the user is now on.
-    const controller = new AbortController();
-    setLoading(true);
-    getSpeakingCategories({ level }, controller.signal)
-      .then(setData)
-      .catch((err) => {
-        if (axios.isCancel(err)) return;
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-    return () => controller.abort();
-  }, [level]);
+    let active = true;
+    getSpeakingHome()
+      .then((value) => active && setData(value))
+      .finally(() => active && setLoading(false));
+    return () => { active = false; };
+  }, []);
 
-  if (loading && !data)
-    return (
-      <BeaconVieLoadingState className="m-10" label="Đang tải danh mục luyện nói..." />
-    );
-  if (!data)
-    return <div className="p-10 text-red-500">Không tải được categories.</div>;
+  if (loading) return <BeaconVieLoadingState className="m-6" label="Đang tải trang luyện nói..." />;
+  if (!data) return <div className="p-6 font-semibold text-red-600">Không tải được dữ liệu luyện nói.</div>;
+
+  const featured = data.recommendedTopics[0];
+  const stats = [
+    { label: "Chuỗi ngày", value: `${data.streak.days} ngày`, icon: Flame },
+    { label: "Tiến độ", value: `${data.progress.percent}%`, icon: Target },
+    { label: "Đã hoàn thành", value: data.progress.completed, icon: Trophy },
+  ];
 
   return (
-    <div className="min-h-screen bg-[#f7faff] text-[#08083d]">
-      <div className="flex">
-        <main className="flex-1">
-          <div className="grid grid-cols-12 gap-8 px-9 py-7">
-            <section className="col-span-9">
-              <Breadcrumb />
-              <div className="mb-8 flex items-center justify-between">
-                <div>
-                  <h1 className="text-4xl font-extrabold">
-                    Speaking Categories
-                  </h1>
-                  <p className="mt-3 text-lg text-sky-500">
-                    Explore different categories and practice speaking on topics
-                    that interest you.
-                  </p>
-                </div>
-                <div className="hidden text-8xl lg:block">🎙️💬🌿</div>
+    <main className="min-h-screen bg-[#f7faff] px-4 py-4 text-slate-900 sm:px-6 lg:px-8 lg:py-6">
+      <div className="mx-auto max-w-[1500px] space-y-5">
+        <section className="overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-sky-600 p-5 text-white shadow-lg shadow-blue-100 sm:p-7">
+          <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_320px] md:items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-black">
+                <Mic2 size={15} /> LUYỆN NÓI HÔM NAY
               </div>
-              <div className="flex flex-wrap gap-5">
-                {data.filters.map((f) => (
-                  <button
-                    key={f.value}
-                    onClick={() => setLevel(f.value)}
-                    className={`rounded-xl border px-7 py-4 text-sm font-bold ${level === f.value ? "border-purple-600 bg-purple-600 text-white" : "border-indigo-100 bg-white text-indigo-700"}`}
-                  >
-                    {f.label}
+              <h1 className="mt-3 text-3xl font-black sm:text-4xl">{data.hero.title}</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/80 sm:text-base">{data.hero.description}</p>
+              <button onClick={() => router.push(featured ? `/speaking/topics/${featured.slug}` : "/speaking/topics")} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-black text-blue-700">
+                {featured ? "Luyện chủ đề được đề xuất" : "Bắt đầu luyện nói"} <ArrowRight size={18} />
+              </button>
+            </div>
+            {featured && (
+              <button onClick={() => router.push(`/speaking/topics/${featured.slug}`)} className="overflow-hidden rounded-2xl bg-white/10 p-3 text-left backdrop-blur">
+                {featured.imageUrl ? <img src={featured.imageUrl} alt={featured.title} className="h-28 w-full rounded-xl object-cover sm:h-36" /> : <div className="grid h-28 place-items-center rounded-xl bg-white/10 text-5xl sm:h-36">🎙️</div>}
+                <p className="mt-3 text-xs font-bold text-white/70">{featured.difficulty} · {featured.estimatedMinutes} phút</p>
+                <h2 className="mt-1 font-black">{featured.title}</h2>
+              </button>
+            )}
+          </div>
+        </section>
+
+        <section className="grid grid-cols-3 gap-2 sm:gap-4">
+          {stats.map((item) => { const Icon = item.icon; return (
+            <article key={item.label} className="rounded-2xl border border-blue-100 bg-white p-3 shadow-sm sm:p-5">
+              <Icon className="text-blue-600" size={20} />
+              <p className="mt-2 text-lg font-black sm:text-2xl">{item.value}</p>
+              <p className="text-[11px] font-semibold text-slate-500 sm:text-sm">{item.label}</p>
+            </article>
+          ); })}
+        </section>
+
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_330px]">
+          <section className="space-y-5">
+            <section className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm sm:p-6">
+              <div className="flex items-end justify-between gap-3">
+                <div><h2 className="text-xl font-black">Chọn cách luyện nói</h2><p className="mt-1 text-sm text-slate-500">Luyện đúng kỹ năng bạn cần hôm nay.</p></div>
+                <button onClick={() => router.push("/speaking/topics")} className="shrink-0 text-sm font-bold text-blue-600">Xem chủ đề</button>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {data.practiceTypes.map((item) => (
+                  <button key={item.key} onClick={() => router.push("/speaking/topics")} className="rounded-2xl bg-slate-50 p-4 text-left transition hover:bg-blue-50">
+                    <span className="text-2xl">{item.icon || "🎤"}</span>
+                    <h3 className="mt-2 font-black">{item.title}</h3>
+                    <p className="mt-1 line-clamp-2 text-sm leading-5 text-slate-500">{item.description}</p>
                   </button>
                 ))}
               </div>
-              <div className="mt-8 grid grid-cols-4 gap-6">
-                {data.categories.map((c) => (
-                  <CategoryCard
-                    key={c.id}
-                    item={c}
-                    onClick={() => router.push(`/speaking/topics/${c.slug}`)}
-                  />
+            </section>
+
+            <section className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm sm:p-6">
+              <h2 className="text-xl font-black">Chủ đề dành cho bạn</h2>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {data.recommendedTopics.slice(0, 6).map((topic) => (
+                  <button key={topic.id} onClick={() => router.push(`/speaking/topics/${topic.slug}`)} className="overflow-hidden rounded-2xl border border-slate-100 text-left">
+                    {topic.imageUrl ? <img src={topic.imageUrl} alt={topic.title} className="h-28 w-full object-cover" /> : <div className="grid h-28 place-items-center bg-blue-50 text-4xl">💬</div>}
+                    <div className="p-3"><h3 className="font-black">{topic.title}</h3><p className="mt-1 text-xs text-slate-500">{topic.difficulty} · {topic.estimatedMinutes} phút</p></div>
+                  </button>
                 ))}
               </div>
             </section>
-            <aside className="col-span-3 space-y-5">
-              <ProgressCard
-                progress={data.progress}
-                onView={() => router.push("/speaking/progress")}
-              />
-              <Card title="Top Skills to Improve">
-                <div className="space-y-5">
-                  {data.topSkills.map((s) => (
-                    <div key={s.title} className="flex items-center gap-4">
-                      <div className="rounded-xl bg-green-50 p-3 text-xl">
-                        {s.icon}
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-bold">{s.title}</h3>
-                        <p className="text-sm text-indigo-400">
-                          {s.description}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <button
-                  onClick={() => router.push("/speaking/topics")}
-                  className="mt-7 w-full rounded-xl border border-purple-600 py-4 text-sm font-bold text-purple-600"
-                >
-                  Go to Practice
-                </button>
-              </Card>
-              <Card title="Daily Goal">
-                <div className="flex items-center justify-between gap-5">
-                  <p className="text-sm leading-6 text-sky-500">
-                    {data.dailyGoal.description}
-                  </p>
-                  <div className="flex h-28 w-28 shrink-0 flex-col items-center justify-center rounded-full border-[8px] border-purple-600">
-                    <p className="text-2xl font-extrabold">
-                      {data.dailyGoal.currentMinutes} /{" "}
-                      {data.dailyGoal.targetMinutes}
-                    </p>
-                    <p className="text-xs text-indigo-400">minutes</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => router.push("/speaking/topics")}
-                  className="mt-7 w-full rounded-xl bg-purple-600 py-4 text-sm font-bold text-white"
-                >
-                  Start Practice
-                </button>
-              </Card>
-            </aside>
-          </div>
-        </main>
-      </div>
-    </div>
-  );
-}
+          </section>
 
-function CategoryCard({
-  item,
-  onClick,
-}: {
-  item: SpeakingCategoryItem;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="overflow-hidden rounded-2xl border border-indigo-50 bg-white text-left shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
-    >
-      <div className="h-48 bg-indigo-50">
-        {item.imageUrl ? (
-          <img
-            src={item.imageUrl}
-            alt={item.title}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center text-7xl">
-            {item.icon || "🎙️"}
-          </div>
-        )}
-      </div>
-      <div className="p-5">
-        <h3 className="text-xl font-extrabold">{item.title}</h3>
-        <p className="mt-3 min-h-[72px] text-sm leading-6 text-sky-500">
-          {item.description}
-        </p>
-        <div className="mt-5 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm font-semibold text-sky-500">
-            <BookOpen size={17} />
-            {item.lessonCount} Lessons
-          </div>
-          <span className="rounded-lg bg-green-100 px-3 py-2 text-xs font-bold text-green-600">
-            {item.levelRange}
-          </span>
-        </div>
-        <div className="mt-5 flex items-center gap-3">
-          <div className="h-2 flex-1 rounded-full bg-indigo-100">
-            <div
-              className="h-2 rounded-full bg-purple-600"
-              style={{ width: `${item.progressPercent}%` }}
-            />
-          </div>
-          <span className="text-sm font-bold">{item.progressPercent}%</span>
+          <aside className="space-y-4">
+            <section className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm">
+              <h2 className="font-black">Tiến độ Speaking</h2>
+              <div className="mt-4 h-2.5 rounded-full bg-slate-100"><div className="h-2.5 rounded-full bg-blue-600" style={{ width: `${Math.min(data.progress.percent, 100)}%` }} /></div>
+              <p className="mt-3 text-sm font-semibold text-slate-600">Cấp {data.progress.currentLevel} → {data.progress.nextLevel}</p>
+              <button onClick={() => router.push("/speaking/progress")} className="mt-4 w-full rounded-xl border border-blue-200 py-2.5 text-sm font-bold text-blue-600">Xem tiến độ</button>
+            </section>
+            <section className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm">
+              <h2 className="font-black">Hoạt động gần đây</h2>
+              <div className="mt-3 space-y-2">
+                {data.recentHistory.slice(0, 3).map((item) => (
+                  <button key={item.id} onClick={() => router.push(`/speaking/history/${item.id}`)} className="flex w-full items-center justify-between rounded-xl bg-slate-50 p-3 text-left">
+                    <div className="min-w-0"><p className="truncate text-sm font-bold">{item.title}</p><p className="text-xs text-slate-500">{item.level} · {item.date}</p></div>
+                    <span className="ml-2 font-black text-blue-600">{item.score}%</span>
+                  </button>
+                ))}
+                {!data.recentHistory.length && <p className="text-sm text-slate-500">Chưa có lượt luyện nói gần đây.</p>}
+              </div>
+              <button onClick={() => router.push("/speaking/history")} className="mt-4 w-full rounded-xl bg-blue-600 py-2.5 text-sm font-bold text-white">Xem lịch sử</button>
+            </section>
+            <div className="flex items-center gap-2 rounded-2xl bg-blue-50 p-4 text-sm font-semibold text-blue-800"><Clock3 size={18} /> Mỗi ngày 10–15 phút để duy trì nhịp luyện.</div>
+          </aside>
         </div>
       </div>
-    </button>
-  );
-}
-function Breadcrumb() {
-  return (
-    <div className="mb-7 flex items-center gap-3 text-sm font-semibold text-indigo-400">
-      <Home size={16} />
-      <span>Home</span>
-      <ChevronRight size={14} />
-      <span>Speaking</span>
-      <ChevronRight size={14} />
-      <span className="text-[#08083d]">Categories</span>
-    </div>
-  );
-}
-function Sidebar({ onGoPremium }: { onGoPremium: () => void }) {
-  const menus = [
-    ["Home", "🏠", "/"],
-    ["Từ vựng", "✚", "/vocabulary"],
-    ["Ngữ pháp", "✚", "/grammar"],
-    ["Luyện nghe", "🎧", "/listening"],
-    ["Luyện nói", "🎙️", "/speaking"],
-    ["Luyện đọc", "📖", "/reading"],
-    ["Luyện viết", "✏️", "/writing"],
-    ["Flashcards", "🧩", "/vocabulary/flashcards"],
-  ];
-  return (
-    <aside className="min-h-screen w-[270px] border-r border-indigo-50 bg-white px-5 py-7">
-      <div className="mb-10 flex items-center gap-3">
-        <div className="text-3xl">🦊</div>
-        <h1 className="text-2xl font-extrabold">
-          Speak<span className="text-purple-600">Arena</span>
-        </h1>
-      </div>
-      <nav className="space-y-2">
-        {menus.map(([l, i, h]) => (
-          <a
-            key={l}
-            href={h}
-            className={`flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-bold ${l === "Luyện nói" ? "bg-purple-50 text-purple-700" : "text-[#09093f]"}`}
-          >
-            <span>{i}</span>
-            {l}
-          </a>
-        ))}
-      </nav>
-      <div className="mt-10 rounded-2xl bg-purple-50 p-5">
-        <p className="mb-2 text-sm font-bold text-purple-700">👑 Go Premium</p>
-        <p className="text-xs leading-5 text-indigo-400">
-          Unlock all features and learn without limits.
-        </p>
-        <button
-          onClick={onGoPremium}
-          className="mt-4 rounded-lg bg-purple-600 px-4 py-2 text-xs font-bold text-white"
-        >
-          Upgrade Now
-        </button>
-      </div>
-    </aside>
-  );
-}
-function Topbar({
-  onGift,
-  onNotification,
-  onProfile,
-}: {
-  onGift: () => void;
-  onNotification: () => void;
-  onProfile: () => void;
-}) {
-  return (
-    <header className="flex h-[86px] items-center justify-between border-b border-indigo-50 bg-white px-9">
-      <div className="flex h-12 w-[560px] items-center rounded-xl bg-[#f5f3ff] px-5">
-        <Search size={20} className="text-indigo-400" />
-        <input
-          className="ml-3 flex-1 bg-transparent text-sm outline-none"
-          placeholder="Search topics, lessons or skills..."
-        />
-        <div className="rounded-lg bg-white px-3 py-1 text-xs font-semibold text-sky-500">
-          ⌘ K
-        </div>
-      </div>
-      <div className="flex items-center gap-8">
-        <TopStat
-          icon={<Flame className="text-orange-500" />}
-          value="12"
-          label="Chuỗi ngày"
-        />
-        <TopStat
-          icon={<Star className="text-yellow-500" />}
-          value="2,450"
-          label="XP hôm nay"
-        />
-        <TopStat
-          icon={<Gem className="text-blue-500" />}
-          value="5,230"
-          label="Gems"
-        />
-        <button onClick={onGift}>
-          <Gift className="text-purple-600" />
-        </button>
-        <button onClick={onNotification} className="relative">
-          <Bell className="text-indigo-400" />
-          <span className="absolute -right-1 -top-2 rounded-full bg-red-500 px-1 text-xs text-white">
-            2
-          </span>
-        </button>
-        <button onClick={onProfile} className="flex items-center gap-3">
-          <div className="h-11 w-11 rounded-full bg-indigo-100" />
-          <div className="text-left">
-            <p className="text-sm font-bold">Minh Anh</p>
-            <p className="text-xs text-indigo-400">Level 18</p>
-          </div>
-          <ChevronDown size={15} />
-        </button>
-      </div>
-    </header>
-  );
-}
-function TopStat({
-  icon,
-  value,
-  label,
-}: {
-  icon: React.ReactNode;
-  value: string;
-  label: string;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      {icon}
-      <div>
-        <p className="text-sm font-bold">{value}</p>
-        <p className="text-xs text-indigo-400">{label}</p>
-      </div>
-    </div>
-  );
-}
-function Card({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-2xl border border-indigo-50 bg-white p-7 shadow-sm">
-      <h2 className="mb-6 text-lg font-extrabold">{title}</h2>
-      {children}
-    </div>
-  );
-}
-function ProgressCard({
-  progress,
-  onView,
-}: {
-  progress: SpeakingCategoriesResponse["progress"];
-  onView: () => void;
-}) {
-  return (
-    <Card title="Tiến độ của bạn">
-      <div className="flex items-center gap-7">
-        <div className="flex h-36 w-36 flex-col items-center justify-center rounded-full border-[10px] border-purple-600">
-          <p className="text-4xl font-extrabold">{progress.overallPercent}%</p>
-          <p className="text-sm text-indigo-400">Overall</p>
-        </div>
-        <div className="space-y-5 text-sm">
-          <p>
-            ✅ Completed <b>{progress.completed}</b>
-          </p>
-          <p>
-            🟠 In Progress <b>{progress.inProgress}</b>
-          </p>
-          <p>
-            ⚪ Not Started <b>{progress.notStarted}</b>
-          </p>
-        </div>
-      </div>
-      <button
-        onClick={onView}
-        className="mt-7 w-full rounded-xl border border-purple-600 py-4 text-sm font-bold text-purple-600"
-      >
-        View Progress
-      </button>
-    </Card>
+    </main>
   );
 }
