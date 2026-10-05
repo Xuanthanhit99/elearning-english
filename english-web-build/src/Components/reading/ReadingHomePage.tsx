@@ -232,7 +232,7 @@ export default function ReadingHomePage() {
             </div>
           </section>
 
-          <section className="grid grid-cols-2 gap-2 sm:gap-4 xl:grid-cols-4">
+          <section className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2 sm:gap-4 xl:grid-cols-4">
             {stats.map((item) => {
               const Icon = item.icon;
 
