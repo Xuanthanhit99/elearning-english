@@ -133,16 +133,16 @@ export default function ListeningHomePage() {
   ];
 
   return (
-    <main className="min-h-screen bg-[#fbfbff] text-[#101733]">
+    <main className="min-h-screen bg-[#f7faff] text-[#101733]">
       <div className="mx-auto min-h-screen max-w-[1920px]">
         <section className="min-w-0 px-0 py-2 sm:py-4 lg:px-2">
           <div className="mx-auto max-w-[1500px]">
-            <section className="overflow-hidden rounded-3xl bg-gradient-to-r from-violet-700 to-indigo-600 p-7 text-white shadow-xl shadow-violet-200">
+            <section className="overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-sky-600 p-5 text-white sm:p-7 shadow-xl shadow-blue-200">
               <div className="grid gap-7 md:grid-cols-[1fr_340px] md:items-center">
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-black">
                     <Sparkles size={15} />
-                    LISTENING PATH
+                    LỘ TRÌNH NGHE
                   </div>
 
                   <h1 className="mt-4 text-3xl font-black md:text-4xl">
@@ -163,7 +163,7 @@ export default function ListeningHomePage() {
                             `/listening/practice/${data.continueSession!.sessionId}`,
                           )
                         }
-                        className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-black text-violet-700"
+                        className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-black text-blue-700"
                       >
                         Tiếp tục bài đang học
                         <ArrowRight size={18} />
@@ -172,7 +172,7 @@ export default function ListeningHomePage() {
                       <button
                         disabled={starting}
                         onClick={() => startPractice()}
-                        className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-black text-violet-700 disabled:opacity-60"
+                        className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-black text-blue-700 disabled:opacity-60"
                       >
                         {starting ? "Đang chuẩn bị..." : "Bắt đầu bài hôm nay"}
                         <Play size={18} />
@@ -235,9 +235,9 @@ export default function ListeningHomePage() {
                 return (
                   <article
                     key={item.label}
-                    className="rounded-2xl border border-violet-100 bg-white p-5 shadow-sm"
+                    className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm"
                   >
-                    <div className="grid h-11 w-11 place-items-center rounded-xl bg-violet-50 text-violet-600">
+                    <div className="grid h-11 w-11 place-items-center rounded-xl bg-blue-50 text-blue-600">
                       <Icon size={22} />
                     </div>
                     <p className="mt-4 text-2xl font-black">{item.value}</p>
@@ -251,7 +251,7 @@ export default function ListeningHomePage() {
 
             <div className="mt-7 grid gap-7 xl:grid-cols-[minmax(0,1fr)_370px]">
               <section className="space-y-7">
-                <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+                <section className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
                   <h2 className="text-xl font-black">Luyện nghe theo chủ đề</h2>
                   <p className="mt-1 text-sm text-slate-500">
                     Backend hiện tạo bài theo level và topic.
@@ -269,7 +269,7 @@ export default function ListeningHomePage() {
                             limit: 10,
                           })
                         }
-                        className="rounded-2xl bg-slate-50 p-5 text-left transition hover:bg-violet-50 disabled:opacity-50"
+                        className="rounded-2xl bg-slate-50 p-5 text-left transition hover:bg-blue-50 disabled:opacity-50"
                       >
                         <div className="text-3xl">🎧</div>
                         <h3 className="mt-3 font-black">{topic}</h3>
@@ -281,12 +281,12 @@ export default function ListeningHomePage() {
                   </div>
                 </section>
 
-                <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+                <section className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-black">Hoạt động gần đây</h2>
                     <button
                       onClick={() => router.push("/listening/history")}
-                      className="font-bold text-violet-600"
+                      className="font-bold text-blue-600"
                     >
                       Xem tất cả
                     </button>
@@ -313,7 +313,7 @@ export default function ListeningHomePage() {
                               {session.total} câu đúng
                             </p>
                           </div>
-                          <span className="text-xl font-black text-violet-600">
+                          <span className="text-xl font-black text-blue-600">
                             {session.score}%
                           </span>
                         </button>
@@ -357,7 +357,7 @@ function MissionCard({
   loading: boolean;
 }) {
   return (
-    <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+    <section className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
       <h2 className="font-black">{title}</h2>
 
       {loading ? (
@@ -394,13 +394,13 @@ function MissionCard({
 
 function PageState({ text, action }: { text: string; action?: () => void }) {
   return (
-    <div className="grid min-h-screen place-items-center bg-[#fbfbff]">
+    <div className="grid min-h-screen place-items-center bg-[#f7faff]">
       <div className="rounded-2xl bg-white px-8 py-6 text-center shadow-sm">
         <p className="font-bold">{text}</p>
         {action && (
           <button
             onClick={action}
-            className="mt-4 rounded-xl bg-violet-600 px-5 py-2 font-bold text-white"
+            className="mt-4 rounded-xl bg-blue-600 px-5 py-2 font-bold text-white"
           >
             Tải lại
           </button>
