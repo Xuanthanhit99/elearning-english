@@ -400,7 +400,7 @@ function MissionCard({
   return (
     <section className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
       <div className="flex items-center gap-3">
-        <div className="grid h-11 w-11 place-items-center rounded-xl bg-blue-50 text-blue-600">
+        <div className="hidden h-11 w-11 place-items-center rounded-xl bg-blue-50 text-blue-600 sm:grid">
           <Target size={22} />
         </div>
         <h2 className="font-black">{title}</h2>
