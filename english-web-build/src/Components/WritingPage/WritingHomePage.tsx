@@ -28,7 +28,7 @@ type WritingHome = {
   stats: {
     essaysWritten: number;
     avgScore: number;
-    dayChuỗi ngày: number;
+    dayStreak: number;
     xpToday?: number;
     gems?: number;
   };
@@ -58,7 +58,7 @@ type WritingHome = {
     type: string;
     category: string;
     imageUrl?: string;
-    người học: number;
+    writers: number;
   }[];
   recentHistory: {
     id: string;
@@ -413,9 +413,9 @@ function Hero({ data }: { data: WritingHome }) {
         </div>
 
         <div className="mt-7 flex w-[560px] items-center rounded-2xl bg-white p-5 shadow-sm">
-          <HeroStat value={data.stats.essaysWritten} label="Bài luậns Written" />
+          <HeroStat value={data.stats.essaysWritten} label="Bài đã viết" />
           <HeroStat value={`${data.stats.avgScore}%`} label="Điểm TB" />
-          <HeroStat value={data.stats.dayChuỗi ngày} label="Chuỗi ngày" />
+          <HeroStat value={data.stats.dayStreak} label="Chuỗi ngày" />
         </div>
       </div>
 
@@ -508,7 +508,7 @@ function RecommendationCard({
         </p>
 
         <div className="mt-5 flex items-center justify-between">
-          <p className="text-xs text-slate-500">👥 {item.người học} người học</p>
+          <p className="text-xs text-slate-500">👥 {item.writers} writers</p>
           <button
             onClick={onStart}
             className="grid h-9 w-9 place-items-center rounded-lg border border-blue-200 text-blue-600"
