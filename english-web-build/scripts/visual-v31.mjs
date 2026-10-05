@@ -43,6 +43,21 @@ async function capture(name, path, viewport) {
   const browser = await chromium.launch();
   const context = await browser.newContext({ viewport, storageState: statePath, reducedMotion: "reduce", colorScheme: "light" });
   const page = await context.newPage();
+  if (path === "/vocabulary") {
+    const json = (body) => ({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
+    await page.route("**/vocabulary/**", async (route) => {
+      const url = route.request().url();
+      if (url.endsWith("/vocabulary/profile")) return route.fulfill(json({ level: "A1", dailyWordTarget: 3 }));
+      if (url.endsWith("/vocabulary/today")) return route.fulfill(json({ id: "visual-today", status: "AVAILABLE", completed: false, locked: false, topic: { id: "visual-topic", name: "Daily life" }, words: [] }));
+      if (url.endsWith("/vocabulary/daily/visual-today/words")) return route.fulfill(json({ words: [] }));
+      if (url.endsWith("/vocabulary/weekly-plan")) return route.fulfill(json({ days: [] }));
+      if (url.endsWith("/vocabulary/me/stats")) return route.fulfill(json({}));
+      if (url.endsWith("/vocabulary/review/suggestions")) return route.fulfill(json([]));
+      if (url.endsWith("/vocabulary/notebook")) return route.fulfill(json([]));
+      if (url.endsWith("/vocabulary/challenge/today")) return route.fulfill(json(null));
+      return route.fulfill(json({}));
+    });
+  }
   const errors = [];
   page.on("pageerror", (error) => errors.push(String(error)));
   const dynamicSurface = path === "/vocabulary" || path === "/grammar";
@@ -50,7 +65,7 @@ async function capture(name, path, viewport) {
   if (!response || response.status() >= 400) throw new Error(name + " navigation failed");
   if (page.url().includes("/login")) throw new Error(name + " redirected to login");
   await stabilizePage(page);
-  if (path === "/vocabulary") await page.getByRole("heading", { name: /Từ vựng/i }).first().waitFor({ state: "visible", timeout: 30_000 });
+  if (path === "/vocabulary") await page.locator("h1").first().waitFor({ state: "visible", timeout: 30_000 });
   if (path === "/grammar") await page.getByRole("heading", { name: "Ngữ pháp", exact: true }).first().waitFor({ state: "visible", timeout: 30_000 });
   await page.screenshot({ path: `artifacts/visual-v31/${name}.png`, fullPage: viewport.width > 390 });
   if (errors.length) console.warn(name + " page errors:", errors);
