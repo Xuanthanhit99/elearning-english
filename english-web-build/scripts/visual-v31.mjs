@@ -12,6 +12,8 @@ const surfaces = [
   ["game", "/arena"],
   ["together", "/study-rooms"],
   ["learning-path", "/learning-path"],
+  ["vocabulary", "/vocabulary"],
+  ["grammar", "/grammar"],
 ];
 
 await fs.mkdir("artifacts/visual-v31", { recursive: true });
