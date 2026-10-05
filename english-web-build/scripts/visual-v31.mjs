@@ -60,13 +60,22 @@ async function capture(name, path, viewport) {
   }
   const errors = [];
   page.on("pageerror", (error) => errors.push(String(error)));
+  const vocabularyDiagnostics = [];
+  if (path === "/vocabulary") {
+    page.on("console", (message) => vocabularyDiagnostics.push("console:" + message.type() + ":" + message.text()));
+    page.on("requestfailed", (request) => vocabularyDiagnostics.push("requestfailed:" + request.url() + ":" + (request.failure()?.errorText || "unknown")));
+  }
   if (path === "/vocabulary") page.on("response", (response) => { if (response.url().includes("/vocabulary")) console.log("[visual:vocabulary]", response.status(), response.url()); });
   const dynamicSurface = path === "/vocabulary" || path === "/grammar";
   const response = await page.goto(WEB + path, { waitUntil: dynamicSurface ? "domcontentloaded" : "networkidle", timeout: 45_000 });
   if (!response || response.status() >= 400) throw new Error(name + " navigation failed");
   if (page.url().includes("/login")) throw new Error(name + " redirected to login");
   await stabilizePage(page);
-  if (path === "/vocabulary") await page.locator("h1").first().waitFor({ state: "visible", timeout: 30_000 });
+  if (path === "/vocabulary") {
+    const bodyText = await page.locator("body").innerText().catch(() => "");
+    console.log("[visual:vocabulary:state]", JSON.stringify({ url: page.url(), bodyText: bodyText.slice(0, 2000), errors, diagnostics: vocabularyDiagnostics.slice(-50) }));
+    await page.locator("h1").first().waitFor({ state: "visible", timeout: 30_000 });
+  }
   if (path === "/grammar") await page.getByRole("heading", { name: "Ngữ pháp", exact: true }).first().waitFor({ state: "visible", timeout: 30_000 });
   await page.screenshot({ path: `artifacts/visual-v31/${name}.png`, fullPage: viewport.width > 390 });
   if (errors.length) console.warn(name + " page errors:", errors);
