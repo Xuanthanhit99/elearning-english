@@ -1,7 +1,7 @@
 import { chromium, request } from "playwright";
 import fs from "node:fs/promises";
 const WEB=process.env.VISUAL_WEB_URL||"http://127.0.0.1:3000";
-const routes=["hoc-tieng-anh","kiem-tra-trinh-do-tieng-anh","hoc-tu-vung-tieng-anh","ngu-phap-tieng-anh","luyen-nghe-tieng-anh","luyen-noi-tieng-anh","luyen-doc-tieng-anh","luyen-viet-tieng-anh"];
+const routes=["tai-lieu-tieng-anh","hoc-tieng-anh","kiem-tra-trinh-do-tieng-anh","hoc-tu-vung-tieng-anh","ngu-phap-tieng-anh","luyen-nghe-tieng-anh","luyen-noi-tieng-anh","luyen-doc-tieng-anh","luyen-viet-tieng-anh"];
 await fs.mkdir("artifacts/seo-production-v1",{recursive:true});
 const api=await request.newContext();
 const sitemap=await (await api.get(WEB+"/sitemap.xml")).text();
@@ -21,7 +21,7 @@ for(const [prefix,viewport] of [["desktop",{width:1536,height:1024}],["mobile",{
   const canonical=await page.locator('link[rel="canonical"]').getAttribute("href"); if(!canonical||!canonical.includes("/"+slug)) throw new Error(slug+" bad canonical");
   if(await page.locator("h1").count()!==1) throw new Error(slug+" expected exactly one H1");
   if(await page.locator('script[type="application/ld+json"]').count()<1) throw new Error(slug+" missing JSON-LD");
-  if(!(await page.getByText("Học thử không cần đăng nhập",{exact:true}).isVisible())) throw new Error(slug+" guest preview missing");
+  if(slug!=="tai-lieu-tieng-anh" && !(await page.getByText("Học thử không cần đăng nhập",{exact:true}).isVisible())) throw new Error(slug+" guest preview missing");
   await page.screenshot({path:`artifacts/seo-production-v1/${prefix}-${slug}.png`,fullPage:true});
   await page.close();
  }
