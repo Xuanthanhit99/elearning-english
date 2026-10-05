@@ -1057,28 +1057,28 @@ function WordStudyCard(props: {
             </button>
           </div>
 
-          <p className="mt-4 text-lg font-bold text-[#7377a8]">
+          <p className="mt-2 text-base font-bold text-[#7377a8] sm:mt-4 sm:text-lg">
             {word?.phonetic || "/?n'va?r?nm?nt/"}
           </p>
-          <span className="mt-5 inline-flex rounded-lg bg-[#dcfce7] px-3 py-1.5 text-sm font-black text-[#16a34a]">
+          <span className="mt-3 inline-flex rounded-lg bg-[#dcfce7] px-3 py-1 text-xs font-black text-[#16a34a] sm:mt-5 sm:py-1.5 sm:text-sm">
             {word?.partOfSpeech || c.studyCard.defaultPartOfSpeech}
           </span>
 
-          <h3 className="mt-6 text-lg font-black text-[#101733]">{meaning}</h3>
-          <div className="mt-5 border-l-4 border-[#2563eb] pl-4">
+          <h3 className="mt-3 text-base font-black text-[#101733] sm:mt-6 sm:text-lg">{meaning}</h3>
+          <div className="mt-3 border-l-4 border-[#2563eb] pl-3 sm:mt-5 sm:pl-4">
             <p className="text-sm font-black text-[#2563eb]">
               {c.studyCard.exampleLabel}
             </p>
-            <p className="mt-3 font-bold leading-7 text-[#101733]">{example}</p>
+            <p className="mt-1.5 text-sm font-bold leading-6 text-[#101733] sm:mt-3 sm:text-base sm:leading-7">{example}</p>
             <p className="mt-1 text-sm font-bold text-[#7377a8]">{exampleVi}</p>
           </div>
         </div>
 
-        <div className="relative flex min-h-[145px] items-center justify-center overflow-hidden rounded-2xl bg-[#f5e79a] p-3 shadow-inner sm:min-h-[200px] sm:rounded-3xl sm:p-5">
+        <div className="relative hidden min-h-[180px] items-center justify-center overflow-hidden rounded-3xl bg-[#f5e79a] p-5 shadow-inner sm:flex">
           <span className="absolute left-8 top-8 h-16 w-16 rounded-full bg-white/30 blur-xl" />
           <span className="absolute bottom-8 right-10 h-24 w-24 rounded-full bg-[#ffd76a]/60 blur-2xl" />
           <span className="absolute inset-x-12 bottom-8 h-10 rounded-full bg-[#c58a1f]/15 blur-xl" />
-          <div className="relative z-10 grid h-full min-h-[210px] w-full place-items-center rounded-[26px] border border-white/40 bg-[#f6e89f]">
+          <div className="relative z-10 grid h-full min-h-[170px] w-full place-items-center rounded-[26px] border border-white/40 bg-[#f6e89f]">
             <div className="absolute inset-0 rounded-[26px] bg-[radial-gradient(circle_at_35%_25%,rgba(255,255,255,0.65),transparent_28%),radial-gradient(circle_at_70%_75%,rgba(255,184,0,0.22),transparent_32%)]" />
             {image.src ? (
               <img
