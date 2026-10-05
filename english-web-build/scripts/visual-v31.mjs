@@ -45,7 +45,7 @@ async function capture(name, path, viewport) {
   const page = await context.newPage();
   if (path === "/vocabulary") {
     const json = (body) => ({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
-    await page.route("**/vocabulary/**", async (route) => {
+    await page.route("**/vocabulary{,/**}", async (route) => {
       const url = route.request().url();
       if (url.endsWith("/vocabulary/profile")) return route.fulfill(json({ level: "A1", dailyWordTarget: 3 }));
       if (url.endsWith("/vocabulary/today")) return route.fulfill(json({ id: "visual-today", status: "AVAILABLE", completed: false, locked: false, topic: { id: "visual-topic", name: "Daily life" }, words: [] }));
@@ -60,6 +60,7 @@ async function capture(name, path, viewport) {
   }
   const errors = [];
   page.on("pageerror", (error) => errors.push(String(error)));
+  if (path === "/vocabulary") page.on("response", (response) => { if (response.url().includes("/vocabulary")) console.log("[visual:vocabulary]", response.status(), response.url()); });
   const dynamicSurface = path === "/vocabulary" || path === "/grammar";
   const response = await page.goto(WEB + path, { waitUntil: dynamicSurface ? "domcontentloaded" : "networkidle", timeout: 45_000 });
   if (!response || response.status() >= 400) throw new Error(name + " navigation failed");
