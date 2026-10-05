@@ -91,7 +91,7 @@ const levels = [
 
 const categoryIcons = [Clock, Type, GitBranch, FileText, MapPin, BookOpen];
 const categoryTones = [
-  { wrap: "bg-violet-50 border-violet-100", icon: "text-violet-600", bar: "bg-violet-500" },
+  { wrap: "bg-blue-50 border-blue-100", icon: "text-blue-600", bar: "bg-blue-500" },
   { wrap: "bg-sky-50 border-sky-100", icon: "text-sky-600", bar: "bg-sky-500" },
   { wrap: "bg-emerald-50 border-emerald-100", icon: "text-emerald-600", bar: "bg-emerald-500" },
   { wrap: "bg-orange-50 border-orange-100", icon: "text-orange-500", bar: "bg-orange-500" },
@@ -146,7 +146,7 @@ export default function GrammarPage() {
         value: numberText(value?.totalTopics || 0),
         label: "Chủ điểm ngữ pháp",
         sub: `${dashboard?.categories?.length || 0} nhóm chủ đề`,
-        tone: "bg-violet-100 text-violet-600",
+        tone: "bg-blue-100 text-blue-600",
       },
       {
         icon: Calendar,
@@ -173,9 +173,9 @@ export default function GrammarPage() {
   }, [dashboard]);
 
   return (
-    <div className="min-h-screen bg-[#fbfbff] text-[#11104a]">
+    <div className="min-h-screen bg-[#f7faff] text-[#16325c]">
       <header className="sticky top-0 z-10 flex h-[88px] items-center justify-between border-b border-slate-100 bg-white/85 px-7 backdrop-blur-xl">
-        <div className="flex h-12 w-full max-w-[560px] items-center gap-3 rounded-xl border border-violet-100 bg-violet-50/40 px-4">
+        <div className="flex h-12 w-full max-w-[560px] items-center gap-3 rounded-xl border border-blue-100 bg-blue-50/40 px-4">
           <Search size={20} className="text-slate-500" />
           <input
             placeholder="Tìm bài học, từ vựng, ngữ pháp..."
@@ -191,7 +191,7 @@ export default function GrammarPage() {
               <div className="mb-5 flex items-center gap-3 text-sm font-semibold text-slate-500">
                 <Link href="/">Trang chủ</Link>
                 <ChevronRight size={16} />
-                <span className="text-[#11104a]">Ngữ pháp</span>
+                <span className="text-[#16325c]">Ngữ pháp</span>
               </div>
               <h1 className="text-4xl font-black">Ngữ pháp</h1>
               <p className="mt-2 text-lg font-medium text-slate-500">
@@ -216,8 +216,8 @@ export default function GrammarPage() {
                 onClick={() => setActiveLevel(level.value)}
                 className={`rounded-xl px-5 py-3 text-sm font-bold ${
                   activeLevel === level.value
-                    ? "bg-violet-500 text-white shadow-lg shadow-violet-200"
-                    : "border border-violet-100 bg-white text-slate-600"
+                    ? "bg-blue-500 text-white shadow-lg shadow-blue-200"
+                    : "border border-blue-100 bg-white text-slate-600"
                 }`}
               >
                 {level.label}
@@ -242,7 +242,7 @@ export default function GrammarPage() {
             {stats.map((stat) => {
               const Icon = stat.icon;
               return (
-                <div key={stat.label} className="rounded-2xl border border-violet-100 bg-white p-6 shadow-sm">
+                <div key={stat.label} className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
                   <div className="flex items-center gap-5">
                     <div className={`grid h-16 w-16 place-items-center rounded-2xl ${stat.tone}`}>
                       <Icon size={30} />
@@ -258,10 +258,10 @@ export default function GrammarPage() {
             })}
           </section>
 
-          <section className="mb-6 rounded-2xl border border-violet-100 bg-white p-5 shadow-sm">
+          <section className="mb-6 rounded-2xl border border-blue-100 bg-white p-5 shadow-sm">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-xl font-black">Chủ đề ngữ pháp</h2>
-              <button className="text-sm font-bold text-violet-600">Xem tất cả</button>
+              <button className="text-sm font-bold text-blue-600">Xem tất cả</button>
             </div>
             <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-5">
               {(dashboard?.categories || []).slice(0, 5).map((category, index) => (
@@ -275,10 +275,10 @@ export default function GrammarPage() {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-violet-100 bg-white p-5 shadow-sm">
+          <section className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-xl font-black">Chủ điểm ngữ pháp</h2>
-              <button className="flex items-center gap-3 rounded-xl border border-violet-100 bg-white px-5 py-3 text-sm font-bold text-slate-500">
+              <button className="flex items-center gap-3 rounded-xl border border-blue-100 bg-white px-5 py-3 text-sm font-bold text-slate-500">
                 Sắp xếp: Mới nhất <ChevronDown size={16} />
               </button>
             </div>
@@ -298,7 +298,7 @@ export default function GrammarPage() {
             )}
 
             {!!dashboard?.topics?.length && (
-              <button className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-violet-100 py-4 font-black">
+              <button className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-blue-100 py-4 font-black">
                 Xem tất cả chủ điểm ngữ pháp <ChevronDown size={18} />
               </button>
             )}
@@ -328,7 +328,7 @@ function CategoryCard({ category, index }: { category: GrammarCategory; index: n
         <div className={`grid h-16 w-16 place-items-center rounded-2xl bg-white ${tone.icon}`}>
           <Icon size={30} />
         </div>
-        <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-black text-[#6d35ff]">
+        <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-black text-[#2563eb]">
           {category.totalTopics} chủ điểm
         </span>
       </div>
@@ -358,7 +358,7 @@ function TopicRow({ topic, index }: { topic: GrammarTopic; index: number }) {
           {topic.description || topic.category}
         </p>
         <div className="mt-3 flex flex-wrap gap-3">
-          <span className="rounded-full bg-violet-100 px-4 py-1 text-sm font-bold text-violet-600">
+          <span className="rounded-full bg-blue-100 px-4 py-1 text-sm font-bold text-blue-600">
             {topic.level || "ALL"}
           </span>
           <span className="rounded-full bg-slate-100 px-4 py-1 text-sm font-bold text-slate-500">
@@ -383,10 +383,10 @@ function RoadmapPanel({ dashboard }: { dashboard: GrammarDashboard | null }) {
   const total = roadmap?.items.reduce((sum, item) => sum + item.total, 0) || 0;
 
   return (
-    <section className="rounded-2xl border border-violet-100 bg-white p-6 shadow-sm">
+    <section className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
       <div className="mb-8 flex items-center justify-between">
         <h2 className="font-black">Lộ trình học ngữ pháp</h2>
-        <button className="text-sm font-bold text-violet-600">Xem chi tiết</button>
+        <button className="text-sm font-bold text-blue-600">Xem chi tiết</button>
       </div>
       <div className="mb-6">
         <div className="mb-2 flex justify-between font-black">
@@ -394,7 +394,7 @@ function RoadmapPanel({ dashboard }: { dashboard: GrammarDashboard | null }) {
           <span className="text-emerald-600">{roadmap?.progress || 0}%</span>
         </div>
         <div className="h-2 rounded-full bg-slate-100">
-          <div className="h-2 rounded-full bg-violet-600" style={{ width: `${roadmap?.progress || 0}%` }} />
+          <div className="h-2 rounded-full bg-blue-600" style={{ width: `${roadmap?.progress || 0}%` }} />
         </div>
         <p className="mt-3 text-sm text-slate-500">
           Hoàn thành {completed}/{total} bài học
@@ -405,12 +405,12 @@ function RoadmapPanel({ dashboard }: { dashboard: GrammarDashboard | null }) {
           <div key={item.id} className="flex items-center gap-4">
             <div
               className={`grid h-6 w-6 place-items-center rounded-full ${
-                item.done ? "bg-emerald-500 text-white" : item.progress > 0 ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-400"
+                item.done ? "bg-emerald-500 text-white" : item.progress > 0 ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-400"
               }`}
             >
               {item.done ? "✓" : item.progress > 0 ? "•" : "○"}
             </div>
-            <p className={`flex-1 text-sm font-bold ${item.progress > 0 && !item.done ? "text-violet-600" : "text-slate-600"}`}>
+            <p className={`flex-1 text-sm font-bold ${item.progress > 0 && !item.done ? "text-blue-600" : "text-slate-600"}`}>
               {item.title}
             </p>
             <p className="text-sm font-bold text-slate-500">
@@ -419,7 +419,7 @@ function RoadmapPanel({ dashboard }: { dashboard: GrammarDashboard | null }) {
           </div>
         ))}
       </div>
-      <Link href="/grammar" className="mt-8 block w-full rounded-xl border border-violet-100 py-4 text-center font-black text-violet-600">
+      <Link href="/grammar" className="mt-8 block w-full rounded-xl border border-blue-100 py-4 text-center font-black text-blue-600">
         Tiếp tục học
       </Link>
     </section>
@@ -428,10 +428,10 @@ function RoadmapPanel({ dashboard }: { dashboard: GrammarDashboard | null }) {
 
 function RecentPanel({ lessons }: { lessons: RecentLesson[] }) {
   return (
-    <section className="rounded-2xl border border-violet-100 bg-white p-6 shadow-sm">
+    <section className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="font-black">Bài học gần đây</h2>
-        <button className="text-sm font-bold text-violet-600">Xem tất cả</button>
+        <button className="text-sm font-bold text-blue-600">Xem tất cả</button>
       </div>
       <div className="space-y-5">
         {lessons.length ? (
@@ -446,7 +446,7 @@ function RecentPanel({ lessons }: { lessons: RecentLesson[] }) {
                   {lesson.topic} · {lesson.score}%
                 </p>
               </div>
-              <button className="rounded-xl bg-violet-50 px-4 py-2 text-sm font-black text-violet-600">
+              <button className="rounded-xl bg-blue-50 px-4 py-2 text-sm font-black text-blue-600">
                 {lesson.status}
               </button>
             </div>
@@ -463,10 +463,10 @@ function RecentPanel({ lessons }: { lessons: RecentLesson[] }) {
 
 function RecommendPanel({ text }: { text?: string }) {
   return (
-    <section className="flex items-center justify-between rounded-2xl border border-violet-100 bg-white p-6 shadow-sm">
+    <section className="flex items-center justify-between rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
       <div>
         <div className="mb-5 flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-full bg-violet-50 text-violet-600">
+          <div className="grid h-10 w-10 place-items-center rounded-full bg-blue-50 text-blue-600">
             💡
           </div>
           <h2 className="font-black">Gợi ý hôm nay</h2>
