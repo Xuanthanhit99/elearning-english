@@ -168,7 +168,7 @@ return (
             )}
 
             <section className="mt-8">
-              <h2 className="text-xl font-black sm:text-2xl">Today&apos;s Practice</h2>
+              <h2 className="text-xl font-black sm:text-2xl">Luyện viết hôm nay</h2>
               <p className="mt-1 text-sm text-slate-500">
                 Chọn dạng bài để bắt đầu luyện viết
               </p>
@@ -204,7 +204,7 @@ return (
                   onClick={() => router.push('/writing/topics')}
                   className="font-semibold text-blue-600"
                 >
-                  Xem tất cả topics →
+                  Xem tất cả chủ đề →
                 </button>
               </div>
 
@@ -395,44 +395,44 @@ function MenuItem({ label, active = false }: { label: string; active?: boolean }
 
 function Hero({ data }: { data: WritingHome }) {
   return (
-    <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-50 to-white p-8">
+    <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-sky-600 p-5 text-white shadow-lg shadow-blue-100 sm:p-7">
       <div>
         <div className="flex items-center gap-5">
-          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white">
-            <PenLine className="h-7 w-7 text-blue-600" />
+          <div className="grid h-12 w-12 place-items-center rounded-xl bg-white/15">
+            <PenLine className="h-6 w-6 text-white" />
           </div>
 
           <div>
             <h1 className="text-2xl font-black sm:text-3xl">
               Chào mừng trở lại, {data.user.name}! 👋
             </h1>
-            <p className="mt-2 font-medium text-slate-600">
+            <p className="mt-2 text-sm font-medium text-white/80 sm:text-base">
               Hãy luyện viết để diễn đạt ý tưởng rõ ràng hơn.
             </p>
           </div>
         </div>
 
-        <div className="mt-7 flex w-[560px] items-center rounded-2xl bg-white p-5 shadow-sm">
+        <div className="mt-5 grid grid-cols-3 gap-2 rounded-2xl bg-white/10 p-3 backdrop-blur sm:max-w-[560px] sm:p-4">
           <HeroStat value={data.stats.essaysWritten} label="Bài đã viết" />
           <HeroStat value={`${data.stats.avgScore}%`} label="Điểm TB" />
           <HeroStat value={data.stats.dayStreak} label="Chuỗi ngày" />
         </div>
       </div>
 
-      <div className="absolute bottom-0 right-16 text-[160px] leading-none">🦊</div>
+      <div className="pointer-events-none absolute -bottom-6 -right-5 hidden text-[130px] leading-none opacity-25 sm:block lg:right-8">🦊</div>
     </section>
   );
 }
 
 function HeroStat({ value, label }: { value: string | number; label: string }) {
   return (
-    <div className="flex flex-1 items-center gap-3 border-r last:border-r-0">
+    <div className="min-w-0 text-center">
       <div className="grid h-11 w-11 place-items-center rounded-full bg-blue-100">
         <FileText className="h-5 w-5 text-blue-600" />
       </div>
       <div>
-        <p className="text-2xl font-extrabold">{value}</p>
-        <p className="text-xs text-slate-500">{label}</p>
+        <p className="text-lg font-extrabold text-white sm:text-2xl">{value}</p>
+        <p className="truncate text-[10px] text-white/70 sm:text-xs">{label}</p>\n      </div>
       </div>
     </div>
   );
@@ -454,13 +454,13 @@ function PracticeCard({
   };
 
   return (
-    <div className="rounded-2xl bg-white p-5 text-center shadow-sm ring-1 ring-slate-100">
-      <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-blue-50 text-blue-600">
+    <div className="rounded-2xl bg-white p-4 text-left shadow-sm ring-1 ring-slate-100 sm:p-5">
+      <div className="grid h-11 w-11 place-items-center rounded-xl bg-blue-50 text-blue-600">
         {iconMap[item.key]}
       </div>
 
-      <h3 className="mt-5 text-lg font-extrabold">{item.title}</h3>
-      <p className="mt-3 min-h-[66px] text-sm leading-6 text-slate-500">
+      <h3 className="mt-3 text-base font-extrabold sm:text-lg">{item.title}</h3>
+      <p className="mt-2 line-clamp-2 text-sm leading-5 text-slate-500 sm:min-h-[40px]">
         {item.description}
       </p>
 
@@ -508,7 +508,7 @@ function RecommendationCard({
         </p>
 
         <div className="mt-5 flex items-center justify-between">
-          <p className="text-xs text-slate-500">👥 {item.writers} writers</p>
+          <p className="text-xs text-slate-500">👥 {item.writers} người học</p>
           <button
             onClick={onStart}
             className="grid h-9 w-9 place-items-center rounded-lg border border-blue-200 text-blue-600"
@@ -535,7 +535,7 @@ function DailyGoal({
   const percent = Math.min(100, Math.round((goal.current / goal.target) * 100));
 
   return (
-    <div className="mt-8 flex items-center gap-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-blue-100">
+    <div className="mt-6 grid gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-blue-100 sm:flex sm:items-center sm:gap-6 sm:p-5">
       <div className="grid h-14 w-14 place-items-center rounded-full bg-yellow-100">
         <Trophy className="h-7 w-7 text-yellow-500" />
       </div>
@@ -551,7 +551,7 @@ function DailyGoal({
       </div>
 
       <p className="font-extrabold">
-        {goal.current} / {goal.target} min
+        {goal.current} / {goal.target} phút
       </p>
 
       <button
