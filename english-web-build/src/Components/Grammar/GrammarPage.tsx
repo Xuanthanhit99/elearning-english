@@ -174,142 +174,69 @@ export default function GrammarPage() {
 
   return (
     <div className="min-h-screen bg-[#f7faff] text-[#16325c]">
-      <header className="sticky top-0 z-10 flex h-[88px] items-center justify-between border-b border-slate-100 bg-white/85 px-7 backdrop-blur-xl">
-        <div className="flex h-12 w-full max-w-[560px] items-center gap-3 rounded-xl border border-blue-100 bg-blue-50/40 px-4">
-          <Search size={20} className="text-slate-500" />
-          <input
-            placeholder="Tìm bài học, từ vựng, ngữ pháp..."
-            className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
-          />
-        </div>
-      </header>
-
-      <div className="grid gap-8 px-5 py-8 xl:grid-cols-[minmax(0,1fr)_420px] xl:px-8">
-        <main className="min-w-0">
-          <div className="mb-7 flex items-start justify-between gap-5">
+      <div className="mx-auto w-full max-w-[1440px] px-4 py-5 sm:px-6 lg:px-8">
+        <section className="rounded-3xl border border-blue-100 bg-gradient-to-r from-blue-50 via-white to-sky-50 p-5 sm:p-7">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <div className="mb-5 flex items-center gap-3 text-sm font-semibold text-slate-500">
-                <Link href="/">Trang chủ</Link>
-                <ChevronRight size={16} />
-                <span className="text-[#16325c]">Ngữ pháp</span>
-              </div>
-              <h1 className="text-4xl font-black">Ngữ pháp</h1>
-              <p className="mt-2 text-lg font-medium text-slate-500">
-                Học ngữ pháp theo trình độ từ cơ bản đến nâng cao
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-blue-600">Lộ trình ngữ pháp</p>
+              <h1 className="mt-2 text-3xl font-black sm:text-4xl">Ngữ pháp</h1>
+              <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-slate-500 sm:text-base">
+                Học đúng chủ điểm theo trình độ, tiếp tục bài đang dở và theo dõi tiến độ ở một nơi.
               </p>
             </div>
-
-            <div className="hidden items-center gap-5 rounded-xl bg-sky-50 px-5 py-4 lg:flex">
-              <p className="text-sm font-bold leading-6">
-                Học ngữ pháp mỗi ngày
-                <br />
-                để giao tiếp tự nhiên hơn nhé!
-              </p>
-              <img src="/brand/beaconvie-app-icon.png" alt="Mascot" className="h-24 w-24 object-contain" />
-            </div>
-          </div>
-
-          <div className="mb-7 flex flex-wrap gap-3">
-            {levels.map((level) => (
-              <button
-                key={level.value}
-                onClick={() => setActiveLevel(level.value)}
-                className={`rounded-xl px-5 py-3 text-sm font-bold ${
-                  activeLevel === level.value
-                    ? "bg-blue-500 text-white shadow-lg shadow-blue-200"
-                    : "border border-blue-100 bg-white text-slate-600"
-                }`}
-              >
-                {level.label}
-              </button>
-            ))}
-          </div>
-
-          {message && (
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-100 bg-red-50 p-5 font-bold text-red-600">
-              <span>{message}</span>
-              <button
-                type="button"
-                onClick={() => setReloadToken((token) => token + 1)}
-                className="rounded-xl bg-red-600 px-4 py-2 text-sm font-black text-white"
-              >
-                Thử lại
-              </button>
-            </div>
-          )}
-
-          <section className="mb-6 grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
-            {stats.map((stat) => {
-              const Icon = stat.icon;
-              return (
-                <div key={stat.label} className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
-                  <div className="flex items-center gap-5">
-                    <div className={`grid h-16 w-16 place-items-center rounded-2xl ${stat.tone}`}>
-                      <Icon size={30} />
-                    </div>
-                    <div>
-                      <p className="text-3xl font-black">{loading ? "..." : stat.value}</p>
-                      <p className="mt-2 text-sm font-semibold text-slate-500">{stat.label}</p>
-                      <p className="mt-2 text-sm font-bold text-emerald-600">{stat.sub}</p>
-                    </div>
-                  </div>
+            {dashboard?.roadmap?.items?.length ? (
+              <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-blue-100 sm:min-w-[300px]">
+                <div className="flex items-center justify-between gap-4">
+                  <div><p className="text-xs font-bold text-slate-500">Tiếp tục học</p><p className="mt-1 font-black">{dashboard.roadmap.items.find((item) => !item.done)?.title || dashboard.roadmap.items[0]?.title}</p></div>
+                  <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-black text-blue-700">{dashboard.roadmap.currentLevel || "—"}</span>
                 </div>
-              );
-            })}
-          </section>
-
-          <section className="mb-6 rounded-2xl border border-blue-100 bg-white p-5 shadow-sm">
-            <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-xl font-black">Chủ đề ngữ pháp</h2>
-              <button className="text-sm font-bold text-blue-600">Xem tất cả</button>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-5">
-              {(dashboard?.categories || []).slice(0, 5).map((category, index) => (
-                <CategoryCard key={category.id} category={category} index={index} />
-              ))}
-              {!loading && !dashboard?.categories?.length && (
-                <p className="col-span-full py-8 text-center font-bold text-slate-500">
-                  Chưa có nhóm chủ đề ngữ pháp.
-                </p>
-              )}
-            </div>
-          </section>
-
-          <section className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-black">Chủ điểm ngữ pháp</h2>
-              <button className="flex items-center gap-3 rounded-xl border border-blue-100 bg-white px-5 py-3 text-sm font-bold text-slate-500">
-                Sắp xếp: Mới nhất <ChevronDown size={16} />
-              </button>
-            </div>
-
-            {loading ? (
-              <div className="py-12 text-center font-bold text-slate-500">Đang tải dữ liệu ngữ pháp...</div>
-            ) : dashboard?.topics?.length ? (
-              <div className="divide-y divide-slate-100">
-                {dashboard.topics.slice(0, 8).map((topic, index) => (
-                  <TopicRow key={topic.id} topic={topic} index={index} />
-                ))}
+                <div className="mt-3 h-2 rounded-full bg-slate-100"><div className="h-2 rounded-full bg-blue-600" style={{ width: `${dashboard.roadmap.progress || 0}%` }} /></div>
               </div>
-            ) : (
-              <div className="py-12 text-center font-bold text-slate-500">
-                Chưa có chủ điểm ở trình độ này.
+            ) : null}
+          </div>
+        </section>
+
+        <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
+          {levels.map((level) => (
+            <button key={level.value} onClick={() => setActiveLevel(level.value)}
+              className={`shrink-0 rounded-full px-4 py-2.5 text-sm font-bold ${activeLevel === level.value ? "bg-blue-600 text-white shadow-sm" : "border border-blue-100 bg-white text-slate-600"}`}>
+              {level.label}
+            </button>
+          ))}
+        </div>
+
+        {message && <div className="mt-5 flex items-center justify-between gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 font-bold text-red-600"><span>{message}</span><button onClick={() => setReloadToken((token) => token + 1)} className="rounded-xl bg-red-600 px-4 py-2 text-sm font-black text-white">Thử lại</button></div>}
+
+        <section className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {stats.map((stat) => { const Icon = stat.icon; return (
+            <div key={stat.label} className="rounded-2xl border border-blue-100 bg-white p-4 sm:p-5">
+              <div className="flex items-center gap-3"><div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${stat.tone}`}><Icon size={20}/></div>
+                <div className="min-w-0"><p className="text-xl font-black sm:text-2xl">{loading ? "…" : stat.value}</p><p className="truncate text-xs font-bold text-slate-500 sm:text-sm">{stat.label}</p></div>
               </div>
-            )}
+            </div>
+          );})}
+        </section>
 
-            {!!dashboard?.topics?.length && (
-              <button className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-blue-100 py-4 font-black">
-                Xem tất cả chủ điểm ngữ pháp <ChevronDown size={18} />
-              </button>
-            )}
-          </section>
-        </main>
-
-        <aside className="space-y-6">
-          <RoadmapPanel dashboard={dashboard} />
-          <RecentPanel lessons={dashboard?.recentLessons || []} />
-          <RecommendPanel text={dashboard?.recommend?.description} />
-        </aside>
+        <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+          <main className="min-w-0 space-y-5">
+            <section className="rounded-2xl border border-blue-100 bg-white p-4 sm:p-5">
+              <div className="mb-4"><p className="text-xs font-black uppercase tracking-wider text-blue-600">Khám phá theo nhóm</p><h2 className="mt-1 text-xl font-black">Chủ đề ngữ pháp</h2></div>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {(dashboard?.categories || []).slice(0, 6).map((category,index)=><CategoryCard key={category.id} category={category} index={index}/>)}
+                {!loading && !dashboard?.categories?.length && <p className="col-span-full py-6 text-center font-bold text-slate-500">Chưa có nhóm chủ đề ngữ pháp.</p>}
+              </div>
+            </section>
+            <section className="rounded-2xl border border-blue-100 bg-white p-4 sm:p-5">
+              <div className="mb-2"><p className="text-xs font-black uppercase tracking-wider text-blue-600">Bài nên học tiếp</p><h2 className="mt-1 text-xl font-black">Chủ điểm ngữ pháp</h2></div>
+              {loading ? <div className="py-10 text-center font-bold text-slate-500">Đang tải dữ liệu ngữ pháp...</div> : dashboard?.topics?.length ? <div className="divide-y divide-slate-100">{dashboard.topics.slice(0,8).map((topic,index)=><TopicRow key={topic.id} topic={topic} index={index}/>)}</div> : <div className="py-10 text-center font-bold text-slate-500">Chưa có chủ điểm ở trình độ này.</div>}
+            </section>
+          </main>
+          <aside className="space-y-4">
+            <RoadmapPanel dashboard={dashboard}/>
+            <RecentPanel lessons={dashboard?.recentLessons || []}/>
+            <RecommendPanel text={dashboard?.recommend?.description}/>
+          </aside>
+        </div>
       </div>
     </div>
   );
@@ -322,11 +249,11 @@ function CategoryCard({ category, index }: { category: GrammarCategory; index: n
   return (
     <Link
       href={`/grammar/${category.slug || category.id}`}
-      className={`block rounded-2xl border p-5 transition hover:-translate-y-0.5 hover:shadow-lg ${tone.wrap}`}
+      className={`block rounded-2xl border p-4 transition hover:-translate-y-0.5 hover:shadow-lg ${tone.wrap}`}
     >
       <div className="flex items-start justify-between">
-        <div className={`grid h-16 w-16 place-items-center rounded-2xl bg-white ${tone.icon}`}>
-          <Icon size={30} />
+        <div className={`grid h-12 w-12 place-items-center rounded-xl bg-white ${tone.icon}`}>
+          <Icon size={24} />
         </div>
         <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-black text-[#2563eb]">
           {category.totalTopics} chủ điểm
@@ -390,7 +317,7 @@ function RoadmapPanel({ dashboard }: { dashboard: GrammarDashboard | null }) {
       </div>
       <div className="mb-6">
         <div className="mb-2 flex justify-between font-black">
-          <span>{roadmap?.currentLevel || "B1"}</span>
+          <span>{roadmap?.currentLevel || "—"}</span>
           <span className="text-emerald-600">{roadmap?.progress || 0}%</span>
         </div>
         <div className="h-2 rounded-full bg-slate-100">
