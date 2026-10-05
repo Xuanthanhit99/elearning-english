@@ -141,7 +141,7 @@ export default function ReadingHomePage() {
 
   return (
     <main className="min-h-screen bg-[#f7faff] px-4 py-4 text-slate-900 sm:px-5 sm:py-6 lg:px-10">
-      <header className="mx-auto flex max-w-[1500px] flex-col gap-4 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
+      <header className="mx-auto flex max-w-[1500px] flex-col gap-2 rounded-xl border border-blue-100 bg-white p-3 shadow-sm sm:gap-4 sm:rounded-2xl sm:p-4 md:flex-row md:items-center md:justify-between">
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -176,16 +176,16 @@ export default function ReadingHomePage() {
         </div>
       </header>
 
-      <div className="mx-auto mt-7 grid max-w-[1500px] gap-7 xl:grid-cols-[minmax(0,1fr)_380px]">
-        <section className="min-w-0 space-y-7">
-          <section className="overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-sky-600 p-5 text-white shadow-lg shadow-blue-100 sm:p-7">
+      <div className="mx-auto mt-4 grid max-w-[1500px] gap-5 sm:mt-7 sm:gap-7 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <section className="min-w-0 space-y-4 sm:space-y-7">
+          <section className="overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-sky-600 p-4 text-white shadow-lg shadow-blue-100 sm:p-7">
             <div className="grid gap-6 md:grid-cols-[1fr_320px] md:items-center">
               <div>
                 <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-black">
                   <Sparkles size={15} />
                   LỘ TRÌNH ĐỌC
                 </div>
-                <h1 className="text-3xl font-black md:text-4xl">
+                <h1 className="text-2xl font-black sm:text-3xl md:text-4xl">
                   Tiếp tục luyện đọc hôm nay
                 </h1>
                 <p className="mt-3 max-w-2xl text-white/80">
@@ -202,7 +202,7 @@ export default function ReadingHomePage() {
                       `/reading/articles/${continueArticle.slug}`,
                     )
                   }
-                  className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-black text-blue-700 disabled:opacity-50"
+                  className="mt-4 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-black text-blue-700 disabled:opacity-50 sm:mt-6 sm:px-5 sm:py-3 sm:text-base"
                 >
                   {continueArticle?.isStarted
                     ? "Tiếp tục bài đang đọc"
@@ -232,7 +232,7 @@ export default function ReadingHomePage() {
             </div>
           </section>
 
-          <section className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+          <section className="grid grid-cols-2 gap-2 sm:gap-4 xl:grid-cols-4">
             {stats.map((item) => {
               const Icon = item.icon;
 
@@ -352,7 +352,7 @@ export default function ReadingHomePage() {
           </section>
         </section>
 
-        <aside className="space-y-6">
+        <aside className="hidden space-y-6 xl:block">
           <MissionCard
             title="Nhiệm vụ Reading hôm nay"
             loading={missionLoading}
