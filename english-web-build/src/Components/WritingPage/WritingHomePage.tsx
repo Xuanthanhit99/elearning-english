@@ -427,13 +427,8 @@ function Hero({ data }: { data: WritingHome }) {
 function HeroStat({ value, label }: { value: string | number; label: string }) {
   return (
     <div className="min-w-0 text-center">
-      <div className="grid h-11 w-11 place-items-center rounded-full bg-blue-100">
-        <FileText className="h-5 w-5 text-blue-600" />
-      </div>
-      <div>
-        <p className="text-lg font-extrabold text-white sm:text-2xl">{value}</p>
-        <p className="truncate text-[10px] text-white/70 sm:text-xs">{label}</p>\n      </div>
-      </div>
+      <p className="text-lg font-extrabold text-white sm:text-2xl">{value}</p>
+      <p className="truncate text-[10px] text-white/70 sm:text-xs">{label}</p>
     </div>
   );
 }
