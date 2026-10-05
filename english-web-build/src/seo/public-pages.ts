@@ -4,6 +4,8 @@ export type SeoPage = {
   slug: string; title: string; description: string; eyebrow: string; heading: string; intro: string;
   outcomes: string[]; appPath: string;
   lesson: { title: string; explanation: string; examples: string[]; practice: string; answer: string };
+  guide?: string[];
+  faqs?: { q: string; a: string }[];
 };
 
 export const seoPages: SeoPage[] = [
@@ -15,5 +17,17 @@ export const seoPages: SeoPage[] = [
   { slug:"luyen-noi-tieng-anh", title:"Luyện nói tiếng Anh và phản xạ giao tiếp", description:"Luyện nói tiếng Anh, phát triển phản xạ và sự tự tin qua các hoạt động giao tiếp phù hợp trình độ.", eyebrow:"Speaking", heading:"Biến kiến thức thành phản xạ nói tiếng Anh", intro:"Guest có thể thử prompt nói ngắn ngay trên trang; AI feedback và lịch sử luyện tập dành cho tài khoản.", outcomes:["Prompt giao tiếp ngắn","Tập nói thành tiếng","Mở rộng câu từng bước"], appPath:"/speaking", lesson:{title:"Speaking prompt: giới thiệu bản thân",explanation:"Nói thành tiếng 3 câu, không cần hoàn hảo. Ưu tiên nói trọn ý trước rồi mới sửa lỗi.",examples:["My name is ...","I live in ...","I am learning English because ..."],practice:"Nói 3 câu trên mà không đọc lại lần thứ hai.",answer:"Không có một đáp án duy nhất. Mục tiêu là nói đủ 3 ý rõ ràng."}},
   { slug:"luyen-doc-tieng-anh", title:"Luyện đọc tiếng Anh theo trình độ", description:"Luyện đọc tiếng Anh với nội dung phù hợp CEFR, phát triển từ vựng, khả năng hiểu ý và đọc chi tiết.", eyebrow:"Reading", heading:"Đọc đúng trình độ để hiểu nhiều hơn mỗi ngày", intro:"Thử một đoạn ngắn và tìm ý chính trước khi tra từng từ.", outcomes:["Bài đọc vừa sức","Tìm main idea","Học từ trong ngữ cảnh"], appPath:"/reading", lesson:{title:"Mini reading",explanation:"Mai studies English for twenty minutes every morning. She reads a short story and writes down two new words. On weekends, she reviews the words with her sister.",examples:["Who? Mai","When? every morning","Weekend action? reviews words"],practice:"What does Mai do on weekends?",answer:"She reviews the new words with her sister."}},
   { slug:"luyen-viet-tieng-anh", title:"Luyện viết tiếng Anh từ câu đến bài hoàn chỉnh", description:"Luyện viết tiếng Anh theo từng bước, củng cố ngữ pháp, từ vựng và khả năng diễn đạt rõ ràng.", eyebrow:"Writing", heading:"Luyện viết từng bước để diễn đạt rõ ràng hơn", intro:"Bắt đầu bằng một câu rõ ý, sau đó thêm lý do hoặc ví dụ thay vì cố viết dài ngay.", outcomes:["Viết câu rõ nghĩa","Mở rộng bằng because","Tự kiểm tra chủ ngữ và động từ"], appPath:"/writing", lesson:{title:"Mini writing: mở rộng một câu",explanation:"Công thức đơn giản: ý chính + because + lý do. Sau đó kiểm tra chủ ngữ, động từ và dấu câu.",examples:["I learn English.","I learn English because I want to travel.","I practise every day because consistency matters."],practice:"Mở rộng câu: I study English because ...",answer:"Ví dụ: I study English because I want to communicate confidently at work."}},
-];
+].map((page) => ({
+ ...page,
+ guide: [
+  `Bắt đầu với phần kiến thức mẫu của ${page.eyebrow} và tự làm bài trước khi xem gợi ý.`,
+  "Nếu làm chưa chắc, đọc lại ví dụ và tạo thêm một câu của riêng bạn thay vì chỉ ghi nhớ đáp án.",
+  "Sau 5–10 phút, chuyển sang một kỹ năng liên quan để dùng lại kiến thức trong ngữ cảnh khác."
+ ],
+ faqs: [
+  { q: `Tôi có thể học ${page.eyebrow.toLowerCase()} miễn phí trên BeaconVie không?`, a: "Có. Phần hướng dẫn, ví dụ và bài học thử trên trang này mở cho khách. Tài khoản chỉ cần khi bạn muốn lưu tiến độ và học theo lộ trình cá nhân." },
+  { q: "Tôi nên bắt đầu ở trình độ nào?", a: "Nếu chưa chắc trình độ, hãy dùng phần kiểm tra CEFR trước. Kết quả giúp bạn tránh học nội dung quá dễ hoặc quá khó." },
+  { q: "Học bao lâu mỗi ngày là hợp lý?", a: "Một nhịp 15–25 phút đều đặn thường dễ duy trì hơn học dồn. Quan trọng là có ôn lại và dùng kiến thức vừa học." }
+ ]
+}));
 export const seoPageBySlug = new Map(seoPages.map((page) => [page.slug, page]));
