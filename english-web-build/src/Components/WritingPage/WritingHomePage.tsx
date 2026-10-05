@@ -167,13 +167,13 @@ return (
               </div>
             )}
 
-            <section className="mt-8">
+            <section className="mt-6">
               <h2 className="text-xl font-black sm:text-2xl">Luyện viết hôm nay</h2>
               <p className="mt-1 text-sm text-slate-500">
                 Chọn dạng bài để bắt đầu luyện viết
               </p>
 
-              <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5 xl:gap-4">
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5 xl:gap-4">
                 {data.todayPractice.map((item) => (
                   <PracticeCard
                     key={item.key}
@@ -191,7 +191,7 @@ return (
               />
             )}
 
-            <section className="mt-8">
+            <section className="mt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-black sm:text-2xl">Đề xuất cho bạn</h2>
@@ -461,7 +461,7 @@ function PracticeCard({
 
       <button
         onClick={onClick}
-        className="mt-5 flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-blue-500 font-bold text-blue-600"
+        className="mt-3 flex h-9 w-full items-center justify-center gap-2 rounded-xl border border-blue-500 text-sm font-bold text-blue-600 sm:mt-4 sm:h-10"
       >
         {item.key === 'PROGRESS' ? 'Xem tiến độ' : 'Bắt đầu viết'}
         <ChevronRight className="h-4 w-4" />
@@ -719,7 +719,7 @@ function WritingPathSection({
   onStart: (key: string) => void;
 }) {
   return (
-    <section className="mt-8">
+    <section className="mt-6">
       <h2 className="text-xl font-black sm:text-2xl">Lộ trình luyện viết</h2>
       <p className="mt-1 text-sm text-slate-500">
         Đi theo lộ trình để cải thiện kỹ năng viết từng bước
@@ -732,7 +732,7 @@ function WritingPathSection({
             <button
               key={item.key}
               onClick={() => onStart(item.key)}
-              className="rounded-2xl bg-white p-5 text-left shadow-sm ring-1 ring-slate-100 transition hover:-translate-y-1 hover:shadow-md"
+              className="rounded-2xl bg-white p-4 text-left shadow-sm ring-1 ring-slate-100 transition hover:-translate-y-1 hover:shadow-md sm:p-5"
             >
               <div className="grid h-12 w-12 place-items-center rounded-full bg-blue-100 text-blue-600">
                 {item.order}
@@ -740,7 +740,7 @@ function WritingPathSection({
 
               <h3 className="mt-4 font-extrabold">{item.title}</h3>
 
-              <p className="mt-2 min-h-[72px] text-sm leading-6 text-slate-500">
+              <p className="mt-2 line-clamp-2 text-sm leading-5 text-slate-500 sm:min-h-[40px]">
                 {item.description}
               </p>
 
