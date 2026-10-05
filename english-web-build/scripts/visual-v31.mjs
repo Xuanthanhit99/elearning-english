@@ -45,7 +45,7 @@ async function capture(name, path, viewport) {
   const page = await context.newPage();
   if (path === "/vocabulary") {
     const json = (body) => ({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
-    await page.route("**/vocabulary{,/**}", async (route) => {
+    await page.route(API + "/vocabulary{,/**}", async (route) => {
       const url = route.request().url();
       if (url.endsWith("/vocabulary/profile")) return route.fulfill(json({ level: "A1", dailyWordTarget: 3 }));
       if (url.endsWith("/vocabulary/today")) return route.fulfill(json({ id: "visual-today", status: "AVAILABLE", completed: false, locked: false, topic: { id: "visual-topic", name: "Daily life" }, words: [] }));
