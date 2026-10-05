@@ -228,20 +228,20 @@ export default function ListeningHomePage() {
               </div>
             )}
 
-            <section className="mt-3 grid grid-cols-2 gap-2 sm:mt-7 sm:gap-4 xl:grid-cols-4">
+            <section className="mt-3 grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2 sm:mt-7 sm:gap-4 xl:grid-cols-4">
               {stats.map((item) => {
                 const Icon = item.icon;
 
                 return (
                   <article
                     key={item.label}
-                    className="rounded-xl border border-blue-100 bg-white p-3 shadow-sm sm:rounded-2xl sm:p-5"
+                    className="min-w-0 rounded-xl border border-blue-100 bg-white p-3 shadow-sm sm:rounded-2xl sm:p-5"
                   >
                     <div className="hidden h-11 w-11 place-items-center rounded-xl bg-blue-50 text-blue-600 sm:grid">
                       <Icon size={22} />
                     </div>
-                    <p className="text-lg font-black sm:mt-4 sm:text-2xl">{item.value}</p>
-                    <p className="text-sm font-semibold text-slate-500">
+                    <p className="truncate text-lg font-black sm:mt-4 sm:text-2xl">{item.value}</p>
+                    <p className="text-[11px] font-semibold leading-4 text-slate-500 sm:text-sm">
                       {item.label}
                     </p>
                   </article>
