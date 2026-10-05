@@ -14,6 +14,10 @@ const surfaces = [
   ["learning-path", "/learning-path"],
   ["vocabulary", "/vocabulary"],
   ["grammar", "/grammar"],
+  ["reading", "/reading"],
+  ["listening", "/listening"],
+  ["speaking", "/speaking"],
+  ["writing", "/writing"],
 ];
 
 await fs.mkdir("artifacts/visual-v31", { recursive: true });
@@ -93,7 +97,7 @@ async function capture(name, path, viewport) {
       recommend: { title: "Ôn tập", description: "Tiếp tục Present Perfect để hoàn thành chủ điểm đang học." }
     })));
   }
-  const dynamicSurface = path === "/vocabulary" || path === "/grammar";
+  const dynamicSurface = ["/vocabulary", "/grammar", "/reading", "/listening", "/speaking", "/writing"].includes(path);
   const response = await page.goto(WEB + path, { waitUntil: dynamicSurface ? "domcontentloaded" : "networkidle", timeout: 45_000 });
   if (!response || response.status() >= 400) throw new Error(name + " navigation failed");
   if (page.url().includes("/login")) throw new Error(name + " redirected to login");
