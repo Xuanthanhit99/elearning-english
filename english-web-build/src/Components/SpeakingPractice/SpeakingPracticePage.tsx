@@ -53,7 +53,7 @@ export default function SpeakingCategoriesPage() {
     return <div className="p-10 text-red-500">Không tải được categories.</div>;
 
   return (
-    <div className="min-h-screen bg-[#fbfbff] text-[#08083d]">
+    <div className="min-h-screen bg-[#f7faff] text-[#08083d]">
       <div className="flex">
         <main className="flex-1">
           <div className="grid grid-cols-12 gap-8 px-9 py-7">
@@ -64,7 +64,7 @@ export default function SpeakingCategoriesPage() {
                   <h1 className="text-4xl font-extrabold">
                     Speaking Categories
                   </h1>
-                  <p className="mt-3 text-lg text-indigo-500">
+                  <p className="mt-3 text-lg text-sky-500">
                     Explore different categories and practice speaking on topics
                     that interest you.
                   </p>
@@ -122,7 +122,7 @@ export default function SpeakingCategoriesPage() {
               </Card>
               <Card title="Daily Goal">
                 <div className="flex items-center justify-between gap-5">
-                  <p className="text-sm leading-6 text-indigo-500">
+                  <p className="text-sm leading-6 text-sky-500">
                     {data.dailyGoal.description}
                   </p>
                   <div className="flex h-28 w-28 shrink-0 flex-col items-center justify-center rounded-full border-[8px] border-purple-600">
@@ -175,11 +175,11 @@ function CategoryCard({
       </div>
       <div className="p-5">
         <h3 className="text-xl font-extrabold">{item.title}</h3>
-        <p className="mt-3 min-h-[72px] text-sm leading-6 text-indigo-500">
+        <p className="mt-3 min-h-[72px] text-sm leading-6 text-sky-500">
           {item.description}
         </p>
         <div className="mt-5 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm font-semibold text-indigo-500">
+          <div className="flex items-center gap-2 text-sm font-semibold text-sky-500">
             <BookOpen size={17} />
             {item.lessonCount} Lessons
           </div>
@@ -275,7 +275,7 @@ function Topbar({
           className="ml-3 flex-1 bg-transparent text-sm outline-none"
           placeholder="Search topics, lessons or skills..."
         />
-        <div className="rounded-lg bg-white px-3 py-1 text-xs font-semibold text-indigo-500">
+        <div className="rounded-lg bg-white px-3 py-1 text-xs font-semibold text-sky-500">
           ⌘ K
         </div>
       </div>
@@ -283,12 +283,12 @@ function Topbar({
         <TopStat
           icon={<Flame className="text-orange-500" />}
           value="12"
-          label="Streak"
+          label="Chuỗi ngày"
         />
         <TopStat
           icon={<Star className="text-yellow-500" />}
           value="2,450"
-          label="XP Today"
+          label="XP hôm nay"
         />
         <TopStat
           icon={<Gem className="text-blue-500" />}
