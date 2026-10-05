@@ -135,27 +135,27 @@ export default function ListeningHomePage() {
   return (
     <main className="min-h-screen bg-[#f7faff] text-[#101733]">
       <div className="mx-auto min-h-screen max-w-[1920px]">
-        <section className="min-w-0 px-0 py-2 sm:py-4 lg:px-2">
+        <section className="min-w-0 px-0 py-2 pb-24 sm:py-4 lg:px-2 lg:pb-4">
           <div className="mx-auto max-w-[1500px]">
-            <section className="overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-sky-600 p-5 text-white shadow-lg shadow-blue-100 sm:p-7">
-              <div className="grid gap-4 md:grid-cols-[1fr_300px] md:items-center">
+            <section className="overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-sky-600 p-4 text-white shadow-lg shadow-blue-100 sm:p-7">
+              <div className="grid gap-3 sm:gap-4 md:grid-cols-[1fr_300px] md:items-center">
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-black sm:px-4 sm:py-2">
                     <Sparkles size={15} />
                     LỘ TRÌNH NGHE
                   </div>
 
-                  <h1 className="mt-3 text-3xl font-black md:text-4xl">
+                  <h1 className="mt-2 text-2xl font-black sm:mt-3 sm:text-3xl md:text-4xl">
                     Luyện nghe mỗi ngày
                   </h1>
 
-                  <p className="mt-3 max-w-2xl text-white/75">
+                  <p className="mt-2 max-w-2xl text-sm text-white/75 sm:mt-3 sm:text-base">
                     Hôm nay: <strong>{data.dailyRecommendation.topic}</strong> ·{" "}
                     {data.dailyRecommendation.level} ·{" "}
                     {data.dailyRecommendation.limit} câu.
                   </p>
 
-                  <div className="mt-4 flex flex-wrap gap-2 sm:mt-6 sm:gap-3">
+                  <div className="mt-3 flex flex-wrap gap-2 sm:mt-6 sm:gap-3">
                     {data.continueSession ? (
                       <button
                         onClick={() =>
@@ -189,7 +189,7 @@ export default function ListeningHomePage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 rounded-2xl bg-white/10 p-3 backdrop-blur md:block md:p-5">
+                <div className="hidden grid-cols-2 gap-2 rounded-2xl bg-white/10 p-3 backdrop-blur sm:grid md:block md:p-5">
                   <div className="flex items-center gap-2 md:gap-4">
                     <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/15 md:h-14 md:w-14">
                       <Headphones size={34} />
@@ -228,19 +228,19 @@ export default function ListeningHomePage() {
               </div>
             )}
 
-            <section className="mt-5 grid grid-cols-2 gap-3 sm:mt-7 sm:gap-4 xl:grid-cols-4">
+            <section className="mt-3 grid grid-cols-2 gap-2 sm:mt-7 sm:gap-4 xl:grid-cols-4">
               {stats.map((item) => {
                 const Icon = item.icon;
 
                 return (
                   <article
                     key={item.label}
-                    className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:p-5"
+                    className="rounded-xl border border-blue-100 bg-white p-3 shadow-sm sm:rounded-2xl sm:p-5"
                   >
-                    <div className="grid h-11 w-11 place-items-center rounded-xl bg-blue-50 text-blue-600">
+                    <div className="hidden h-11 w-11 place-items-center rounded-xl bg-blue-50 text-blue-600 sm:grid">
                       <Icon size={22} />
                     </div>
-                    <p className="mt-3 text-xl font-black sm:mt-4 sm:text-2xl">{item.value}</p>
+                    <p className="text-lg font-black sm:mt-4 sm:text-2xl">{item.value}</p>
                     <p className="text-sm font-semibold text-slate-500">
                       {item.label}
                     </p>
@@ -249,15 +249,15 @@ export default function ListeningHomePage() {
               })}
             </section>
 
-            <div className="mt-7 grid gap-7 xl:grid-cols-[minmax(0,1fr)_370px]">
-              <section className="space-y-7">
-                <section className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
+            <div className="mt-4 grid gap-5 sm:mt-7 sm:gap-7 xl:grid-cols-[minmax(0,1fr)_370px]">
+              <section className="space-y-4 sm:space-y-7">
+                <section className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:p-6">
                   <h2 className="text-xl font-black">Luyện nghe theo chủ đề</h2>
                   <p className="mt-1 text-sm text-slate-500">
                     Backend hiện tạo bài theo level và topic.
                   </p>
 
-                  <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-6 sm:gap-4 lg:grid-cols-4">
                     {topics.map((topic) => (
                       <button
                         key={topic}
@@ -269,7 +269,7 @@ export default function ListeningHomePage() {
                             limit: 10,
                           })
                         }
-                        className="rounded-2xl bg-slate-50 p-5 text-left transition hover:bg-blue-50 disabled:opacity-50"
+                        className="rounded-xl bg-slate-50 p-3 text-left transition hover:bg-blue-50 disabled:opacity-50 sm:rounded-2xl sm:p-5"
                       >
                         <div className="text-3xl">🎧</div>
                         <h3 className="mt-3 font-black">{topic}</h3>
@@ -327,7 +327,7 @@ export default function ListeningHomePage() {
                 </section>
               </section>
 
-              <aside className="space-y-6">
+              <aside className="hidden space-y-6 xl:block">
                 <MissionCard
                   title="Nhiệm vụ hôm nay"
                   mission={dailyMission}
