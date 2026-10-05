@@ -32,6 +32,7 @@ export default async function SeoLandingPage({ params }: Props) {
     "@graph": [
       { "@type": "WebPage", name: page.title, description: page.description, url, inLanguage: "vi-VN", isPartOf: { "@type": "WebSite", name: "BeaconVie", url: siteUrl } },
       { "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "BeaconVie", item: siteUrl }, { "@type": "ListItem", position: 2, name: page.heading, item: url }] },
+      { "@type": "FAQPage", mainEntity: page.faqs?.map((item) => ({ "@type": "Question", name: item.q, acceptedAnswer: { "@type": "Answer", text: item.a } })) },
     ],
   };
   return (
@@ -76,6 +77,12 @@ export default async function SeoLandingPage({ params }: Props) {
             <p className="mt-6 text-sm text-[var(--BeaconVie-muted)]">Không cần tài khoản để đọc và làm bài mẫu. Đăng nhập khi bạn muốn lưu tiến độ, nhận lộ trình cá nhân hóa hoặc dùng phản hồi AI.</p>
           </div>
         </section>
+        <section className="mx-auto max-w-6xl px-5 pb-16 md:pb-24">
+          <div className="grid gap-8 lg:grid-cols-2">
+            <div><p className="font-bold text-[var(--BeaconVie-primary)]">Học thế nào để không bị lan man?</p><h2 className="mt-2 text-2xl font-black md:text-3xl">Một cách học bạn có thể áp dụng ngay hôm nay</h2><ol className="mt-6 space-y-4">{page.guide?.map((item,index)=><li key={item} className="BeaconVie-card flex gap-4 p-5"><span className="font-black text-[var(--BeaconVie-primary)]">0{index+1}</span><span className="leading-7">{item}</span></li>)}</ol></div>
+            <div><p className="font-bold text-[var(--BeaconVie-primary)]">CEFR A1 → C1</p><h2 className="mt-2 text-2xl font-black md:text-3xl">Chọn độ khó trước khi học nhiều hơn</h2><p className="mt-4 leading-7 text-[var(--BeaconVie-muted)]">A1–A2 ưu tiên nền tảng và tình huống quen thuộc. B1–B2 tăng khả năng hiểu và diễn đạt độc lập. C1 tập trung độ chính xác, sắc thái và nội dung phức tạp.</p><Link href="/kiem-tra-trinh-do-tieng-anh" className="BeaconVie-button-primary mt-6 inline-flex">Xem bài kiểm tra CEFR</Link><Link href="/tai-lieu-tieng-anh" className="BeaconVie-button-soft ml-3 mt-6 inline-flex">Kho tài liệu miễn phí</Link></div>
+          </div>
+        </section>
         <section className="border-y border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)]">
           <div className="mx-auto max-w-6xl px-5 py-14">
             <h2 className="text-2xl font-black md:text-3xl">Khám phá các kỹ năng khác</h2>
@@ -84,6 +91,7 @@ export default async function SeoLandingPage({ params }: Props) {
             </nav>
           </div>
         </section>
+        <section className="mx-auto max-w-6xl px-5 py-16 md:py-20"><h2 className="text-2xl font-black md:text-3xl">Câu hỏi thường gặp</h2><div className="mt-6 grid gap-4">{page.faqs?.map(item=><details key={item.q} className="BeaconVie-card p-5"><summary className="cursor-pointer font-black">{item.q}</summary><p className="mt-3 leading-7 text-[var(--BeaconVie-muted)]">{item.a}</p></details>)}</div><div className="mt-10 rounded-3xl bg-[var(--BeaconVie-primary)] p-7 text-white md:p-10"><p className="font-bold opacity-90">Đã học thử xong?</p><h2 className="mt-2 text-2xl font-black md:text-4xl">Tiếp tục theo lộ trình và lưu tiến độ của bạn</h2><p className="mt-3 max-w-2xl opacity-90">Tạo tài khoản khi bạn muốn BeaconVie nhớ trình độ, bài đã học, streak và gợi ý bài tiếp theo.</p><Link href={`/login?redirect=${encodeURIComponent(page.appPath)}`} className="mt-6 inline-flex rounded-xl bg-white px-5 py-3 font-black text-[var(--BeaconVie-primary)]">Tiếp tục học miễn phí</Link></div></section>
       </article>
     </main>
   );
