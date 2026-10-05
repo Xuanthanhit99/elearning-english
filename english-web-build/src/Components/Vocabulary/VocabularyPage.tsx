@@ -95,7 +95,7 @@ type NotebookItem = {
 };
 
 const levels = ["A1", "A2", "B1", "B2", "C1", "C2"];
-const fallbackWeakWords = ["pollution", "recycle", "conserve"];
+const fallbackWeakWords: Array<{ word: string; wordId: string }> = [];
 
 const vocabularyEmojiMap: Record<string, string> = {
   airplane: "2708-fe0f",
@@ -272,7 +272,7 @@ export default function VocabularyPage() {
   const { locale } = useTranslation();
   const c = vocab[locale];
   const user = useAuthStore((state) => state.user);
-  const displayName = user?.fullname || "Minh Anh";
+  const displayName = user?.fullname || "";
   const avatar = user?.avatar || "/brand/beaconvie-ai-mascot.webp";
 
   const [today, setToday] = useState<TodayVocabulary | null>(null);
@@ -648,16 +648,18 @@ export default function VocabularyPage() {
 
   return (
     <>
-      <div className="grid gap-7 px-4 py-6 lg:px-8 xl:grid-cols-[minmax(0,1fr)_420px]">
+      <div className="mx-auto grid w-full max-w-[1440px] gap-6 px-4 py-5 sm:px-6 lg:px-8 xl:grid-cols-[minmax(0,1fr)_340px]">
         <section className="min-w-0 space-y-4">
-          <div className="flex items-center gap-4">
+          <div className="rounded-3xl border border-blue-100 bg-gradient-to-r from-blue-50 to-white p-5 sm:p-6">
+            <div className="flex items-center gap-3">
             <Link
               href="/courses"
               className="text-2xl font-black text-[#4f5790]"
             >
               <AppIcon name="chevronLeft" bare size={24} />
             </Link>
-            <h1 className="text-2xl font-black">{c.title}</h1>
+            <div><p className="text-xs font-black uppercase tracking-[0.18em] text-blue-600">Học hôm nay</p><h1 className="mt-1 text-2xl font-black sm:text-3xl">{c.title}</h1><p className="mt-1 text-sm font-semibold text-slate-500">Tập trung vào từ đang học, ghi nhớ rồi ôn lại đúng lúc.</p></div>
+            </div>
           </div>
 
           {today?.locked ? (
@@ -705,7 +707,7 @@ export default function VocabularyPage() {
           )}
         </section>
 
-        <aside className="space-y-6">
+        <aside className="space-y-4 xl:pt-0">
           <StatsPanel
             stats={stats}
             fallbackLearned={
@@ -1036,7 +1038,7 @@ function WordStudyCard(props: {
 
   return (
     <section className="overflow-hidden rounded-2xl border border-[#ece8fb] bg-white shadow-sm">
-      <div className="grid min-h-[340px] gap-6 bg-[#f1edff] p-6 md:grid-cols-[minmax(0,1fr)_360px] md:p-8">
+      <div className="grid gap-5 bg-blue-50/60 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:p-7">
         <div className="min-w-0">
           {completed && (
             <span className="mb-4 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-700">
@@ -1044,7 +1046,7 @@ function WordStudyCard(props: {
             </span>
           )}
           <div className="flex flex-wrap items-center gap-4">
-            <h2 className="text-4xl font-black leading-tight text-[#101733] md:text-5xl">
+            <h2 className="break-words text-3xl font-black leading-tight text-[#101733] sm:text-4xl lg:text-5xl">
               {displayWord}
             </h2>
             <button
@@ -1072,7 +1074,7 @@ function WordStudyCard(props: {
           </div>
         </div>
 
-        <div className="relative flex min-h-[260px] items-center justify-center overflow-hidden rounded-[30px] bg-[#f5e79a] p-8 shadow-inner">
+        <div className="relative flex min-h-[190px] items-center justify-center overflow-hidden rounded-3xl bg-[#f5e79a] p-5 shadow-inner sm:min-h-[220px]">
           <span className="absolute left-8 top-8 h-16 w-16 rounded-full bg-white/30 blur-xl" />
           <span className="absolute bottom-8 right-10 h-24 w-24 rounded-full bg-[#ffd76a]/60 blur-2xl" />
           <span className="absolute inset-x-12 bottom-8 h-10 rounded-full bg-[#c58a1f]/15 blur-xl" />
@@ -1106,7 +1108,7 @@ function WordStudyCard(props: {
         </div>
       </div>
 
-      <div className="grid gap-4 border-t border-[#ece8fb] bg-white p-5 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 border-t border-blue-100 bg-white p-4 lg:grid-cols-5">
         <ActionButton
           active={Boolean(item?.inNotebook)}
           icon="plus"
