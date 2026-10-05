@@ -167,7 +167,7 @@ export default function ReadingHomePage() {
         <div className="flex items-center gap-5 text-sm font-bold">
           <span className="flex items-center gap-2">
             <Flame className="text-orange-500" size={18} />
-            {data.streak.currentChuỗi ngày} ngày
+            {data.streak.currentStreak} ngày
           </span>
           <span className="flex items-center gap-2">
             <Trophy className="text-blue-600" size={18} />
