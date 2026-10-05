@@ -157,7 +157,7 @@ return (
 
       <main className="min-h-screen flex-1">
 
-        <div className="grid gap-5 px-4 py-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6 lg:px-8 lg:py-6">
+        <div className="grid gap-4 px-4 py-4 pb-24 sm:gap-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6 lg:px-8 lg:py-6 lg:pb-6">
           <div className="min-w-0">
             <Hero data={data} />
 
@@ -167,13 +167,13 @@ return (
               </div>
             )}
 
-            <section className="mt-6">
+            <section className="mt-4 sm:mt-6">
               <h2 className="text-xl font-black sm:text-2xl">Luyện viết hôm nay</h2>
               <p className="mt-1 text-sm text-slate-500">
                 Chọn dạng bài để bắt đầu luyện viết
               </p>
 
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5 xl:gap-4">
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:grid-cols-3 sm:gap-3 xl:grid-cols-5 xl:gap-4">
                 {data.todayPractice.map((item) => (
                   <PracticeCard
                     key={item.key}
@@ -231,7 +231,7 @@ return (
             />
           </div>
 
-          <aside className="space-y-6">
+          <aside className="hidden space-y-6 lg:block">
             <ProgressCard
               progress={data.progress}
               onViewReport={() => router.push('/writing/progress')}
@@ -397,13 +397,13 @@ function Hero({ data }: { data: WritingHome }) {
   return (
     <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-sky-600 p-5 text-white shadow-lg shadow-blue-100 sm:p-7">
       <div>
-        <div className="flex items-center gap-5">
-          <div className="grid h-12 w-12 place-items-center rounded-xl bg-white/15">
+        <div className="flex items-center gap-3 sm:gap-5">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/15 sm:h-12 sm:w-12">
             <PenLine className="h-6 w-6 text-white" />
           </div>
 
           <div>
-            <h1 className="text-2xl font-black sm:text-3xl">
+            <h1 className="text-xl font-black sm:text-3xl">
               Chào mừng trở lại, {data.user.name}! 👋
             </h1>
             <p className="mt-2 text-sm font-medium text-white/80 sm:text-base">
@@ -412,7 +412,7 @@ function Hero({ data }: { data: WritingHome }) {
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-3 gap-2 rounded-2xl bg-white/10 p-3 backdrop-blur sm:max-w-[560px] sm:p-4">
+        <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-white/10 p-2.5 backdrop-blur sm:mt-5 sm:max-w-[560px] sm:rounded-2xl sm:p-4">
           <HeroStat value={data.stats.essaysWritten} label="Bài đã viết" />
           <HeroStat value={`${data.stats.avgScore}%`} label="Điểm TB" />
           <HeroStat value={data.stats.dayStreak} label="Chuỗi ngày" />
@@ -449,13 +449,13 @@ function PracticeCard({
   };
 
   return (
-    <div className="rounded-2xl bg-white p-4 text-left shadow-sm ring-1 ring-slate-100 sm:p-5">
-      <div className="grid h-11 w-11 place-items-center rounded-xl bg-blue-50 text-blue-600">
+    <div className="rounded-xl bg-white p-3 text-left shadow-sm ring-1 ring-slate-100 sm:rounded-2xl sm:p-5">
+      <div className="grid h-9 w-9 place-items-center rounded-lg bg-blue-50 text-blue-600 sm:h-11 sm:w-11 sm:rounded-xl">
         {iconMap[item.key]}
       </div>
 
-      <h3 className="mt-3 text-base font-extrabold sm:text-lg">{item.title}</h3>
-      <p className="mt-2 line-clamp-2 text-sm leading-5 text-slate-500 sm:min-h-[40px]">
+      <h3 className="mt-2 text-sm font-extrabold sm:mt-3 sm:text-lg">{item.title}</h3>
+      <p className="mt-1 hidden line-clamp-2 text-sm leading-5 text-slate-500 sm:mt-2 sm:block sm:min-h-[40px]">
         {item.description}
       </p>
 
