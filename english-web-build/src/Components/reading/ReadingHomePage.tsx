@@ -140,7 +140,7 @@ export default function ReadingHomePage() {
   ];
 
   return (
-    <main className="min-h-screen bg-[#f7faff] px-5 py-6 text-slate-900 lg:px-10">
+    <main className="min-h-screen bg-[#f7faff] px-4 py-4 text-slate-900 sm:px-5 sm:py-6 lg:px-10">
       <header className="mx-auto flex max-w-[1500px] flex-col gap-4 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
         <form
           onSubmit={(event) => {
@@ -239,17 +239,17 @@ export default function ReadingHomePage() {
               return (
                 <article
                   key={item.label}
-                  className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:p-5"
+                  className="min-w-0 rounded-2xl border border-blue-100 bg-white p-3 shadow-sm sm:p-5"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="grid h-12 w-12 place-items-center rounded-xl bg-blue-50 text-blue-600">
+                  <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600 sm:h-12 sm:w-12">
                       <Icon size={23} />
                     </div>
                     <div>
-                      <p className="text-xl font-black sm:text-2xl">
+                      <p className="truncate text-lg font-black sm:text-2xl">
                         {item.value}
                       </p>
-                      <p className="text-sm font-semibold text-slate-500">
+                      <p className="text-[11px] font-semibold leading-4 text-slate-500 sm:text-sm">
                         {item.label}
                       </p>
                     </div>
