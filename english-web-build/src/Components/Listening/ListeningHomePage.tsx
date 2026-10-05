@@ -138,14 +138,14 @@ export default function ListeningHomePage() {
         <section className="min-w-0 px-0 py-2 sm:py-4 lg:px-2">
           <div className="mx-auto max-w-[1500px]">
             <section className="overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-sky-600 p-5 text-white shadow-lg shadow-blue-100 sm:p-7">
-              <div className="grid gap-7 md:grid-cols-[1fr_340px] md:items-center">
+              <div className="grid gap-4 md:grid-cols-[1fr_300px] md:items-center">
                 <div>
-                  <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-black">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-black sm:px-4 sm:py-2">
                     <Sparkles size={15} />
                     LỘ TRÌNH NGHE
                   </div>
 
-                  <h1 className="mt-4 text-3xl font-black md:text-4xl">
+                  <h1 className="mt-3 text-3xl font-black md:text-4xl">
                     Luyện nghe mỗi ngày
                   </h1>
 
@@ -155,7 +155,7 @@ export default function ListeningHomePage() {
                     {data.dailyRecommendation.limit} câu.
                   </p>
 
-                  <div className="mt-6 flex flex-wrap gap-3">
+                  <div className="mt-4 flex flex-wrap gap-2 sm:mt-6 sm:gap-3">
                     {data.continueSession ? (
                       <button
                         onClick={() =>
@@ -189,16 +189,16 @@ export default function ListeningHomePage() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
-                  <div className="flex items-center gap-4">
-                    <div className="grid h-16 w-16 place-items-center rounded-2xl bg-white/15">
+                <div className="grid grid-cols-2 gap-2 rounded-2xl bg-white/10 p-3 backdrop-blur md:block md:p-5">
+                  <div className="flex items-center gap-2 md:gap-4">
+                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/15 md:h-14 md:w-14">
                       <Headphones size={34} />
                     </div>
                     <div>
                       <p className="text-sm font-bold text-white/70">
                         Cấp độ hiện tại
                       </p>
-                      <p className="text-3xl font-black">
+                      <p className="text-xl font-black md:text-3xl">
                         {data.level.current}
                       </p>
                       <p className="text-sm text-white/75">
@@ -207,7 +207,7 @@ export default function ListeningHomePage() {
                     </div>
                   </div>
 
-                  <div className="mt-5 flex items-center gap-3 rounded-2xl bg-white/10 p-4">
+                  <div className="mt-0 flex items-center gap-2 rounded-xl bg-white/10 p-2 md:mt-4 md:gap-3 md:p-3">
                     <Flame className="text-orange-300" />
                     <div>
                       <p className="font-black">
@@ -228,7 +228,7 @@ export default function ListeningHomePage() {
               </div>
             )}
 
-            <section className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <section className="mt-5 grid grid-cols-2 gap-3 sm:mt-7 sm:gap-4 xl:grid-cols-4">
               {stats.map((item) => {
                 const Icon = item.icon;
 
