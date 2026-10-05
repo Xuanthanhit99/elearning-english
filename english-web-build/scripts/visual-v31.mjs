@@ -37,7 +37,7 @@ await createAuthState();
 
 async function stabilizePage(page) {
   const closeWelcome = page.getByRole("button", { name: "Đóng", exact: true });
-  const welcome = page.getByText(/Chào mừng trở lại/i).first();
+  const welcome = page.getByRole("dialog").filter({ hasText: /Chào mừng trở lại/i }).first();
   const appeared = await welcome.waitFor({ state: "visible", timeout: 2_500 }).then(() => true).catch(() => false);
   if (appeared) {
     await closeWelcome.waitFor({ state: "visible", timeout: 2_500 });
