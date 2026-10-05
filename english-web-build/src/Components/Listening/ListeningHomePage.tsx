@@ -137,7 +137,7 @@ export default function ListeningHomePage() {
       <div className="mx-auto min-h-screen max-w-[1920px]">
         <section className="min-w-0 px-0 py-2 sm:py-4 lg:px-2">
           <div className="mx-auto max-w-[1500px]">
-            <section className="overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-sky-600 p-5 text-white sm:p-7 shadow-xl shadow-blue-200">
+            <section className="overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-sky-600 p-5 text-white shadow-lg shadow-blue-100 sm:p-7">
               <div className="grid gap-7 md:grid-cols-[1fr_340px] md:items-center">
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-black">
@@ -235,12 +235,12 @@ export default function ListeningHomePage() {
                 return (
                   <article
                     key={item.label}
-                    className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm"
+                    className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:p-5"
                   >
                     <div className="grid h-11 w-11 place-items-center rounded-xl bg-blue-50 text-blue-600">
                       <Icon size={22} />
                     </div>
-                    <p className="mt-4 text-2xl font-black">{item.value}</p>
+                    <p className="mt-3 text-xl font-black sm:mt-4 sm:text-2xl">{item.value}</p>
                     <p className="text-sm font-semibold text-slate-500">
                       {item.label}
                     </p>
