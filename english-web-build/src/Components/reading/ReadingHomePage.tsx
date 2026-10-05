@@ -178,7 +178,7 @@ export default function ReadingHomePage() {
 
       <div className="mx-auto mt-7 grid max-w-[1500px] gap-7 xl:grid-cols-[minmax(0,1fr)_380px]">
         <section className="min-w-0 space-y-7">
-          <section className="overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-sky-600 p-5 text-white sm:p-7 shadow-xl shadow-blue-200">
+          <section className="overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-sky-600 p-5 text-white shadow-lg shadow-blue-100 sm:p-7">
             <div className="grid gap-6 md:grid-cols-[1fr_320px] md:items-center">
               <div>
                 <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-black">
@@ -232,21 +232,21 @@ export default function ReadingHomePage() {
             </div>
           </section>
 
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
             {stats.map((item) => {
               const Icon = item.icon;
 
               return (
                 <article
                   key={item.label}
-                  className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm"
+                  className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:p-5"
                 >
                   <div className="flex items-center gap-4">
                     <div className="grid h-12 w-12 place-items-center rounded-xl bg-blue-50 text-blue-600">
                       <Icon size={23} />
                     </div>
                     <div>
-                      <p className="text-2xl font-black">
+                      <p className="text-xl font-black sm:text-2xl">
                         {item.value}
                       </p>
                       <p className="text-sm font-semibold text-slate-500">
