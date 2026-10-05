@@ -140,8 +140,8 @@ export default function LearningPathLessonPage() {
   const started = lesson.status === "IN_PROGRESS" || completed;
 
   return (
-    <main className="min-h-screen px-1 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-2 sm:px-4 sm:pb-5 sm:pt-5 lg:pb-5">
-      <div className="mx-auto max-w-3xl space-y-4 sm:space-y-5">
+    <main className="min-h-screen px-1 pb-[calc(9rem+env(safe-area-inset-bottom))] pt-2 sm:px-4 sm:pb-5 sm:pt-5 lg:pb-5">
+      <div className="mx-auto max-w-[1120px] space-y-4 sm:space-y-5">
         <Link
           href="/learning-path"
           className="inline-flex min-h-11 items-center gap-2 rounded-2xl px-3 py-2 text-sm font-black text-[var(--BeaconVie-muted)] transition hover:bg-[var(--BeaconVie-hover-tint)] hover:text-[var(--BeaconVie-primary)]"
@@ -156,40 +156,50 @@ export default function LearningPathLessonPage() {
           </div>
         ) : null}
 
-        <section className="BeaconVie-surface rounded-[26px] p-5 shadow-sm sm:rounded-[30px] sm:p-7">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <section className="overflow-hidden rounded-[24px] border border-[#dfe8f5] bg-white p-5 shadow-[0_8px_28px_rgba(25,63,122,.08)] sm:p-7 lg:p-8">
+          <div className="grid gap-3 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_190px] lg:items-start">
             <div>
-              <p className="font-black text-[var(--BeaconVie-primary)]">{lesson.sectionTitle}</p>
-              <h1 className="mt-2 text-3xl font-black text-[var(--BeaconVie-ink)] sm:text-4xl">{lesson.title}</h1>
-              <p className="mt-3 flex items-center gap-2 text-sm font-semibold text-[var(--BeaconVie-muted)]">
+              <p className="text-xs font-black uppercase tracking-[.14em] text-[#0867ff]">{lesson.sectionTitle}</p>
+              <h1 className="mt-2 text-3xl font-black tracking-[-.04em] text-[#08245c] sm:text-4xl lg:text-[42px]">{lesson.title}</h1>
+              <p className="mt-3 flex items-center gap-2 text-sm font-semibold text-[#60789d]">
                 <Clock size={16} />
                 {lesson.duration ? `${lesson.duration} phút` : "Thời lượng linh hoạt"}
               </p>
             </div>
 
-            <div className="rounded-2xl bg-[var(--BeaconVie-primary-soft)] px-4 py-3 text-left sm:text-center">
-              <p className="text-2xl font-black text-[var(--BeaconVie-primary)]">
+            <div className="flex items-center justify-between rounded-[16px] border border-[#dce8fb] bg-[#f3f7ff] px-4 py-2.5 lg:block lg:py-4 lg:text-center">
+              <p className="text-xl font-black text-[#0867ff] lg:text-3xl">
                 {data.learningPath.progressPercent}%
               </p>
-              <p className="text-sm font-bold text-[var(--BeaconVie-muted)]">Tiến độ lộ trình</p>
+              <p className="text-[10px] font-black uppercase tracking-[.08em] text-[#7890b1] lg:mt-1 lg:text-xs">Tiến độ lộ trình</p>
             </div>
           </div>
 
-          <div className="mt-6 rounded-3xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-5 sm:p-6">
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--BeaconVie-primary)]">Focus lesson</p>
-            <h2 className="mt-2 text-xl font-black text-[var(--BeaconVie-ink)]">Tập trung vào một bài học</h2>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
+          <div className="mt-4 rounded-[20px] sm:mt-6 border border-[#e4ebf5] bg-[#f8fbff] p-5 sm:p-6">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[#0867ff]">Focus lesson</p>
+            <h2 className="mt-1.5 text-xl font-black tracking-[-.02em] text-[#08245c] sm:mt-2 sm:text-2xl">Tập trung vào một bài học</h2>
+            <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[#60789d]">
               {started
                 ? "Bạn đang học bài này. Hoàn thành khi đã thực hiện xong nội dung của bài để mở bước tiếp theo."
                 : "Bắt đầu bài để ghi nhận trạng thái học. Sau khi hoàn thành, lộ trình sẽ tự mở bước tiếp theo nếu có."}
             </p>
-            <div className="mt-4 flex flex-wrap gap-2 text-xs font-black text-[var(--BeaconVie-muted)]">
-              <span className="rounded-full bg-[var(--BeaconVie-card)] px-3 py-2">{lessonStatusLabels[lesson.status] ?? lesson.status}</span>
-              <span className="rounded-full bg-[var(--BeaconVie-card)] px-3 py-2">{data.learningPath.completedLessons}/{data.learningPath.totalLessons} bài đã hoàn thành</span>
+            <div className="mt-3 flex flex-wrap gap-2 text-xs font-black text-[#60789d]">
+              <span className="rounded-full border border-[#e4ebf5] bg-white px-3 py-2">{lessonStatusLabels[lesson.status] ?? lesson.status}</span>
+              <span className="rounded-full border border-[#e4ebf5] bg-white px-3 py-2">{data.learningPath.completedLessons}/{data.learningPath.totalLessons} bài đã hoàn thành</span>
             </div>
           </div>
 
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <section aria-labelledby="lesson-content-title" className="mt-4 rounded-[20px] border border-[#e4ebf5] bg-white p-5 shadow-[0_4px_16px_rgba(25,63,122,.04)] sm:mt-5 sm:p-6">
+            <p className="text-xs font-black uppercase tracking-[.14em] text-[#0867ff]">Nội dung bài học</p>
+            <h2 id="lesson-content-title" className="mt-1.5 text-xl font-black tracking-[-.02em] text-[#08245c]">
+              Học trước khi hoàn thành
+            </h2>
+            <div className="mt-4 whitespace-pre-wrap rounded-[16px] bg-[#f8fbff] p-4 text-sm font-semibold leading-7 text-[#405b82] sm:p-5 sm:text-base">
+              {lesson.content?.trim() || "Bài học này chưa có nội dung văn bản để hiển thị."}
+            </div>
+          </section>
+
+          <div className="mt-4 flex flex-col gap-2 rounded-[18px] border border-[#dfe8f5] bg-white p-2 sm:mt-5 sm:flex-row sm:flex-wrap sm:gap-3 sm:rounded-none sm:border-x-0 sm:border-b-0 sm:border-t sm:border-[#edf1f7] sm:bg-transparent sm:p-0 sm:pt-5">
             {!started ? (
               <button
                 type="button"
@@ -225,7 +235,7 @@ export default function LearningPathLessonPage() {
         </section>
 
         {data.rewards ? (
-          <section className="rounded-[30px] border border-violet-100 bg-white p-6 shadow-sm">
+          <section className="rounded-[24px] border border-[#e4ebf5] bg-white p-5 shadow-[0_6px_22px_rgba(25,63,122,.06)] sm:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-2xl font-black text-slate-950">
