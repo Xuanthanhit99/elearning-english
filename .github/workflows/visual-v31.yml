@@ -104,6 +104,17 @@ jobs:
       - name: Capture V3.1 evidence
         working-directory: english-web-build
         run: node scripts/visual-v31.mjs
+      - name: Capture SEO Production V1 evidence
+        working-directory: english-web-build
+        run: node scripts/seo-production-v1.mjs
+      - name: Upload SEO Production V1 screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo-production-v1-desktop-mobile
+          path: english-web-build/artifacts/seo-production-v1/*.png
+          if-no-files-found: error
+          retention-days: 14
       - name: Upload Desktop + Mobile screenshots
         if: always()
         uses: actions/upload-artifact@v4
