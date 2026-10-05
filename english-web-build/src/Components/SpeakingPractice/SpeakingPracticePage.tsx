@@ -6,6 +6,13 @@ import { ArrowRight, Clock3, Flame, Mic2, Target, Trophy } from "lucide-react";
 import { BeaconVieLoadingState } from "@/src/Components/UI/BeaconVie";
 import { getSpeakingHome, type SpeakingHomeData } from "@/src/lib/speaking-api";
 
+const speakingLabels: Record<string, string> = {
+  "Read Aloud": "Đọc thành tiếng",
+  "Repeat After Me": "Nghe và nhắc lại",
+  "Answer Questions": "Trả lời câu hỏi",
+  "Free Talk": "Nói tự do",
+};
+
 export default function SpeakingPracticePage() {
   const router = useRouter();
   const [data, setData] = useState<SpeakingHomeData | null>(null);
@@ -38,8 +45,8 @@ export default function SpeakingPracticePage() {
               <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-black">
                 <Mic2 size={15} /> LUYỆN NÓI HÔM NAY
               </div>
-              <h1 className="mt-2 text-2xl font-black sm:mt-3 sm:text-4xl">{data.hero.title}</h1>
-              <p className="mt-1 line-clamp-2 max-w-2xl text-sm leading-5 text-white/80 sm:mt-2 sm:line-clamp-none sm:leading-6 sm:text-base">{data.hero.description}</p>
+              <h1 className="mt-2 text-2xl font-black sm:mt-3 sm:text-4xl">Sẵn sàng cất tiếng nói?</h1>
+              <p className="mt-1 line-clamp-2 max-w-2xl text-sm leading-5 text-white/80 sm:mt-2 sm:line-clamp-none sm:leading-6 sm:text-base">Luyện phản xạ từng bước, nói rõ hơn và tự tin hơn qua các tình huống gần gũi.</p>
               <button onClick={() => router.push(featured ? `/speaking/topics/${featured.slug}` : "/speaking/topics")} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-black text-blue-700 sm:mt-5 sm:px-5 sm:py-3 sm:text-base">
                 {featured ? "Luyện chủ đề được đề xuất" : "Bắt đầu luyện nói"} <ArrowRight size={18} />
               </button>
@@ -75,7 +82,7 @@ export default function SpeakingPracticePage() {
                 {data.practiceTypes.map((item) => (
                   <button key={item.key} onClick={() => router.push("/speaking/topics")} className="rounded-xl bg-slate-50 p-3 text-left transition hover:bg-blue-50 sm:rounded-2xl sm:p-4">
                     <span className="text-2xl">{item.icon || "🎤"}</span>
-                    <h3 className="mt-1 text-sm font-black sm:mt-2 sm:text-base">{item.title}</h3>
+                    <h3 className="mt-1 text-sm font-black sm:mt-2 sm:text-base">{speakingLabels[item.title] || item.title}</h3>
                     <p className="mt-1 hidden line-clamp-2 text-sm leading-5 text-slate-500 sm:block">{item.description}</p>
                   </button>
                 ))}
