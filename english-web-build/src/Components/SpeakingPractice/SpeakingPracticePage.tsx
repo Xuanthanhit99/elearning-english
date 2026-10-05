@@ -32,20 +32,20 @@ export default function SpeakingPracticePage() {
   return (
     <main className="min-h-screen bg-[#f7faff] px-4 py-4 text-slate-900 sm:px-6 lg:px-8 lg:py-6">
       <div className="mx-auto max-w-[1500px] space-y-5">
-        <section className="overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-sky-600 p-5 text-white shadow-lg shadow-blue-100 sm:p-7">
-          <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_320px] md:items-center">
+        <section className="overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-sky-600 p-4 text-white shadow-lg shadow-blue-100 sm:p-7">
+          <div className="grid gap-3 sm:gap-5 md:grid-cols-[minmax(0,1fr)_320px] md:items-center">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-black">
                 <Mic2 size={15} /> LUYỆN NÓI HÔM NAY
               </div>
-              <h1 className="mt-3 text-3xl font-black sm:text-4xl">{data.hero.title}</h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/80 sm:text-base">{data.hero.description}</p>
-              <button onClick={() => router.push(featured ? `/speaking/topics/${featured.slug}` : "/speaking/topics")} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-black text-blue-700">
+              <h1 className="mt-2 text-2xl font-black sm:mt-3 sm:text-4xl">{data.hero.title}</h1>
+              <p className="mt-1 line-clamp-2 max-w-2xl text-sm leading-5 text-white/80 sm:mt-2 sm:line-clamp-none sm:leading-6 sm:text-base">{data.hero.description}</p>
+              <button onClick={() => router.push(featured ? `/speaking/topics/${featured.slug}` : "/speaking/topics")} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-black text-blue-700 sm:mt-5 sm:px-5 sm:py-3 sm:text-base">
                 {featured ? "Luyện chủ đề được đề xuất" : "Bắt đầu luyện nói"} <ArrowRight size={18} />
               </button>
             </div>
             {featured && (
-              <button onClick={() => router.push(`/speaking/topics/${featured.slug}`)} className="overflow-hidden rounded-2xl bg-white/10 p-3 text-left backdrop-blur">
+              <button onClick={() => router.push(`/speaking/topics/${featured.slug}`)} className="hidden overflow-hidden rounded-2xl bg-white/10 p-3 text-left backdrop-blur md:block">
                 {featured.imageUrl ? <img src={featured.imageUrl} alt={featured.title} className="h-28 w-full rounded-xl object-cover sm:h-36" /> : <div className="grid h-28 place-items-center rounded-xl bg-white/10 text-5xl sm:h-36">🎙️</div>}
                 <p className="mt-3 text-xs font-bold text-white/70">{featured.difficulty} · {featured.estimatedMinutes} phút</p>
                 <h2 className="mt-1 font-black">{featured.title}</h2>
@@ -56,27 +56,27 @@ export default function SpeakingPracticePage() {
 
         <section className="grid grid-cols-3 gap-2 sm:gap-4">
           {stats.map((item) => { const Icon = item.icon; return (
-            <article key={item.label} className="rounded-2xl border border-blue-100 bg-white p-3 shadow-sm sm:p-5">
-              <Icon className="text-blue-600" size={20} />
-              <p className="mt-2 text-lg font-black sm:text-2xl">{item.value}</p>
-              <p className="text-[11px] font-semibold text-slate-500 sm:text-sm">{item.label}</p>
+            <article key={item.label} className="rounded-xl border border-blue-100 bg-white p-2.5 shadow-sm sm:rounded-2xl sm:p-5">
+              <Icon className="hidden text-blue-600 sm:block" size={20} />
+              <p className="text-base font-black sm:mt-2 sm:text-2xl">{item.value}</p>
+              <p className="mt-0.5 text-[10px] font-semibold leading-3 text-slate-500 sm:text-sm">{item.label}</p>
             </article>
           ); })}
         </section>
 
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_330px]">
           <section className="space-y-5">
-            <section className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm sm:p-6">
+            <section className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:p-6">
               <div className="flex items-end justify-between gap-3">
                 <div><h2 className="text-xl font-black">Chọn cách luyện nói</h2><p className="mt-1 text-sm text-slate-500">Luyện đúng kỹ năng bạn cần hôm nay.</p></div>
                 <button onClick={() => router.push("/speaking/topics")} className="shrink-0 text-sm font-bold text-blue-600">Xem chủ đề</button>
               </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:gap-3 lg:grid-cols-3">
                 {data.practiceTypes.map((item) => (
-                  <button key={item.key} onClick={() => router.push("/speaking/topics")} className="rounded-2xl bg-slate-50 p-4 text-left transition hover:bg-blue-50">
+                  <button key={item.key} onClick={() => router.push("/speaking/topics")} className="rounded-xl bg-slate-50 p-3 text-left transition hover:bg-blue-50 sm:rounded-2xl sm:p-4">
                     <span className="text-2xl">{item.icon || "🎤"}</span>
-                    <h3 className="mt-2 font-black">{item.title}</h3>
-                    <p className="mt-1 line-clamp-2 text-sm leading-5 text-slate-500">{item.description}</p>
+                    <h3 className="mt-1 text-sm font-black sm:mt-2 sm:text-base">{item.title}</h3>
+                    <p className="mt-1 hidden line-clamp-2 text-sm leading-5 text-slate-500 sm:block">{item.description}</p>
                   </button>
                 ))}
               </div>
@@ -95,7 +95,7 @@ export default function SpeakingPracticePage() {
             </section>
           </section>
 
-          <aside className="space-y-4">
+          <aside className="hidden space-y-4 xl:block">
             <section className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm">
               <h2 className="font-black">Tiến độ Speaking</h2>
               <div className="mt-4 h-2.5 rounded-full bg-slate-100"><div className="h-2.5 rounded-full bg-blue-600" style={{ width: `${Math.min(data.progress.percent, 100)}%` }} /></div>
