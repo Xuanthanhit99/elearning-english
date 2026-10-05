@@ -214,7 +214,7 @@ const getVisualTone = (word?: VocabularyWord | null) => {
     return { bg: "#fef3c7", fg: "#d97706", icon: "business" };
   }
 
-  return { bg: "#efe9ff", fg: "#6d35ff", icon: "word" };
+  return { bg: "#efe9ff", fg: "#2563eb", icon: "word" };
 };
 
 const buildVocabularySvg = (word?: VocabularyWord | null) => {
@@ -796,7 +796,7 @@ function LockedNotice({ reason }: { reason?: string }) {
       </p>
       <Link
         href="/vocabulary/test"
-        className="mt-4 inline-flex rounded-xl bg-[#6d35ff] px-5 py-3 font-black text-white"
+        className="mt-4 inline-flex rounded-xl bg-[#2563eb] px-5 py-3 font-black text-white"
       >
         {c.locked.cta}
       </Link>
@@ -829,7 +829,7 @@ export function TopBar({
           />
           <input
             placeholder={c.topBar.searchPlaceholder}
-            className="h-14 w-full rounded-xl border border-[#dfe2f3] bg-white pl-12 pr-4 text-sm font-bold outline-none placeholder:text-[#8b91aa] focus:border-[#6d35ff]"
+            className="h-14 w-full rounded-xl border border-[#dfe2f3] bg-white pl-12 pr-4 text-sm font-bold outline-none placeholder:text-[#8b91aa] focus:border-[#2563eb]"
           />
         </label>
         <div className="ml-auto flex items-center gap-3">
@@ -852,7 +852,7 @@ export function TopBar({
             tone="cyan"
           />
           <button className="relative flex h-11 w-11 items-center justify-center rounded-full border border-[#e8e9f5] bg-white text-xl">
-            <AppIcon name="bell" bare size={20} className="text-[#6d35ff]" />
+            <AppIcon name="bell" bare size={20} className="text-[#2563eb]" />
             <span className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 text-[10px] font-black text-white">
               3
             </span>
@@ -967,7 +967,7 @@ function TopicHero({
 function ActionRow({ onOpenChallenge }: { onOpenChallenge: () => void }) {
   return (
     <div className="flex flex-wrap items-center gap-4">
-      <button className="inline-flex items-center gap-2 rounded-xl bg-[#6d35ff] px-6 py-3 text-sm font-black text-white">
+      <button className="inline-flex items-center gap-2 rounded-xl bg-[#2563eb] px-6 py-3 text-sm font-black text-white">
         <AppIcon name="sparkles" bare size={17} /> Theo ch? d? m?i ngày
       </button>
       <button className="rounded-xl border border-[#dfe2f3] bg-white px-6 py-3 text-sm font-black text-[#303956]">
@@ -1049,7 +1049,7 @@ function WordStudyCard(props: {
             </h2>
             <button
               onClick={props.onAudio}
-              className="flex h-14 w-14 items-center justify-center rounded-xl bg-white text-[#6d35ff] shadow-sm"
+              className="flex h-14 w-14 items-center justify-center rounded-xl bg-white text-[#2563eb] shadow-sm"
             >
               <AppIcon name="volume" bare size={24} />
             </button>
@@ -1063,8 +1063,8 @@ function WordStudyCard(props: {
           </span>
 
           <h3 className="mt-6 text-lg font-black text-[#101733]">{meaning}</h3>
-          <div className="mt-5 border-l-4 border-[#6d35ff] pl-4">
-            <p className="text-sm font-black text-[#6d35ff]">
+          <div className="mt-5 border-l-4 border-[#2563eb] pl-4">
+            <p className="text-sm font-black text-[#2563eb]">
               {c.studyCard.exampleLabel}
             </p>
             <p className="mt-3 font-bold leading-7 text-[#101733]">{example}</p>
@@ -1173,8 +1173,8 @@ function ActionButton({
       onClick={onClick}
       className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-50 ${
         active
-          ? "border-[#6d35ff] bg-[#6d35ff] text-white"
-          : "border-[#e4e0f4] bg-white text-[#27245f] hover:border-[#6d35ff] hover:text-[#6d35ff]"
+          ? "border-[#2563eb] bg-[#2563eb] text-white"
+          : "border-[#e4e0f4] bg-white text-[#27245f] hover:border-[#2563eb] hover:text-[#2563eb]"
       }`}
     >
       <AppIcon name={icon} bare size={17} />
@@ -1227,7 +1227,7 @@ function WordDetailTabs({
           <button
             key={tabId}
             onClick={() => setActiveTab(tabId)}
-            className={`min-w-fit px-7 py-4 ${activeTab === tabId ? "bg-[#f4f0ff] text-[#6d35ff]" : ""}`}
+            className={`min-w-fit px-7 py-4 ${activeTab === tabId ? "bg-[#f4f0ff] text-[#2563eb]" : ""}`}
           >
             {tabLabels[tabId]}
           </button>
@@ -1293,7 +1293,7 @@ function WordDetailTabs({
                   .map((item: string) => (
                     <span
                       key={item}
-                      className="rounded-lg bg-[#efe9ff] px-3 py-1.5 text-xs font-black text-[#6d35ff]"
+                      className="rounded-lg bg-[#efe9ff] px-3 py-1.5 text-xs font-black text-[#2563eb]"
                     >
                       {item}
                     </span>
@@ -1353,7 +1353,7 @@ function WordDetailTabs({
                 {c.detailTab.flashcardTip}
                 <button
                   onClick={onFlashcard}
-                  className="mt-4 block rounded-xl bg-[#6d35ff] px-5 py-3 text-sm font-black text-white"
+                  className="mt-4 block rounded-xl bg-[#2563eb] px-5 py-3 text-sm font-black text-white"
                 >
                   {c.detailTab.learnWithFlashcard}
                 </button>
@@ -1435,7 +1435,7 @@ function ExampleTabContent({
               .map((item: string) => (
                 <span
                   key={item}
-                  className="rounded-lg bg-[#efe9ff] px-2.5 py-1 text-xs font-black text-[#6d35ff]"
+                  className="rounded-lg bg-[#efe9ff] px-2.5 py-1 text-xs font-black text-[#2563eb]"
                 >
                   {item}
                 </span>
@@ -1467,12 +1467,12 @@ function ExampleTabContent({
         <div className="grid gap-5 bg-[#f7f2ff] p-6 md:grid-cols-[minmax(0,1fr)_220px]">
           <div>
             <div className="flex items-center gap-3">
-              <h3 className="text-3xl font-black text-[#6d35ff]">
+              <h3 className="text-3xl font-black text-[#2563eb]">
                 {word?.word || "sustainable"}
               </h3>
               <button
                 onClick={() => word?.word && speakWord(word.word, word.audio)}
-                className="grid h-10 w-10 place-items-center rounded-xl bg-white text-[#6d35ff] shadow-sm"
+                className="grid h-10 w-10 place-items-center rounded-xl bg-white text-[#2563eb] shadow-sm"
               >
                 <AppIcon name="volume" bare size={18} />
               </button>
@@ -1532,7 +1532,7 @@ function ExampleTabContent({
                 </div>
                 <button
                   onClick={() => word?.word && speakWord(word.word, word.audio)}
-                  className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#efe9ff] text-[#6d35ff]"
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#efe9ff] text-[#2563eb]"
                 >
                   <AppIcon name="volume" bare size={16} />
                 </button>
@@ -1541,13 +1541,13 @@ function ExampleTabContent({
           </div>
 
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-            <button className="inline-flex items-center gap-2 rounded-xl border border-[#e8e9f5] px-6 py-3 text-sm font-black text-[#6d35ff]">
+            <button className="inline-flex items-center gap-2 rounded-xl border border-[#e8e9f5] px-6 py-3 text-sm font-black text-[#2563eb]">
               <AppIcon name="notebook" bare size={16} />
               {c.exampleTab.saveWord}
             </button>
             <button
               onClick={onFlashcard}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#6d35ff] px-8 py-3 text-sm font-black text-white"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#2563eb] px-8 py-3 text-sm font-black text-white"
             >
               <AppIcon name="notebook" bare size={16} />
               {c.detailTab.learnWithFlashcard}
@@ -1612,12 +1612,12 @@ function SynonymTabContent({
       <div className="grid gap-5 bg-[#f7f2ff] p-6 md:grid-cols-[minmax(0,1fr)_220px]">
         <div>
           <div className="flex items-center gap-3">
-            <h3 className="text-2xl font-black text-[#6d35ff]">
+            <h3 className="text-2xl font-black text-[#2563eb]">
               {word?.word || "sustainable"}
             </h3>
             <button
               onClick={() => word?.word && speakWord(word.word, word.audio)}
-              className="grid h-9 w-9 place-items-center rounded-xl bg-white text-[#6d35ff] shadow-sm"
+              className="grid h-9 w-9 place-items-center rounded-xl bg-white text-[#2563eb] shadow-sm"
             >
               <AppIcon name="volume" bare size={16} />
             </button>
@@ -1661,7 +1661,7 @@ function SynonymTabContent({
               )}
             </p>
           </div>
-          <button className="inline-flex items-center gap-2 rounded-xl border border-[#e8e9f5] px-4 py-2 text-sm font-black text-[#6d35ff]">
+          <button className="inline-flex items-center gap-2 rounded-xl border border-[#e8e9f5] px-4 py-2 text-sm font-black text-[#2563eb]">
             <AppIcon name="sparkles" bare size={15} />
             {c.synonymTab.viewAll}
           </button>
@@ -1676,10 +1676,10 @@ function SynonymTabContent({
               <div className="flex items-start gap-4">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-black text-[#6d35ff]">
+                    <span className="font-black text-[#2563eb]">
                       {index + 1}. {item.word}
                     </span>
-                    <button className="text-[#6d35ff]">
+                    <button className="text-[#2563eb]">
                       <AppIcon name="volume" bare size={13} />
                     </button>
                   </div>
@@ -1738,7 +1738,7 @@ function SynonymTabContent({
           </div>
           <button
             onClick={onFlashcard}
-            className="inline-flex items-center gap-2 rounded-xl border border-[#6d35ff] px-6 py-3 text-sm font-black text-[#6d35ff]"
+            className="inline-flex items-center gap-2 rounded-xl border border-[#2563eb] px-6 py-3 text-sm font-black text-[#2563eb]"
           >
             <AppIcon name="zap" bare size={15} />
             {c.synonymTab.practiceNow}
@@ -1801,12 +1801,12 @@ function AntonymTabContent({
       <div className="grid gap-5 bg-[#f7f2ff] p-6 md:grid-cols-[minmax(0,1fr)_220px]">
         <div>
           <div className="flex items-center gap-3">
-            <h3 className="text-2xl font-black text-[#6d35ff]">
+            <h3 className="text-2xl font-black text-[#2563eb]">
               {word?.word || "sustainable"}
             </h3>
             <button
               onClick={() => word?.word && speakWord(word.word, word.audio)}
-              className="grid h-9 w-9 place-items-center rounded-xl bg-white text-[#6d35ff] shadow-sm"
+              className="grid h-9 w-9 place-items-center rounded-xl bg-white text-[#2563eb] shadow-sm"
             >
               <AppIcon name="volume" bare size={16} />
             </button>
@@ -1862,7 +1862,7 @@ function AntonymTabContent({
                     <span className="font-black text-[#e11d48]">
                       {index + 1}. {item.word}
                     </span>
-                    <button className="text-[#6d35ff]">
+                    <button className="text-[#2563eb]">
                       <AppIcon name="volume" bare size={13} />
                     </button>
                   </div>
@@ -1906,13 +1906,13 @@ function AntonymTabContent({
         </div>
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-          <button className="inline-flex items-center gap-2 rounded-xl border border-[#e8e9f5] px-6 py-3 text-sm font-black text-[#6d35ff]">
+          <button className="inline-flex items-center gap-2 rounded-xl border border-[#e8e9f5] px-6 py-3 text-sm font-black text-[#2563eb]">
             <AppIcon name="notebook" bare size={16} />
             {c.exampleTab.saveWord}
           </button>
           <button
             onClick={onFlashcard}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#6d35ff] px-8 py-3 text-sm font-black text-white"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#2563eb] px-8 py-3 text-sm font-black text-white"
           >
             <AppIcon name="zap" bare size={16} />
             {c.synonymTab.practiceNow}
@@ -1944,10 +1944,10 @@ function RelatedPhraseTabContent({
       <div className="grid gap-5 bg-[#f7f2ff] p-6 md:grid-cols-[minmax(0,1fr)_220px]">
         <div>
           <div className="flex items-center gap-3">
-            <h3 className="text-2xl font-black text-[#6d35ff]">{baseWord}</h3>
+            <h3 className="text-2xl font-black text-[#2563eb]">{baseWord}</h3>
             <button
               onClick={() => word?.word && speakWord(word.word, word.audio)}
-              className="grid h-9 w-9 place-items-center rounded-xl bg-white text-[#6d35ff] shadow-sm"
+              className="grid h-9 w-9 place-items-center rounded-xl bg-white text-[#2563eb] shadow-sm"
             >
               <AppIcon name="volume" bare size={16} />
             </button>
@@ -1991,20 +1991,20 @@ function RelatedPhraseTabContent({
               key={item.phrase}
               className="flex gap-4 rounded-2xl border border-[#ece8fb] bg-white p-4 shadow-sm"
             >
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#efe9ff] text-sm font-black text-[#6d35ff]">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#efe9ff] text-sm font-black text-[#2563eb]">
                 {index + 1}
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-black text-[#6d35ff]">{item.phrase}</p>
+                    <p className="font-black text-[#2563eb]">{item.phrase}</p>
                     <p className="mt-1 text-sm font-bold text-[#4f5790]">
                       {item.meaning}
                     </p>
                   </div>
                   <button
                     onClick={() => word?.word && speakWord(word.word, word.audio)}
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#efe9ff] text-[#6d35ff]"
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#efe9ff] text-[#2563eb]"
                   >
                     <AppIcon name="volume" bare size={15} />
                   </button>
@@ -2018,13 +2018,13 @@ function RelatedPhraseTabContent({
         </div>
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-          <button className="inline-flex items-center gap-2 rounded-xl border border-[#e8e9f5] px-6 py-3 text-sm font-black text-[#6d35ff]">
+          <button className="inline-flex items-center gap-2 rounded-xl border border-[#e8e9f5] px-6 py-3 text-sm font-black text-[#2563eb]">
             <AppIcon name="notebook" bare size={16} />
             {c.exampleTab.saveWord}
           </button>
           <button
             onClick={onFlashcard}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#6d35ff] px-8 py-3 text-sm font-black text-white"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#2563eb] px-8 py-3 text-sm font-black text-white"
           >
             <AppIcon name="zap" bare size={16} />
             {c.synonymTab.practiceNow}
@@ -2207,7 +2207,7 @@ function ExampleMeta({
         {action && (
           <button
             onClick={action}
-            className="grid h-7 w-7 place-items-center rounded-lg bg-[#efe9ff] text-[#6d35ff]"
+            className="grid h-7 w-7 place-items-center rounded-lg bg-[#efe9ff] text-[#2563eb]"
           >
             <AppIcon name="volume" bare size={13} />
           </button>
@@ -2225,7 +2225,7 @@ function highlightWord(text: string, word?: string) {
   return (
     <>
       {text.slice(0, index)}
-      <span className="text-[#6d35ff]">
+      <span className="text-[#2563eb]">
         {text.slice(index, index + word.length)}
       </span>
       {text.slice(index + word.length)}
@@ -2286,7 +2286,7 @@ function WordPager({
         onClick={onPrevious}
         className="flex items-center gap-3 rounded-xl border border-[#ece8fb] bg-white px-5 py-4 text-left font-black text-[#101733] shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
       >
-        <AppIcon name="chevronLeft" bare size={20} className="text-[#6d35ff]" />
+        <AppIcon name="chevronLeft" bare size={20} className="text-[#2563eb]" />
         <span>
           <span className="block">{c.pager.prevWord}</span>
           <span className="block text-xs text-[#7377a8]">
@@ -2301,7 +2301,7 @@ function WordPager({
         <button
           disabled={completed}
           onClick={onComplete}
-          className="rounded-xl bg-[#6d35ff] px-5 py-4 font-black text-white shadow-sm disabled:cursor-not-allowed disabled:bg-emerald-500"
+          className="rounded-xl bg-[#2563eb] px-5 py-4 font-black text-white shadow-sm disabled:cursor-not-allowed disabled:bg-emerald-500"
         >
           {completed ? c.pager.completed : c.pager.completeLesson}
         </button>
@@ -2321,7 +2321,7 @@ function WordPager({
             name="chevronRight"
             bare
             size={20}
-            className="text-[#6d35ff]"
+            className="text-[#2563eb]"
           />
         </button>
       )}
@@ -2359,7 +2359,7 @@ function WordCard(props: {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={props.onDetail}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#efe9ff] px-3 py-2 text-sm font-black text-[#6d35ff]"
+              className="inline-flex items-center gap-2 rounded-lg bg-[#efe9ff] px-3 py-2 text-sm font-black text-[#2563eb]"
             >
               <AppIcon name="book" bare size={15} />
               Chi ti?t
@@ -2384,7 +2384,7 @@ function WordCard(props: {
             <h2 className="text-4xl font-black">{displayWord}</h2>
             <button
               onClick={props.onAudio}
-              className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#efe9ff] text-2xl text-[#6d35ff]"
+              className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#efe9ff] text-2xl text-[#2563eb]"
             >
               <AppIcon name="volume" bare size={24} />
             </button>
@@ -2397,7 +2397,7 @@ function WordCard(props: {
           </span>
           <h3 className="text-xl font-black">{meaning}</h3>
           <div className="border-l-4 border-[#d9ceff] pl-4">
-            <p className="text-sm font-black text-[#6d35ff]">Ví d?</p>
+            <p className="text-sm font-black text-[#2563eb]">Ví d?</p>
             <p className="mt-3 font-bold text-[#303956]">{example}</p>
           </div>
         </div>
@@ -2420,7 +2420,7 @@ function WordCard(props: {
           .map((_, index) => (
             <span
               key={index}
-              className={`h-2 rounded-full ${index === activeIndex ? "w-6 bg-[#6d35ff]" : "w-2 bg-[#e1e4f2]"}`}
+              className={`h-2 rounded-full ${index === activeIndex ? "w-6 bg-[#2563eb]" : "w-2 bg-[#e1e4f2]"}`}
             />
           ))}
       </div>
@@ -2475,7 +2475,7 @@ function StatusButton({
     green: "text-[#22c55e]",
     orange: "text-[#f97316]",
     red: "text-[#ef4444]",
-    purple: "text-[#6d35ff]",
+    purple: "text-[#2563eb]",
   };
   return (
     <button
@@ -2518,7 +2518,7 @@ function ProgressCard({
       </div>
       <div className="h-2 w-full rounded-full bg-[#e1e4f2] sm:w-80">
         <div
-          className="h-2 rounded-full bg-[#6d35ff]"
+          className="h-2 rounded-full bg-[#2563eb]"
           style={{ width: `${percent}%` }}
         />
       </div>
@@ -2526,7 +2526,7 @@ function ProgressCard({
       <button
         onClick={onComplete}
         disabled={completed}
-        className="rounded-xl bg-[#6d35ff] px-8 py-4 font-black text-white disabled:cursor-not-allowed disabled:bg-[#22c55e]"
+        className="rounded-xl bg-[#2563eb] px-8 py-4 font-black text-white disabled:cursor-not-allowed disabled:bg-[#22c55e]"
       >
         {completed ? "Ðã hoàn thành" : "Hoàn thành"}
       </button>
@@ -2578,12 +2578,12 @@ function WeeklyTopics({ plan }: { plan: WeeklyPlan | null }) {
             key={String(day)}
             className={`grid grid-cols-[38px_28px_1fr] items-center rounded-xl px-3 py-2.5 text-sm font-black ${active ? "bg-[#efe9ff] text-[#101733]" : "text-[#69708b]"}`}
           >
-            <span className={active ? "text-[#6d35ff]" : ""}>{day}</span>
+            <span className={active ? "text-[#2563eb]" : ""}>{day}</span>
             <AppIcon
               name={icon as AppIconName}
               bare
               size={17}
-              className={active ? "text-[#6d35ff]" : "text-[#8b91aa]"}
+              className={active ? "text-[#2563eb]" : "text-[#8b91aa]"}
             />
             <span>{label}</span>
           </div>
@@ -2617,7 +2617,7 @@ function StatsPanel({
         <div
           className="grid h-36 w-36 place-items-center rounded-full"
           style={{
-            background: `conic-gradient(#6d35ff ${displayPercent * 3.6}deg, #ebe7ff 0deg)`,
+            background: `conic-gradient(#2563eb ${displayPercent * 3.6}deg, #ebe7ff 0deg)`,
           }}
         >
           <div className="grid h-24 w-24 place-items-center rounded-full bg-white text-center">
@@ -2648,7 +2648,7 @@ function StatsPanel({
             value={`${reviewDue} ${c.statsPanel.unit}`}
           />
           <ProgressLegend
-            color="#6d35ff"
+            color="#2563eb"
             label={c.statsPanel.notebook}
             value={`${stats?.notebookWords || notebookCount} ${c.statsPanel.unit}`}
           />
@@ -2714,7 +2714,7 @@ function NotebookPanel({
               onClick={() => onSelectWord(item.word.id)}
               className="grid w-full grid-cols-[48px_1fr_24px] items-center gap-3 rounded-xl px-1 py-2 text-left hover:bg-[#f8f6ff]"
             >
-              <span className="grid h-12 w-12 place-items-center rounded-xl bg-[#efe9ff] text-[#6d35ff]">
+              <span className="grid h-12 w-12 place-items-center rounded-xl bg-[#efe9ff] text-[#2563eb]">
                 <AppIcon name="notebook" bare size={22} />
               </span>
               <span className="min-w-0">
@@ -2738,7 +2738,7 @@ function NotebookPanel({
                 name="notebook"
                 bare
                 size={18}
-                className="text-[#6d35ff]"
+                className="text-[#2563eb]"
               />
             </button>
           ))
@@ -2828,16 +2828,16 @@ function ChallengeCard({
         </span>
         <div className="h-2 flex-1 rounded-full bg-[#eeeafb]">
           <div
-            className="h-2 rounded-full bg-[#6d35ff]"
+            className="h-2 rounded-full bg-[#2563eb]"
             style={{ width: `${(done / total) * 100}%` }}
           />
         </div>
-        <span className="text-[#6d35ff]">+10 XP</span>
+        <span className="text-[#2563eb]">+10 XP</span>
       </div>
       <button
         onClick={onOpen}
         disabled={Boolean(challenge?.locked)}
-        className="mt-6 w-full rounded-xl border border-[#6d35ff] bg-white px-5 py-3 font-black text-[#6d35ff] disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-6 w-full rounded-xl border border-[#2563eb] bg-white px-5 py-3 font-black text-[#2563eb] disabled:cursor-not-allowed disabled:opacity-50"
       >
         {c.challengeCard.start}
       </button>
@@ -2901,7 +2901,7 @@ function DetailModal({
             .map((item: VocabularyWord) => (
               <span
                 key={item.id}
-                className="rounded-lg bg-[#efe9ff] px-3 py-2 text-sm font-black text-[#6d35ff]"
+                className="rounded-lg bg-[#efe9ff] px-3 py-2 text-sm font-black text-[#2563eb]"
               >
                 {item.word}
               </span>
@@ -2928,7 +2928,7 @@ function FlashcardModal({
   return (
     <Modal onClose={onClose}>
       <div className="text-center">
-        <p className="text-sm font-black uppercase text-[#6d35ff]">
+        <p className="text-sm font-black uppercase text-[#2563eb]">
           {c.flashcardModal.counter
             .replace("{index}", String(index))
             .replace("{total}", String(total))}
@@ -2962,7 +2962,7 @@ function FlashcardModal({
           </button>
           <button
             onClick={() => onReview("EASY")}
-            className="rounded-xl bg-[#6d35ff] px-4 py-4 font-black text-white"
+            className="rounded-xl bg-[#2563eb] px-4 py-4 font-black text-white"
           >
             {c.flashcardModal.easy}
           </button>
@@ -2992,7 +2992,7 @@ function ShareModal({
       <h2 className="text-3xl font-black">{c.shareModal.title}</h2>
       <p className="mt-2 font-bold text-[#69708b]">
         {c.shareModal.subtitle}{" "}
-        <span className="text-[#6d35ff]">{word?.word}</span>
+        <span className="text-[#2563eb]">{word?.word}</span>
       </p>
       <textarea
         value={content}
@@ -3000,11 +3000,11 @@ function ShareModal({
         placeholder={c.shareModal.placeholder
           .replace("{word}", word?.word || "")
           .replace("{meaning}", word?.meaningVi || word?.meaningEn || "")}
-        className="mt-6 min-h-40 w-full rounded-2xl border border-[#e8e9f5] p-4 font-bold outline-none focus:border-[#6d35ff]"
+        className="mt-6 min-h-40 w-full rounded-2xl border border-[#e8e9f5] p-4 font-bold outline-none focus:border-[#2563eb]"
       />
       <button
         onClick={onSubmit}
-        className="mt-5 w-full rounded-xl bg-[#6d35ff] px-5 py-4 font-black text-white"
+        className="mt-5 w-full rounded-xl bg-[#2563eb] px-5 py-4 font-black text-white"
       >
         {c.shareModal.postButton}
       </button>
@@ -3061,7 +3061,7 @@ function ChallengeModal({
             value={sentence}
             onChange={(event) => setSentence(event.target.value)}
             placeholder={c.challengeModal.sentencePlaceholder}
-            className="mt-4 min-h-36 w-full rounded-2xl border border-[#e8e9f5] p-4 font-bold outline-none focus:border-[#6d35ff]"
+            className="mt-4 min-h-36 w-full rounded-2xl border border-[#e8e9f5] p-4 font-bold outline-none focus:border-[#2563eb]"
           />
         </div>
       ) : (
@@ -3085,7 +3085,7 @@ function ChallengeModal({
                     onClick={() =>
                       setAnswers({ ...answers, [question.wordId]: option })
                     }
-                    className={`rounded-xl border px-4 py-3 text-left text-sm font-black ${answers[question.wordId] === option ? "border-[#6d35ff] bg-[#efe9ff] text-[#6d35ff]" : "border-[#e8e9f5] bg-white"}`}
+                    className={`rounded-xl border px-4 py-3 text-left text-sm font-black ${answers[question.wordId] === option ? "border-[#2563eb] bg-[#efe9ff] text-[#2563eb]" : "border-[#e8e9f5] bg-white"}`}
                   >
                     {option}
                   </button>
@@ -3097,7 +3097,7 @@ function ChallengeModal({
       )}
       <button
         onClick={onSubmit}
-        className="mt-6 w-full rounded-xl bg-[#6d35ff] px-5 py-4 font-black text-white"
+        className="mt-6 w-full rounded-xl bg-[#2563eb] px-5 py-4 font-black text-white"
       >
         {c.challengeModal.submit}
       </button>
@@ -3165,7 +3165,7 @@ function Panel({
       <div className="mb-5 flex items-center justify-between gap-3">
         <h2 className="text-xl font-black">{title}</h2>
         {action && (
-          <button className="text-sm font-black text-[#6d35ff]">
+          <button className="text-sm font-black text-[#2563eb]">
             {action}
           </button>
         )}
@@ -3187,7 +3187,7 @@ function Modal({
       <section className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-[28px] bg-white p-6 shadow-2xl md:p-8">
         <button
           onClick={onClose}
-          className="ml-auto flex h-11 w-11 items-center justify-center rounded-full bg-[#efe9ff] text-2xl font-black text-[#6d35ff]"
+          className="ml-auto flex h-11 w-11 items-center justify-center rounded-full bg-[#efe9ff] text-2xl font-black text-[#2563eb]"
         >
           ×
         </button>
@@ -3329,7 +3329,7 @@ function LessonCompletedModal({
         <div className="w-full max-w-[560px] rounded-[28px] bg-white p-6 shadow-2xl">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-black text-violet-600">
+              <p className="text-sm font-black text-blue-600">
                 {c.completedModal.reviewCounter
                   .replace("{index}", String(reviewIndex + 1))
                   .replace("{total}", String(reviewWords.length))}
@@ -3346,10 +3346,10 @@ function LessonCompletedModal({
             </button>
           </div>
 
-          <div className="mt-6 rounded-2xl bg-violet-50 p-5">
+          <div className="mt-6 rounded-2xl bg-blue-50 p-5">
             {currentReviewMode === 0 && (
               <>
-                <p className="text-4xl font-black text-violet-700">
+                <p className="text-4xl font-black text-blue-700">
                   {currentReviewWord.word}
                 </p>
                 <p className="mt-3 text-lg font-bold text-slate-700">
@@ -3367,7 +3367,7 @@ function LessonCompletedModal({
                 <p className="text-sm font-bold text-slate-500">
                   {c.completedModal.chooseCorrectMeaning}
                 </p>
-                <p className="mt-2 text-3xl font-black text-violet-700">
+                <p className="mt-2 text-3xl font-black text-blue-700">
                   {currentReviewWord.word}
                 </p>
                 <div className="mt-5 grid gap-2">
@@ -3383,7 +3383,7 @@ function LessonCompletedModal({
                             : "AGAIN",
                         )
                       }
-                      className="rounded-xl border border-violet-100 bg-white px-4 py-3 text-left text-sm font-bold hover:bg-violet-100"
+                      className="rounded-xl border border-blue-100 bg-white px-4 py-3 text-left text-sm font-bold hover:bg-blue-100"
                     >
                       {option}
                     </button>
@@ -3406,7 +3406,7 @@ function LessonCompletedModal({
                   onKeyDown={(event) => {
                     if (event.key === "Enter") submitTypedReview();
                   }}
-                  className="mt-5 w-full rounded-xl border border-violet-100 px-4 py-3 font-bold outline-none focus:border-violet-500"
+                  className="mt-5 w-full rounded-xl border border-blue-100 px-4 py-3 font-bold outline-none focus:border-blue-500"
                   placeholder={c.completedModal.typeWordPlaceholder}
                 />
               </>
@@ -3419,7 +3419,7 @@ function LessonCompletedModal({
                     currentReviewWord.word &&
                     speakWord(currentReviewWord.word, currentReviewWord.audio)
                   }
-                  className="rounded-xl bg-violet-600 px-5 py-3 font-black text-white"
+                  className="rounded-xl bg-blue-600 px-5 py-3 font-black text-white"
                 >
                   {c.completedModal.listenAndChoose}
                 </button>
@@ -3436,7 +3436,7 @@ function LessonCompletedModal({
                           option === currentReviewWord.word ? "GOOD" : "AGAIN",
                         )
                       }
-                      className="rounded-xl border border-violet-100 bg-white px-4 py-3 text-sm font-bold hover:bg-violet-100"
+                      className="rounded-xl border border-blue-100 bg-white px-4 py-3 text-sm font-bold hover:bg-blue-100"
                     >
                       {option}
                     </button>
@@ -3462,7 +3462,7 @@ function LessonCompletedModal({
                   onKeyDown={(event) => {
                     if (event.key === "Enter") submitTypedReview();
                   }}
-                  className="mt-5 w-full rounded-xl border border-violet-100 px-4 py-3 font-bold outline-none focus:border-violet-500"
+                  className="mt-5 w-full rounded-xl border border-blue-100 px-4 py-3 font-bold outline-none focus:border-blue-500"
                   placeholder={c.completedModal.fillMissingPlaceholder}
                 />
               </>
@@ -3472,7 +3472,7 @@ function LessonCompletedModal({
           {[2, 4].includes(currentReviewMode) ? (
             <button
               onClick={submitTypedReview}
-              className="mt-5 w-full rounded-xl bg-violet-600 py-3 font-black text-white"
+              className="mt-5 w-full rounded-xl bg-blue-600 py-3 font-black text-white"
             >
               {c.completedModal.check}
             </button>
@@ -3507,7 +3507,7 @@ function LessonCompletedModal({
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/55 px-4 backdrop-blur-sm">
         <div className="w-full max-w-[480px] rounded-[28px] bg-white p-7 text-center shadow-2xl">
-          <h2 className="text-3xl font-extrabold text-violet-600">
+          <h2 className="text-3xl font-extrabold text-blue-600">
             {c.completedModal.reviewDoneTitle}
           </h2>
           <p className="mt-3 font-bold text-slate-600">
@@ -3520,7 +3520,7 @@ function LessonCompletedModal({
           </p>
           <button
             onClick={onFinish}
-            className="mt-6 w-full rounded-xl bg-violet-600 py-3 font-black text-white"
+            className="mt-6 w-full rounded-xl bg-blue-600 py-3 font-black text-white"
           >
             {c.completedModal.finishToday}
           </button>
@@ -3558,7 +3558,7 @@ function LessonCompletedModal({
 
         {/* Header */}
         <div className="relative px-8 pt-10 text-center">
-          <h2 className="text-3xl font-extrabold leading-tight text-violet-600">
+          <h2 className="text-3xl font-extrabold leading-tight text-blue-600">
             {c.completedModal.title.split("\n").map((line, index) => (
               <span key={index}>
                 {index > 0 && <br />}
@@ -3591,8 +3591,8 @@ function LessonCompletedModal({
                 icon={<BookOpen size={22} />}
                 value={String(wordsLearned)}
                 label={c.completedModal.newWords}
-                color="text-violet-600"
-                bg="bg-violet-100"
+                color="text-blue-600"
+                bg="bg-blue-100"
               />
 
               <StatItem
@@ -3622,13 +3622,13 @@ function LessonCompletedModal({
             </p>
           </div>
 
-          <div className="mt-4 flex items-center gap-4 rounded-2xl border border-violet-100 bg-violet-50 p-4">
+          <div className="mt-4 flex items-center gap-4 rounded-2xl border border-blue-100 bg-blue-50 p-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm">
-              <Gift size={38} className="text-violet-600" />
+              <Gift size={38} className="text-blue-600" />
             </div>
 
             <div>
-              <p className="font-bold text-violet-700">
+              <p className="font-bold text-blue-700">
                 {c.completedModal.tomorrowTitle}
               </p>
               <p className="text-sm text-slate-600">
@@ -3645,7 +3645,7 @@ function LessonCompletedModal({
             <button
               onClick={() => setMode("review")}
               disabled={!reviewWords.length}
-              className="flex items-center justify-center gap-2 rounded-xl bg-violet-600 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-200 hover:bg-violet-700"
+              className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-200 hover:bg-blue-700"
             >
               <RotateCcw size={16} />
               {c.completedModal.reviewNow}
@@ -3656,7 +3656,7 @@ function LessonCompletedModal({
                 <button
                   key={amount}
                   onClick={() => onLearnExtra(amount)}
-                  className="rounded-xl border border-violet-100 bg-white py-3 text-sm font-bold text-violet-700 hover:bg-violet-50"
+                  className="rounded-xl border border-blue-100 bg-white py-3 text-sm font-bold text-blue-700 hover:bg-blue-50"
                 >
                   {c.completedModal.learnMore.replace(
                     "{amount}",
