@@ -61,6 +61,21 @@ export default async function SeoLandingPage({ params }: Props) {
             </ul>
           </div>
         </section>
+        <section className="mx-auto max-w-6xl px-5 pb-16 md:pb-24">
+          <div className="BeaconVie-card p-7 md:p-10">
+            <p className="font-bold text-[var(--BeaconVie-primary)]">Học thử không cần đăng nhập</p>
+            <h2 className="mt-2 text-2xl font-black md:text-3xl">{page.lesson.title}</h2>
+            <p className="mt-4 max-w-3xl leading-7 text-[var(--BeaconVie-muted)]">{page.lesson.explanation}</p>
+            <div className="mt-6 grid gap-3 md:grid-cols-3">
+              {page.lesson.examples.map((example) => <div key={example} className="rounded-2xl border border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card-soft)] p-4 font-semibold">{example}</div>)}
+            </div>
+            <div className="mt-7 rounded-2xl border border-[var(--BeaconVie-border)] p-5">
+              <p className="font-black">Thử ngay</p><p className="mt-2">{page.lesson.practice}</p>
+              <details className="mt-4"><summary className="cursor-pointer font-bold text-[var(--BeaconVie-primary)]">Xem đáp án / gợi ý</summary><p className="mt-3 text-[var(--BeaconVie-muted)]">{page.lesson.answer}</p></details>
+            </div>
+            <p className="mt-6 text-sm text-[var(--BeaconVie-muted)]">Không cần tài khoản để đọc và làm bài mẫu. Đăng nhập khi bạn muốn lưu tiến độ, nhận lộ trình cá nhân hóa hoặc dùng phản hồi AI.</p>
+          </div>
+        </section>
         <section className="border-y border-[var(--BeaconVie-border)] bg-[var(--BeaconVie-card)]">
           <div className="mx-auto max-w-6xl px-5 py-14">
             <h2 className="text-2xl font-black md:text-3xl">Khám phá các kỹ năng khác</h2>
