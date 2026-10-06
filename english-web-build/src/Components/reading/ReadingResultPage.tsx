@@ -119,17 +119,17 @@ export default function ReadingResultPage({
   const nextArticle = data.suggestions[0] ?? null;
 
   return (
-    <main className="min-h-screen bg-[#fbfbff] px-5 py-7 text-slate-900 lg:px-10">
+    <main className="min-h-screen bg-[#f7faff] px-4 py-4 text-slate-900 sm:px-5 sm:py-7 lg:px-10">
       <div className="mx-auto max-w-[1450px]">
-        <section className="overflow-hidden rounded-3xl bg-gradient-to-r from-violet-700 to-indigo-600 p-8 text-white shadow-xl shadow-violet-200">
+        <section className="overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-sky-600 p-5 text-white shadow-xl shadow-blue-200 sm:rounded-3xl sm:p-8">
           <div className="grid gap-7 md:grid-cols-[1fr_300px] md:items-center">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-black">
                 <Trophy size={16} />
-                KẾT QUẢ READING
+                KẾT QUẢ LUYỆN ĐỌC
               </div>
 
-              <h1 className="mt-4 text-3xl font-black md:text-4xl">
+              <h1 className="mt-4 text-2xl font-black sm:text-3xl md:text-4xl">
                 {summary.articleTitle}
               </h1>
               <p className="mt-3 max-w-2xl text-white/75">
@@ -177,7 +177,7 @@ export default function ReadingResultPage({
               </div>
               <div>
                 <h2 className="text-lg font-black text-emerald-800">
-                  Nhiệm vụ Reading đã được cập nhật
+                  Nhiệm vụ luyện đọc đã được cập nhật
                 </h2>
                 <p className="mt-1 text-sm text-emerald-700">
                   Bài đọc, quiz và thời gian học đã được ghi nhận.
@@ -187,9 +187,9 @@ export default function ReadingResultPage({
           </section>
         )}
 
-        <div className="mt-7 grid gap-7 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="mt-4 grid gap-4 sm:mt-7 sm:gap-7 xl:grid-cols-[minmax(0,1fr)_380px]">
           <section className="min-w-0 space-y-7">
-            <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <section className="grid grid-cols-2 gap-2 sm:gap-4 xl:grid-cols-4">
               <Stat
                 title={`${summary.accuracy}%`}
                 label="Độ chính xác"
@@ -212,7 +212,7 @@ export default function ReadingResultPage({
               />
             </section>
 
-            <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+            <section className="rounded-3xl border border-blue-100 bg-white p-6 shadow-sm">
               <h2 className="text-xl font-black">
                 Hiệu suất theo kỹ năng
               </h2>
@@ -226,7 +226,7 @@ export default function ReadingResultPage({
                     </div>
                     <div className="h-3 rounded-full bg-slate-100">
                       <div
-                        className="h-3 rounded-full bg-violet-600"
+                        className="h-3 rounded-full bg-blue-600"
                         style={{
                           width: `${Math.min(item.score, 100)}%`,
                         }}
@@ -237,7 +237,7 @@ export default function ReadingResultPage({
               </div>
             </section>
 
-            <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+            <section className="rounded-3xl border border-blue-100 bg-white p-6 shadow-sm">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-black">
                   Xem lại câu hỏi
@@ -280,7 +280,7 @@ export default function ReadingResultPage({
                         </p>
                         {!item.isCorrect && (
                           <p className="mt-1 text-sm text-emerald-700">
-                            ?áp án đúng:{" "}
+                            Đáp án đúng:{" "}
                             <strong>{item.correctAnswer}</strong>
                           </p>
                         )}
@@ -300,7 +300,7 @@ export default function ReadingResultPage({
                   onClick={() =>
                     setShowAllQuestions((value) => !value)
                   }
-                  className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-50 py-3 font-bold text-violet-600"
+                  className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-50 py-3 font-bold text-blue-600"
                 >
                   {showAllQuestions ? "Thu gọn" : "Xem tất cả"}
                   <ChevronDown
@@ -314,7 +314,7 @@ export default function ReadingResultPage({
             </section>
 
             <section className="grid gap-6 md:grid-cols-2">
-              <article className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+              <article className="rounded-3xl border border-blue-100 bg-white p-6 shadow-sm">
                 <h2 className="text-xl font-black">
                   Từ vựng mới
                 </h2>
@@ -324,7 +324,7 @@ export default function ReadingResultPage({
                       key={word.id}
                       className="flex items-center gap-4"
                     >
-                      <div className="grid h-10 w-10 place-items-center rounded-xl bg-violet-50 text-violet-600">
+                      <div className="grid h-10 w-10 place-items-center rounded-xl bg-blue-50 text-blue-600">
                         <BookOpen size={18} />
                       </div>
                       <div className="flex-1">
@@ -340,15 +340,15 @@ export default function ReadingResultPage({
                           {word.meaning}
                         </p>
                       </div>
-                      <Volume2 size={17} className="text-violet-600" />
+                      <Volume2 size={17} className="text-blue-600" />
                     </div>
                   ))}
                 </div>
               </article>
 
-              <article className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+              <article className="rounded-3xl border border-blue-100 bg-white p-6 shadow-sm">
                 <div className="flex items-center gap-3">
-                  <Brain className="text-violet-600" />
+                  <Brain className="text-blue-600" />
                   <h2 className="text-xl font-black">
                     AI gợi ý cải thiện
                   </h2>
@@ -381,7 +381,7 @@ export default function ReadingResultPage({
               mission={weeklyMission}
             />
 
-            <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+            <section className="rounded-3xl border border-blue-100 bg-white p-6 shadow-sm">
               <h2 className="text-lg font-black">
                 Tiếp tục Learning Path
               </h2>
@@ -401,7 +401,7 @@ export default function ReadingResultPage({
                         `/reading/articles/${nextArticle.slug}`,
                       )
                     }
-                    className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 py-3 font-black text-white"
+                    className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 font-black text-white"
                   >
                     Học bài tiếp theo
                     <ArrowRight size={17} />
@@ -420,7 +420,7 @@ export default function ReadingResultPage({
                   `/reading/articles/${summary.articleSlug}`,
                 )
               }
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-violet-200 bg-white py-3 font-black text-violet-600"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-blue-200 bg-white py-3 font-black text-blue-600"
             >
               <RotateCcw size={17} />
               Ôn lại bài đọc
@@ -430,7 +430,7 @@ export default function ReadingResultPage({
               onClick={() => router.push("/reading")}
               className="w-full rounded-xl bg-slate-900 py-3 font-black text-white"
             >
-              Về Reading Home
+              Về trang Luyện đọc
             </button>
           </aside>
         </div>
@@ -449,8 +449,8 @@ function Stat({
   icon: React.ReactNode;
 }) {
   return (
-    <article className="rounded-2xl border border-violet-100 bg-white p-5 shadow-sm">
-      <div className="grid h-11 w-11 place-items-center rounded-xl bg-violet-50 text-violet-600">
+    <article className="rounded-2xl border border-blue-100 bg-white p-3 shadow-sm sm:p-5">
+      <div className="grid h-11 w-11 place-items-center rounded-xl bg-blue-50 text-blue-600">
         {icon}
       </div>
       <p className="mt-4 text-2xl font-black">{title}</p>
@@ -469,7 +469,7 @@ function MissionSummary({
   mission: ReturnType<typeof useReadingMissions>["dailyMission"];
 }) {
   return (
-    <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+    <section className="rounded-3xl border border-blue-100 bg-white p-6 shadow-sm">
       <h2 className="text-lg font-black">{title}</h2>
 
       {mission ? (
@@ -495,7 +495,7 @@ function MissionSummary({
         </>
       ) : (
         <p className="mt-4 text-sm text-slate-500">
-          Chưa có nhiệm vụ Reading.
+          Chưa có nhiệm vụ luyện đọc.
         </p>
       )}
     </section>
@@ -510,13 +510,13 @@ function State({
   action?: () => void;
 }) {
   return (
-    <div className="grid min-h-screen place-items-center bg-[#fbfbff]">
+    <div className="grid min-h-screen place-items-center bg-[#f7faff]">
       <div className="rounded-2xl bg-white px-8 py-6 text-center shadow-sm">
         <p className="font-bold">{text}</p>
         {action && (
           <button
             onClick={action}
-            className="mt-4 rounded-xl bg-violet-600 px-5 py-2 font-bold text-white"
+            className="mt-4 rounded-xl bg-blue-600 px-5 py-2 font-bold text-white"
           >
             Tải lại
           </button>
