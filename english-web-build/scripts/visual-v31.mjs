@@ -316,7 +316,35 @@ async function captureListeningPractice(prefix, viewport) {
   const response = await page.goto(WEB + "/listening/practice/" + sessionId, { waitUntil: "domcontentloaded", timeout: 45_000 });
   if (!response || response.status() >= 400) throw new Error("Listening Practice navigation failed");
   await stabilizePage(page);
-  await page.getByRole("heading", { name: questions[0].question }).waitFor({ state: "visible", timeout: 30_000 });
+  const listeningHeading = page.getByRole("heading", { name: questions[0].question });
+  await listeningHeading.waitFor({ state: "visible", timeout: 30_000 });
+  if (viewport.width === 390) {
+    const diagnostics = await page.evaluate((questionText) => {
+      const heading = Array.from(document.querySelectorAll("h1,h2,h3,h4,h5,h6")).find((node) => node.textContent?.trim() === questionText);
+      const headingStyle = heading ? window.getComputedStyle(heading) : null;
+      const fixedBottom = Array.from(document.querySelectorAll("body *")).map((node) => {
+        const style = window.getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        return { node, style, rect };
+      }).filter(({ style, rect }) => style.position === "fixed" && rect.width > 0 && rect.height > 0 && rect.bottom >= window.innerHeight - 2 && rect.top < window.innerHeight).map(({ node, style, rect }) => ({
+        tag: node.tagName,
+        className: typeof node.className === "string" ? node.className : "",
+        text: (node.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 180),
+        rect: { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right, width: rect.width, height: rect.height },
+        position: style.position,
+        bottom: style.bottom,
+        zIndex: style.zIndex,
+        paddingTop: style.paddingTop,
+        paddingBottom: style.paddingBottom
+      }));
+      return {
+        viewport: { width: window.innerWidth, height: window.innerHeight },
+        heading: heading && headingStyle ? { className: heading.className, fontSize: headingStyle.fontSize, lineHeight: headingStyle.lineHeight, fontWeight: headingStyle.fontWeight, rect: heading.getBoundingClientRect().toJSON() } : null,
+        fixedBottom
+      };
+    }, questions[0].question);
+    console.log("[mobile-listening-runtime-css]", JSON.stringify(diagnostics));
+  }
   await page.screenshot({ path: "artifacts/visual-v31/" + prefix + "-listening-practice.png", fullPage: true });
 
   await page.getByRole("button", { name: /Prepares breakfast/ }).click();
