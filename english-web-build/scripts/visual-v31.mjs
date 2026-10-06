@@ -246,7 +246,7 @@ async function captureReadingPractice(prefix, viewport) {
   await page.getByRole("button", { name: lesson.questions[1].options[1], exact: true }).click();
   if (answers.size !== 2) throw new Error("Reading Practice did not persist both answers");
   await page.getByRole("button", { name: "Nộp bài", exact: true }).click();
-  await page.waitForURL((url) => url.pathname === "/reading/sessions/" + sessionId + "/result", { timeout: 10_000 });
+  await page.waitForURL((url) => url.pathname.replace(/\/$/, "") === "/reading/sessions/" + sessionId + "/result", { timeout: 10_000 });
   await page.getByText("KẾT QUẢ LUYỆN ĐỌC", { exact: true }).waitFor({ state: "visible", timeout: 30_000 });
   await page.screenshot({ path: "artifacts/visual-v31/" + prefix + "-reading-result.png", fullPage: true });
   if (errors.length) throw new Error("Reading Practice page errors: " + errors.join(" | "));
