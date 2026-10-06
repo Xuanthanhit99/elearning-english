@@ -308,15 +308,15 @@ export default function ReadingLessonPage({
     ];
 
   return (
-    <main className="min-h-screen bg-[#fbfbff] px-5 py-6 text-slate-900 lg:px-10">
-      <header className="mx-auto flex max-w-[1500px] flex-col gap-4 rounded-2xl border border-violet-100 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
+    <main className="min-h-screen bg-[#f7faff] px-4 py-4 text-slate-900 sm:px-5 sm:py-6 lg:px-10">
+      <header className="mx-auto flex max-w-[1500px] flex-col gap-3 rounded-2xl border border-blue-100 bg-white p-3 shadow-sm sm:p-4 md:flex-row md:items-center md:justify-between">
         <button
           onClick={() =>
             router.push(
               `/reading/categories/${data.article.categorySlug}`,
             )
           }
-          className="inline-flex items-center gap-2 font-bold text-violet-600"
+          className="inline-flex items-center gap-2 font-bold text-blue-600"
         >
           <ChevronLeft size={18} />
           Quay lại chủ đề
@@ -335,21 +335,21 @@ export default function ReadingLessonPage({
         </div>
       </header>
 
-      <div className="mx-auto mt-7 grid max-w-[1500px] gap-7 xl:grid-cols-[minmax(0,1fr)_430px]">
+      <div className="mx-auto mt-4 grid max-w-[1500px] gap-4 sm:mt-7 sm:gap-7 xl:grid-cols-[minmax(0,1fr)_430px]">
         <section className="min-w-0 space-y-6">
-          <article className="overflow-hidden rounded-3xl border border-violet-100 bg-white shadow-sm">
+          <article className="overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-sm">
             <img
               src={data.article.thumbnail || fallbackImage}
               alt={data.article.title}
-              className="h-64 w-full object-cover"
+              className="h-44 w-full object-cover sm:h-56 lg:h-64"
             />
 
-            <div className="p-7">
+            <div className="p-4 sm:p-7">
               <div className="flex flex-wrap gap-2">
                 <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-600">
                   {data.article.categoryName}
                 </span>
-                <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-bold text-violet-600">
+                <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-600">
                   {data.article.difficultyText}
                 </span>
                 <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-bold text-orange-600">
@@ -357,7 +357,7 @@ export default function ReadingLessonPage({
                 </span>
               </div>
 
-              <h1 className="mt-4 text-3xl font-black">
+              <h1 className="mt-4 text-2xl font-black sm:text-3xl">
                 {data.article.title}
               </h1>
 
@@ -367,7 +367,7 @@ export default function ReadingLessonPage({
                 </p>
               )}
 
-              <div className="mt-7 space-y-5 text-[17px] leading-9 text-slate-700">
+              <div className="mt-5 space-y-4 text-base leading-8 text-slate-700 sm:mt-7 sm:space-y-5 sm:text-[17px] sm:leading-9">
                 {paragraphs.map((paragraph, index) => (
                   <p key={index}>{paragraph}</p>
                 ))}
@@ -376,7 +376,7 @@ export default function ReadingLessonPage({
           </article>
 
           {!!data.vocabulary.length && (
-            <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+            <section className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6">
               <h2 className="text-xl font-black">
                 Từ vựng trong bài
               </h2>
@@ -391,7 +391,7 @@ export default function ReadingLessonPage({
                       type="button"
                       onClick={() => speak(word.id, word.word, word.audioUrl)}
                       disabled={isSpeaking(word.id)}
-                      className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-violet-600 shadow-sm transition disabled:cursor-not-allowed ${isSpeaking(word.id) ? "animate-pulse opacity-70" : "hover:bg-violet-50"}`}
+                      className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-blue-600 shadow-sm transition disabled:cursor-not-allowed ${isSpeaking(word.id) ? "animate-pulse opacity-70" : "hover:bg-blue-50"}`}
                     >
                       <Volume2 size={18} />
                     </button>
@@ -417,7 +417,7 @@ export default function ReadingLessonPage({
 
         <aside className="space-y-6">
           {mission && (
-            <section className="rounded-3xl bg-gradient-to-br from-violet-700 to-indigo-600 p-6 text-white shadow-lg">
+            <section className="rounded-3xl bg-gradient-to-br from-blue-700 to-sky-600 p-6 text-white shadow-lg">
               <p className="text-xs font-black text-white/70">
                 NHIỆM VỤ LIÊN QUAN
               </p>
@@ -445,19 +445,19 @@ export default function ReadingLessonPage({
             </section>
           )}
 
-          <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+          <section className="rounded-3xl border border-blue-100 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-black">
                 Câu hỏi đọc hiểu
               </h2>
-              <span className="text-sm font-bold text-violet-600">
+              <span className="text-sm font-bold text-blue-600">
                 {answeredCount}/{totalQuestions}
               </span>
             </div>
 
             <div className="mt-5 h-3 rounded-full bg-slate-100">
               <div
-                className="h-3 rounded-full bg-violet-600"
+                className="h-3 rounded-full bg-blue-600"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -465,7 +465,7 @@ export default function ReadingLessonPage({
             {currentQuestion ? (
               <div className="mt-6">
                 <div className="mb-4 flex items-start gap-3">
-                  <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-violet-600 text-sm font-black text-white">
+                  <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-blue-600 text-sm font-black text-white">
                     {currentQuestion.index}
                   </div>
                   <h3 className="font-black leading-7">
@@ -492,14 +492,14 @@ export default function ReadingLessonPage({
                         }
                         className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-70 ${
                           selected
-                            ? "border-violet-400 bg-violet-50 text-violet-700"
-                            : "border-slate-200 hover:border-violet-300"
+                            ? "border-blue-400 bg-blue-50 text-blue-700"
+                            : "border-slate-200 hover:border-blue-300"
                         }`}
                       >
                         <span
                           className={`grid h-5 w-5 place-items-center rounded-full border ${
                             selected
-                              ? "border-violet-600 bg-violet-600 text-white"
+                              ? "border-blue-600 bg-blue-600 text-white"
                               : "border-slate-300"
                           }`}
                         >
@@ -535,7 +535,7 @@ export default function ReadingLessonPage({
                           Math.min(totalQuestions, value + 1),
                         )
                       }
-                      className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-3 font-bold text-white"
+                      className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-3 font-bold text-white"
                     >
                       Câu tiếp theo
                       <ChevronRight size={17} />
@@ -599,7 +599,7 @@ export default function ReadingLessonPage({
               {completion.score}% · +{completion.earnedXp} XP
             </p>
             {completion.missionUpdated && (
-              <div className="mt-4 rounded-2xl bg-violet-50 p-4 font-bold text-violet-700">
+              <div className="mt-4 rounded-2xl bg-blue-50 p-4 font-bold text-blue-700">
                 🎯 Nhiệm vụ Reading đã được cập nhật
               </div>
             )}
@@ -645,13 +645,13 @@ function State({
   action?: () => void;
 }) {
   return (
-    <div className="grid min-h-screen place-items-center bg-[#fbfbff]">
+    <div className="grid min-h-screen place-items-center bg-[#f7faff]">
       <div className="rounded-2xl bg-white px-8 py-6 text-center shadow-sm">
         <p className="font-bold">{text}</p>
         {action && (
           <button
             onClick={action}
-            className="mt-4 rounded-xl bg-violet-600 px-5 py-2 font-bold text-white"
+            className="mt-4 rounded-xl bg-blue-600 px-5 py-2 font-bold text-white"
           >
             Tải lại
           </button>
