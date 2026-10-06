@@ -346,6 +346,24 @@ async function captureListeningPractice(prefix, viewport) {
     console.log("[mobile-listening-runtime-css]", JSON.stringify(diagnostics));
   }
   await page.screenshot({ path: "artifacts/visual-v31/" + prefix + "-listening-practice.png", fullPage: true });
+  if (viewport.width === 390) {
+    const submitButton = page.getByRole("button", { name: /Nộp đáp án/ });
+    await submitButton.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(150);
+    const actionEvidence = await page.evaluate(() => {
+      const submit = Array.from(document.querySelectorAll("button")).find((node) => /Nộp đáp án/.test(node.textContent || ""));
+      const nav = Array.from(document.querySelectorAll("nav")).find((node) => window.getComputedStyle(node).position === "fixed" && node.getBoundingClientRect().bottom >= window.innerHeight - 2);
+      const action = submit?.parentElement?.parentElement || null;
+      const rect = (node) => node ? node.getBoundingClientRect().toJSON() : null;
+      const submitRect = rect(submit);
+      const actionRect = rect(action);
+      const navRect = rect(nav);
+      return { viewport: { width: innerWidth, height: innerHeight }, scrollY, submitRect, actionRect, navRect, clearAboveNav: !!submitRect && !!navRect && submitRect.bottom <= navRect.top && actionRect.bottom <= navRect.top };
+    });
+    console.log("[mobile-listening-action-evidence]", JSON.stringify(actionEvidence));
+    if (!actionEvidence.clearAboveNav) throw new Error("Listening mobile actions are not fully clear above fixed bottom nav");
+    await page.screenshot({ path: "artifacts/visual-v31/mobile-listening-practice-actions.png", fullPage: false });
+  }
 
   await page.getByRole("button", { name: /Prepares breakfast/ }).click();
   await page.getByRole("button", { name: /Nộp đáp án/ }).click();
