@@ -277,6 +277,12 @@ export default function ReadingHomePage() {
               </button>
             </div>
 
+            {data.featuredArticles.length === 0 ? (
+              <div className="rounded-2xl bg-blue-50 p-5 text-sm text-slate-600">
+                <p className="font-black text-slate-800">Chưa có bài đọc nổi bật.</p>
+                <p className="mt-1">Kho bài đọc đang được cập nhật. Bạn có thể xem toàn bộ bài hiện có hoặc quay lại sau.</p>
+              </div>
+            ) : (
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {data.featuredArticles.map((article) => (
                 <button
@@ -310,6 +316,7 @@ export default function ReadingHomePage() {
                 </button>
               ))}
             </div>
+            )}
           </section>
 
           <section className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
@@ -325,6 +332,12 @@ export default function ReadingHomePage() {
               </button>
             </div>
 
+            {data.categories.length === 0 ? (
+              <div className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-600">
+                <p className="font-black text-slate-800">Chưa có chủ đề đọc.</p>
+                <p className="mt-1">Chủ đề sẽ xuất hiện khi kho Reading có dữ liệu phân loại.</p>
+              </div>
+            ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {data.categories.map((category) => (
                 <button
@@ -349,6 +362,7 @@ export default function ReadingHomePage() {
                 </button>
               ))}
             </div>
+            )}
           </section>
         </section>
 
