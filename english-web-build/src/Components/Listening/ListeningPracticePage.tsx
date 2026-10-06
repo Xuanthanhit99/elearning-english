@@ -381,7 +381,7 @@ export default function ListeningPracticePage({
   }
 
   return (
-    <main className="min-h-screen bg-[#fbfbff] text-[#101733]">
+    <main className="min-h-screen bg-[#f7faff] text-[#101733]">
       <audio
         ref={audioRef}
         src={currentQuestion.audioUrl || undefined}
@@ -398,19 +398,19 @@ export default function ListeningPracticePage({
       <div className="mx-auto min-h-screen max-w-[1920px]">
         <section className="min-w-0 px-0 py-2 sm:py-4 lg:px-2">
           <div className="mx-auto max-w-[1450px]">
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+            <div className="mb-3 flex items-center justify-between gap-3 sm:mb-6 sm:gap-4">
               <button
                 onClick={() => router.push("/listening")}
-                className="inline-flex items-center gap-2 font-bold text-violet-600"
+                className="inline-flex items-center gap-2 font-bold text-blue-600"
               >
                 <ChevronLeft size={18} />
-                Listening Home
+                Trang luyện nghe
               </button>
 
               <button
                 onClick={finish}
                 disabled={submitting}
-                className="rounded-xl border bg-white px-5 py-3 font-bold disabled:opacity-50"
+                className="rounded-xl border bg-white px-3 py-2 text-sm font-bold sm:px-5 sm:py-3 disabled:opacity-50"
               >
                 Kết thúc bài
               </button>
@@ -422,8 +422,8 @@ export default function ListeningPracticePage({
               </div>
             )}
 
-            <div className="grid gap-7 xl:grid-cols-[minmax(0,1fr)_380px]">
-              <section className="rounded-3xl border border-violet-100 bg-white p-7 shadow-sm">
+            <div className="grid gap-4 sm:gap-7 xl:grid-cols-[minmax(0,1fr)_380px]">
+              <section className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-7">
                 <div className="flex flex-wrap gap-3">
                   <Badge>
                     Câu {currentIndex + 1}/
@@ -433,23 +433,23 @@ export default function ListeningPracticePage({
                   <Badge>{practice.topic}</Badge>
                 </div>
 
-                <div className="mt-7 rounded-3xl bg-violet-50 p-6">
-                  <div className="flex items-center gap-6">
+                <div className="mt-4 rounded-2xl bg-blue-50 p-4 sm:mt-7 sm:rounded-3xl sm:p-6">
+                  <div className="flex items-center gap-3 sm:gap-6">
                     <button
                       onClick={playAudio}
-                      className="grid h-20 w-20 shrink-0 place-items-center rounded-full bg-violet-600 text-white shadow-lg"
+                      className="grid h-14 w-14 sm:h-20 sm:w-20 shrink-0 place-items-center rounded-full bg-blue-600 text-white shadow-lg"
                     >
                       {isPlaying ? (
-                        <Pause size={32} />
+                        <Pause className="h-6 w-6 sm:h-8 sm:w-8" />
                       ) : (
-                        <Play size={32} />
+                        <Play className="h-6 w-6 sm:h-8 sm:w-8" />
                       )}
                     </button>
 
                     <div className="min-w-0 flex-1">
                       <div className="h-3 rounded-full bg-white">
                         <div
-                          className="h-3 rounded-full bg-violet-600"
+                          className="h-3 rounded-full bg-blue-600"
                           style={{
                             width: `${Math.min(
                               100,
@@ -477,9 +477,9 @@ export default function ListeningPracticePage({
                   </div>
                 </div>
 
-                <div className="mt-7 flex items-start justify-between gap-4">
+                <div className="mt-4 flex items-start justify-between gap-3 sm:mt-7 sm:gap-4">
                   <div>
-                    <h1 className="text-2xl font-black">
+                    <h1 className="text-xl font-black sm:text-2xl">
                       {currentQuestion.question}
                     </h1>
                     <p className="mt-2 text-slate-500">
@@ -491,7 +491,7 @@ export default function ListeningPracticePage({
                     onClick={toggleFlag}
                     className={`rounded-xl border p-3 ${
                       currentQuestion.isFlagged
-                        ? "border-violet-400 bg-violet-50 text-violet-600"
+                        ? "border-blue-400 bg-blue-50 text-blue-600"
                         : "text-slate-400"
                     }`}
                   >
@@ -499,7 +499,7 @@ export default function ListeningPracticePage({
                   </button>
                 </div>
 
-                <div className="mt-6 space-y-3">
+                <div className="mt-4 space-y-2 sm:mt-6 sm:space-y-3">
                   {currentQuestion.options.map((option) => {
                     const selected =
                       selectedAnswer === option.label;
@@ -522,13 +522,13 @@ export default function ListeningPracticePage({
                         onClick={() =>
                           setSelectedAnswer(option.label)
                         }
-                        className={`flex w-full items-center gap-4 rounded-2xl border px-5 py-4 text-left font-bold disabled:cursor-not-allowed ${
+                        className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 sm:gap-4 sm:rounded-2xl sm:px-5 sm:py-4 text-left font-bold disabled:cursor-not-allowed ${
                           correct
                             ? "border-emerald-400 bg-emerald-50 text-emerald-700"
                             : wrongSelected
                               ? "border-red-400 bg-red-50 text-red-700"
                               : selected
-                                ? "border-violet-500 bg-violet-50 text-violet-700"
+                                ? "border-blue-500 bg-blue-50 text-blue-700"
                                 : "border-slate-200"
                         }`}
                       >
@@ -556,7 +556,7 @@ export default function ListeningPracticePage({
                         onClick={() =>
                           setShowTranscript((value) => !value)
                         }
-                        className="font-bold text-violet-600"
+                        className="font-bold text-blue-600"
                       >
                         {showTranscript
                           ? "Ẩn lời thoại"
@@ -571,7 +571,7 @@ export default function ListeningPracticePage({
                     </div>
                   )}
 
-                <div className="mt-8 flex flex-wrap justify-between gap-3">
+                <div className="mt-5 flex flex-wrap justify-between gap-2 sm:mt-8 sm:gap-3">
                   <button
                     disabled={currentIndex === 0}
                     onClick={() =>
@@ -579,7 +579,7 @@ export default function ListeningPracticePage({
                         Math.max(0, value - 1),
                       )
                     }
-                    className="rounded-xl border px-6 py-3 font-bold disabled:opacity-40"
+                    className="rounded-xl border px-4 py-2.5 text-sm font-bold sm:px-6 sm:py-3 sm:text-base disabled:opacity-40"
                   >
                     Câu trước
                   </button>
@@ -591,7 +591,7 @@ export default function ListeningPracticePage({
                         currentQuestion.answered
                       }
                       onClick={skipQuestion}
-                      className="inline-flex items-center gap-2 rounded-xl border px-5 py-3 font-bold disabled:opacity-40"
+                      className="inline-flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-bold sm:px-5 sm:py-3 sm:text-base disabled:opacity-40"
                     >
                       <SkipForward size={17} />
                       Bỏ qua
@@ -604,7 +604,7 @@ export default function ListeningPracticePage({
                           !currentQuestion.answered)
                       }
                       onClick={next}
-                      className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-7 py-3 font-black text-white disabled:opacity-40"
+                      className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-black text-white sm:px-7 sm:py-3 sm:text-base disabled:opacity-40"
                     >
                       {currentQuestion.answered
                         ? currentIndex ===
@@ -618,9 +618,9 @@ export default function ListeningPracticePage({
                 </div>
               </section>
 
-              <aside className="space-y-6">
+              <aside className="space-y-4 sm:space-y-6">
                 {dailyMission && (
-                  <section className="rounded-3xl bg-gradient-to-br from-violet-700 to-indigo-600 p-6 text-white">
+                  <section className="rounded-3xl bg-gradient-to-br from-blue-700 to-sky-600 p-6 text-white">
                     <p className="text-xs font-black text-white/70">
                       NHIỆM VỤ LISTENING
                     </p>
@@ -645,13 +645,13 @@ export default function ListeningPracticePage({
                   </section>
                 )}
 
-                <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+                <section className="rounded-3xl border border-blue-100 bg-white p-6 shadow-sm">
                   <h2 className="font-black">
                     Tiến độ bài học
                   </h2>
                   <div className="mt-5 h-3 rounded-full bg-slate-100">
                     <div
-                      className="h-3 rounded-full bg-violet-600"
+                      className="h-3 rounded-full bg-blue-600"
                       style={{
                         width: `${progress.percent}%`,
                       }}
@@ -677,7 +677,7 @@ export default function ListeningPracticePage({
                   </div>
                 </section>
 
-                <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+                <section className="rounded-3xl border border-blue-100 bg-white p-6 shadow-sm">
                   <h2 className="font-black">
                     Danh sách câu
                   </h2>
@@ -691,7 +691,7 @@ export default function ListeningPracticePage({
                           }
                           className={`grid h-10 place-items-center rounded-xl font-black ${
                             index === currentIndex
-                              ? "bg-violet-600 text-white"
+                              ? "bg-blue-600 text-white"
                               : question.isCorrect
                                 ? "bg-emerald-100 text-emerald-700"
                                 : question.isSkipped
@@ -708,9 +708,9 @@ export default function ListeningPracticePage({
                   </div>
                 </section>
 
-                <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+                <section className="rounded-3xl border border-blue-100 bg-white p-6 shadow-sm">
                   <div className="flex items-center gap-3">
-                    <Headphones className="text-violet-600" />
+                    <Headphones className="text-blue-600" />
                     <div>
                       <p className="font-black">
                         Lượt nghe câu này
@@ -736,7 +736,7 @@ function Badge({
   children: React.ReactNode;
 }) {
   return (
-    <span className="rounded-full bg-violet-50 px-4 py-2 text-xs font-black text-violet-700">
+    <span className="rounded-full bg-blue-50 px-4 py-2 text-xs font-black text-blue-700">
       {children}
     </span>
   );
@@ -760,7 +760,7 @@ function ProgressItem({
 
   return (
     <div>
-      <p className={`text-2xl font-black ${className}`}>
+      <p className={`text-xl font-black sm:text-2xl ${className}`}>
         {value}
       </p>
       <p className="text-xs font-bold text-slate-500">
@@ -778,13 +778,13 @@ function PageState({
   action?: () => void;
 }) {
   return (
-    <div className="grid min-h-screen place-items-center bg-[#fbfbff]">
+    <div className="grid min-h-screen place-items-center bg-[#f7faff]">
       <div className="rounded-2xl bg-white px-8 py-6 text-center shadow-sm">
         <p className="font-bold">{text}</p>
         {action && (
           <button
             onClick={action}
-            className="mt-4 rounded-xl bg-violet-600 px-5 py-2 font-bold text-white"
+            className="mt-4 rounded-xl bg-blue-600 px-5 py-2 font-bold text-white"
           >
             Tải lại
           </button>
