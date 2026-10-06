@@ -256,3 +256,84 @@ async function captureReadingPractice(prefix, viewport) {
 for (const [prefix, viewport] of [["desktop", { width: 1536, height: 1024 }], ["mobile", { width: 390, height: 844 }]]) {
   await captureReadingPractice(prefix, viewport);
 }
+
+
+async function captureListeningPractice(prefix, viewport) {
+  const browser = await chromium.launch();
+  const context = await browser.newContext({ viewport, storageState: statePath, reducedMotion: "reduce", colorScheme: "light" });
+  const page = await context.newPage();
+  const json = (body) => ({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
+  const sessionId = "visual-listening-session";
+  const answers = new Map();
+  let finished = false;
+
+  const questions = [
+    { id: "lq-1", order: 1, level: "B1", topic: "Daily Life", audioUrl: null, transcript: "I usually prepare breakfast before checking my messages.", duration: 18, question: "What does the speaker do before checking messages?", options: [{ label: "A", text: "Goes for a run" }, { label: "B", text: "Prepares breakfast" }, { label: "C", text: "Calls a friend" }], answered: false, selectedAnswer: null, isCorrect: null, isFlagged: false },
+    { id: "lq-2", order: 2, level: "B1", topic: "Daily Life", audioUrl: null, transcript: "The bus arrives at half past seven every weekday.", duration: 16, question: "When does the bus arrive?", options: [{ label: "A", text: "At 7:30" }, { label: "B", text: "At 8:00" }, { label: "C", text: "At 6:30" }], answered: false, selectedAnswer: null, isCorrect: null, isFlagged: false }
+  ];
+
+  const practice = () => ({
+    sessionId, level: "B1", topic: "Daily Life", totalQuestions: 2,
+    progress: { percent: answers.size * 50, correct: answers.size, wrong: 0, skipped: 0 },
+    questions: questions.map((q) => {
+      const selected = answers.get(q.id);
+      return selected ? { ...q, answered: true, selectedAnswer: selected, isCorrect: true, correctAnswer: q.id === "lq-1" ? "B" : "A", explanation: "Bạn đã nghe đúng thông tin chính trong đoạn audio." } : q;
+    })
+  });
+
+  const result = {
+    summary: { sessionId, level: "B1", topic: "Daily Life", totalQuestions: 2, correct: 2, wrong: 0, skipped: 0, score: 100, accuracy: 100, xpEarned: 30, coinsEarned: 5, totalTimeSpent: 94, totalTimeText: "1 phút 34 giây", completedAt: "2026-10-06T10:00:00.000Z", rating: null },
+    questions: questions.map((q) => ({ id: q.id, order: q.order, question: q.question, options: q.options, audioUrl: null, transcript: q.transcript, selectedAnswer: q.id === "lq-1" ? "B" : "A", correctAnswer: q.id === "lq-1" ? "B" : "A", isCorrect: true, isSkipped: false, isFlagged: false, explanation: "Bạn đã nghe đúng thông tin chính trong đoạn audio.", listenedCount: 1, timeSpent: 42 })),
+    feedback: { strengths: ["Nắm bắt tốt thông tin chính.", "Phân biệt chi tiết thời gian chính xác."], improvements: ["Tiếp tục luyện nghe hội thoại ở tốc độ tự nhiên."] }
+  };
+
+  await page.route(API + "/missions-v2/me", async (route) => route.fulfill(json({ missions: [], summary: { dailyCompleted: 0, dailyTotal: 0, weeklyCompleted: 0, weeklyTotal: 0, claimableCount: 0, claimedCount: 0 } })));
+  await page.route(API + "/listening/**", async (route) => {
+    const url = new URL(route.request().url());
+    const method = route.request().method();
+    if (method === "GET" && url.pathname === "/listening/home") return route.fulfill(json({ continueSession: { sessionId, level: "B1", topic: "Daily Life", total: 2, correct: answers.size, wrong: 0, skipped: 0, progressPercent: answers.size * 50 } }));
+    if (method === "POST" && url.pathname === "/listening/practice/start") return route.fulfill(json(practice()));
+    if (method === "POST" && url.pathname === "/listening/sessions/" + sessionId + "/answer") {
+      const payload = route.request().postDataJSON();
+      if (!payload.questionId || !payload.selectedAnswer || typeof payload.timeSpent !== "number" || typeof payload.listenedCount !== "number") return route.fulfill({ status: 400, contentType: "application/json", body: JSON.stringify({ message: "Invalid Listening answer contract" }) });
+      answers.set(payload.questionId, payload.selectedAnswer);
+      return route.fulfill(json({ isCorrect: true, correctAnswer: payload.questionId === "lq-1" ? "B" : "A", explanation: "Bạn đã nghe đúng thông tin chính trong đoạn audio.", transcript: questions.find((q) => q.id === payload.questionId)?.transcript, progress: { percent: answers.size * 50, correct: answers.size, wrong: 0, skipped: 0 } }));
+    }
+    if (method === "POST" && url.pathname.endsWith("/flag")) return route.fulfill(json({ saved: true }));
+    if (method === "POST" && url.pathname.endsWith("/skip")) return route.fulfill(json({ progress: { percent: 50, correct: 0, wrong: 0, skipped: 1 } }));
+    if (method === "POST" && url.pathname === "/listening/sessions/" + sessionId + "/finish") {
+      if (answers.size !== 2) return route.fulfill({ status: 400, contentType: "application/json", body: JSON.stringify({ message: "Visual fixture requires both Listening answers" }) });
+      finished = true;
+      return route.fulfill(json({ sessionId, totalQuestions: 2, correct: 2, wrong: 0, skipped: 0, score: 100, xpEarned: 30, coinsEarned: 5, status: "COMPLETED", completedAt: "2026-10-06T10:00:00.000Z", alreadyCompleted: false, missionUpdated: false, resultUrl: "/listening/sessions/" + sessionId + "/result" }));
+    }
+    if (method === "GET" && url.pathname === "/listening/sessions/" + sessionId + "/result") return route.fulfill(json(result));
+    if (method === "POST" && url.pathname.endsWith("/rating")) return route.fulfill(json({ saved: true }));
+    return route.continue();
+  });
+
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  const response = await page.goto(WEB + "/listening/practice/" + sessionId, { waitUntil: "domcontentloaded", timeout: 45_000 });
+  if (!response || response.status() >= 400) throw new Error("Listening Practice navigation failed");
+  await stabilizePage(page);
+  await page.getByRole("heading", { name: questions[0].question }).waitFor({ state: "visible", timeout: 30_000 });
+  await page.screenshot({ path: "artifacts/visual-v31/" + prefix + "-listening-practice.png", fullPage: true });
+
+  await page.getByRole("button", { name: /Prepares breakfast/ }).click();
+  await page.getByRole("button", { name: /Nộp đáp án/ }).click();
+  await page.getByRole("button", { name: /Câu tiếp theo/ }).click();
+  await page.getByRole("button", { name: /At 7:30/ }).click();
+  await page.getByRole("button", { name: /Nộp đáp án/ }).click();
+  if (answers.size !== 2) throw new Error("Listening Practice did not persist both answers");
+  await page.getByRole("button", { name: /Hoàn thành/ }).click();
+  await page.waitForURL((url) => url.pathname.replace(/\/$/, "") === "/listening/sessions/" + sessionId + "/result", { timeout: 10_000 });
+  if (!finished) throw new Error("Listening Practice did not call finish");
+  await page.getByText("KẾT QUẢ LUYỆN NGHE", { exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+  await page.screenshot({ path: "artifacts/visual-v31/" + prefix + "-listening-result.png", fullPage: true });
+  if (errors.length) throw new Error("Listening Practice page errors: " + errors.join(" | "));
+  await browser.close();
+}
+
+for (const [prefix, viewport] of [["desktop", { width: 1536, height: 1024 }], ["mobile", { width: 390, height: 844 }]]) {
+  await captureListeningPractice(prefix, viewport);
+}
