@@ -479,7 +479,7 @@ export default function ListeningPracticePage({
 
                 <div className="mt-4 flex items-start justify-between gap-3 sm:mt-7 sm:gap-4">
                   <div>
-                    <h1 className="text-base font-black leading-snug min-[400px]:text-lg sm:text-2xl">
+                    <h1 className="!text-[16px] !leading-[22px] font-black min-[400px]:!text-[18px] min-[400px]:!leading-[25px] sm:!text-2xl sm:!leading-snug">
                       {currentQuestion.question}
                     </h1>
                     <p className="mt-1 text-sm text-slate-500 sm:mt-2 sm:text-base">
@@ -571,7 +571,7 @@ export default function ListeningPracticePage({
                     </div>
                   )}
 
-                <div className="sticky bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-20 mt-4 flex flex-col gap-2 rounded-2xl border border-blue-100 bg-white/95 p-2 shadow-[0_-10px_30px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:mt-8 sm:flex-row sm:flex-wrap sm:justify-between sm:gap-3 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-none">
+                <div className="sticky bottom-[calc(73px+env(safe-area-inset-bottom))] z-[110] mt-4 flex flex-col gap-2 rounded-2xl border border-blue-100 bg-white/95 p-2 shadow-[0_-10px_30px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:mt-8 sm:flex-row sm:flex-wrap sm:justify-between sm:gap-3 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-none">
                   <button
                     disabled={currentIndex === 0}
                     onClick={() =>
