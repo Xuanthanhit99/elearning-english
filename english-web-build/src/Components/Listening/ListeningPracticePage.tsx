@@ -571,7 +571,7 @@ export default function ListeningPracticePage({
                     </div>
                   )}
 
-                <div className="sticky bottom-[calc(73px+env(safe-area-inset-bottom))] z-[110] mt-4 flex flex-col gap-2 rounded-2xl border border-blue-100 bg-white/95 p-2 shadow-[0_-10px_30px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:mt-8 sm:flex-row sm:flex-wrap sm:justify-between sm:gap-3 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-none">
+                <div className="mt-4 flex flex-col gap-2 rounded-2xl border border-blue-100 bg-white p-2 sm:mt-8 sm:flex-row sm:flex-wrap sm:justify-between sm:gap-3 sm:border-0 sm:bg-transparent sm:p-0">
                   <button
                     disabled={currentIndex === 0}
                     onClick={() =>
