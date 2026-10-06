@@ -228,7 +228,7 @@ export default function ListeningHomePage() {
               </div>
             )}
 
-            <section className="mt-3 grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2 sm:mt-7 sm:gap-4 xl:grid-cols-4">
+            <section className="skills-home-stats-grid mt-3 grid gap-2 sm:mt-7 sm:gap-4">
               {stats.map((item) => {
                 const Icon = item.icon;
 
