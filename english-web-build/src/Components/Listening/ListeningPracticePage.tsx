@@ -395,9 +395,9 @@ export default function ListeningPracticePage({
         onEnded={() => setIsPlaying(false)}
       />
 
-      <div className="mx-auto min-h-screen max-w-[1920px]">
-        <section className="min-w-0 px-0 py-2 pb-[calc(8rem+env(safe-area-inset-bottom))] sm:py-4 sm:pb-4 lg:px-2">
-          <div className="mx-auto max-w-[1450px]">
+      <div className="mx-auto min-h-screen max-w-[1536px]">
+        <section className="min-w-0 px-3 py-3 pb-[calc(6.75rem+env(safe-area-inset-bottom))] sm:px-5 sm:py-5 sm:pb-6 lg:px-8">
+          <div className="mx-auto max-w-[1240px]">
             <div className="mb-3 flex items-center justify-between gap-3 sm:mb-6 sm:gap-4">
               <button
                 onClick={() => router.push("/listening")}
@@ -417,13 +417,13 @@ export default function ListeningPracticePage({
             </div>
 
             {error && (
-              <div className="mb-5 rounded-2xl bg-red-50 p-4 font-bold text-red-600">
+              <div className="mb-4 rounded-2xl border border-red-100 bg-red-50 p-3.5 text-sm font-bold text-red-600">
                 {error}
               </div>
             )}
 
-            <div className="grid gap-4 sm:gap-7 xl:grid-cols-[minmax(0,1fr)_380px]">
-              <section className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-7">
+            <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_300px] xl:gap-7">
+              <section className="overflow-hidden rounded-[28px] border border-blue-100 bg-white p-4 shadow-[0_18px_60px_rgba(37,99,235,0.08)] sm:p-7 lg:p-8">
                 <div className="flex flex-wrap gap-3">
                   <Badge>
                     Câu {currentIndex + 1}/
@@ -433,7 +433,31 @@ export default function ListeningPracticePage({
                   <Badge>{practice.topic}</Badge>
                 </div>
 
-                <div className="mt-4 rounded-2xl bg-blue-50 p-4 sm:mt-7 sm:rounded-3xl sm:p-6">
+                <div className="mt-3 flex items-center gap-3 lg:hidden">
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-full rounded-full bg-blue-600 transition-all" style={{ width: `${progress.percent}%` }} />
+                  </div>
+                  <span className="text-xs font-black text-slate-500">{progress.percent}%</span>
+                  <span className="rounded-full bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-500">{listenedCount} lượt nghe</span>
+                </div>
+
+                <div className="mt-4 rounded-[24px] border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-sky-50 p-4 sm:mt-6 sm:p-6">
+                  <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl bg-white/80 px-3 py-2.5 sm:px-4">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className={`relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl border bg-white transition-transform ${isPlaying ? "scale-105 border-blue-300" : currentQuestion.answered ? currentQuestion.isCorrect ? "border-emerald-300" : "border-amber-300" : "border-blue-100"}`}>
+                        <img src="/brand/beaconvie-ai-mascot.webp" alt="BeaconVie mascot" className="h-11 w-11 object-contain" />
+                        {isPlaying && <span className="absolute bottom-1 right-1 h-2.5 w-2.5 animate-pulse rounded-full bg-blue-500 ring-2 ring-white" />}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-black uppercase tracking-[0.12em] text-blue-600">Beacon đang đồng hành</p>
+                        <p className="truncate text-sm font-bold text-slate-600">
+                          {isPlaying ? "Tập trung nghe ý chính nhé!" : currentQuestion.answered ? currentQuestion.isCorrect ? "Tuyệt lắm, bạn nghe rất chính xác!" : currentQuestion.isSkipped ? "Không sao, xem lời thoại rồi thử câu tiếp theo." : "Gần đúng rồi, nghe lại và xem lời thoại nhé." : "Bấm Play khi bạn sẵn sàng."}
+                        </p>
+                      </div>
+                    </div>
+                    <Volume2 className={`h-5 w-5 shrink-0 ${isPlaying ? "text-blue-600" : "text-slate-300"}`} />
+                  </div>
+
                   <div className="flex items-center gap-3 sm:gap-6">
                     <button
                       onClick={playAudio}
@@ -447,7 +471,12 @@ export default function ListeningPracticePage({
                     </button>
 
                     <div className="min-w-0 flex-1">
-                      <div className="h-3 rounded-full bg-white">
+                      <div className="mb-3 flex h-8 items-center gap-1 overflow-hidden" aria-hidden="true">
+                        {[10,18,26,14,22,30,16,24,12,28,20,32,16,24,18,30,12,22,16,26,14,20,12,18].map((height, index) => (
+                          <span key={index} className={`w-1 flex-1 rounded-full transition-all ${isPlaying ? "bg-blue-400" : "bg-blue-200"}`} style={{ height: `${height}px`, opacity: index / 24 <= currentTime / Math.max(currentQuestion.duration, 1) ? 1 : 0.45 }} />
+                        ))}
+                      </div>
+                      <div className="h-2.5 overflow-hidden rounded-full bg-white">
                         <div
                           className="h-3 rounded-full bg-blue-600"
                           style={{
@@ -477,9 +506,9 @@ export default function ListeningPracticePage({
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-start justify-between gap-3 sm:mt-7 sm:gap-4">
+                <div className="mt-5 flex items-start justify-between gap-3 sm:mt-6 sm:gap-4">
                   <div>
-                    <h1 className="!text-[16px] !leading-[22px] font-black min-[400px]:!text-[18px] min-[400px]:!leading-[25px] sm:!text-2xl sm:!leading-snug">
+                    <h1 className="text-[18px] font-black leading-[1.35] tracking-[-0.02em] sm:text-[26px]">
                       {currentQuestion.question}
                     </h1>
                     <p className="mt-1 text-sm text-slate-500 sm:mt-2 sm:text-base">
@@ -499,7 +528,7 @@ export default function ListeningPracticePage({
                   </button>
                 </div>
 
-                <div className="mt-3 space-y-2 sm:mt-6 sm:space-y-3">
+                <div className="mt-4 grid gap-2.5 sm:mt-6 sm:gap-3">
                   {currentQuestion.options.map((option) => {
                     const selected =
                       selectedAnswer === option.label;
@@ -571,7 +600,7 @@ export default function ListeningPracticePage({
                     </div>
                   )}
 
-                <div className="mt-4 flex flex-col gap-2 rounded-2xl border border-blue-100 bg-white p-2 sm:mt-8 sm:flex-row sm:flex-wrap sm:justify-between sm:gap-3 sm:border-0 sm:bg-transparent sm:p-0">
+                <div className="mt-5 flex flex-col gap-2 border-t border-slate-100 pt-4 sm:mt-8 sm:flex-row sm:flex-wrap sm:justify-between sm:gap-3 sm:pt-6">
                   <button
                     disabled={currentIndex === 0}
                     onClick={() =>
@@ -618,7 +647,7 @@ export default function ListeningPracticePage({
                 </div>
               </section>
 
-              <aside className="grid grid-cols-2 gap-2 sm:block sm:space-y-6">
+              <aside className="hidden lg:block lg:space-y-5">
                 {dailyMission && (
                   <section className="col-span-2 rounded-2xl bg-gradient-to-br from-blue-700 to-sky-600 p-4 text-white sm:rounded-3xl sm:p-6">
                     <p className="text-xs font-black text-white/70">
@@ -779,8 +808,9 @@ function PageState({
 }) {
   return (
     <div className="grid min-h-screen place-items-center bg-[#f7faff]">
-      <div className="rounded-2xl bg-white px-8 py-6 text-center shadow-sm">
-        <p className="font-bold">{text}</p>
+      <div className="max-w-sm rounded-[28px] border border-blue-100 bg-white px-8 py-7 text-center shadow-[0_18px_60px_rgba(37,99,235,0.10)]">
+        <img src="/brand/beaconvie-ai-mascot.webp" alt="" className="mx-auto mb-4 h-20 w-20 object-contain" />
+        <p className="font-bold text-slate-700">{text}</p>
         {action && (
           <button
             onClick={action}
