@@ -100,6 +100,19 @@ async function capture(name, path, viewport) {
   if (!response || response.status() >= 400) throw new Error(name + " navigation failed");
   if (page.url().includes("/login")) throw new Error(name + " redirected to login");
   await stabilizePage(page);
+  if (viewport.width === 390 && (path === "/reading" || path === "/listening")) {
+    const label = page.getByText("Bài hoàn thành", { exact: true }).first();
+    await label.waitFor({ state: "visible", timeout: 30000 });
+    const css = await label.evaluate((node) => {
+      const card = node.closest("article");
+      const grid = card && card.parentElement;
+      if (!card || !grid) return null;
+      const gs = window.getComputedStyle(grid);
+      const cs = window.getComputedStyle(card);
+      return { gridClass: grid.className, display: gs.display, columns: gs.gridTemplateColumns, gridWidth: grid.getBoundingClientRect().width, cardWidth: card.getBoundingClientRect().width, cardMinWidth: cs.minWidth };
+    });
+    console.log("[mobile-grid-css]", path, JSON.stringify(css));
+  }
   if (path === "/vocabulary") {
     const bodyText = await page.locator("body").innerText().catch(() => "");
     console.log("[visual:vocabulary:state]", JSON.stringify({ url: page.url(), bodyText: bodyText.slice(0, 2000), errors, diagnostics: vocabularyDiagnostics.slice(-50) }));
