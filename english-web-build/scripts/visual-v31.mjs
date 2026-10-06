@@ -146,3 +146,113 @@ for (const [prefix, viewport] of [["desktop", { width: 1536, height: 1024 }], ["
   await page.screenshot({ path: `artifacts/visual-v31/${prefix}-focus-lesson.png`, fullPage: true });
   await browser.close();
 }
+
+
+async function captureReadingPractice(prefix, viewport) {
+  const browser = await chromium.launch();
+  const context = await browser.newContext({ viewport, storageState: statePath, reducedMotion: "reduce", colorScheme: "light" });
+  const page = await context.newPage();
+  const json = (body) => ({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
+  const sessionId = "visual-reading-session";
+  let started = false;
+  const answers = new Map();
+
+  const lesson = {
+    article: {
+      id: "visual-reading-article",
+      title: "A Morning Without My Phone",
+      slug: "visual-reading-practice",
+      description: "Một bài đọc ngắn về thói quen buổi sáng và cách giảm thời gian dùng điện thoại.",
+      thumbnail: null,
+      content: "Last Saturday, Mai decided not to check her phone when she woke up. Instead, she opened the window, made a cup of tea, and read a few pages of a book.\n\nAt first, the morning felt unusually quiet. After twenty minutes, however, Mai noticed that she could focus better. She finished breakfast without rushing and wrote down three things she wanted to do that day.",
+      categoryName: "Cuộc sống hằng ngày",
+      categorySlug: "daily-life",
+      difficulty: "EASY",
+      difficultyText: "Dễ · A2",
+      readTimeText: "4 phút",
+      wordCountText: "168 từ",
+      xpReward: 30
+    },
+    session: null,
+    questions: [
+      { id: "rq-1", index: 1, question: "What did Mai do instead of checking her phone?", options: ["She went back to sleep", "She made tea and read a book", "She watched television"], selected: null },
+      { id: "rq-2", index: 2, question: "What did Mai notice after twenty minutes?", options: ["She felt more tired", "She could focus better", "She missed many calls"], selected: null }
+    ],
+    vocabulary: [
+      { id: "rw-1", word: "unusually", partOfSpeech: "adverb", meaning: "một cách khác thường", audioUrl: null },
+      { id: "rw-2", word: "focus", partOfSpeech: "verb", meaning: "tập trung", audioUrl: null }
+    ],
+    tip: { title: "Mẹo đọc nhanh", content: "Đọc câu hỏi trước, sau đó quay lại đoạn văn để tìm từ khóa liên quan." }
+  };
+
+  const result = {
+    summary: {
+      sessionId, articleId: lesson.article.id, articleTitle: lesson.article.title, articleSlug: lesson.article.slug,
+      categoryName: lesson.article.categoryName, categorySlug: lesson.article.categorySlug, difficultyText: lesson.article.difficultyText,
+      readTimeText: lesson.article.readTimeText, wordCountText: lesson.article.wordCountText, xpReward: 30,
+      score: 100, accuracy: 100, correctAnswers: 2, wrongAnswers: 0, totalQuestions: 2, answeredCount: 2,
+      spentTime: 126, spentTimeText: "2 phút 06 giây", completedAt: "2026-10-06T07:00:00.000Z",
+      passedText: "Bạn đã hiểu rất tốt nội dung chính và chi tiết của bài đọc."
+    },
+    comparison: { previousScore: 80, currentScore: 100, changePercent: 20 },
+    skillPerformance: [{ name: "Ý chính", score: 100 }, { name: "Chi tiết", score: 100 }, { name: "Từ vựng theo ngữ cảnh", score: 90 }],
+    questions: [
+      { id: "rq-1", index: 1, question: lesson.questions[0].question, options: lesson.questions[0].options, selected: lesson.questions[0].options[1], correctAnswer: lesson.questions[0].options[1], isCorrect: true, explanation: "Mai made tea and read a few pages of a book." },
+      { id: "rq-2", index: 2, question: lesson.questions[1].question, options: lesson.questions[1].options, selected: lesson.questions[1].options[1], correctAnswer: lesson.questions[1].options[1], isCorrect: true, explanation: "The passage says that Mai noticed she could focus better." }
+    ],
+    vocabulary: [
+      { id: "rw-1", word: "unusually", partOfSpeech: "adverb", meaning: "một cách khác thường", example: "The morning felt unusually quiet.", audioUrl: null },
+      { id: "rw-2", word: "focus", partOfSpeech: "verb", meaning: "tập trung", example: "She could focus better.", audioUrl: null }
+    ],
+    improvementSkills: [{ title: "Giữ nhịp đọc", description: "Tiếp tục đọc các bài A2 ngắn và xác định ý chính trước khi xem chi tiết.", type: "READING" }],
+    suggestions: [{ id: "visual-next", title: "A Better Evening Routine", slug: "visual-next-reading", thumbnail: null, categoryName: "Cuộc sống hằng ngày", categorySlug: "daily-life", difficultyText: "Dễ · A2", readTimeText: "5 phút", xpReward: 30 }]
+  };
+
+  await page.route(API + "/missions-v2/me", async (route) => route.fulfill(json({ missions: [], summary: { dailyCompleted: 0, dailyTotal: 0, weeklyCompleted: 0, weeklyTotal: 0, claimableCount: 0, claimedCount: 0 } })));
+  await page.route(API + "/reading/**", async (route) => {
+    const url = new URL(route.request().url());
+    const method = route.request().method();
+    if (method === "GET" && url.pathname === "/reading/articles/visual-reading-practice") {
+      return route.fulfill(json({ ...lesson, session: started ? { id: sessionId, isCompleted: false, score: 0, accuracy: 0, answeredCount: answers.size, totalQuestions: 2, progressPercent: answers.size * 50 } : null }));
+    }
+    if (method === "POST" && url.pathname === "/reading/articles/visual-reading-article/start") {
+      started = true;
+      return route.fulfill(json({ sessionId, articleId: lesson.article.id, startedAt: "2026-10-06T07:00:00.000Z" }));
+    }
+    if (method === "POST" && url.pathname === "/reading/sessions/" + sessionId + "/answer") {
+      const payload = route.request().postDataJSON();
+      answers.set(payload.questionId, payload.selected);
+      return route.fulfill(json({ saved: true }));
+    }
+    if (method === "POST" && url.pathname === "/reading/sessions/" + sessionId + "/submit") {
+      if (answers.size !== 2) return route.fulfill({ status: 400, contentType: "application/json", body: JSON.stringify({ message: "Visual fixture requires both answers" }) });
+      return route.fulfill(json({ sessionId, score: 100, accuracy: 100, correctCount: 2, totalQuestions: 2, earnedXp: 30, isCompleted: true, alreadyCompleted: false, missionUpdated: false, resultUrl: "/reading/sessions/" + sessionId + "/result" }));
+    }
+    if (method === "GET" && url.pathname === "/reading/sessions/" + sessionId + "/result") return route.fulfill(json(result));
+    return route.continue();
+  });
+
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  const response = await page.goto(WEB + "/reading/articles/visual-reading-practice", { waitUntil: "domcontentloaded", timeout: 45_000 });
+  if (!response || response.status() >= 400) throw new Error("Reading Practice navigation failed");
+  await stabilizePage(page);
+  await page.getByRole("heading", { name: lesson.article.title }).waitFor({ state: "visible", timeout: 30_000 });
+  if (!started) throw new Error("Reading Practice did not start a session");
+  await page.screenshot({ path: "artifacts/visual-v31/" + prefix + "-reading-lesson.png", fullPage: true });
+
+  await page.getByRole("button", { name: lesson.questions[0].options[1], exact: true }).click();
+  await page.getByRole("button", { name: /Câu tiếp theo/ }).click();
+  await page.getByRole("button", { name: lesson.questions[1].options[1], exact: true }).click();
+  if (answers.size !== 2) throw new Error("Reading Practice did not persist both answers");
+  await page.getByRole("button", { name: "Nộp bài", exact: true }).click();
+  await page.waitForURL((url) => url.pathname === "/reading/sessions/" + sessionId + "/result", { timeout: 10_000 });
+  await page.getByText("KẾT QUẢ LUYỆN ĐỌC", { exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+  await page.screenshot({ path: "artifacts/visual-v31/" + prefix + "-reading-result.png", fullPage: true });
+  if (errors.length) throw new Error("Reading Practice page errors: " + errors.join(" | "));
+  await browser.close();
+}
+
+for (const [prefix, viewport] of [["desktop", { width: 1536, height: 1024 }], ["mobile", { width: 390, height: 844 }]]) {
+  await captureReadingPractice(prefix, viewport);
+}
