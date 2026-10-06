@@ -396,7 +396,7 @@ export default function ListeningPracticePage({
       />
 
       <div className="mx-auto min-h-screen max-w-[1920px]">
-        <section className="min-w-0 px-0 py-2 pb-24 sm:py-4 sm:pb-4 lg:px-2">
+        <section className="min-w-0 px-0 py-2 pb-[calc(8rem+env(safe-area-inset-bottom))] sm:py-4 sm:pb-4 lg:px-2">
           <div className="mx-auto max-w-[1450px]">
             <div className="mb-3 flex items-center justify-between gap-3 sm:mb-6 sm:gap-4">
               <button
@@ -479,7 +479,7 @@ export default function ListeningPracticePage({
 
                 <div className="mt-4 flex items-start justify-between gap-3 sm:mt-7 sm:gap-4">
                   <div>
-                    <h1 className="text-lg font-black leading-snug sm:text-2xl">
+                    <h1 className="text-base font-black leading-snug min-[400px]:text-lg sm:text-2xl">
                       {currentQuestion.question}
                     </h1>
                     <p className="mt-1 text-sm text-slate-500 sm:mt-2 sm:text-base">
@@ -499,7 +499,7 @@ export default function ListeningPracticePage({
                   </button>
                 </div>
 
-                <div className="mt-4 space-y-2 sm:mt-6 sm:space-y-3">
+                <div className="mt-3 space-y-2 sm:mt-6 sm:space-y-3">
                   {currentQuestion.options.map((option) => {
                     const selected =
                       selectedAnswer === option.label;
@@ -522,7 +522,7 @@ export default function ListeningPracticePage({
                         onClick={() =>
                           setSelectedAnswer(option.label)
                         }
-                        className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 sm:gap-4 sm:rounded-2xl sm:px-5 sm:py-4 text-left font-bold disabled:cursor-not-allowed ${
+                        className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left text-sm font-bold sm:gap-4 sm:rounded-2xl sm:px-5 sm:py-4 sm:text-base disabled:cursor-not-allowed ${
                           correct
                             ? "border-emerald-400 bg-emerald-50 text-emerald-700"
                             : wrongSelected
@@ -571,7 +571,7 @@ export default function ListeningPracticePage({
                     </div>
                   )}
 
-                <div className="mt-5 flex flex-col gap-2 sm:mt-8 sm:flex-row sm:flex-wrap sm:justify-between sm:gap-3">
+                <div className="sticky bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-20 mt-4 flex flex-col gap-2 rounded-2xl border border-blue-100 bg-white/95 p-2 shadow-[0_-10px_30px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:mt-8 sm:flex-row sm:flex-wrap sm:justify-between sm:gap-3 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-none">
                   <button
                     disabled={currentIndex === 0}
                     onClick={() =>
