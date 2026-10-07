@@ -148,6 +148,56 @@ for (const [prefix, viewport] of [["desktop", { width: 1536, height: 1024 }], ["
 }
 
 
+
+async function captureLandingGuestPreview(prefix, viewport) {
+  const browser = await chromium.launch();
+  const context = await browser.newContext({ viewport, reducedMotion: "reduce", colorScheme: "light" });
+  const page = await context.newPage();
+  const json = (body) => ({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
+
+  await page.route(API + "/auth/me", async (route) => route.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ message: "Guest visual fixture" }) }));
+  await page.route(API + "/auth/refresh", async (route) => route.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ message: "Guest visual fixture" }) }));
+  await page.route(API + "/writing/check", async (route) => route.fulfill(json({
+    id: "visual-guest-writing",
+    score: 82,
+    level: "A2",
+    summary: "Ý của bạn rõ ràng. Hãy sửa một lỗi chia động từ và dùng trạng từ tự nhiên hơn.",
+    grammarScore: 78,
+    vocabularyScore: 82,
+    clarityScore: 88,
+    meaningScore: 90,
+    corrections: [{
+      type: "grammar",
+      level: "A2",
+      wrong: "I very like this movie because it make me feel happy.",
+      correct: "I really like this movie because it makes me feel happy.",
+      explanation: "Dùng “really” với “like” và chia “make” thành “makes” vì chủ ngữ là “it”."
+    }],
+    suggestedVersion: "I really like this movie because it makes me feel happy.",
+    phrases: ["really like", "makes me feel"],
+    learningTips: ["Kiểm tra động từ khi chủ ngữ là he, she hoặc it."],
+    miuNote: "Bạn truyền đạt ý tốt — chỉ cần chú ý chia động từ."
+  })));
+
+  const response = await page.goto(WEB + "/", { waitUntil: "domcontentloaded", timeout: 45_000 });
+  if (!response || response.status() >= 400) throw new Error("Landing guest preview navigation failed");
+  await page.getByRole("link", { name: "Dùng thử miễn phí không cần tài khoản" }).waitFor({ state: "visible", timeout: 30_000 });
+  await page.getByRole("link", { name: "Dùng thử miễn phí không cần tài khoản" }).click();
+  const textarea = page.locator("#guest-writing-preview");
+  await textarea.waitFor({ state: "visible", timeout: 30_000 });
+  await page.screenshot({ path: "artifacts/visual-v31/" + prefix + "-landing-writing-preview.png", fullPage: viewport.width > 390 });
+
+  await page.getByRole("button", { name: "Kiểm tra với AI" }).click();
+  await page.getByText("Phản hồi của Beacon", { exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+  await page.screenshot({ path: "artifacts/visual-v31/" + prefix + "-landing-writing-feedback.png", fullPage: viewport.width > 390 });
+
+  await browser.close();
+}
+
+for (const [prefix, viewport] of [["desktop", { width: 1536, height: 1024 }], ["mobile", { width: 390, height: 844 }]]) {
+  await captureLandingGuestPreview(prefix, viewport);
+}
+
 async function captureReadingPractice(prefix, viewport) {
   const browser = await chromium.launch();
   const context = await browser.newContext({ viewport, storageState: statePath, reducedMotion: "reduce", colorScheme: "light" });
