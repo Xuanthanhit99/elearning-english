@@ -508,7 +508,7 @@ export default function ListeningPracticePage({
 
                 <div className="mt-5 flex items-start justify-between gap-3 sm:mt-6 sm:gap-4">
                   <div>
-                    <h1 className="text-[18px] font-black leading-[1.35] tracking-[-0.02em] sm:text-[26px]">
+                    <h1 className="!text-[18px] !leading-[24px] font-black tracking-[-0.02em] sm:!text-[26px] sm:!leading-[1.35]">
                       {currentQuestion.question}
                     </h1>
                     <p className="mt-1 text-sm text-slate-500 sm:mt-2 sm:text-base">
