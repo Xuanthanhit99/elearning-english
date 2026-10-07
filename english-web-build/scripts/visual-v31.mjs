@@ -191,6 +191,16 @@ async function captureLandingGuestPreview(prefix, viewport) {
   await page.getByText("Phản hồi của Beacon", { exact: true }).waitFor({ state: "visible", timeout: 30_000 });
   await page.screenshot({ path: "artifacts/visual-v31/" + prefix + "-landing-writing-feedback.png", fullPage: viewport.width > 390 });
 
+  if (viewport.width === 390) {
+    const saveCta = page.getByRole("link", { name: "Lưu kết quả & tiếp tục học" });
+    await saveCta.waitFor({ state: "visible", timeout: 30_000 });
+    await saveCta.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(200);
+    const box = await saveCta.boundingBox();
+    if (!box || box.y < 0 || box.y + box.height > viewport.height) throw new Error("Landing mobile save CTA is not fully visible after scroll");
+    await page.screenshot({ path: "artifacts/visual-v31/mobile-landing-writing-final-cta.png", fullPage: false });
+  }
+
   await browser.close();
 }
 
