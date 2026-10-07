@@ -22,11 +22,21 @@ for(const [prefix,viewport] of [["desktop",{width:1536,height:1024}],["mobile",{
   if(await page.locator("h1").count()!==1) throw new Error(slug+" expected exactly one H1");
   if(await page.locator('script[type="application/ld+json"]').count()<1) throw new Error(slug+" missing JSON-LD");
   if(slug!=="tai-lieu-tieng-anh" && !(await page.getByText("Học thử không cần đăng nhập",{exact:true}).isVisible())) throw new Error(slug+" guest preview missing");
-  if(slug==="tai-lieu-tieng-anh" && !(await page.getByRole("link",{name:"Đọc tiếp miễn phí"}).isVisible())) throw new Error("resource continuation gate missing");
+  if(slug==="tai-lieu-tieng-anh"){
+    for(const taxonomy of ["cefr","skills","goals"]){
+      if(await page.locator(`[data-seo-taxonomy="${taxonomy}"]`).count()!==1) throw new Error("resource taxonomy missing "+taxonomy);
+    }
+    const spokes=await page.locator("[data-resource-spoke]").evaluateAll((links)=>links.map((link)=>link.getAttribute("href")));
+    for(const expected of ["/hoc-tu-vung-tieng-anh","/ngu-phap-tieng-anh","/luyen-nghe-tieng-anh","/luyen-noi-tieng-anh","/luyen-doc-tieng-anh","/luyen-viet-tieng-anh"]){
+      if(!spokes.includes(expected)) throw new Error("resource hub missing spoke "+expected);
+    }
+    const json=await page.locator('script[type="application/ld+json"]').first().textContent();
+    if(!json?.includes("CollectionPage")||!json.includes("BreadcrumbList")||!json.includes("hasPart")) throw new Error("resource hub schema graph incomplete");
+  }
   if(slug!=="tai-lieu-tieng-anh" && !(await page.getByRole("heading",{name:"Câu hỏi thường gặp"}).isVisible())) throw new Error(slug+" V2 FAQ missing");
   await page.screenshot({path:`artifacts/seo-production-v1/${prefix}-${slug}.png`,fullPage:true});
   await page.close();
  }
  await browser.close();
 }
-console.log("SEO Production V1: 8 routes + 16 screenshots PASS");
+console.log("SEO Production V1: 9 public routes + Resource Hub taxonomy/link/schema contract + desktop/mobile screenshots PASS");
