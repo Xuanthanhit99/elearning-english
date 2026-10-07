@@ -396,9 +396,9 @@ export default function ListeningPracticePage({
       />
 
       <div className="mx-auto min-h-screen max-w-[1536px]">
-        <section className="min-w-0 px-3 py-3 pb-[calc(6.75rem+env(safe-area-inset-bottom))] sm:px-5 sm:py-5 sm:pb-6 lg:px-8">
+        <section className="min-w-0 px-3 py-2 pb-[calc(6.75rem+env(safe-area-inset-bottom))] sm:px-5 sm:py-5 sm:pb-6 lg:px-8">
           <div className="mx-auto max-w-[1240px]">
-            <div className="mb-3 flex items-center justify-between gap-3 sm:mb-6 sm:gap-4">
+            <div className="mb-2 flex items-center justify-between gap-3 sm:mb-6 sm:gap-4">
               <button
                 onClick={() => router.push("/listening")}
                 className="inline-flex items-center gap-2 font-bold text-blue-600"
@@ -423,8 +423,8 @@ export default function ListeningPracticePage({
             )}
 
             <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_300px] xl:gap-7">
-              <section className="overflow-hidden rounded-[28px] border border-blue-100 bg-white p-4 shadow-[0_18px_60px_rgba(37,99,235,0.08)] sm:p-7 lg:p-8">
-                <div className="flex flex-wrap gap-3">
+              <section className="overflow-hidden rounded-[24px] border border-blue-100 bg-white p-3 shadow-[0_18px_60px_rgba(37,99,235,0.08)] sm:rounded-[28px] sm:p-7 lg:p-8">
+                <div className="flex flex-wrap gap-2 sm:gap-3">
                   <Badge>
                     Câu {currentIndex + 1}/
                     {practice.questions.length}
@@ -433,7 +433,7 @@ export default function ListeningPracticePage({
                   <Badge>{practice.topic}</Badge>
                 </div>
 
-                <div className="mt-3 flex items-center gap-3 lg:hidden">
+                <div className="mt-2 flex items-center gap-2.5 sm:mt-3 sm:gap-3 lg:hidden">
                   <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
                     <div className="h-full rounded-full bg-blue-600 transition-all" style={{ width: `${progress.percent}%` }} />
                   </div>
@@ -441,16 +441,16 @@ export default function ListeningPracticePage({
                   <span className="rounded-full bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-500">{listenedCount} lượt nghe</span>
                 </div>
 
-                <div className="mt-4 rounded-[24px] border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-sky-50 p-4 sm:mt-6 sm:p-6">
-                  <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl bg-white/80 px-3 py-2.5 sm:px-4">
+                <div className="mt-3 rounded-[20px] border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-sky-50 p-3 sm:mt-6 sm:rounded-[24px] sm:p-6">
+                  <div className="mb-2.5 flex items-center justify-between gap-2 rounded-2xl bg-white/80 px-2.5 py-2 sm:mb-4 sm:gap-3 sm:px-4 sm:py-2.5">
                     <div className="flex min-w-0 items-center gap-3">
-                      <div className={`relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl border bg-white transition-transform ${isPlaying ? "scale-105 border-blue-300" : currentQuestion.answered ? currentQuestion.isCorrect ? "border-emerald-300" : "border-amber-300" : "border-blue-100"}`}>
-                        <img src="/brand/beaconvie-ai-mascot.webp" alt="BeaconVie mascot" className="h-11 w-11 object-contain" />
+                      <div className={`relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-xl border bg-white transition-transform sm:h-12 sm:w-12 sm:rounded-2xl ${isPlaying ? "scale-105 border-blue-300" : currentQuestion.answered ? currentQuestion.isCorrect ? "border-emerald-300" : "border-amber-300" : "border-blue-100"}`}>
+                        <img src="/brand/beaconvie-ai-mascot.webp" alt="BeaconVie mascot" className="h-9 w-9 object-contain sm:h-11 sm:w-11" />
                         {isPlaying && <span className="absolute bottom-1 right-1 h-2.5 w-2.5 animate-pulse rounded-full bg-blue-500 ring-2 ring-white" />}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs font-black uppercase tracking-[0.12em] text-blue-600">Beacon đang đồng hành</p>
-                        <p className="truncate text-sm font-bold text-slate-600">
+                        <p className="text-[10px] font-black uppercase tracking-[0.1em] text-blue-600 sm:text-xs sm:tracking-[0.12em]">Beacon đang đồng hành</p>
+                        <p className="truncate text-xs font-bold text-slate-600 sm:text-sm">
                           {isPlaying ? "Tập trung nghe ý chính nhé!" : currentQuestion.answered ? currentQuestion.isCorrect ? "Tuyệt lắm, bạn nghe rất chính xác!" : currentQuestion.isSkipped ? "Không sao, xem lời thoại rồi thử câu tiếp theo." : "Gần đúng rồi, nghe lại và xem lời thoại nhé." : "Bấm Play khi bạn sẵn sàng."}
                         </p>
                       </div>
@@ -461,17 +461,17 @@ export default function ListeningPracticePage({
                   <div className="flex items-center gap-3 sm:gap-6">
                     <button
                       onClick={playAudio}
-                      className="grid h-14 w-14 sm:h-20 sm:w-20 shrink-0 place-items-center rounded-full bg-blue-600 text-white shadow-lg"
+                      className="grid h-12 w-12 sm:h-20 sm:w-20 shrink-0 place-items-center rounded-full bg-blue-600 text-white shadow-lg"
                     >
                       {isPlaying ? (
-                        <Pause className="h-6 w-6 sm:h-8 sm:w-8" />
+                        <Pause className="h-5 w-5 sm:h-8 sm:w-8" />
                       ) : (
                         <Play className="h-6 w-6 sm:h-8 sm:w-8" />
                       )}
                     </button>
 
                     <div className="min-w-0 flex-1">
-                      <div className="mb-3 flex h-8 items-center gap-1 overflow-hidden" aria-hidden="true">
+                      <div className="mb-2 flex h-6 items-center gap-1 overflow-hidden sm:mb-3 sm:h-8" aria-hidden="true">
                         {[10,18,26,14,22,30,16,24,12,28,20,32,16,24,18,30,12,22,16,26,14,20,12,18].map((height, index) => (
                           <span key={index} className={`w-1 flex-1 rounded-full transition-all ${isPlaying ? "bg-blue-400" : "bg-blue-200"}`} style={{ height: `${height}px`, opacity: index / 24 <= currentTime / Math.max(currentQuestion.duration, 1) ? 1 : 0.45 }} />
                         ))}
@@ -492,7 +492,7 @@ export default function ListeningPracticePage({
                           }}
                         />
                       </div>
-                      <div className="mt-3 flex justify-between text-sm font-bold text-slate-500">
+                      <div className="mt-2 flex justify-between text-xs font-bold text-slate-500 sm:mt-3 sm:text-sm">
                         <span>
                           {formatSeconds(currentTime)}
                         </span>
@@ -506,19 +506,19 @@ export default function ListeningPracticePage({
                   </div>
                 </div>
 
-                <div className="mt-5 flex items-start justify-between gap-3 sm:mt-6 sm:gap-4">
+                <div className="mt-3 flex items-start justify-between gap-3 sm:mt-6 sm:gap-4">
                   <div>
                     <h1 className="!text-[18px] !leading-[24px] font-black tracking-[-0.02em] sm:!text-[26px] sm:!leading-[1.35]">
                       {currentQuestion.question}
                     </h1>
-                    <p className="mt-1 text-sm text-slate-500 sm:mt-2 sm:text-base">
+                    <p className="mt-0.5 text-xs text-slate-500 sm:mt-2 sm:text-base">
                       Nghe audio và chọn đáp án đúng nhất.
                     </p>
                   </div>
 
                   <button
                     onClick={toggleFlag}
-                    className={`rounded-xl border p-3 ${
+                    className={`rounded-xl border p-2.5 sm:p-3 ${
                       currentQuestion.isFlagged
                         ? "border-blue-400 bg-blue-50 text-blue-600"
                         : "text-slate-400"
@@ -528,7 +528,7 @@ export default function ListeningPracticePage({
                   </button>
                 </div>
 
-                <div className="mt-4 grid gap-2.5 sm:mt-6 sm:gap-3">
+                <div className="mt-3 grid gap-2 sm:mt-6 sm:gap-3">
                   {currentQuestion.options.map((option) => {
                     const selected =
                       selectedAnswer === option.label;
@@ -551,7 +551,7 @@ export default function ListeningPracticePage({
                         onClick={() =>
                           setSelectedAnswer(option.label)
                         }
-                        className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left text-sm font-bold sm:gap-4 sm:rounded-2xl sm:px-5 sm:py-4 sm:text-base disabled:cursor-not-allowed ${
+                        className={`flex w-full items-center gap-2.5 rounded-xl border px-3 py-2 text-left text-[13px] font-bold sm:gap-4 sm:rounded-2xl sm:px-5 sm:py-4 sm:text-base disabled:cursor-not-allowed ${
                           correct
                             ? "border-emerald-400 bg-emerald-50 text-emerald-700"
                             : wrongSelected
@@ -561,7 +561,7 @@ export default function ListeningPracticePage({
                                 : "border-slate-200"
                         }`}
                       >
-                        <span className="grid h-9 w-9 place-items-center rounded-full bg-white shadow-sm">
+                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white shadow-sm sm:h-9 sm:w-9">
                           {option.label}
                         </span>
                         {option.text}
