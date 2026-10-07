@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   Patch,
   Post,
   Query,
@@ -40,6 +41,16 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly vocabularyJobService: VocabularyJobService,
   ) {}
+
+  @Post('bootstrap-admin')
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 3, ttl: 60_000 } })
+  bootstrapAdmin(
+    @Headers('x-admin-bootstrap-secret') secret: string | undefined,
+    @Body() body: { email: string; password: string; fullName: string },
+  ) {
+    return this.authService.bootstrapAdmin({ ...body, secret });
+  }
 
   @Post('register')
   @UseGuards(ThrottlerGuard)
