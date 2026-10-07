@@ -26,7 +26,7 @@ for(const [prefix,viewport] of [["desktop",{width:1536,height:1024}],["mobile",{
     for(const taxonomy of ["cefr","skills","goals"]){
       if(await page.locator(`[data-seo-taxonomy="${taxonomy}"]`).count()!==1) throw new Error("resource taxonomy missing "+taxonomy);
     }
-    const spokes=await page.locator("[data-resource-spoke]").evaluateAll((links)=>links.map((link)=>{const href=link.getAttribute("href")||""; return href.length>1?href.replace(/\\/$/,""):href;}));
+    const spokes=await page.locator("[data-resource-spoke]").evaluateAll((links)=>links.map((link)=>{const href=link.getAttribute("href")||""; return href.length>1 && href.endsWith("/") ? href.slice(0,-1) : href;}));
     for(const expected of ["/hoc-tu-vung-tieng-anh","/ngu-phap-tieng-anh","/luyen-nghe-tieng-anh","/luyen-noi-tieng-anh","/luyen-doc-tieng-anh","/luyen-viet-tieng-anh"]){
       if(!spokes.includes(expected)) throw new Error("resource hub missing spoke "+expected);
     }
