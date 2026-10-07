@@ -237,12 +237,18 @@ export class ListeningJobProcessor extends WorkerHost {
       };
     }
 
-    if (question.audioUrl?.trim()) {
+    if (await this.listeningTtsService.hasStoredAudio(question.audioUrl)) {
       return {
         skipped: true,
         reason: 'AUDIO_ALREADY_EXISTS',
         audioUrl: question.audioUrl,
       };
+    }
+
+    if (question.audioUrl?.trim()) {
+      this.logger.warn(
+        `Regenerating stale Listening audio: questionId=${questionId}, audioUrl=${question.audioUrl}`,
+      );
     }
 
     const normalizedTranscript =
