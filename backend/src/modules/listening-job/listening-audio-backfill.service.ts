@@ -2,6 +2,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable, Logger } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ListeningTtsService } from '../listening/listening-tts.service';
 import {
   LISTENING_GENERATION_JOB,
   LISTENING_GENERATION_QUEUE,
@@ -13,6 +14,7 @@ export class ListeningAudioBackfillService {
 
   constructor(
     private readonly prisma: PrismaService,
+    private readonly listeningTtsService: ListeningTtsService,
     @InjectQueue(LISTENING_GENERATION_QUEUE)
     private readonly queue: Queue,
   ) {}
@@ -25,14 +27,6 @@ export class ListeningAudioBackfillService {
 
     const questions = await this.prisma.listeningQuestion.findMany({
       where: {
-        OR: [
-          {
-            audioUrl: '',
-          },
-          {
-            audioUrl: '',
-          },
-        ],
         transcript: {
           not: null,
         },
@@ -40,6 +34,7 @@ export class ListeningAudioBackfillService {
       select: {
         id: true,
         transcript: true,
+        audioUrl: true,
       },
       take: safeLimit,
       orderBy: {
@@ -51,6 +46,10 @@ export class ListeningAudioBackfillService {
 
     for (const question of questions) {
       if (!question.transcript?.trim()) {
+        continue;
+      }
+
+      if (await this.listeningTtsService.hasStoredAudio(question.audioUrl)) {
         continue;
       }
 
