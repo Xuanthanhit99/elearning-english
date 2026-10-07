@@ -34,7 +34,7 @@ export class WritingController {
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('check')
   checkWriting(@Body() dto: CheckWritingDto, @Req() req: any) {
-    return this.writingService.checkWriting(dto, req.user.id);
+    return this.writingService.checkWriting(dto, req.user?.id);
   }
 
   @UseGuards(JwtAuthGuard)
