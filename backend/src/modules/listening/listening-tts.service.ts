@@ -13,6 +13,34 @@ export class ListeningTtsService {
   private readonly logger = new Logger(ListeningTtsService.name);
   private readonly client = new textToSpeech.TextToSpeechClient();
 
+  async hasStoredAudio(audioUrl: string | null | undefined): Promise<boolean> {
+    const value = audioUrl?.trim();
+
+    if (!value) {
+      return false;
+    }
+
+    try {
+      const url = new URL(value);
+      const prefix = `${getListeningAudioUrlPrefix()}/`;
+
+      if (!url.pathname.startsWith(prefix)) {
+        return false;
+      }
+
+      const filename = url.pathname.slice(prefix.length);
+
+      if (!filename || filename.includes('/') || !filename.endsWith('.mp3')) {
+        return false;
+      }
+
+      await fs.access(join(getListeningAudioDir(), filename));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async createAudioFromTranscript(transcript: string): Promise<string | null> {
     const normalized = transcript.trim();
 
