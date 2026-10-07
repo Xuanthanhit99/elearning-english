@@ -1,0 +1,27 @@
+"use client";
+import {useMemo,useState} from "react";
+import Link from "next/link";
+import {resources,resourceLevels,resourceSkills} from "@/src/resources/catalog";
+
+export default function ResourceLibrary(){
+ const [query,setQuery]=useState(""); const [skill,setSkill]=useState("Tất cả"); const [level,setLevel]=useState("Tất cả");
+ const visible=useMemo(()=>resources.filter(r=>(skill==="Tất cả"||r.skill===skill)&&(level==="Tất cả"||r.level===level)&&(!query||[r.title,r.description,r.topic,...r.keywords].join(" ").toLowerCase().includes(query.toLowerCase()))),[query,skill,level]);
+ const featured=resources.filter(r=>r.featured).slice(0,4);
+ return <div>
+  <section className="mx-auto max-w-7xl px-5 pt-10 md:pt-16">
+   <div className="overflow-hidden rounded-[32px] border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-cyan-50 px-6 py-10 shadow-[0_24px_70px_rgba(30,94,255,.10)] md:px-12 md:py-14">
+    <p className="font-black text-[var(--BeaconVie-primary)]">BeaconVie Resource Library</p>
+    <h1 className="mt-3 max-w-4xl text-4xl font-black tracking-tight md:text-6xl">Kho tài liệu tiếng Anh <span className="text-[var(--BeaconVie-primary)]">dành cho người Việt</span></h1>
+    <p className="mt-5 max-w-3xl text-lg leading-8 text-[var(--BeaconVie-muted)]">Tìm theo trình độ CEFR, kỹ năng và mục tiêu. Đọc phần tóm tắt miễn phí; đăng nhập khi bạn muốn học toàn bộ, lưu tiến độ và luyện tập trên BeaconVie.</p>
+    <div className="mt-7 flex max-w-3xl rounded-2xl border border-blue-100 bg-white p-2 shadow-sm"><input value={query} onChange={e=>setQuery(e.target.value)} className="min-w-0 flex-1 bg-transparent px-4 py-3 outline-none" placeholder="Tìm: luyện nghe A2, phrasal verbs, Present Simple…"/><span className="rounded-xl bg-[var(--BeaconVie-primary)] px-5 py-3 font-black text-white">Tìm</span></div>
+   </div>
+  </section>
+  <section className="mx-auto max-w-7xl px-5 py-12"><div className="mb-6 flex items-end justify-between"><div><p className="font-bold text-[var(--BeaconVie-primary)]">Bắt đầu nhanh</p><h2 className="text-2xl font-black md:text-3xl">Tài liệu nổi bật</h2></div><span className="text-sm text-[var(--BeaconVie-muted)]">{resources.length} tài liệu đã tuyển chọn</span></div>
+   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{featured.map(r=><Link href={"/tai-lieu-tieng-anh/"+r.slug} key={r.slug} className="group rounded-3xl border border-[var(--BeaconVie-border)] bg-white p-5 transition hover:-translate-y-1 hover:shadow-xl"><div className="flex items-center justify-between text-xs font-black"><span className="rounded-full bg-blue-50 px-3 py-1 text-[var(--BeaconVie-primary)]">{r.skill}</span><span>{r.level}</span></div><h3 className="mt-4 text-lg font-black leading-snug group-hover:text-[var(--BeaconVie-primary)]">{r.title}</h3><p className="mt-3 line-clamp-3 text-sm leading-6 text-[var(--BeaconVie-muted)]">{r.description}</p><p className="mt-5 text-sm font-bold text-[var(--BeaconVie-primary)]">Xem tài liệu →</p></Link>)}</div>
+  </section>
+  <section className="border-y border-[var(--BeaconVie-border)] bg-slate-50/70"><div className="mx-auto grid max-w-7xl gap-8 px-5 py-12 lg:grid-cols-[230px_1fr]">
+   <aside><h2 className="text-lg font-black">Lọc tài liệu</h2><p className="mt-5 text-sm font-black">Trình độ</p><div className="mt-2 flex flex-wrap gap-2">{resourceLevels.map(x=><button key={x} onClick={()=>setLevel(x)} className={"rounded-xl border px-3 py-2 text-sm font-bold "+(level===x?"border-blue-600 bg-blue-600 text-white":"bg-white")}>{x}</button>)}</div><p className="mt-6 text-sm font-black">Kỹ năng</p><div className="mt-2 flex flex-wrap gap-2 lg:flex-col">{resourceSkills.map(x=><button key={x} onClick={()=>setSkill(x)} className={"rounded-xl border px-3 py-2 text-left text-sm font-bold "+(skill===x?"border-blue-600 bg-blue-600 text-white":"bg-white")}>{x}</button>)}</div><div className="mt-7 rounded-2xl bg-blue-50 p-4"><b>Học sâu hơn trên BeaconVie</b><p className="mt-2 text-sm leading-6 text-slate-600">Đăng nhập để lưu tài liệu, làm bài luyện và nối nội dung vào lộ trình.</p><Link href="/login?redirect=%2Ftai-lieu-tieng-anh" className="mt-3 inline-block font-black text-blue-700">Đăng nhập →</Link></div></aside>
+   <div><div className="mb-5 flex items-center justify-between"><h2 className="text-2xl font-black">Tất cả tài liệu</h2><span className="text-sm text-[var(--BeaconVie-muted)]">{visible.length} kết quả</span></div><div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{visible.map(r=><article key={r.slug} className="flex flex-col rounded-3xl border border-[var(--BeaconVie-border)] bg-white p-6 shadow-sm"><div className="flex gap-2 text-xs font-black text-blue-700"><span>{r.level}</span><span>•</span><span>{r.skill}</span><span>•</span><span>{r.minutes} phút</span></div><h3 className="mt-3 text-xl font-black leading-snug">{r.title}</h3><p className="mt-3 flex-1 text-sm leading-6 text-[var(--BeaconVie-muted)]">{r.description}</p><div className="mt-5 flex items-center justify-between border-t pt-4 text-sm"><span>Nguồn: {r.sourceName}</span><Link href={"/tai-lieu-tieng-anh/"+r.slug} className="font-black text-[var(--BeaconVie-primary)]">Xem chi tiết →</Link></div></article>)}</div>{visible.length===0&&<div className="rounded-3xl border bg-white p-10 text-center"><b>Chưa tìm thấy tài liệu phù hợp.</b><p className="mt-2 text-sm text-slate-500">Thử đổi từ khóa hoặc bỏ bớt bộ lọc.</p></div>}</div>
+  </div></section>
+ </div>
+}
