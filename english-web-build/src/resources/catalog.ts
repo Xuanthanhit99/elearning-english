@@ -16,5 +16,5 @@ export const resources: Resource[] = [
 ];
 
 export const resourceBySlug = new Map(resources.map((item)=>[item.slug,item]));
-export const resourceSkills = ["Tất cả", ...Array.from(new Set(resources.map((r)=>r.skill))];
+export const resourceSkills = ["Tất cả", ...Array.from(new Set(resources.map((r)=>r.skill)))];
 export const resourceLevels = ["Tất cả","A1","A2","B1","B2","C1"];
