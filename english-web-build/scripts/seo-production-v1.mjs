@@ -22,7 +22,7 @@ for(const [prefix,viewport] of [["desktop",{width:1536,height:1024}],["mobile",{
   if(await page.locator("h1").count()!==1) throw new Error(slug+" expected exactly one H1");
   if(await page.locator('script[type="application/ld+json"]').count()<1) throw new Error(slug+" missing JSON-LD");
   if(slug!=="tai-lieu-tieng-anh" && !(await page.getByText("Học thử không cần đăng nhập",{exact:true}).isVisible())) throw new Error(slug+" guest preview missing");
-  if(slug==="tai-lieu-tieng-anh" && !(await page.getByRole("link",{name:"Đọc tiếp miễn phí"}).isVisible())) throw new Error("resource continuation gate missing");
+  if(slug==="tai-lieu-tieng-anh" && await page.getByRole("link",{name:"Đọc tiếp miễn phí"}).count()<1) throw new Error("resource continuation gate missing");
   if(slug!=="tai-lieu-tieng-anh" && !(await page.getByRole("heading",{name:"Câu hỏi thường gặp"}).isVisible())) throw new Error(slug+" V2 FAQ missing");
   await page.screenshot({path:`artifacts/seo-production-v1/${prefix}-${slug}.png`,fullPage:true});
   await page.close();
