@@ -7,6 +7,7 @@ import { WritingService } from './writing.service';
 
 describe('WritingController', () => {
   let controller: WritingController;
+  const checkWriting = jest.fn();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -19,7 +20,7 @@ describe('WritingController', () => {
       providers: [
         {
           provide: WritingService,
-          useValue: {},
+          useValue: { checkWriting },
         },
         {
           provide: WritingProcessingService,
@@ -37,5 +38,21 @@ describe('WritingController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  it('allows a guest writing check without dereferencing a missing user', async () => {
+    const dto = { text: 'I goes to school every day.' };
+    checkWriting.mockResolvedValueOnce({ score: 72 });
+
+    await expect(controller.checkWriting(dto, { user: null })).resolves.toEqual({ score: 72 });
+    expect(checkWriting).toHaveBeenCalledWith(dto, undefined);
+  });
+
+  it('passes the authenticated user id to the writing check', async () => {
+    const dto = { text: 'I go to school every day.' };
+    checkWriting.mockResolvedValueOnce({ score: 90 });
+
+    await controller.checkWriting(dto, { user: { id: 'user-1' } });
+    expect(checkWriting).toHaveBeenCalledWith(dto, 'user-1');
   });
 });
