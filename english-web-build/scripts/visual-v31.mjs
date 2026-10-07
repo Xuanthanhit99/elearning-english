@@ -257,7 +257,6 @@ for (const [prefix, viewport] of [["desktop", { width: 1536, height: 1024 }], ["
   await captureReadingPractice(prefix, viewport);
 }
 
-
 async function captureListeningPractice(prefix, viewport) {
   const browser = await chromium.launch();
   const context = await browser.newContext({ viewport, storageState: statePath, reducedMotion: "reduce", colorScheme: "light" });
@@ -382,4 +381,82 @@ async function captureListeningPractice(prefix, viewport) {
 
 for (const [prefix, viewport] of [["desktop", { width: 1536, height: 1024 }], ["mobile", { width: 390, height: 844 }]]) {
   await captureListeningPractice(prefix, viewport);
+}
+
+async function captureSpeakingPractice(prefix, viewport) {
+  const browser = await chromium.launch();
+  const context = await browser.newContext({ viewport, storageState: statePath, reducedMotion: "reduce", colorScheme: "light" });
+  const page = await context.newPage();
+  const json = (body) => ({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
+  const sessionId = "visual-speaking-session";
+  const practice = {
+    session: { id: sessionId, status: "IN_PROGRESS", durationSeconds: 0 },
+    lesson: {
+      id: "visual-speaking-lesson",
+      title: "Introduce your morning routine",
+      description: "Luyện nói một câu ngắn, rõ ràng về thói quen buổi sáng.",
+      type: "READ_ALOUD",
+      level: "A2",
+      estimatedMinutes: 5,
+      prompt: "Hãy nói về một việc bạn thường làm vào buổi sáng.",
+      expectedText: "I usually make breakfast before I check my messages.",
+      icon: null
+    },
+    topic: { id: "visual-speaking-topic", title: "Daily Life", slug: "daily-life" },
+    latestAnswer: null,
+    steps: [
+      { order: 1, title: "Nghe câu mẫu", description: "Nghe Beacon đọc mẫu để bắt nhịp và trọng âm." },
+      { order: 2, title: "Ghi âm", description: "Nói rõ ràng, tự nhiên và nghe lại bản ghi." },
+      { order: 3, title: "Nhận phản hồi", description: "Gửi bản ghi để AI phân tích và gợi ý cải thiện." }
+    ],
+    focusSkills: [
+      { title: "Phát âm", description: "Âm rõ và dễ hiểu.", icon: "🎧" },
+      { title: "Độ trôi chảy", description: "Giữ nhịp nói tự nhiên.", icon: "💬" }
+    ],
+    tips: [
+      { title: "Không cần nói quá nhanh", description: "Ưu tiên rõ từng cụm từ trước khi tăng tốc.", icon: "✨" },
+      { title: "Nghe lại trước khi gửi", description: "Kiểm tra âm lượng và độ rõ của bản ghi.", icon: "🎙️" }
+    ]
+  };
+
+  await page.route(API + "/speaking/practice/" + sessionId, async (route) => {
+    if (route.request().method() !== "GET") return route.continue();
+    return route.fulfill(json(practice));
+  });
+
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  const response = await page.goto(WEB + "/speaking/practice/" + sessionId, { waitUntil: "domcontentloaded", timeout: 45_000 });
+  if (!response || response.status() >= 400) throw new Error("Speaking Practice navigation failed");
+  if (page.url().includes("/login")) throw new Error("Speaking Practice redirected to login");
+  await stabilizePage(page);
+  await page.getByRole("heading", { name: practice.lesson.prompt }).waitFor({ state: "visible", timeout: 30_000 });
+  await page.getByRole("button", { name: "Nghe câu mẫu" }).waitFor({ state: "visible", timeout: 30_000 });
+  await page.getByRole("button", { name: "Bắt đầu ghi âm" }).waitFor({ state: "visible", timeout: 30_000 });
+
+  if (viewport.width === 390) {
+    const evidence = await page.evaluate(() => {
+      const record = Array.from(document.querySelectorAll("button")).find((node) => /Bắt đầu ghi âm/.test(node.textContent || ""));
+      const nav = Array.from(document.querySelectorAll("nav")).find((node) => window.getComputedStyle(node).position === "fixed" && node.getBoundingClientRect().bottom >= window.innerHeight - 2);
+      const rr = record?.getBoundingClientRect();
+      const nr = nav?.getBoundingClientRect();
+      return {
+        viewport: { width: innerWidth, height: innerHeight },
+        recordRect: rr?.toJSON() || null,
+        navRect: nr?.toJSON() || null,
+        pageScrollWidth: document.documentElement.scrollWidth,
+        noHorizontalOverflow: document.documentElement.scrollWidth <= innerWidth
+      };
+    });
+    console.log("[mobile-speaking-practice-evidence]", JSON.stringify(evidence));
+    if (!evidence.noHorizontalOverflow) throw new Error("Speaking Practice has mobile horizontal overflow");
+  }
+
+  await page.screenshot({ path: "artifacts/visual-v31/" + prefix + "-speaking-practice.png", fullPage: true });
+  if (errors.length) throw new Error("Speaking Practice page errors: " + errors.join(" | "));
+  await browser.close();
+}
+
+for (const [prefix, viewport] of [["desktop", { width: 1536, height: 1024 }], ["mobile", { width: 390, height: 844 }]]) {
+  await captureSpeakingPractice(prefix, viewport);
 }
