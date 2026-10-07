@@ -36,7 +36,142 @@ export default function SpeakingPracticePage() {
       .catch((err) => active && setError(errorText(err, 'Không tải được bài luyện nói.')))
       .finally(() => active && setLoading(false));
 
-    const activeStep = state === 'READY' || state === 'UPLOADING' ? 3 : state === 'IDLE' ? 1 : 2;
+    return () => {
+      active = false;
+      releaseRecorder();
+    };
+  }, [sessionId]);
+
+  useEffect(() => () => {
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
+  }, [audioUrl]);
+
+  const formattedTime = useMemo(() => formatTime(elapsedSeconds), [elapsedSeconds]);
+  const sampleText = data?.lesson.expectedText?.trim() || '';
+
+  function playSample() {
+    if (!sampleText || isSpeaking('speaking-sample')) return;
+    void speak('speaking-sample', sampleText, null, 'en', 0.92);
+  }
+
+  async function startRecording() {
+    try {
+      setError('');
+      releaseRecorder();
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      setAudioBlob(null);
+      setAudioUrl(null);
+      setElapsedSeconds(0);
+      chunksRef.current = [];
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      });
+      streamRef.current = stream;
+
+      const mimeType = resolveMimeType();
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) chunksRef.current.push(event.data);
+      };
+
+      recorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' });
+        setAudioBlob(blob);
+        setAudioUrl(URL.createObjectURL(blob));
+        setState('READY');
+        stopTimer();
+        stopStream();
+      };
+
+      recorder.start(250);
+      startedAtRef.current = Date.now();
+      setState('RECORDING');
+      startTimer();
+    } catch (err) {
+      setError(microphoneError(err));
+      releaseRecorder();
+    }
+  }
+
+  function pauseRecording() {
+    const recorder = mediaRecorderRef.current;
+    if (recorder?.state === 'recording') {
+      recorder.pause();
+      setState('PAUSED');
+      stopTimer();
+    }
+  }
+
+  function resumeRecording() {
+    const recorder = mediaRecorderRef.current;
+    if (recorder?.state === 'paused') {
+      recorder.resume();
+      startedAtRef.current = Date.now() - elapsedSeconds * 1000;
+      setState('RECORDING');
+      startTimer();
+    }
+  }
+
+  function stopRecording() {
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== 'inactive') recorder.stop();
+  }
+
+  async function submitRecording() {
+    if (!data || !audioBlob || state !== 'READY') return;
+
+    try {
+      setState('UPLOADING');
+      setError('');
+      await uploadSpeakingAudio({
+        sessionId,
+        audioBlob,
+        question: data.lesson.prompt || data.lesson.title,
+        expectedText: data.lesson.expectedText ?? undefined,
+        duration: Math.max(elapsedSeconds, 1),
+      });
+      router.replace(`/speaking/sessions/${sessionId}/processing`);
+    } catch (err) {
+      setState('READY');
+      setError(errorText(err, 'Không thể tải bản ghi âm lên.'));
+    }
+  }
+
+  function releaseRecorder() {
+    stopTimer();
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== 'inactive') recorder.stop();
+    stopStream();
+    mediaRecorderRef.current = null;
+  }
+
+  function stopStream() {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+  }
+
+  function startTimer() {
+    stopTimer();
+    timerRef.current = window.setInterval(() => {
+      if (!startedAtRef.current) return;
+      setElapsedSeconds(Math.max(0, Math.floor((Date.now() - startedAtRef.current) / 1000)));
+    }, 250);
+  }
+
+  function stopTimer() {
+    if (timerRef.current !== null) {
+      window.clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }
+
+  if (loading) return <PageState text="Đang tải bài luyện nói..." />;
+  if (!data) return <PageState text={error || 'Không có dữ liệu bài học.'} />;
+
+  const activeStep = state === 'READY' || state === 'UPLOADING' ? 3 : state === 'IDLE' ? 1 : 2;
   const steps = ['Nghe câu mẫu', 'Ghi âm câu của bạn', 'Nghe lại', 'Gửi để nhận phản hồi'];
 
   return (
