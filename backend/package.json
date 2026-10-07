@@ -137,5 +137,8 @@
     "setupFilesAfterEnv": [
       "<rootDir>/test/jest-auto-mock.ts"
     ]
+  },
+  "overrides": {
+    "proxy-addr": "2.0.8"
   }
 }
