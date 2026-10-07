@@ -4,6 +4,12 @@ import Link from "next/link";
 import {resources,resourceLevels,resourceSkills} from "@/src/resources/catalog";
 
 const topics=["Tất cả",...Array.from(new Set(resources.map(r=>r.topic)))];
+const media=[
+ "https://images.pexels.com/photos/8199257/pexels-photo-8199257.jpeg?auto=compress&cs=tinysrgb&w=1400",
+ "https://images.pexels.com/photos/7777716/pexels-photo-7777716.jpeg?auto=compress&cs=tinysrgb&w=900",
+ "https://images.pexels.com/photos/6281030/pexels-photo-6281030.jpeg?auto=compress&cs=tinysrgb&w=900",
+ "https://images.pexels.com/photos/8199759/pexels-photo-8199759.jpeg?auto=compress&cs=tinysrgb&w=900"
+];
 const topicMeta:Record<string,{label:string;hint:string}>={
  "Phương pháp học":{label:"Học hiệu quả",hint:"Ghi nhớ và xây thói quen"},
  "Giao tiếp":{label:"Giao tiếp",hint:"Nghe, nói trong tình huống thật"},
@@ -23,7 +29,7 @@ export default function ResourceLibrary(){
     <div className="relative z-10 max-w-4xl">
      <div className="inline-flex rounded-full border border-blue-200 bg-white/80 px-3 py-1.5 text-xs font-black uppercase tracking-[.14em] text-blue-700">BeaconVie Resource Library</div>
      <h1 className="mt-4 text-[36px] font-black leading-[1.05] tracking-[-.035em] sm:text-5xl md:text-[64px]">Học đúng tài liệu.<br/><span className="text-[var(--BeaconVie-primary)]">Tiến bộ đúng mục tiêu.</span></h1>
-     <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 md:text-lg md:leading-8">Kho tài liệu tiếng Anh được tuyển chọn cho người Việt theo CEFR, kỹ năng và mục tiêu học. Đọc miễn phí, rồi tiếp tục luyện tập ngay trên BeaconVie.</p>
+     <p className="mt-5 max-w-xl text-base leading-7 text-slate-700 md:text-lg md:leading-8">Kho tài liệu tiếng Anh được tuyển chọn cho người Việt theo CEFR, kỹ năng và mục tiêu học. Đọc miễn phí, rồi tiếp tục luyện tập ngay trên BeaconVie.</p>
      <label className="mt-7 flex max-w-3xl items-center gap-2 rounded-2xl border border-blue-100 bg-white p-2 shadow-[0_12px_35px_rgba(37,99,235,.12)]" aria-label="Tìm tài liệu">
       <span className="pl-3 text-lg text-slate-400" aria-hidden="true">⌕</span><input value={query} onChange={e=>setQuery(e.target.value)} className="min-w-0 flex-1 bg-transparent px-2 py-3 text-sm outline-none sm:text-base" placeholder="Tìm: luyện nghe A2, phrasal verbs, Present Simple…"/>
       <button type="button" className="rounded-xl bg-[var(--BeaconVie-primary)] px-4 py-3 text-sm font-black text-white sm:px-6">Tìm tài liệu</button>
