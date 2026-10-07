@@ -175,9 +175,9 @@ export default function SpeakingPracticePage() {
   const steps = ['Nghe câu mẫu', 'Ghi âm câu của bạn', 'Nghe lại', 'Gửi để nhận phản hồi'];
 
   return (
-    <main className="min-h-screen bg-[#f7fbff] px-4 pb-32 pt-4 text-[#0b1b42] md:px-7 md:pb-8 md:pt-6">
+    <main className="min-h-screen bg-[#f7fbff] px-4 pb-36 pt-3 text-[#0b1b42] md:px-7 md:pb-8 md:pt-6">
       <div className="mx-auto max-w-[1320px]">
-        <header className="mb-5 flex items-center justify-between gap-4">
+        <header className="mb-3 flex items-center justify-between gap-4">
           <button onClick={() => router.back()} className="inline-flex min-h-11 items-center gap-2 rounded-xl px-2 text-sm font-bold text-slate-600 hover:bg-white">
             <ChevronLeft size={19} /> Quay lại
           </button>
@@ -187,23 +187,23 @@ export default function SpeakingPracticePage() {
           </div>
         </header>
 
-        <section className="mb-5 px-1 md:px-2">
+        <section className="mb-3 px-1 md:mb-5 md:px-2">
           <p className="text-sm font-bold text-slate-500">{data.topic?.title ? `Unit 3 · ${data.topic.title}` : 'Speaking'}</p>
           <h1 className="mt-1 !text-[28px] !leading-[34px] font-black tracking-[-0.03em] md:!text-[36px] md:!leading-[42px]">Let’s practice speaking!</h1>
-          <p className="mt-2 max-w-3xl text-sm font-medium leading-6 text-slate-500 md:text-base">Nghe câu mẫu, sau đó nói theo. Bạn có thể nghe lại và gửi để nhận phản hồi phát âm.</p>
+          <p className="mt-1 max-w-3xl text-sm font-medium leading-6 text-slate-500 md:text-base">Nghe câu mẫu, sau đó nói theo. Bạn có thể nghe lại và gửi để nhận phản hồi phát âm.</p>
         </section>
 
         <section className="overflow-hidden rounded-[28px] border border-[#dcecff] bg-white shadow-[0_18px_55px_rgba(35,113,190,0.08)]">
           <div className="grid gap-0 lg:grid-cols-[280px_minmax(0,1fr)]">
-            <div className="relative flex min-h-[250px] flex-col items-center justify-end bg-gradient-to-b from-[#f8fcff] to-white px-5 pb-6 pt-5 lg:min-h-[610px] lg:justify-center lg:pb-8">
-              <div className="relative z-10 mb-2 max-w-[230px] rounded-[22px] border border-blue-100 bg-white px-5 py-4 text-sm font-semibold leading-6 text-slate-600 shadow-[0_8px_24px_rgba(38,112,190,0.1)]">
+            <div className="relative flex min-h-[210px] flex-col items-center justify-end bg-gradient-to-b from-[#f8fcff] to-white px-5 pb-3 pt-3 lg:min-h-[610px] lg:pb-8 lg:pt-5 lg:justify-center lg:pb-8">
+              <div className="relative z-10 mb-0 max-w-[230px] rounded-[22px] border border-blue-100 bg-white px-5 py-4 text-sm font-semibold leading-6 text-slate-600 shadow-[0_8px_24px_rgba(38,112,190,0.1)]">
                 Nghe kỹ câu mẫu nhé! Sau đó nhấn nút để bắt đầu ghi âm. Mình sẽ nghe và nhận xét cùng bạn!
                 <span className="absolute -bottom-3 left-1/2 h-6 w-6 -translate-x-1/2 rotate-45 border-b border-r border-blue-100 bg-white" />
               </div>
-              <img src="/brand/beacon-speaking-coach.svg" alt="BeaconVie Speaking Coach" className="relative z-0 h-[190px] w-auto object-contain lg:h-[285px]" />
+              <img src="/brand/beacon-speaking-coach.svg" alt="BeaconVie Speaking Coach" className="relative z-0 h-[150px] w-auto object-contain sm:h-[170px] lg:h-[285px]" />
             </div>
 
-            <div className="px-5 py-6 md:px-8 md:py-7 lg:px-10">
+            <div className="px-5 py-4 md:px-8 md:py-7 md:py-7 lg:px-10">
               <span className="inline-flex rounded-full bg-[#e8f4ff] px-3 py-1.5 text-xs font-black text-[#0878f9]">Câu 3</span>
               <h2 className="mt-3 !text-[22px] !leading-[30px] font-black md:!text-[26px] md:!leading-[34px]">{data.lesson.prompt}</h2>
 
@@ -219,7 +219,7 @@ export default function SpeakingPracticePage() {
                 </div>
               )}
 
-              <div className="mt-6 grid grid-cols-4 gap-1 md:gap-2">
+              <div className="mt-4 grid grid-cols-4 md:mt-6 gap-1 md:gap-2">
                 {steps.map((label, index) => {
                   const step=index+1; const active=step===activeStep; const done=step<activeStep;
                   return <div key={label} className="min-w-0 text-center">
@@ -230,14 +230,14 @@ export default function SpeakingPracticePage() {
                 })}
               </div>
 
-              <div className="mt-7 text-center">
-                <div className={`mx-auto grid h-28 w-28 place-items-center rounded-full border-[12px] md:h-32 md:w-32 ${state==='RECORDING'?'animate-pulse border-red-50 bg-red-500 text-white':state==='PAUSED'?'border-amber-50 bg-amber-500 text-white':'border-[#e7f3ff] bg-[#1488ff] text-white'}`}>
+              <div className="mt-5 text-center md:mt-7">
+                <div className={`mx-auto grid h-24 w-24 place-items-center md:h-32 md:w-32 rounded-full border-[12px] ${state==='RECORDING'?'animate-pulse border-red-50 bg-red-500 text-white':state==='PAUSED'?'border-amber-50 bg-amber-500 text-white':'border-[#e7f3ff] bg-[#1488ff] text-white'}`}>
                   <Mic size={44} />
                 </div>
-                <p className="mt-4 text-base font-black">{state==='IDLE'?'Nhấn để bắt đầu ghi âm':statusText(state)}</p>
+                <p className="mt-3 text-base font-black">{state==='IDLE'?'Nhấn để bắt đầu ghi âm':statusText(state)}</p>
                 <p className="mt-1 text-sm font-medium text-slate-500">{state==='IDLE'?'Thời lượng tối đa: 30 giây':formattedTime}</p>
 
-                <div className="mt-5 flex flex-wrap justify-center gap-2">
+                <div className="mt-3 flex flex-wrap justify-center gap-2 md:mt-5">
                   {state==='IDLE' && <Action onClick={startRecording} icon={<Mic size={17}/>} label="Bắt đầu ghi âm" primary />}
                   {state==='RECORDING' && <><Action onClick={pauseRecording} icon={<Pause size={17}/>} label="Tạm dừng"/><Action onClick={stopRecording} icon={<Square size={17}/>} label="Dừng" danger/></>}
                   {state==='PAUSED' && <><Action onClick={resumeRecording} icon={<Play size={17}/>} label="Tiếp tục" primary/><Action onClick={stopRecording} icon={<Square size={17}/>} label="Dừng" danger/></>}
@@ -258,7 +258,7 @@ export default function SpeakingPracticePage() {
             ].map(([icon,title,desc])=><div key={title} className="flex gap-3 rounded-2xl bg-[#f5faff] p-4"><span className="text-2xl">{icon}</span><div><p className="text-sm font-black">{title}</p><p className="mt-1 text-xs leading-5 text-slate-500">{desc}</p></div></div>)}
           </div>
 
-          <div className="mx-5 mb-6 mt-1 rounded-2xl bg-[#fff8df] px-5 py-4 md:mx-6">
+          <div className="mx-5 mb-5 mt-1 rounded-2xl bg-[#fff8df] px-5 py-4 md:mx-6">
             <p className="text-sm font-black">💡 Mẹo nhỏ để nói tự nhiên hơn:</p>
             <div className="mt-2 grid gap-1 text-xs font-medium leading-5 text-slate-600 md:grid-cols-3">
               <p>• Nói rõ ràng, với tốc độ tự nhiên.</p><p>• Bạn có thể nghe lại câu mẫu nhiều lần.</p><p>• Đừng lo lắng về lỗi, hãy thử và cải thiện dần nhé!</p>
