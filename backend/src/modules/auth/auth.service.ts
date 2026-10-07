@@ -1,5 +1,7 @@
 ﻿import {
   BadRequestException,
+  ConflictException,
+  ForbiddenException,
   Injectable,
   Logger,
   UnauthorizedException,
@@ -50,6 +52,63 @@ export class AuthService {
     private auditLogService: AuditLogService,
     private mailService: MailService,
   ) {}
+
+  async bootstrapAdmin(input: {
+    email: string;
+    password: string;
+    fullName: string;
+    secret?: string;
+  }) {
+    if (process.env.ADMIN_BOOTSTRAP_ENABLED !== 'true') {
+      throw new ForbiddenException('Admin bootstrap is disabled');
+    }
+
+    const configuredEmail = process.env.ADMIN_BOOTSTRAP_EMAIL?.trim().toLowerCase();
+    const configuredSecret = process.env.ADMIN_BOOTSTRAP_SECRET;
+    const requestedEmail = input.email?.trim().toLowerCase();
+
+    if (!configuredEmail || !configuredSecret || !input.secret) {
+      throw new ForbiddenException('Admin bootstrap is not configured');
+    }
+
+    if (requestedEmail !== configuredEmail || input.secret !== configuredSecret) {
+      throw new ForbiddenException('Invalid admin bootstrap credentials');
+    }
+
+    if (!input.password || input.password.length < 8 || !input.fullName?.trim()) {
+      throw new BadRequestException('Invalid bootstrap account data');
+    }
+
+    const existing = await this.prisma.user.findUnique({
+      where: { email: configuredEmail },
+    });
+
+    if (existing) {
+      throw new ConflictException('Bootstrap account already exists');
+    }
+
+    const hashedPassword = await bcrypt.hash(input.password, 10);
+    const user = await this.prisma.user.create({
+      data: {
+        fullname: input.fullName.trim(),
+        email: configuredEmail,
+        password: hashedPassword,
+        role: UserRole.ADMIN,
+        status: UserStatus.ACTIVE,
+        isEmailVerified: true,
+      },
+      select: { id: true, email: true, fullname: true, role: true, status: true },
+    });
+
+    await this.auditLogService.record({
+      userId: user.id,
+      action: 'AUTH_ADMIN_BOOTSTRAPPED',
+      changedFields: ['role'],
+      metadata: { bootstrapEmail: configuredEmail },
+    });
+
+    return { success: true, user };
+  }
 
   async register(dto: RegisterDto) {
     const existUser = await this.prisma.user.findUnique({
