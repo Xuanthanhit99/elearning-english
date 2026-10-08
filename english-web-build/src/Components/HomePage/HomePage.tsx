@@ -50,6 +50,7 @@ type Feature = {
 
 const navItems = [
   { label: "Lộ trình học", href: "#learning-path" },
+  { label: "Tài liệu", href: "/tai-lieu-tieng-anh" },
   { label: "Kỹ năng", href: "#skills" },
   { label: "Học cùng AI", href: "#ai-learning" },
   { label: "Tiến độ", href: "#progress" },
