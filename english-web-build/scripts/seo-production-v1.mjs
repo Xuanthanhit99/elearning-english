@@ -38,6 +38,50 @@ for(const [prefix,viewport] of [["desktop",{width:1536,height:1024}],["mobile",{
    await home.waitForURL(url=>url.pathname.replace(/\/$/,"")==="/tai-lieu-tieng-anh");
    if(!(await home.getByRole("heading",{name:/Học đúng tài liệu/}).isVisible())) throw new Error(prefix+" Resource Library navigation failed");
    await home.close();
+   // Resource Library interaction fidelity gate (desktop 1536 / mobile 390).
+   const horizontalOverflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth+2);
+   if(horizontalOverflow) throw new Error(prefix+" Resource Library has document-level horizontal overflow");
+   if(prefix==="desktop"){
+    const cards=page.locator("article");
+    if(await cards.count()<1) throw new Error("desktop resource cards missing");
+    await cards.first().scrollIntoViewIfNeeded();
+    const geometry=await page.evaluate(()=>{
+     const card=document.querySelector("article");
+     const rect=card?.getBoundingClientRect();
+     if(!rect)return null;
+     const x=Math.max(1,Math.min(window.innerWidth-2,rect.left+Math.min(rect.width/2,120)));
+     const y=Math.max(1,Math.min(window.innerHeight-2,rect.top+Math.min(rect.height/2,80)));
+     const top=document.elementFromPoint(x,y);
+     return {visible:rect.bottom>0&&rect.top<window.innerHeight,unobstructed:!!top&&(top===card||card.contains(top)),topTag:top?.tagName,scrollY:window.scrollY};
+    });
+    if(!geometry?.visible||!geometry.unobstructed) throw new Error("desktop resource card obstructed after scroll: "+JSON.stringify(geometry));
+    await page.screenshot({path:"artifacts/seo-production-v1/desktop-resource-scroll-check.png"});
+    console.log("Desktop resource scroll/header obstruction PASS",geometry);
+   } else {
+    const cefr=page.getByRole("button",{name:"C1",exact:true});
+    if(await cefr.count()!==1) throw new Error("mobile final CEFR option C1 missing");
+    await cefr.scrollIntoViewIfNeeded();
+    if(!(await cefr.isVisible())) throw new Error("mobile C1 not visible after horizontal scroll");
+    await cefr.click();
+    const selected=await cefr.getAttribute("class");
+    if(!selected) throw new Error("mobile C1 selection has no class state");
+    const afterC1=await page.locator("article").count();
+    if(afterC1<1 && !(await page.getByText("Chưa tìm thấy tài liệu phù hợp.").isVisible())) throw new Error("mobile C1 filter did not update results");
+    await page.screenshot({path:"artifacts/seo-production-v1/mobile-resource-cefr-last.png"});
+    await page.getByRole("button",{name:"Tất cả",exact:true}).first().click();
+    const skillRow=page.locator("div.overflow-x-auto").filter({has:page.getByRole("button",{name:"Viết",exact:true})}).last();
+    const lastSkill=skillRow.getByRole("button",{name:"Viết",exact:true});
+    if(await lastSkill.count()!==1) throw new Error("mobile final skill option missing");
+    await lastSkill.scrollIntoViewIfNeeded();
+    await lastSkill.click();
+    const skillResultCount=await page.locator("article").count();
+    if(skillResultCount<1 && !(await page.getByText("Chưa tìm thấy tài liệu phù hợp.").isVisible())) throw new Error("mobile last skill filter did not update results");
+    const finalOverflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth+2);
+    if(finalOverflow) throw new Error("mobile document horizontal overflow after filter");
+    await page.screenshot({path:"artifacts/seo-production-v1/mobile-resource-skill-last.png"});
+    await page.getByRole("button",{name:"Tất cả",exact:true}).last().click();
+    console.log("Mobile resource filter last options and overflow PASS",{afterC1,skillResultCount});
+   }
    const search=page.getByPlaceholder(/Tìm: luyện nghe A2/);
    await search.fill("no-such-beaconvie-resource-xyz");
    if(!(await page.getByText("Chưa tìm thấy tài liệu phù hợp.").isVisible())) throw new Error(prefix+" search empty state missing");
