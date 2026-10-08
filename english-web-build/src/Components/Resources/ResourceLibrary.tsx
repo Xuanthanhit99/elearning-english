@@ -4,12 +4,6 @@ import Link from "next/link";
 import {resources,resourceLevels,resourceSkills} from "@/src/resources/catalog";
 
 const topics=["Tất cả",...Array.from(new Set(resources.map(r=>r.topic)))];
-const media=[
- "https://images.pexels.com/photos/8199257/pexels-photo-8199257.jpeg?auto=compress&cs=tinysrgb&w=1400",
- "https://images.pexels.com/photos/7777716/pexels-photo-7777716.jpeg?auto=compress&cs=tinysrgb&w=900",
- "https://images.pexels.com/photos/6281030/pexels-photo-6281030.jpeg?auto=compress&cs=tinysrgb&w=900",
- "https://images.pexels.com/photos/8199759/pexels-photo-8199759.jpeg?auto=compress&cs=tinysrgb&w=900"
-];
 const topicMeta:Record<string,{label:string;hint:string}>={
  "Phương pháp học":{label:"Học hiệu quả",hint:"Ghi nhớ và xây thói quen"},
  "Giao tiếp":{label:"Giao tiếp",hint:"Nghe, nói trong tình huống thật"},
@@ -25,8 +19,9 @@ export default function ResourceLibrary(){
  const reset=()=>{setQuery("");setSkill("Tất cả");setLevel("Tất cả");setTopic("Tất cả")};
  return <div className="bg-white text-slate-950">
   <section className="mx-auto max-w-7xl px-4 pt-8 sm:px-5 md:pt-14">
-   <div className="relative overflow-hidden rounded-[28px] border border-blue-100 bg-[radial-gradient(circle_at_85%_20%,rgba(14,165,233,.16),transparent_28%),linear-gradient(135deg,#eff6ff_0%,#fff_54%,#ecfeff_100%)] px-5 py-9 shadow-[0_24px_70px_rgba(30,94,255,.10)] sm:px-8 md:rounded-[36px] md:px-12 md:py-14">
-    <div className="relative z-10 max-w-4xl">
+   <div className="relative isolate overflow-hidden rounded-[28px] border border-blue-100 bg-[#eff6ff] px-5 py-9 shadow-[0_24px_70px_rgba(30,94,255,.10)] sm:px-8 md:min-h-[440px] md:rounded-[36px] md:px-12 md:py-14">
+    <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[46%] md:block"><img src="/resources/beaconvie-resource-library-hero.webp" alt="Học viên cùng học tiếng Anh trên máy tính" className="h-full w-full object-cover object-center" /><div className="absolute inset-0 bg-gradient-to-r from-[#eff6ff] via-[#eff6ff]/20 to-transparent" /></div>
+    <div className="relative z-10 max-w-4xl md:max-w-[65%]">
      <div className="inline-flex rounded-full border border-blue-200 bg-white/80 px-3 py-1.5 text-xs font-black uppercase tracking-[.14em] text-blue-700">BeaconVie Resource Library</div>
      <h1 className="mt-4 text-[36px] font-black leading-[1.05] tracking-[-.035em] sm:text-5xl md:text-[64px]">Học đúng tài liệu.<br/><span className="text-[var(--BeaconVie-primary)]">Tiến bộ đúng mục tiêu.</span></h1>
      <p className="mt-5 max-w-xl text-base leading-7 text-slate-700 md:text-lg md:leading-8">Kho tài liệu tiếng Anh được tuyển chọn cho người Việt theo CEFR, kỹ năng và mục tiêu học. Đọc miễn phí, rồi tiếp tục luyện tập ngay trên BeaconVie.</p>
@@ -35,6 +30,7 @@ export default function ResourceLibrary(){
       <button type="button" className="rounded-xl bg-[var(--BeaconVie-primary)] px-4 py-3 text-sm font-black text-white sm:px-6">Tìm tài liệu</button>
      </label>
      <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs font-bold text-slate-600 sm:text-sm"><span>✓ Theo chuẩn CEFR</span><span>✓ Học ngay trên BeaconVie</span><span>✓ Nguồn tham khảo rõ ràng</span></div>
+     <div className="mt-6 overflow-hidden rounded-2xl md:hidden"><img src="/resources/beaconvie-resource-library-hero.webp" alt="Học viên cùng học tiếng Anh trên máy tính" className="aspect-[16/10] w-full object-cover object-center" /></div>
     </div>
    </div>
   </section>
