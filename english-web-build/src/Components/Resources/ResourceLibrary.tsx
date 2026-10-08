@@ -20,17 +20,17 @@ export default function ResourceLibrary(){
  return <div className="bg-white text-slate-950">
   <section className="mx-auto max-w-7xl px-4 pt-8 sm:px-5 md:pt-14">
    <div className="relative isolate overflow-hidden rounded-[28px] border border-blue-100 bg-[#eff6ff] px-5 py-9 shadow-[0_24px_70px_rgba(30,94,255,.10)] sm:px-8 md:min-h-[440px] md:rounded-[36px] md:px-12 md:py-14">
-    <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[46%] md:block"><img src="/resources/beaconvie-resource-library-hero.webp" alt="Học viên cùng học tiếng Anh trên máy tính" className="h-full w-full object-cover object-center" /><div className="absolute inset-0 bg-gradient-to-r from-[#eff6ff] via-[#eff6ff]/20 to-transparent" /></div>
-    <div className="relative z-10 max-w-4xl md:max-w-[65%]">
+    <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[52%] md:block"><img src="/resources/beaconvie-resource-library-hero.webp" alt="Học viên cùng học tiếng Anh trên máy tính" className="h-full w-full object-cover object-[58%_center]" /><div className="absolute inset-0 bg-gradient-to-r from-[#eff6ff] via-[#eff6ff]/20 to-transparent" /></div>
+    <div className="relative z-10 max-w-4xl md:max-w-[57%]">
      <div className="inline-flex rounded-full border border-blue-200 bg-white/80 px-3 py-1.5 text-xs font-black uppercase tracking-[.14em] text-blue-700">BeaconVie Resource Library</div>
-     <h1 className="mt-4 text-[36px] font-black leading-[1.05] tracking-[-.035em] sm:text-5xl md:text-[64px]">Học đúng tài liệu.<br/><span className="text-[var(--BeaconVie-primary)]">Tiến bộ đúng mục tiêu.</span></h1>
+     <h1 className="mt-4 text-[36px] font-black leading-[1.05] tracking-[-.035em] sm:text-5xl md:text-[clamp(2.6rem,4vw,3.65rem)]">Học đúng tài liệu.<br/><span className="text-[var(--BeaconVie-primary)]">Tiến bộ đúng mục tiêu.</span></h1>
      <p className="mt-5 max-w-xl text-base leading-7 text-slate-700 md:text-lg md:leading-8">Kho tài liệu tiếng Anh được tuyển chọn cho người Việt theo CEFR, kỹ năng và mục tiêu học. Đọc miễn phí, rồi tiếp tục luyện tập ngay trên BeaconVie.</p>
      <label className="mt-7 flex max-w-3xl items-center gap-2 rounded-2xl border border-blue-100 bg-white p-2 shadow-[0_12px_35px_rgba(37,99,235,.12)]" aria-label="Tìm tài liệu">
       <span className="pl-3 text-lg text-slate-400" aria-hidden="true">⌕</span><input value={query} onChange={e=>setQuery(e.target.value)} className="min-w-0 flex-1 bg-transparent px-2 py-3 text-sm outline-none sm:text-base" placeholder="Tìm: luyện nghe A2, phrasal verbs, Present Simple…"/>
       <button type="button" className="rounded-xl bg-[var(--BeaconVie-primary)] px-4 py-3 text-sm font-black text-white sm:px-6">Tìm tài liệu</button>
      </label>
      <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs font-bold text-slate-600 sm:text-sm"><span>✓ Theo chuẩn CEFR</span><span>✓ Học ngay trên BeaconVie</span><span>✓ Nguồn tham khảo rõ ràng</span></div>
-     <div className="mt-6 overflow-hidden rounded-2xl md:hidden"><img src="/resources/beaconvie-resource-library-hero.webp" alt="Học viên cùng học tiếng Anh trên máy tính" className="aspect-[16/10] w-full object-cover object-center" /></div>
+     <div className="mt-6 overflow-hidden rounded-2xl border border-blue-100 shadow-sm md:hidden"><img src="/resources/beaconvie-resource-library-hero.webp" alt="Học viên cùng học tiếng Anh trên máy tính" className="aspect-[4/3] w-full object-cover object-[55%_center] sm:aspect-[16/10]" /></div>
     </div>
    </div>
   </section>
