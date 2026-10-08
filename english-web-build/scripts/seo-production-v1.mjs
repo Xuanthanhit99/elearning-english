@@ -35,7 +35,7 @@ for(const [prefix,viewport] of [["desktop",{width:1536,height:1024}],["mobile",{
    const resourceLink=menu.getByRole("link",{name:"Tài liệu",exact:true});
    if(!(await resourceLink.isVisible())) throw new Error(prefix+" Resource Library menu missing");
    await resourceLink.click();
-   await home.waitForURL(/\\/tai-lieu-tieng-anh\\/?$/);
+   await home.waitForURL(url=>url.pathname.replace(/\/$/,"")==="/tai-lieu-tieng-anh");
    if(!(await home.getByRole("heading",{name:/Học đúng tài liệu/}).isVisible())) throw new Error(prefix+" Resource Library navigation failed");
    await home.close();
    const search=page.getByPlaceholder(/Tìm: luyện nghe A2/);
