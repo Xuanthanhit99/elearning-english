@@ -67,4 +67,21 @@ P4: Affiliate/commission after settled transaction and refund/reversal ledger is
 All P0–P4 are V1 delivery tracks; none is marked implemented by this document.
 
 ### Required payment tests
-Owner vs outsider, valid and invalid callback signature, amount/currency mismatch, duplicate/out-of-order events, concurrent settlement, free-course enrollment, coupon redemption, payment expiry, refund/reversal, cross-provider collision, regional method selection and existing historical orders.
+Owner vs outsider, valid and invalid callback signature, amount/currency mismatch, duplicate/out-of-order events, concurrent settlement, free-course enrollment, coupon redemption, payment expiry, refund/reversal, cross-provider collision, regional method selection and existing historical orders.## Payment provider decision — preserve existing methods, optional Casso in Vietnam (supersedes Casso-only proposal)
+
+- **Vietnam:** keep the existing VNPay checkout; optionally add Casso bank transfer after contract/security verification.
+- **International:** preserve previously implemented international-capable provider(s) **if verified in source**. Do not assume VNPay itself supports international checkout. Confirm provider, country/currency availability and existing configuration first.
+- **Mobile:** independently verify Apple/Google policies for in-app digital purchases before enabling external checkout.
+- Do not replace, disable or migrate historical providers by default. Keep existing Order, Enrollment, Coupon, and payment history. One Order/Payment/Entitlement core with separate provider adapters; server-side authoritative settlement.
+- Payment method availability must depend on supported country, currency, product and verified provider capabilities; never use IP location as the sole decision.
+
+### P0 security and data-integrity gates
+1. Check authenticated order ownership before payment initiation.
+2. Verify trusted provider notifications and signature/authentication; reconcile reference, amount, currency, order status and transaction uniqueness.
+3. Do not grant course enrollment or Premium entitlement solely from a browser return.
+4. Idempotent settlement with database transaction/outbox for order, enrollment or entitlement, and notification.
+5. Handle retries, concurrency, refund, coupon usage, chargebacks, manual reconciliation and audit logs.
+6. Only calculate affiliate commissions on qualified settled orders, with reversal.
+
+### Sequence and non-goals
+Complete exact-head source audit and regression evidence; harden existing VNPay; verify actual international payment integration; optionally add Casso for Vietnam behind a feature flag; then Premium/Entitlement and Affiliate. Parallel audit learning modules, AI scoring and all Expo Mobile journeys to lock multilingual contracts. No application code, schema migration, UI change, deploy or feature PR is authorized by this document. PR #18 remains Draft until evidence gates pass.
