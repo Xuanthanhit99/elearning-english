@@ -45,24 +45,26 @@ Paths are proposals only: audit existing endpoints to prevent collisions.
 Schema diff → ownership/relations mapping → data backfill plan → reversible additive migration → shadow validation → dual-read/write only if needed → local tests → gated rollout. Preserve English user data and production backups.
 
 
-## Payment provider decision — Casso (2026-10-10)
-**Approved product direction:** Casso-backed Vietnam bank-transfer reconciliation replaces VNPay as the target payment integration for BeaconVie V1 Complete. This is a design decision, not a claim that Casso is already implemented or that the Mệnh Vi integration has been verified. Initial GitHub search for `casso` in `Xuanthanhit99/webtuvi` yielded no indexed results; locate the actual Mệnh Vi provider code/config before reusing any contract. Do not copy credentials or production secrets.
+## Payment provider decision — preserve existing methods; optional Casso for Vietnam (revised 2026-10-10)
+**Supersedes the earlier Casso replacement decision.** Keep the existing payment integrations and all historical orders. Do not remove or disable VNPay or any existing international payment method. The repository audit currently confirms VNPay code only; the specific international provider(s) and their live readiness must be verified, not assumed.
 
-### Required payment flow
-1. Authenticated buyer requests checkout for an existing course or Premium plan; server validates price, ownership, coupon and product.
-2. Server creates a pending order and **unique immutable payment reference**, amount and expiration; displays Casso-compatible transfer instructions/QR only after checking current provider contract.
-3. Casso provider event arrives at dedicated server endpoint; validate provider-specific authentication, event schema, replay protection, and map transaction to exactly one pending order.
-4. Confirm received amount/currency and transfer reference; ambiguous, partial, duplicate or excess payments go to review, never auto-grant access.
-5. In a database transaction, atomically settle order, record unique provider transaction, create course enrollment or Premium entitlement, and enqueue outbox notification. Duplicate events must be no-ops.
-6. Reconciliation worker handles missing/delayed events, refunds, expiry and manual support workflows; retain audit trail.
-7. Affiliate commission is only calculated after settled qualified order, with hold/reversal rules.
+### Routing policy (proposal pending provider verification)
+- Vietnam: retain existing supported checkout method(s); optionally offer Casso bank-transfer reconciliation as an additional method only after integration/security tests pass.
+- International: retain the previous supported international payment experience, subject to actual provider and currency/country verification.
+- Do not infer payer country solely from IP address. Show eligible methods based on billing context, currency, provider capabilities and user choice.
+- Native app purchases of digital subscriptions must be reviewed against Android/iOS store billing requirements before offering external checkout.
 
-### Compatibility and rollout
-- Keep existing `Order`, `Enrollment`, `Coupon` and historical VNPay orders; no deletion or blanket migration.
-- Abstract provider at service boundary; target new orders to Casso behind a feature flag, preserve historical provider references.
-- Existing VNPay browser return must not remain a trusted entitlement authority after cutover.
-- Never place Casso API keys/webhook secrets in frontend/mobile or committed docs.
-- Native digital-subscription purchase paths require platform-specific store billing policy review before shipping; do not assume external bank transfer is permitted for in-app digital goods.
+### Unified architecture
+Existing Order/Enrollment/Coupon remain the canonical records. Add a provider-agnostic payment adapter only if current code mapping confirms the need. Separate payment attempt/provider transaction, verified settlement, entitlement and commission records as necessary; avoid duplicate models.
+Use authenticated order-owner authorization; verify provider-specific signatures/webhook authenticity, amount/currency, transaction uniqueness, order expiry, refunds and replay-safe idempotency. Make order settlement plus entitlement/enrollment atomic, and dispatch notifications via an outbox. Never grant paid access from an untrusted client redirect alone.
 
-### Blocking tests before launch
-Authorized checkout; altered amount/reference; unknown/duplicate/reordered webhook; forged event; partial/overpayment; expiry; concurrent processing; enrollment/entitlement rollback; refunds; reconciliation; coupon count; affiliate reversal. Provider contract and Mệnh Vi implementation must be verified before code changes.
+### Release dependencies
+P0: harden existing VNPay and audit any existing international provider, then test current flows without regression.
+P1: introduce provider abstraction and country/currency/payment-method eligibility with compatibility tests.
+P2: integrate Casso as **optional Vietnam-only** method after inspecting Mệnh Vi's actual implementation and provider contract.
+P3: Premium/Subscription after settlement/entitlement correctness is proven.
+P4: Affiliate/commission after settled transaction and refund/reversal ledger is proven.
+All P0–P4 are V1 delivery tracks; none is marked implemented by this document.
+
+### Required payment tests
+Owner vs outsider, valid and invalid callback signature, amount/currency mismatch, duplicate/out-of-order events, concurrent settlement, free-course enrollment, coupon redemption, payment expiry, refund/reversal, cross-provider collision, regional method selection and existing historical orders.
