@@ -43,3 +43,26 @@ Paths are proposals only: audit existing endpoints to prevent collisions.
 
 ## Migration process
 Schema diff → ownership/relations mapping → data backfill plan → reversible additive migration → shadow validation → dual-read/write only if needed → local tests → gated rollout. Preserve English user data and production backups.
+
+
+## Payment provider decision — Casso (2026-10-10)
+**Approved product direction:** Casso-backed Vietnam bank-transfer reconciliation replaces VNPay as the target payment integration for BeaconVie V1 Complete. This is a design decision, not a claim that Casso is already implemented or that the Mệnh Vi integration has been verified. Initial GitHub search for `casso` in `Xuanthanhit99/webtuvi` yielded no indexed results; locate the actual Mệnh Vi provider code/config before reusing any contract. Do not copy credentials or production secrets.
+
+### Required payment flow
+1. Authenticated buyer requests checkout for an existing course or Premium plan; server validates price, ownership, coupon and product.
+2. Server creates a pending order and **unique immutable payment reference**, amount and expiration; displays Casso-compatible transfer instructions/QR only after checking current provider contract.
+3. Casso provider event arrives at dedicated server endpoint; validate provider-specific authentication, event schema, replay protection, and map transaction to exactly one pending order.
+4. Confirm received amount/currency and transfer reference; ambiguous, partial, duplicate or excess payments go to review, never auto-grant access.
+5. In a database transaction, atomically settle order, record unique provider transaction, create course enrollment or Premium entitlement, and enqueue outbox notification. Duplicate events must be no-ops.
+6. Reconciliation worker handles missing/delayed events, refunds, expiry and manual support workflows; retain audit trail.
+7. Affiliate commission is only calculated after settled qualified order, with hold/reversal rules.
+
+### Compatibility and rollout
+- Keep existing `Order`, `Enrollment`, `Coupon` and historical VNPay orders; no deletion or blanket migration.
+- Abstract provider at service boundary; target new orders to Casso behind a feature flag, preserve historical provider references.
+- Existing VNPay browser return must not remain a trusted entitlement authority after cutover.
+- Never place Casso API keys/webhook secrets in frontend/mobile or committed docs.
+- Native digital-subscription purchase paths require platform-specific store billing policy review before shipping; do not assume external bank transfer is permitted for in-app digital goods.
+
+### Blocking tests before launch
+Authorized checkout; altered amount/reference; unknown/duplicate/reordered webhook; forged event; partial/overpayment; expiry; concurrent processing; enrollment/entitlement rollback; refunds; reconciliation; coupon count; affiliate reversal. Provider contract and Mệnh Vi implementation must be verified before code changes.
