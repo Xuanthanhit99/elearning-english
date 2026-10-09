@@ -1,10 +1,11 @@
-﻿'use client';
+'use client';
 
-import { AlertCircle, CheckCircle2, ChevronLeft, Mic, Pause, Play, RotateCcw, Square, Upload } from 'lucide-react';
+import { AlertCircle, ChevronLeft, Headphones, Mic, Pause, Play, RotateCcw, Square, Upload, Volume2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getSpeakingPractice, uploadSpeakingAudio } from '@/src/lib/speaking-processing-api';
 import type { SpeakingPracticeDetail } from '@/src/lib/speaking-processing.types';
+import { useSpeak } from '@/src/hooks/useSpeak';
 
 type RecorderState = 'IDLE' | 'RECORDING' | 'PAUSED' | 'READY' | 'UPLOADING';
 
@@ -12,6 +13,7 @@ export default function SpeakingPracticePage() {
   const router = useRouter();
   const params = useParams();
   const sessionId = String(params.sessionId);
+  const { speak, isSpeaking, error: ttsError } = useSpeak();
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -45,6 +47,12 @@ export default function SpeakingPracticePage() {
   }, [audioUrl]);
 
   const formattedTime = useMemo(() => formatTime(elapsedSeconds), [elapsedSeconds]);
+  const sampleText = data?.lesson.expectedText?.trim() || '';
+
+  function playSample() {
+    if (!sampleText || isSpeaking('speaking-sample')) return;
+    void speak('speaking-sample', sampleText, null, 'en', 0.92);
+  }
 
   async function startRecording() {
     try {
@@ -163,95 +171,110 @@ export default function SpeakingPracticePage() {
   if (loading) return <PageState text="Đang tải bài luyện nói..." />;
   if (!data) return <PageState text={error || 'Không có dữ liệu bài học.'} />;
 
+  const activeStep = state === 'READY' || state === 'UPLOADING' ? 3 : state === 'IDLE' ? 1 : 2;
+  const steps = ['Nghe câu mẫu', 'Ghi âm câu của bạn', 'Nghe lại', 'Gửi để nhận phản hồi'];
+
   return (
-    <main className="min-h-screen bg-[#fbfbff] px-4 py-6 text-slate-900 md:px-8">
-      <div className="mx-auto max-w-[1350px]">
-        <header className="flex flex-col gap-4 rounded-3xl border border-violet-100 bg-white p-5 shadow-sm md:flex-row md:items-center md:justify-between">
-          <button onClick={() => router.back()} className="inline-flex items-center gap-2 font-black text-violet-600">
-            <ChevronLeft size={18} /> Quay lại
+    <main className="min-h-screen bg-[#f7fbff] px-4 pb-36 pt-3 text-[#0b1b42] md:px-7 md:pb-8 md:pt-6">
+      <div className="mx-auto max-w-[1320px]">
+        <header className="mb-3 flex items-center justify-between gap-4">
+          <button onClick={() => router.back()} className="inline-flex min-h-11 items-center gap-2 rounded-xl px-2 text-sm font-bold text-slate-600 hover:bg-white">
+            <ChevronLeft size={19} /> Quay lại
           </button>
-          <div className="text-right">
-            <p className="text-sm font-bold text-slate-400">{data.topic?.title ?? 'Speaking'}</p>
-            <h1 className="text-xl font-black">{data.lesson.title}</h1>
+          <div className="flex min-w-[140px] items-center gap-3">
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-blue-100"><div className="h-full w-[30%] rounded-full bg-[#1488ff]" /></div>
+            <span className="text-xs font-bold text-slate-500">3 / 10</span>
           </div>
         </header>
 
-        <div className="mt-7 grid gap-7 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <section className="space-y-6">
-            <article className="rounded-3xl border border-violet-100 bg-white p-7 shadow-sm">
-              <div className="flex flex-wrap gap-3">
-                <span className="rounded-full bg-violet-50 px-4 py-2 text-xs font-black text-violet-700">{data.lesson.type.replaceAll('_', ' ')}</span>
-                <span className="rounded-full bg-emerald-50 px-4 py-2 text-xs font-black text-emerald-700">{data.lesson.level}</span>
-                <span className="rounded-full bg-orange-50 px-4 py-2 text-xs font-black text-orange-700">{data.lesson.estimatedMinutes} phút</span>
+        <section className="mb-3 px-1 md:mb-5 md:px-2">
+          <p className="text-sm font-bold text-slate-500">{data.topic?.title ? `Unit 3 · ${data.topic.title}` : 'Speaking'}</p>
+          <h1 className="mt-1 !text-[28px] !leading-[34px] font-black tracking-[-0.03em] md:!text-[36px] md:!leading-[42px]">Let’s practice speaking!</h1>
+          <p className="mt-1 max-w-3xl text-sm font-medium leading-6 text-slate-500 md:text-base">Nghe câu mẫu, sau đó nói theo. Bạn có thể nghe lại và gửi để nhận phản hồi phát âm.</p>
+        </section>
+
+        <section className="overflow-hidden rounded-[28px] border border-[#dcecff] bg-white shadow-[0_18px_55px_rgba(35,113,190,0.08)]">
+          <div className="grid gap-0 lg:grid-cols-[280px_minmax(0,1fr)]">
+            <div className="relative flex min-h-[210px] flex-col items-center justify-end bg-gradient-to-b from-[#f8fcff] to-white px-5 pb-3 pt-3 lg:min-h-[610px] lg:pb-8 lg:pt-5 lg:justify-center lg:pb-8">
+              <div className="relative z-10 mb-0 max-w-[230px] rounded-[22px] border border-blue-100 bg-white px-5 py-4 text-sm font-semibold leading-6 text-slate-600 shadow-[0_8px_24px_rgba(38,112,190,0.1)]">
+                Nghe kỹ câu mẫu nhé! Sau đó nhấn nút để bắt đầu ghi âm. Mình sẽ nghe và nhận xét cùng bạn!
+                <span className="absolute -bottom-3 left-1/2 h-6 w-6 -translate-x-1/2 rotate-45 border-b border-r border-blue-100 bg-white" />
               </div>
-              <h2 className="mt-6 text-3xl font-black">{data.lesson.prompt}</h2>
-              {data.lesson.expectedText && (
-                <div className="mt-6 rounded-2xl border border-violet-100 bg-violet-50 p-5">
-                  <p className="text-xs font-black uppercase tracking-wide text-violet-500">Câu mẫu</p>
-                  <p className="mt-3 text-lg font-bold leading-8 text-violet-900">{data.lesson.expectedText}</p>
+              <img src="/brand/beacon-speaking-coach.svg" alt="BeaconVie Speaking Coach" className="relative z-0 h-[150px] w-auto object-contain sm:h-[170px] lg:h-[285px]" />
+            </div>
+
+            <div className="px-5 py-4 md:px-8 md:py-7 md:py-7 lg:px-10">
+              <span className="inline-flex rounded-full bg-[#e8f4ff] px-3 py-1.5 text-xs font-black text-[#0878f9]">Câu 3</span>
+              <h2 className="mt-3 !text-[22px] !leading-[30px] font-black md:!text-[26px] md:!leading-[34px]">{data.lesson.prompt}</h2>
+
+              {sampleText && (
+                <div className="mt-4 rounded-2xl bg-[#eef7ff] px-4 py-4 md:px-5">
+                  <div className="flex items-center gap-3">
+                    <p className="min-w-0 flex-1 text-[18px] font-black leading-7 text-[#0878f9] md:text-[22px]">“{sampleText}”</p>
+                    <button type="button" onClick={playSample} disabled={isSpeaking('speaking-sample')} aria-label="Nghe câu mẫu" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white text-[#0878f9] shadow-sm transition hover:-translate-y-0.5 disabled:opacity-60">
+                      {isSpeaking('speaking-sample') ? <Headphones size={20} className="animate-pulse" /> : <Volume2 size={20} />}
+                    </button>
+                  </div>
+                  {ttsError && <p className="mt-2 text-xs font-bold text-red-600">{ttsError}</p>}
                 </div>
               )}
-            </article>
 
-            <article className="rounded-3xl border border-violet-100 bg-white p-7 text-center shadow-sm">
-              <div className={`mx-auto grid h-32 w-32 place-items-center rounded-full ${state === 'RECORDING' ? 'animate-pulse bg-red-100 text-red-600' : state === 'PAUSED' ? 'bg-amber-100 text-amber-600' : 'bg-violet-100 text-violet-600'}`}>
-                <Mic size={52} />
-              </div>
-              <p className="mt-5 text-4xl font-black">{formattedTime}</p>
-              <p className="mt-2 text-sm font-semibold text-slate-500">{statusText(state)}</p>
-
-              <div className="mt-7 flex flex-wrap justify-center gap-3">
-                {state === 'IDLE' && <Action onClick={startRecording} icon={<Mic size={18} />} label="Bắt đầu ghi âm" primary />}
-                {state === 'RECORDING' && <>
-                  <Action onClick={pauseRecording} icon={<Pause size={18} />} label="Tạm dừng" />
-                  <Action onClick={stopRecording} icon={<Square size={18} />} label="Dừng" danger />
-                </>}
-                {state === 'PAUSED' && <>
-                  <Action onClick={resumeRecording} icon={<Play size={18} />} label="Tiếp tục" primary />
-                  <Action onClick={stopRecording} icon={<Square size={18} />} label="Dừng" danger />
-                </>}
-                {state === 'READY' && <>
-                  <Action onClick={startRecording} icon={<RotateCcw size={18} />} label="Ghi lại" />
-                  <Action onClick={submitRecording} icon={<Upload size={18} />} label="Gửi cho AI" primary />
-                </>}
-                {state === 'UPLOADING' && <Action disabled icon={<Upload size={18} />} label="Đang tải lên..." primary />}
+              <div className="mt-4 grid grid-cols-4 md:mt-6 gap-1 md:gap-2">
+                {steps.map((label, index) => {
+                  const step=index+1; const active=step===activeStep; const done=step<activeStep;
+                  return <div key={label} className="min-w-0 text-center">
+                    <div className="flex items-center"><span className={`h-px flex-1 ${index===0?'bg-transparent':'bg-blue-100'}`} /><span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-black ${active?'bg-[#0878f9] text-white':done?'bg-blue-100 text-[#0878f9]':'bg-slate-100 text-slate-500'}`}>{step}</span><span className={`h-px flex-1 ${index===3?'bg-transparent':'bg-blue-100'}`} /></div>
+                    <p className={`mt-2 hidden text-[11px] font-bold leading-4 md:block ${active?'text-[#0878f9]':'text-slate-500'}`}>{label}</p>
+                    <p className={`mt-2 text-[10px] font-bold leading-3 md:hidden ${active?'text-[#0878f9]':'text-slate-500'}`}>{step===1?'Nghe mẫu':step===2?'Ghi âm':step===3?'Nghe lại':'Phản hồi'}</p>
+                  </div>;
+                })}
               </div>
 
-              {audioUrl && <audio controls src={audioUrl} className="mx-auto mt-7 w-full max-w-xl" />}
-            </article>
+              <div className="mt-5 text-center md:mt-7">
+                <div className={`mx-auto grid h-24 w-24 place-items-center md:h-32 md:w-32 rounded-full border-[12px] ${state==='RECORDING'?'animate-pulse border-red-50 bg-red-500 text-white':state==='PAUSED'?'border-amber-50 bg-amber-500 text-white':'border-[#e7f3ff] bg-[#1488ff] text-white'}`}>
+                  <Mic size={44} />
+                </div>
+                <p className="mt-3 text-base font-black">{state==='IDLE'?'Nhấn để bắt đầu ghi âm':statusText(state)}</p>
+                <p className="mt-1 text-sm font-medium text-slate-500">{state==='IDLE'?'Thời lượng tối đa: 30 giây':formattedTime}</p>
 
-            {error && <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-5 text-red-700"><AlertCircle className="mt-0.5 shrink-0" /><p className="font-bold">{error}</p></div>}
-          </section>
+                <div className="mt-3 flex flex-wrap justify-center gap-2 md:mt-5">
+                  {state==='IDLE' && <Action onClick={startRecording} icon={<Mic size={17}/>} label="Bắt đầu ghi âm" primary />}
+                  {state==='RECORDING' && <><Action onClick={pauseRecording} icon={<Pause size={17}/>} label="Tạm dừng"/><Action onClick={stopRecording} icon={<Square size={17}/>} label="Dừng" danger/></>}
+                  {state==='PAUSED' && <><Action onClick={resumeRecording} icon={<Play size={17}/>} label="Tiếp tục" primary/><Action onClick={stopRecording} icon={<Square size={17}/>} label="Dừng" danger/></>}
+                  {state==='READY' && <><Action onClick={startRecording} icon={<RotateCcw size={17}/>} label="Ghi lại"/><Action onClick={submitRecording} icon={<Upload size={17}/>} label="Gửi để nhận phản hồi" primary/></>}
+                  {state==='UPLOADING' && <Action disabled icon={<Upload size={17}/>} label="Đang tải lên..." primary/>}
+                </div>
+                {audioUrl && <audio controls src={audioUrl} className="mx-auto mt-5 w-full max-w-xl" />}
+              </div>
+            </div>
+          </div>
 
-          <aside className="space-y-5">
-            <SideCard title="Quy trình">
-              <div className="space-y-4">{(data.steps ?? defaultSteps).map((step) => <div key={step.order} className="flex gap-3"><div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-violet-100 text-sm font-black text-violet-700">{step.order}</div><div><p className="font-black">{step.title}</p><p className="mt-1 text-sm text-slate-500">{step.description}</p></div></div>)}</div>
-            </SideCard>
-            <SideCard title="Kỹ năng trọng tâm">
-              <div className="space-y-4">{(data.focusSkills ?? []).map((item) => <div key={item.title} className="flex items-center gap-3"><span className="text-2xl">{item.icon}</span><div><p className="font-black">{item.title}</p><p className="text-sm text-slate-500">{item.description}</p></div></div>)}</div>
-            </SideCard>
-            <SideCard title="Mẹo ghi âm">
-              <div className="space-y-4">{(data.tips ?? []).map((item) => <div key={item.title} className="flex items-start gap-3"><CheckCircle2 size={18} className="mt-0.5 shrink-0 text-emerald-600" /><div><p className="font-black">{item.title}</p><p className="text-sm text-slate-500">{item.description}</p></div></div>)}</div>
-            </SideCard>
-          </aside>
-        </div>
+          <div className="hidden border-t border-blue-50 px-6 py-5 md:grid md:grid-cols-4 md:gap-3">
+            {[
+              ['🎧','Nghe câu mẫu','Nghe phát âm chuẩn nhiều lần'],
+              ['🎙️','Ghi âm câu của bạn','Nói theo với tốc độ tự nhiên'],
+              ['▶️','Nghe lại','Nghe lại giọng nói để tự đánh giá'],
+              ['⭐','Gửi để nhận phản hồi','Nhận xét phát âm, gợi ý cải thiện'],
+            ].map(([icon,title,desc])=><div key={title} className="flex gap-3 rounded-2xl bg-[#f5faff] p-4"><span className="text-2xl">{icon}</span><div><p className="text-sm font-black">{title}</p><p className="mt-1 text-xs leading-5 text-slate-500">{desc}</p></div></div>)}
+          </div>
+
+          <div className="mx-5 mb-5 mt-1 rounded-2xl bg-[#fff8df] px-5 py-4 md:mx-6">
+            <p className="text-sm font-black">💡 Mẹo nhỏ để nói tự nhiên hơn:</p>
+            <div className="mt-2 grid gap-1 text-xs font-medium leading-5 text-slate-600 md:grid-cols-3">
+              <p>• Nói rõ ràng, với tốc độ tự nhiên.</p><p>• Bạn có thể nghe lại câu mẫu nhiều lần.</p><p>• Đừng lo lắng về lỗi, hãy thử và cải thiện dần nhé!</p>
+            </div>
+          </div>
+        </section>
+
+        {error && <div className="mt-4 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700"><AlertCircle className="mt-0.5 shrink-0"/><p className="font-bold">{error}</p></div>}
       </div>
     </main>
   );
 }
 
-const defaultSteps = [
-  { order: 1, title: 'Đọc và ghi âm', description: 'Nói rõ ràng và tự nhiên.' },
-  { order: 2, title: 'AI phân tích', description: 'Chuyển giọng nói và chấm điểm.' },
-  { order: 3, title: 'Nhận phản hồi', description: 'Xem lỗi và cách cải thiện.' },
-];
 
 function Action({ onClick, icon, label, primary, danger, disabled }: { onClick?: () => void; icon: React.ReactNode; label: string; primary?: boolean; danger?: boolean; disabled?: boolean }) {
-  return <button type="button" onClick={onClick} disabled={disabled} className={`inline-flex items-center gap-2 rounded-2xl px-6 py-4 font-black disabled:opacity-60 ${danger ? 'bg-red-600 text-white' : primary ? 'bg-violet-600 text-white' : 'border border-violet-200 bg-white text-violet-700'}`}>{icon}{label}</button>;
-}
-
-function SideCard({ title, children }: { title: string; children: React.ReactNode }) {
-  return <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm"><h2 className="text-lg font-black">{title}</h2><div className="mt-5">{children}</div></section>;
+  return <button type="button" onClick={onClick} disabled={disabled} className={`inline-flex items-center gap-2 rounded-2xl px-6 py-4 font-black disabled:opacity-60 ${danger ? 'bg-red-600 text-white' : primary ? 'bg-blue-600 text-white' : 'border border-blue-200 bg-white text-blue-700'}`}>{icon}{label}</button>;
 }
 
 function PageState({ text }: { text: string }) {
@@ -259,7 +282,7 @@ function PageState({ text }: { text: string }) {
 }
 
 function statusText(state: RecorderState) {
-  return state === 'RECORDING' ? 'Đang ghi âm...' : state === 'PAUSED' ? '?ã tạm dừng' : state === 'READY' ? 'Bản ghi đã sẵn sàng' : state === 'UPLOADING' ? 'Đang tải bản ghi lên' : 'Nhấn nút để bắt đầu';
+  return state === 'RECORDING' ? 'Đang ghi âm...' : state === 'PAUSED' ? 'Đã tạm dừng' : state === 'READY' ? 'Bản ghi đã sẵn sàng' : state === 'UPLOADING' ? 'Đang tải bản ghi lên' : 'Nhấn nút để bắt đầu';
 }
 
 function resolveMimeType() {

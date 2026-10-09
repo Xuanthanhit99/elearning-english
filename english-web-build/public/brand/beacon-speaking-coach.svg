@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 25 360 365" role="img" aria-labelledby="t d">
+<title id="t">BeaconVie Speaking Coach</title><desc id="d">Chú chim xanh BeaconVie đeo tai nghe và áo chữ B.</desc>
+<defs><linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#49c8ff"/><stop offset="1" stop-color="#0878f9"/></linearGradient><linearGradient id="h" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#1167d8"/><stop offset="1" stop-color="#073f9b"/></linearGradient></defs>
+<ellipse cx="180" cy="374" rx="105" ry="13" fill="#c9dff7" opacity=".55"/>
+<path d="M174 43c-3-23 13-35 30-43-3 17 4 25 15 32 15-12 28-10 39-6-10 13-17 25-17 41z" fill="url(#b)"/>
+<path d="M79 180c-22 15-38 48-31 80 6 28 27 43 50 35 19-7 28-28 23-54-6-29-20-52-42-61z" fill="#168ff4"/>
+<path d="M281 178c27 12 48 40 48 70 0 25-16 43-38 42-22-1-35-20-33-47 2-29 8-51 23-65z" fill="#168ff4"/>
+<path d="M82 183c0-78 45-131 100-131 58 0 103 54 103 134v58c0 70-45 115-103 115-56 0-100-45-100-115z" fill="url(#b)" stroke="#075bbd" stroke-width="6"/>
+<ellipse cx="181" cy="211" rx="83" ry="82" fill="#fff"/>
+<ellipse cx="145" cy="171" rx="35" ry="43" fill="#fff" stroke="#0a4e9d" stroke-width="4"/><ellipse cx="217" cy="171" rx="35" ry="43" fill="#fff" stroke="#0a4e9d" stroke-width="4"/>
+<ellipse cx="151" cy="176" rx="17" ry="23" fill="#102a52"/><ellipse cx="211" cy="176" rx="17" ry="23" fill="#102a52"/><circle cx="157" cy="168" r="7" fill="#fff"/><circle cx="217" cy="168" r="7" fill="#fff"/>
+<path d="M149 216c20-22 45-22 65 0-13 24-52 24-65 0z" fill="#ff9d0a" stroke="#e97800" stroke-width="4"/><path d="M157 221c16 8 32 8 48 0-6 19-41 20-48 0z" fill="#ff5d2e"/>
+<path d="M101 258c28-17 132-17 160 0v65c-37 28-123 29-160 0z" fill="url(#h)"/><path d="M144 267l18 26 19-28 19 28 19-26" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+<text x="181" y="316" text-anchor="middle" font-family="Arial,sans-serif" font-size="54" font-weight="900" fill="#fff">B</text>
+<path d="M88 126c-21 7-33 29-33 54v45" fill="none" stroke="#063b82" stroke-width="15" stroke-linecap="round"/><rect x="44" y="177" width="30" height="67" rx="15" fill="#0b70ed" stroke="#063b82" stroke-width="5"/>
+<path d="M274 126c21 7 33 29 33 54v45" fill="none" stroke="#063b82" stroke-width="15" stroke-linecap="round"/><rect x="288" y="177" width="30" height="67" rx="15" fill="#0b70ed" stroke="#063b82" stroke-width="5"/>
+<path d="M91 271c-38 9-62 33-69 56 30 3 60-8 81-30" fill="#168ff4" stroke="#075bbd" stroke-width="5"/><path d="M271 270c35-2 60-20 76-42 7 28-5 59-39 78" fill="#168ff4" stroke="#075bbd" stroke-width="5"/>
+<path d="M140 350c-16 1-28 8-34 20 18 7 38 5 54-6" fill="#ff9d0a" stroke="#e97800" stroke-width="4"/><path d="M219 350c17 1 29 8 35 20-19 7-39 5-55-6" fill="#ff9d0a" stroke="#e97800" stroke-width="4"/>
+</svg>

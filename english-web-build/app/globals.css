@@ -972,3 +972,15 @@ code {
     margin: 0 !important;
   }
 }
+
+/* Gate #5: deterministic stats layout. Tailwind v4 did not emit/apply the
+   dynamic grid-template utility in the visual production build. */
+.skills-home-stats-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 1280px) {
+  .skills-home-stats-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

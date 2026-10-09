@@ -1,0 +1,13 @@
+# Reviewed false-positive fingerprints from CI run 37804445515.
+# Notification templateKey entries are internal notification identifiers, not credentials (6).
+# Vocabulary key is a UI skill identifier, not an API key (1).
+# README CircleCI badge token is a scaffold example, not an active token (1).
+# Keep fingerprint-specific exclusions only; do not disable other secret detections.
+6da47b9251991bcb8918b22db5cf63c26197c73e:backend/src/modules/notifications/templates/notification-template.registry.ts:generic-api-key:213
+6da47b9251991bcb8918b22db5cf63c26197c73e:backend/src/modules/notifications/templates/notification-template.registry.ts:generic-api-key:217
+32787968fddcde8c9e921f62bf9bd916648a117c:backend/src/modules/notifications/templates/notification-template.registry.ts:generic-api-key:156
+32787968fddcde8c9e921f62bf9bd916648a117c:backend/src/modules/notifications/templates/notification-template.registry.ts:generic-api-key:160
+aded4037d0f2ddbaaef5ac44981d553566690674:backend/src/modules/notifications/templates/notification-template.registry.ts:generic-api-key:78
+aded4037d0f2ddbaaef5ac44981d553566690674:backend/src/modules/notifications/templates/notification-template.registry.ts:generic-api-key:81
+1bc0398afc6bfb11c0ccf903c0fe0eee4fae07d2:backend/src/modules/vocabulary/vocabulary.service.ts:generic-api-key:3377
+7165b9afb071bca8acd0e9e0e69d1e8897e2e3b6:backend/README.md:generic-api-key:5

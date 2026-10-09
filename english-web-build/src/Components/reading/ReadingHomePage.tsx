@@ -140,8 +140,8 @@ export default function ReadingHomePage() {
   ];
 
   return (
-    <main className="min-h-screen bg-[#fbfbff] px-5 py-6 text-slate-900 lg:px-10">
-      <header className="mx-auto flex max-w-[1500px] flex-col gap-4 rounded-2xl border border-violet-100 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
+    <main className="min-h-screen bg-[#f7faff] px-4 py-4 text-slate-900 sm:px-5 sm:py-6 lg:px-10">
+      <header className="mx-auto flex max-w-[1500px] flex-col gap-2 rounded-xl border border-blue-100 bg-white p-3 shadow-sm sm:gap-4 sm:rounded-2xl sm:p-4 md:flex-row md:items-center md:justify-between">
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -157,9 +157,9 @@ export default function ReadingHomePage() {
             value={keyword}
             onChange={(event) => setKeyword(event.target.value)}
             placeholder="Tìm bài đọc hoặc chủ đề..."
-            className="h-12 w-full rounded-xl bg-slate-50 pl-12 pr-24 text-sm outline-none focus:ring-2 focus:ring-violet-200"
+            className="h-12 w-full rounded-xl bg-slate-50 pl-12 pr-24 text-sm outline-none focus:ring-2 focus:ring-blue-200"
           />
-          <button className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-bold text-white">
+          <button className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white">
             Tìm
           </button>
         </form>
@@ -170,22 +170,22 @@ export default function ReadingHomePage() {
             {data.streak.currentStreak} ngày
           </span>
           <span className="flex items-center gap-2">
-            <Trophy className="text-violet-600" size={18} />
+            <Trophy className="text-blue-600" size={18} />
             {data.currentLevel.title}
           </span>
         </div>
       </header>
 
-      <div className="mx-auto mt-7 grid max-w-[1500px] gap-7 xl:grid-cols-[minmax(0,1fr)_380px]">
-        <section className="min-w-0 space-y-7">
-          <section className="overflow-hidden rounded-3xl bg-gradient-to-r from-violet-700 to-indigo-600 p-7 text-white shadow-xl shadow-violet-200">
+      <div className="mx-auto mt-4 grid max-w-[1500px] gap-5 sm:mt-7 sm:gap-7 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <section className="min-w-0 space-y-4 sm:space-y-7">
+          <section className="overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-sky-600 p-4 text-white shadow-lg shadow-blue-100 sm:p-7">
             <div className="grid gap-6 md:grid-cols-[1fr_320px] md:items-center">
               <div>
                 <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-black">
                   <Sparkles size={15} />
-                  AI LEARNING PATH
+                  LỘ TRÌNH ĐỌC
                 </div>
-                <h1 className="text-3xl font-black md:text-4xl">
+                <h1 className="text-2xl font-black sm:text-3xl md:text-4xl">
                   Tiếp tục luyện đọc hôm nay
                 </h1>
                 <p className="mt-3 max-w-2xl text-white/80">
@@ -202,7 +202,7 @@ export default function ReadingHomePage() {
                       `/reading/articles/${continueArticle.slug}`,
                     )
                   }
-                  className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-black text-violet-700 disabled:opacity-50"
+                  className="mt-4 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-black text-blue-700 disabled:opacity-50 sm:mt-6 sm:px-5 sm:py-3 sm:text-base"
                 >
                   {continueArticle?.isStarted
                     ? "Tiếp tục bài đang đọc"
@@ -232,24 +232,24 @@ export default function ReadingHomePage() {
             </div>
           </section>
 
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="skills-home-stats-grid grid gap-2 sm:gap-4">
             {stats.map((item) => {
               const Icon = item.icon;
 
               return (
                 <article
                   key={item.label}
-                  className="rounded-2xl border border-violet-100 bg-white p-5 shadow-sm"
+                  className="min-w-0 rounded-2xl border border-blue-100 bg-white p-3 shadow-sm sm:p-5"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="grid h-12 w-12 place-items-center rounded-xl bg-violet-50 text-violet-600">
+                  <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600 sm:h-12 sm:w-12">
                       <Icon size={23} />
                     </div>
                     <div>
-                      <p className="text-2xl font-black">
+                      <p className="truncate text-lg font-black sm:text-2xl">
                         {item.value}
                       </p>
-                      <p className="text-sm font-semibold text-slate-500">
+                      <p className="text-[11px] font-semibold leading-4 text-slate-500 sm:text-sm">
                         {item.label}
                       </p>
                     </div>
@@ -259,7 +259,7 @@ export default function ReadingHomePage() {
             })}
           </section>
 
-          <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+          <section className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
             <div className="mb-5 flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-black">
@@ -271,12 +271,18 @@ export default function ReadingHomePage() {
               </div>
               <button
                 onClick={() => router.push("/reading/articles")}
-                className="font-bold text-violet-600"
+                className="font-bold text-blue-600"
               >
                 Xem tất cả
               </button>
             </div>
 
+            {data.featuredArticles.length === 0 ? (
+              <div className="rounded-2xl bg-blue-50 p-5 text-sm text-slate-600">
+                <p className="font-black text-slate-800">Chưa có bài đọc nổi bật.</p>
+                <p className="mt-1">Kho bài đọc đang được cập nhật. Bạn có thể xem toàn bộ bài hiện có hoặc quay lại sau.</p>
+              </div>
+            ) : (
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {data.featuredArticles.map((article) => (
                 <button
@@ -310,21 +316,28 @@ export default function ReadingHomePage() {
                 </button>
               ))}
             </div>
+            )}
           </section>
 
-          <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+          <section className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-xl font-black">
                 Chủ đề Reading
               </h2>
               <button
                 onClick={() => router.push("/reading/categories")}
-                className="font-bold text-violet-600"
+                className="font-bold text-blue-600"
               >
                 Xem tất cả
               </button>
             </div>
 
+            {data.categories.length === 0 ? (
+              <div className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-600">
+                <p className="font-black text-slate-800">Chưa có chủ đề đọc.</p>
+                <p className="mt-1">Chủ đề sẽ xuất hiện khi kho Reading có dữ liệu phân loại.</p>
+              </div>
+            ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {data.categories.map((category) => (
                 <button
@@ -334,9 +347,9 @@ export default function ReadingHomePage() {
                       `/reading/categories/${category.slug}`,
                     )
                   }
-                  className="flex items-center gap-4 rounded-2xl bg-slate-50 p-4 text-left transition hover:bg-violet-50"
+                  className="flex items-center gap-4 rounded-2xl bg-slate-50 p-4 text-left transition hover:bg-blue-50"
                 >
-                  <div className="grid h-12 w-12 place-items-center rounded-xl bg-white text-violet-600 shadow-sm">
+                  <div className="grid h-12 w-12 place-items-center rounded-xl bg-white text-blue-600 shadow-sm">
                     <BookOpen size={22} />
                   </div>
                   <div>
@@ -349,10 +362,11 @@ export default function ReadingHomePage() {
                 </button>
               ))}
             </div>
+            )}
           </section>
         </section>
 
-        <aside className="space-y-6">
+        <aside className="hidden space-y-6 xl:block">
           <MissionCard
             title="Nhiệm vụ Reading hôm nay"
             loading={missionLoading}
@@ -365,13 +379,13 @@ export default function ReadingHomePage() {
             mission={weeklyMission}
           />
 
-          <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+          <section className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-black">
               Tiến độ tổng thể
             </h2>
             <div className="mt-5 h-3 rounded-full bg-slate-100">
               <div
-                className="h-3 rounded-full bg-violet-600"
+                className="h-3 rounded-full bg-blue-600"
                 style={{
                   width: `${Math.min(data.progress.percent, 100)}%`,
                 }}
@@ -398,9 +412,9 @@ function MissionCard({
   mission: ReturnType<typeof useReadingMissions>["dailyMission"];
 }) {
   return (
-    <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+    <section className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
       <div className="flex items-center gap-3">
-        <div className="grid h-11 w-11 place-items-center rounded-xl bg-violet-50 text-violet-600">
+        <div className="hidden h-11 w-11 place-items-center rounded-xl bg-blue-50 text-blue-600 sm:grid">
           <Target size={22} />
         </div>
         <h2 className="font-black">{title}</h2>
@@ -451,13 +465,13 @@ function PageState({
   action?: () => void;
 }) {
   return (
-    <div className="grid min-h-screen place-items-center bg-[#fbfbff]">
+    <div className="grid min-h-screen place-items-center bg-[#f7faff]">
       <div className="rounded-2xl bg-white px-8 py-6 text-center shadow-sm">
         <p className="font-bold text-slate-700">{text}</p>
         {action && (
           <button
             onClick={action}
-            className="mt-4 rounded-xl bg-violet-600 px-5 py-2 font-bold text-white"
+            className="mt-4 rounded-xl bg-blue-600 px-5 py-2 font-bold text-white"
           >
             Tải lại
           </button>

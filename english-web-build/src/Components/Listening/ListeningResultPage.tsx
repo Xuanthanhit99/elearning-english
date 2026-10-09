@@ -163,31 +163,31 @@ export default function ListeningResultPage({
     : data.questions.slice(0, 5);
 
   return (
-    <main className="min-h-screen bg-[#fbfbff] text-[#101733]">
+    <main className="min-h-screen bg-[#f7faff] text-[#101733]">
       <div className="mx-auto min-h-screen max-w-[1920px]">
         <section className="min-w-0 px-0 py-2 sm:py-4 lg:px-2">
           <div className="mx-auto max-w-[1450px]">
-            <section className="rounded-3xl bg-gradient-to-r from-violet-700 to-indigo-600 p-8 text-white shadow-xl">
-              <div className="grid gap-7 md:grid-cols-[1fr_300px] md:items-center">
+            <section className="rounded-2xl bg-gradient-to-r from-blue-700 to-sky-600 p-4 text-white shadow-lg shadow-blue-100 sm:rounded-3xl sm:p-8 sm:shadow-xl">
+              <div className="grid gap-3 sm:gap-7 md:grid-cols-[1fr_300px] md:items-center">
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-black">
                     <Trophy size={16} />
-                    LISTENING RESULT
+                    KẾT QUẢ LUYỆN NGHE
                   </div>
-                  <h1 className="mt-4 text-4xl font-black">
+                  <h1 className="mt-2 text-2xl font-black sm:mt-4 sm:text-4xl">
                     {data.summary.topic || "Luyện nghe"}
                   </h1>
-                  <p className="mt-3 text-white/75">
+                  <p className="mt-1 text-sm text-white/75 sm:mt-3 sm:text-base">
                     {data.summary.level} ·{" "}
                     {data.summary.totalTimeText}
                   </p>
                 </div>
 
-                <div className="rounded-3xl bg-white/10 p-6 text-center">
+                <div className="rounded-2xl bg-white/10 p-3 text-center sm:rounded-3xl sm:p-6">
                   <p className="text-sm font-bold text-white/70">
                     Điểm số
                   </p>
-                  <p className="mt-1 text-6xl font-black">
+                  <p className="mt-1 text-4xl font-black sm:text-6xl">
                     {data.summary.score}
                   </p>
                   <p className="mt-3 font-black text-yellow-300">
@@ -210,7 +210,7 @@ export default function ListeningResultPage({
               </div>
             )}
 
-            <section className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <section className="mt-3 grid grid-cols-2 gap-2 sm:mt-7 sm:gap-4 xl:grid-cols-4">
               <Stat
                 icon={<Target />}
                 value={`${data.summary.accuracy}%`}
@@ -233,15 +233,15 @@ export default function ListeningResultPage({
               />
             </section>
 
-            <div className="mt-7 grid gap-7 xl:grid-cols-[minmax(0,1fr)_380px]">
-              <section className="space-y-7">
-                <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+            <div className="mt-4 grid gap-4 sm:mt-7 sm:gap-7 xl:grid-cols-[minmax(0,1fr)_380px]">
+              <section className="space-y-4 sm:space-y-7">
+                <section className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6">
                   <h2 className="text-xl font-black">
-                    AI Feedback
+                    Phản hồi sau bài luyện
                   </h2>
 
-                  <div className="mt-5 grid gap-4 md:grid-cols-2">
-                    <div className="rounded-2xl bg-emerald-50 p-5">
+                  <div className="mt-3 grid gap-3 sm:mt-5 sm:gap-4 md:grid-cols-2">
+                    <div className="rounded-xl bg-emerald-50 p-4 sm:rounded-2xl sm:p-5">
                       <h3 className="font-black text-emerald-700">
                         Điểm mạnh
                       </h3>
@@ -258,7 +258,7 @@ export default function ListeningResultPage({
                       </ul>
                     </div>
 
-                    <div className="rounded-2xl bg-amber-50 p-5">
+                    <div className="rounded-xl bg-amber-50 p-4 sm:rounded-2xl sm:p-5">
                       <h3 className="font-black text-amber-700">
                         Cần cải thiện
                       </h3>
@@ -277,7 +277,7 @@ export default function ListeningResultPage({
                   </div>
                 </section>
 
-                <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+                <section className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6">
                   <h2 className="text-xl font-black">
                     Xem lại câu hỏi
                   </h2>
@@ -305,7 +305,7 @@ export default function ListeningResultPage({
                         </p>
                         {!question.isCorrect && (
                           <p className="mt-1 text-sm text-emerald-700">
-                            ?áp án đúng:{" "}
+                            Đáp án đúng:{" "}
                             <strong>
                               {question.correctAnswer}
                             </strong>
@@ -318,7 +318,7 @@ export default function ListeningResultPage({
                         )}
                         {question.transcript && (
                           <details className="mt-3">
-                            <summary className="cursor-pointer text-sm font-bold text-violet-600">
+                            <summary className="cursor-pointer text-sm font-bold text-blue-600">
                               Xem transcript
                             </summary>
                             <p className="mt-2 rounded-xl bg-white/70 p-3 text-sm leading-6">
@@ -335,7 +335,7 @@ export default function ListeningResultPage({
                       onClick={() =>
                         setShowAll((value) => !value)
                       }
-                      className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-50 py-3 font-bold text-violet-600"
+                      className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-50 py-3 font-bold text-blue-600"
                     >
                       {showAll
                         ? "Thu gọn"
@@ -351,7 +351,7 @@ export default function ListeningResultPage({
                 </section>
               </section>
 
-              <aside className="space-y-6">
+              <aside className="space-y-4 sm:space-y-6">
                 <MissionCard
                   title="Nhiệm vụ hôm nay"
                   mission={dailyMission}
@@ -361,7 +361,7 @@ export default function ListeningResultPage({
                   mission={weeklyMission}
                 />
 
-                <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+                <section className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6">
                   <h2 className="font-black">
                     Bạn thấy bài học thế nào?
                   </h2>
@@ -393,10 +393,10 @@ export default function ListeningResultPage({
                       actionLoading || ratingSent
                     }
                     onClick={submitRating}
-                    className="mt-4 w-full rounded-xl bg-violet-600 py-3 font-black text-white disabled:opacity-50"
+                    className="mt-4 w-full rounded-xl bg-blue-600 py-3 font-black text-white disabled:opacity-50"
                   >
                     {ratingSent
-                      ? "?ã gửi đánh giá · Bấm sao để sửa"
+                      ? "Đã gửi đánh giá · Bấm sao để sửa"
                       : "Gửi đánh giá"}
                   </button>
                 </section>
@@ -404,7 +404,7 @@ export default function ListeningResultPage({
                 <button
                   disabled={actionLoading}
                   onClick={() => startAction("retry")}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-violet-200 bg-white py-3 font-black text-violet-600 disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-blue-200 bg-white py-3 font-black text-blue-600 disabled:opacity-50"
                 >
                   <RotateCcw size={17} />
                   Làm lại bài này
@@ -415,7 +415,7 @@ export default function ListeningResultPage({
                   onClick={() =>
                     startAction("continue")
                   }
-                  className="w-full rounded-xl bg-violet-600 py-3 font-black text-white disabled:opacity-50"
+                  className="w-full rounded-xl bg-blue-600 py-3 font-black text-white disabled:opacity-50"
                 >
                   Luyện bài tiếp theo
                 </button>
@@ -426,7 +426,7 @@ export default function ListeningResultPage({
                   }
                   className="w-full rounded-xl bg-slate-900 py-3 font-black text-white"
                 >
-                  Listening Home
+                  Trang luyện nghe
                 </button>
               </aside>
             </div>
@@ -447,14 +447,14 @@ function Stat({
   label: string;
 }) {
   return (
-    <article className="rounded-2xl border border-violet-100 bg-white p-5 shadow-sm">
-      <div className="grid h-11 w-11 place-items-center rounded-xl bg-violet-50 text-violet-600">
+    <article className="rounded-xl border border-blue-100 bg-white p-3 shadow-sm sm:rounded-2xl sm:p-5">
+      <div className="hidden h-11 w-11 place-items-center rounded-xl bg-blue-50 text-blue-600 sm:grid">
         {icon}
       </div>
-      <p className="mt-4 text-2xl font-black">
+      <p className="text-xl font-black sm:mt-4 sm:text-2xl">
         {value}
       </p>
-      <p className="text-sm font-semibold text-slate-500">
+      <p className="text-xs font-semibold text-slate-500 sm:text-sm">
         {label}
       </p>
     </article>
@@ -471,7 +471,7 @@ function MissionCard({
   >["dailyMission"];
 }) {
   return (
-    <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+    <section className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6">
       <h2 className="font-black">{title}</h2>
 
       {mission ? (
@@ -511,13 +511,13 @@ function PageState({
   action?: () => void;
 }) {
   return (
-    <div className="grid min-h-screen place-items-center bg-[#fbfbff]">
+    <div className="grid min-h-screen place-items-center bg-[#f7faff]">
       <div className="rounded-2xl bg-white px-8 py-6 text-center shadow-sm">
         <p className="font-bold">{text}</p>
         {action && (
           <button
             onClick={action}
-            className="mt-4 rounded-xl bg-violet-600 px-5 py-2 font-bold text-white"
+            className="mt-4 rounded-xl bg-blue-600 px-5 py-2 font-bold text-white"
           >
             Tải lại
           </button>

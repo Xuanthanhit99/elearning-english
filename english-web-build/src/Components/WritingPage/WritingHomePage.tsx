@@ -20,6 +20,18 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { BeaconVieLoadingState } from '@/src/Components/UI/BeaconVie';
 
+const writingLabels: Record<string, string> = {
+  Essay: 'Bài luận',
+  Email: 'Email thực tế',
+  Story: 'Viết truyện',
+  'Sentence Builder': 'Ghép câu',
+  'AI Coach': 'Huấn luyện cùng AI',
+};
+
+function writingLabel(value: string) {
+  return writingLabels[value] || value;
+}
+
 type WritingHome = {
   user: {
     name: string;
@@ -140,7 +152,7 @@ async function handleStartWriting(type: string) {
         <p className="font-semibold text-red-600">{error}</p>
         <button
           onClick={loadData}
-          className="mt-4 rounded-xl bg-violet-600 px-5 py-3 font-bold text-white"
+          className="mt-4 rounded-xl bg-blue-600 px-5 py-3 font-bold text-white"
         >
           Thử lại
         </button>
@@ -151,13 +163,13 @@ async function handleStartWriting(type: string) {
   }
 
 return (
-  <div className="min-h-screen bg-[#fbfaff] text-[#09083f]">
+  <div className="min-h-screen bg-[#f7faff] text-[#09083f]">
     <div className="flex">
       {/* <Sidebar /> */}
 
       <main className="min-h-screen flex-1">
 
-        <div className="grid grid-cols-[minmax(0,1fr)_390px] gap-8 px-8 py-7">
+        <div className="grid gap-4 px-4 py-4 pb-24 sm:gap-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6 lg:px-8 lg:py-6 lg:pb-6">
           <div className="min-w-0">
             <Hero data={data} />
 
@@ -167,13 +179,13 @@ return (
               </div>
             )}
 
-            <section className="mt-8">
-              <h2 className="text-2xl font-bold">Today&apos;s Practice</h2>
+            <section className="mt-4 sm:mt-6">
+              <h2 className="text-xl font-black sm:text-2xl">Luyện viết hôm nay</h2>
               <p className="mt-1 text-sm text-slate-500">
-                Choose a writing type to start practicing
+                Chọn dạng bài để bắt đầu luyện viết
               </p>
 
-              <div className="mt-6 grid grid-cols-5 gap-5">
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:grid-cols-3 sm:gap-3 xl:grid-cols-5 xl:gap-4">
                 {data.todayPractice.map((item) => (
                   <PracticeCard
                     key={item.key}
@@ -191,24 +203,24 @@ return (
               />
             )}
 
-            <section className="mt-8">
+            <section className="mt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold">Recommended for You</h2>
+                  <h2 className="text-xl font-black sm:text-2xl">Đề xuất cho bạn</h2>
                   <p className="mt-1 text-sm text-slate-500">
-                    Personalized suggestions based on your level and interests
+                    Gợi ý phù hợp với trình độ và mục tiêu hiện tại
                   </p>
                 </div>
 
                 <button
                   onClick={() => router.push('/writing/topics')}
-                  className="font-semibold text-violet-600"
+                  className="font-semibold text-blue-600"
                 >
-                  Xem tất cả topics →
+                  Xem tất cả chủ đề →
                 </button>
               </div>
 
-              <div className="mt-5 grid grid-cols-4 gap-5">
+              <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {data.recommendations.map((item) => (
                   <RecommendationCard
                     key={item.id}
@@ -231,7 +243,7 @@ return (
             />
           </div>
 
-          <aside className="space-y-6">
+          <aside className="hidden space-y-6 lg:block">
             <ProgressCard
               progress={data.progress}
               onViewReport={() => router.push('/writing/progress')}
@@ -257,7 +269,7 @@ function Header({ data }: { data: WritingHome }) {
         <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
         <input
           className="h-12 w-full rounded-2xl bg-[#f7f5ff] pl-12 pr-16 text-sm text-slate-700 outline-none"
-          placeholder="Search lessons, topics, or skills..."
+          placeholder="Tìm bài học, chủ đề hoặc kỹ năng..."
         />
         <span className="absolute right-4 top-1/2 -translate-y-1/2 rounded-lg bg-white px-2 py-1 text-xs font-bold text-slate-400">
           ⌘ K
@@ -265,12 +277,12 @@ function Header({ data }: { data: WritingHome }) {
       </div>
 
       <div className="flex items-center gap-7">
-        <TopStat icon={<Flame className="h-7 w-7 text-red-500" />} value="18" label="Streak" />
-        <TopStat icon={<Star className="h-7 w-7 fill-yellow-400 text-yellow-400" />} value="2,450" label="XP Today" />
+        <TopStat icon={<Flame className="h-7 w-7 text-red-500" />} value="18" label="Chuỗi ngày" />
+        <TopStat icon={<Star className="h-7 w-7 fill-yellow-400 text-yellow-400" />} value="2,450" label="XP hôm nay" />
         <TopStat icon={<span className="text-2xl">💎</span>} value="5,230" label="Gems" />
 
-        <div className="grid h-10 w-10 place-items-center rounded-full bg-violet-50">
-          <Gift className="h-5 w-5 text-violet-600" />
+        <div className="grid h-10 w-10 place-items-center rounded-full bg-blue-50">
+          <Gift className="h-5 w-5 text-blue-600" />
         </div>
 
         <div className="relative grid h-10 w-10 place-items-center rounded-full bg-slate-50">
@@ -332,7 +344,7 @@ function Sidebar() {
       <div className="mb-10 flex items-center gap-3">
         {/* <div className="text-3xl">🦊</div> */}
         <h1 className="text-2xl font-extrabold">
-          Study<span className="text-violet-600">Arena</span>
+          Study<span className="text-blue-600">Arena</span>
         </h1>
       </div>
 
@@ -364,15 +376,15 @@ function Sidebar() {
         <MenuItem label="Cài đặt" />
       </nav>
 
-      <div className="mt-8 rounded-2xl bg-violet-50 p-4">
-        <p className="flex items-center gap-2 font-bold text-violet-700">
+      <div className="mt-8 rounded-2xl bg-blue-50 p-4">
+        <p className="flex items-center gap-2 font-bold text-blue-700">
           <Crown className="h-4 w-4 text-yellow-500" />
           Premium
         </p>
         <p className="mt-4 text-xs leading-5 text-slate-500">
           Mở khóa đầy đủ tính năng và học không giới hạn.
         </p>
-        <button className="mt-4 rounded-xl bg-violet-600 px-4 py-3 text-xs font-bold text-white">
+        <button className="mt-4 rounded-xl bg-blue-600 px-4 py-3 text-xs font-bold text-white">
           Nâng cấp ngay
         </button>
       </div>
@@ -384,7 +396,7 @@ function MenuItem({ label, active = false }: { label: string; active?: boolean }
   return (
     <div
       className={`flex h-11 items-center gap-3 rounded-xl px-3 ${
-        active ? 'bg-violet-50 text-violet-700' : 'text-slate-700'
+        active ? 'bg-blue-50 text-blue-700' : 'text-slate-700'
       }`}
     >
       <PenLine className="h-4 w-4" />
@@ -395,45 +407,40 @@ function MenuItem({ label, active = false }: { label: string; active?: boolean }
 
 function Hero({ data }: { data: WritingHome }) {
   return (
-    <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-violet-50 to-white p-8">
+    <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-sky-600 p-5 text-white shadow-lg shadow-blue-100 sm:p-7">
       <div>
-        <div className="flex items-center gap-5">
-          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white">
-            <PenLine className="h-7 w-7 text-violet-600" />
+        <div className="flex items-center gap-3 sm:gap-5">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/15 sm:h-12 sm:w-12">
+            <PenLine className="h-6 w-6 text-white" />
           </div>
 
           <div>
-            <h1 className="text-3xl font-extrabold">
+            <h1 className="text-xl font-black sm:text-3xl">
               Chào mừng trở lại, {data.user.name}! 👋
             </h1>
-            <p className="mt-2 font-medium text-slate-600">
+            <p className="mt-2 text-sm font-medium text-white/80 sm:text-base">
               Hãy luyện viết để diễn đạt ý tưởng rõ ràng hơn.
             </p>
           </div>
         </div>
 
-        <div className="mt-7 flex w-[560px] items-center rounded-2xl bg-white p-5 shadow-sm">
-          <HeroStat value={data.stats.essaysWritten} label="Bài luậns Written" />
+        <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-white/10 p-2.5 backdrop-blur sm:mt-5 sm:max-w-[560px] sm:rounded-2xl sm:p-4">
+          <HeroStat value={data.stats.essaysWritten} label="Bài đã viết" />
           <HeroStat value={`${data.stats.avgScore}%`} label="Điểm TB" />
           <HeroStat value={data.stats.dayStreak} label="Chuỗi ngày" />
         </div>
       </div>
 
-      <div className="absolute bottom-0 right-16 text-[160px] leading-none">🦊</div>
+      <div className="pointer-events-none absolute -bottom-6 -right-5 hidden text-[130px] leading-none opacity-25 sm:block lg:right-8">🦊</div>
     </section>
   );
 }
 
 function HeroStat({ value, label }: { value: string | number; label: string }) {
   return (
-    <div className="flex flex-1 items-center gap-3 border-r last:border-r-0">
-      <div className="grid h-11 w-11 place-items-center rounded-full bg-violet-100">
-        <FileText className="h-5 w-5 text-violet-600" />
-      </div>
-      <div>
-        <p className="text-2xl font-extrabold">{value}</p>
-        <p className="text-xs text-slate-500">{label}</p>
-      </div>
+    <div className="min-w-0 text-center">
+      <p className="text-lg font-extrabold text-white sm:text-2xl">{value}</p>
+      <p className="truncate text-[10px] text-white/70 sm:text-xs">{label}</p>
     </div>
   );
 }
@@ -454,19 +461,19 @@ function PracticeCard({
   };
 
   return (
-    <div className="rounded-2xl bg-white p-5 text-center shadow-sm ring-1 ring-slate-100">
-      <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-violet-50 text-violet-600">
+    <div className="rounded-xl bg-white p-3 text-left shadow-sm ring-1 ring-slate-100 sm:rounded-2xl sm:p-5">
+      <div className="grid h-9 w-9 place-items-center rounded-lg bg-blue-50 text-blue-600 sm:h-11 sm:w-11 sm:rounded-xl">
         {iconMap[item.key]}
       </div>
 
-      <h3 className="mt-5 text-lg font-extrabold">{item.title}</h3>
-      <p className="mt-3 min-h-[66px] text-sm leading-6 text-slate-500">
+      <h3 className="mt-2 text-sm font-extrabold sm:mt-3 sm:text-lg">{writingLabel(item.title)}</h3>
+      <p className="mt-1 hidden line-clamp-2 text-sm leading-5 text-slate-500 sm:mt-2 sm:block sm:min-h-[40px]">
         {item.description}
       </p>
 
       <button
         onClick={onClick}
-        className="mt-5 flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-violet-500 font-bold text-violet-600"
+        className="mt-3 flex h-9 w-full items-center justify-center gap-2 rounded-xl border border-blue-500 text-sm font-bold text-blue-600 sm:mt-4 sm:h-10"
       >
         {item.key === 'PROGRESS' ? 'Xem tiến độ' : 'Bắt đầu viết'}
         <ChevronRight className="h-4 w-4" />
@@ -492,7 +499,7 @@ function RecommendationCard({
           }}
         />
       ) : (
-        <div className="flex h-28 items-center justify-center bg-violet-50 text-violet-600">
+        <div className="flex h-28 items-center justify-center bg-blue-50 text-blue-600">
           <BookOpen className="h-9 w-9" />
         </div>
       )}
@@ -502,16 +509,16 @@ function RecommendationCard({
           {item.category}
         </span>
 
-        <h3 className="mt-3 font-extrabold">{item.title}</h3>
+        <h3 className="mt-3 font-extrabold">{writingLabel(item.title)}</h3>
         <p className="mt-1 text-xs text-slate-500">
           {item.level} • {formatType(item.type)}
         </p>
 
         <div className="mt-5 flex items-center justify-between">
-          <p className="text-xs text-slate-500">👥 {item.writers} writers</p>
+          <p className="text-xs text-slate-500">👥 {item.writers} người học</p>
           <button
             onClick={onStart}
-            className="grid h-9 w-9 place-items-center rounded-lg border border-violet-200 text-violet-600"
+            className="grid h-9 w-9 place-items-center rounded-lg border border-blue-200 text-blue-600"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
@@ -535,28 +542,28 @@ function DailyGoal({
   const percent = Math.min(100, Math.round((goal.current / goal.target) * 100));
 
   return (
-    <div className="mt-8 flex items-center gap-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-violet-100">
+    <div className="mt-6 grid gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-blue-100 sm:flex sm:items-center sm:gap-6 sm:p-5">
       <div className="grid h-14 w-14 place-items-center rounded-full bg-yellow-100">
         <Trophy className="h-7 w-7 text-yellow-500" />
       </div>
 
       <div className="flex-1">
-        <p className="font-extrabold text-violet-700">{goal.title}</p>
-        <div className="mt-3 h-2 rounded-full bg-violet-100">
+        <p className="font-extrabold text-blue-700">{goal.title}</p>
+        <div className="mt-3 h-2 rounded-full bg-blue-100">
           <div
-            className="h-2 rounded-full bg-violet-600"
+            className="h-2 rounded-full bg-blue-600"
             style={{ width: `${percent}%` }}
           />
         </div>
       </div>
 
       <p className="font-extrabold">
-        {goal.current} / {goal.target} min
+        {goal.current} / {goal.target} phút
       </p>
 
       <button
         onClick={onContinue}
-        className="rounded-xl bg-violet-600 px-6 py-3 font-bold text-white"
+        className="rounded-xl bg-blue-600 px-6 py-3 font-bold text-white"
       >
         Tiếp tục viết
       </button>
@@ -582,14 +589,14 @@ function ProgressCard({
     total > 0 ? Math.round((value / total) * 100) : 0;
 
   return (
-    <div className="rounded-3xl bg-white p-7 shadow-sm ring-1 ring-slate-100">
+    <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
       <h2 className="text-xl font-extrabold">Tiến độ luyện viết</h2>
 
       <div className="mt-8 flex items-center gap-7">
-        <div className="grid h-40 w-40 place-items-center rounded-full bg-violet-100">
+        <div className="grid h-40 w-40 place-items-center rounded-full bg-blue-100">
           <div className="grid h-28 w-28 place-items-center rounded-full bg-white">
             <div className="text-center">
-              <p className="text-3xl font-extrabold">{overall}%</p>
+              <p className="text-2xl font-black sm:text-3xl">{overall}%</p>
               <p className="text-xs text-slate-500">Tổng thể</p>
             </div>
           </div>
@@ -597,7 +604,7 @@ function ProgressCard({
 
         <div className="space-y-5 text-sm">
           <ProgressLabel
-            color="bg-violet-600"
+            color="bg-blue-600"
             title="Xuất sắc"
             value={`${excellent} (${percent(excellent)}%)`}
           />
@@ -616,7 +623,7 @@ function ProgressCard({
 
       <button
         onClick={onViewReport}
-        className="mt-8 h-12 w-full rounded-xl border border-violet-500 font-bold text-violet-600"
+        className="mt-8 h-12 w-full rounded-xl border border-blue-500 font-bold text-blue-600"
       >
         Xem báo cáo chi tiết
       </button>
@@ -654,10 +661,10 @@ function HistoryCard({
   onOpenItem: (id: string) => void;
 }) {
   return (
-    <div className="rounded-3xl bg-white p-7 shadow-sm ring-1 ring-slate-100">
+    <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-extrabold">Lịch sử gần đây</h2>
-        <button onClick={onViewAll} className="font-bold text-violet-600">
+        <button onClick={onViewAll} className="font-bold text-blue-600">
           Xem tất cả →
         </button>
       </div>
@@ -675,12 +682,12 @@ function HistoryCard({
             onClick={() => onOpenItem(item.id)}
             className="flex w-full cursor-pointer items-center gap-4 border-b border-slate-100 pb-4 text-left last:border-b-0"
           >
-            <div className="grid h-11 w-11 place-items-center rounded-xl bg-violet-50">
-              <FileText className="h-5 w-5 text-violet-600" />
+            <div className="grid h-11 w-11 place-items-center rounded-xl bg-blue-50">
+              <FileText className="h-5 w-5 text-blue-600" />
             </div>
 
             <div className="flex-1">
-              <p className="font-extrabold">{item.title}</p>
+              <p className="font-extrabold">{writingLabel(item.title)}</p>
               <p className="mt-1 text-xs text-slate-500">
                 {formatType(item.type)} • {item.level}
               </p>
@@ -697,7 +704,7 @@ function HistoryCard({
 
       <button
         onClick={onViewAll}
-        className="mt-6 h-12 w-full rounded-xl border border-violet-500 font-bold text-violet-600"
+        className="mt-6 h-12 w-full rounded-xl border border-blue-500 font-bold text-blue-600"
       >
         Đến lịch sử
       </button>
@@ -724,32 +731,32 @@ function WritingPathSection({
   onStart: (key: string) => void;
 }) {
   return (
-    <section className="mt-8">
-      <h2 className="text-2xl font-bold">Lộ trình luyện viết</h2>
+    <section className="mt-6">
+      <h2 className="text-xl font-black sm:text-2xl">Lộ trình luyện viết</h2>
       <p className="mt-1 text-sm text-slate-500">
         Đi theo lộ trình để cải thiện kỹ năng viết từng bước
       </p>
 
-      <div className="mt-5 grid grid-cols-5 gap-5">
+      <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5 xl:gap-4">
         {items
           .sort((a, b) => a.order - b.order)
           .map((item) => (
             <button
               key={item.key}
               onClick={() => onStart(item.key)}
-              className="rounded-2xl bg-white p-5 text-left shadow-sm ring-1 ring-slate-100 transition hover:-translate-y-1 hover:shadow-md"
+              className="rounded-2xl bg-white p-4 text-left shadow-sm ring-1 ring-slate-100 transition hover:-translate-y-1 hover:shadow-md sm:p-5"
             >
-              <div className="grid h-12 w-12 place-items-center rounded-full bg-violet-100 text-violet-600">
+              <div className="grid h-12 w-12 place-items-center rounded-full bg-blue-100 text-blue-600">
                 {item.order}
               </div>
 
-              <h3 className="mt-4 font-extrabold">{item.title}</h3>
+              <h3 className="mt-4 font-extrabold">{writingLabel(item.title)}</h3>
 
-              <p className="mt-2 min-h-[72px] text-sm leading-6 text-slate-500">
+              <p className="mt-2 line-clamp-2 text-sm leading-5 text-slate-500 sm:min-h-[40px]">
                 {item.description}
               </p>
 
-              <div className="mt-4 flex items-center font-bold text-violet-600">
+              <div className="mt-4 flex items-center font-bold text-blue-600">
                 Bắt đầu
                 <ChevronRight className="ml-1 h-4 w-4" />
               </div>

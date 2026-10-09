@@ -11,6 +11,7 @@ import {
   BeaconVieSectionHeader,
 } from "@/src/Components/UI/BeaconVie";
 import { buildLoginUrl } from "@/src/lib/auth-redirect";
+import { api } from "@/src/lib/axios";
 import { trackEvent } from "@/src/lib/ga";
 import { useAuthStore } from "@/src/store/authStore";
 import {
@@ -32,7 +33,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 
 type UserSummary = {
   fullname?: string | null;
@@ -50,8 +51,8 @@ type Feature = {
 
 const navItems = [
   { label: "Lộ trình học", href: "#learning-path" },
-  { label: "Tài liệu", href: "/tai-lieu-tieng-anh" },
   { label: "Kỹ năng", href: "#skills" },
+  { label: "Tài liệu", href: "/tai-lieu-tieng-anh" },
   { label: "Học cùng AI", href: "#ai-learning" },
   { label: "Tiến độ", href: "#progress" },
   { label: "Cộng đồng", href: "#community" },
@@ -283,7 +284,7 @@ function PublicHeader({
 
 function Hero({ user }: { user: UserSummary | null }) {
   const primaryHref = user ? "/dashboard" : "/placement";
-  const protectedPrimaryHref = user ? primaryHref : buildLoginUrl(primaryHref);
+  const protectedPrimaryHref = user ? primaryHref : "#try-writing";
   const learningPathHref = user ? "/learning-path" : buildLoginUrl("/learning-path");
 
   return (
@@ -317,7 +318,7 @@ function Hero({ user }: { user: UserSummary | null }) {
               }}
               className="BeaconVie-button-primary min-h-14 px-7 py-4 text-base"
             >
-              {user ? "Tiếp tục học" : "Kiểm tra trình độ miễn phí"}
+              {user ? "Tiếp tục học" : "Dùng thử miễn phí không cần tài khoản"}
               <ArrowRight aria-hidden className="h-5 w-5" />
             </Link>
 
@@ -816,32 +817,123 @@ function FeatureCard({
 }
 
 function WritingDemoCard() {
+  const [text, setText] = useState("I very like this movie because it make me feel happy.");
+  const [result, setResult] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function submitPreview(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const value = text.trim();
+    if (!value || loading) return;
+
+    setLoading(true);
+    setError("");
+    try {
+      const response = await api.post("/writing/check", {
+        text: value,
+        style: "general",
+        level: "Beginner",
+      });
+      setResult(response.data);
+      trackEvent("guest_writing_preview_complete", { source: "landing" });
+    } catch {
+      setError("Beacon đang bận một chút. Bạn hãy thử lại sau ít phút nhé.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const correction = result?.corrections?.[0];
+
   return (
-    <BeaconVieCard className="h-full p-6">
+    <BeaconVieCard id="try-writing" className="h-full scroll-mt-24 p-6">
       <div className="flex items-center justify-between gap-3">
         <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--BeaconVie-primary)]/10 text-[var(--BeaconVie-primary)]">
           <NotebookPen aria-hidden className="h-6 w-6" />
         </span>
-        <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-muted)]">
-          Ví dụ minh hoạ
+        <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.1em] text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+          Dùng thử thật · không cần tài khoản
         </span>
       </div>
 
       <h3 className="mt-5 text-xl font-black text-[var(--BeaconVie-ink)]">
-        Cải thiện viết
+        Nhờ Beacon kiểm tra một đoạn tiếng Anh
       </h3>
+      <p className="mt-2 text-sm font-semibold leading-6 text-[var(--BeaconVie-muted)]">
+        Viết một câu hoặc đoạn ngắn. AI sẽ chỉ ra lỗi và gợi ý cách viết tự nhiên hơn.
+      </p>
 
-      <div className="mt-4 space-y-2 text-sm font-semibold leading-6">
-        <p className="rounded-2xl bg-rose-50 px-4 py-3 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
-          I very like this movie.
+      <form onSubmit={submitPreview} className="mt-4">
+        <label htmlFor="guest-writing-preview" className="sr-only">
+          Đoạn tiếng Anh muốn kiểm tra
+        </label>
+        <textarea
+          id="guest-writing-preview"
+          value={text}
+          onChange={(event) => setText(event.target.value)}
+          maxLength={600}
+          rows={4}
+          className="w-full resize-none rounded-2xl border border-[var(--BeaconVie-border)] bg-white px-4 py-3 text-sm font-semibold leading-6 text-[var(--BeaconVie-ink)] outline-none transition focus:border-[var(--BeaconVie-primary)] focus:ring-4 focus:ring-blue-500/10 dark:bg-white/5"
+        />
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <span className="text-xs font-bold text-[var(--BeaconVie-muted)]">
+            {text.length}/600 ký tự
+          </span>
+          <button
+            type="submit"
+            disabled={loading || !text.trim()}
+            className="BeaconVie-button-primary disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? "Beacon đang phân tích..." : "Kiểm tra với AI"}
+            {!loading ? <Sparkles aria-hidden className="h-4 w-4" /> : null}
+          </button>
+        </div>
+      </form>
+
+      {error ? (
+        <p role="alert" className="mt-4 rounded-2xl bg-amber-50 px-4 py-3 text-sm font-bold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+          {error}
         </p>
-        <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-          I really like this movie.
-        </p>
-        <p className="text-[var(--BeaconVie-muted)]">
-          &quot;Very&quot; không đứng trực tiếp trước &quot;like&quot;.
-        </p>
-      </div>
+      ) : null}
+
+      {result ? (
+        <div className="mt-5 space-y-3 border-t border-[var(--BeaconVie-border)] pt-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--BeaconVie-muted)]">Phản hồi của Beacon</p>
+              <p className="mt-1 text-sm font-bold text-[var(--BeaconVie-ink)]">{result.summary}</p>
+            </div>
+            <span className="shrink-0 rounded-2xl bg-blue-50 px-3 py-2 text-lg font-black text-[var(--BeaconVie-primary)] dark:bg-blue-500/10">
+              {Math.round(Number(result.score) || 0)}/100
+            </span>
+          </div>
+
+          {correction ? (
+            <div className="grid gap-2 text-sm font-semibold leading-6">
+              <p className="rounded-2xl bg-rose-50 px-4 py-3 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
+                {correction.wrong}
+              </p>
+              <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                {correction.correct}
+              </p>
+              {correction.explanation ? <p className="text-[var(--BeaconVie-muted)]">{correction.explanation}</p> : null}
+            </div>
+          ) : null}
+
+          {result.suggestedVersion ? (
+            <div className="rounded-2xl border border-blue-100 bg-blue-50/60 px-4 py-3 dark:border-blue-500/20 dark:bg-blue-500/10">
+              <p className="text-xs font-black uppercase tracking-[0.1em] text-[var(--BeaconVie-primary)]">Gợi ý viết tự nhiên hơn</p>
+              <p className="mt-1 text-sm font-semibold leading-6">{result.suggestedVersion}</p>
+            </div>
+          ) : null}
+
+          <Link href={buildLoginUrl("/writing")} className="BeaconVie-button-soft w-full justify-center">
+            Lưu kết quả & tiếp tục học
+            <ArrowRight aria-hidden className="h-4 w-4" />
+          </Link>
+        </div>
+      ) : null}
     </BeaconVieCard>
   );
 }

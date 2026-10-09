@@ -14,6 +14,10 @@ const surfaces = [
   ["learning-path", "/learning-path"],
   ["vocabulary", "/vocabulary"],
   ["grammar", "/grammar"],
+  ["reading", "/reading"],
+  ["listening", "/listening"],
+  ["speaking", "/speaking"],
+  ["writing", "/writing"],
 ];
 
 await fs.mkdir("artifacts/visual-v31", { recursive: true });
@@ -32,13 +36,11 @@ async function createAuthState() {
 await createAuthState();
 
 async function stabilizePage(page) {
-  const closeWelcome = page.getByRole("button", { name: "Đóng", exact: true });
-  const welcome = page.getByText(/Chào mừng trở lại/i).first();
-  const appeared = await welcome.waitFor({ state: "visible", timeout: 2_500 }).then(() => true).catch(() => false);
+  const closeWelcome = page.getByRole("button", { name: "Đóng", exact: true }).first();
+  const appeared = await closeWelcome.waitFor({ state: "visible", timeout: 2_500 }).then(() => true).catch(() => false);
   if (appeared) {
-    await closeWelcome.waitFor({ state: "visible", timeout: 2_500 });
     await closeWelcome.click();
-    await welcome.waitFor({ state: "hidden", timeout: 5_000 });
+    await closeWelcome.waitFor({ state: "hidden", timeout: 5_000 });
   }
 }
 
@@ -93,11 +95,24 @@ async function capture(name, path, viewport) {
       recommend: { title: "Ôn tập", description: "Tiếp tục Present Perfect để hoàn thành chủ điểm đang học." }
     })));
   }
-  const dynamicSurface = path === "/vocabulary" || path === "/grammar";
+  const dynamicSurface = ["/vocabulary", "/grammar", "/reading", "/listening", "/speaking", "/writing"].includes(path);
   const response = await page.goto(WEB + path, { waitUntil: dynamicSurface ? "domcontentloaded" : "networkidle", timeout: 45_000 });
   if (!response || response.status() >= 400) throw new Error(name + " navigation failed");
   if (page.url().includes("/login")) throw new Error(name + " redirected to login");
   await stabilizePage(page);
+  if (viewport.width === 390 && (path === "/reading" || path === "/listening")) {
+    const label = page.getByText("Bài hoàn thành", { exact: true }).first();
+    await label.waitFor({ state: "visible", timeout: 30000 });
+    const css = await label.evaluate((node) => {
+      const card = node.closest("article");
+      const grid = card && card.parentElement;
+      if (!card || !grid) return null;
+      const gs = window.getComputedStyle(grid);
+      const cs = window.getComputedStyle(card);
+      return { gridClass: grid.className, display: gs.display, columns: gs.gridTemplateColumns, gridWidth: grid.getBoundingClientRect().width, cardWidth: card.getBoundingClientRect().width, cardMinWidth: cs.minWidth };
+    });
+    console.log("[mobile-grid-css]", path, JSON.stringify(css));
+  }
   if (path === "/vocabulary") {
     const bodyText = await page.locator("body").innerText().catch(() => "");
     console.log("[visual:vocabulary:state]", JSON.stringify({ url: page.url(), bodyText: bodyText.slice(0, 2000), errors, diagnostics: vocabularyDiagnostics.slice(-50) }));
@@ -130,4 +145,378 @@ for (const [prefix, viewport] of [["desktop", { width: 1536, height: 1024 }], ["
   await page.getByText("Đang tải bài học...").waitFor({ state: "hidden", timeout: 30_000 }).catch(() => {});
   await page.screenshot({ path: `artifacts/visual-v31/${prefix}-focus-lesson.png`, fullPage: true });
   await browser.close();
+}
+
+
+
+async function captureLandingGuestPreview(prefix, viewport) {
+  const browser = await chromium.launch();
+  const context = await browser.newContext({ viewport, reducedMotion: "reduce", colorScheme: "light" });
+  const page = await context.newPage();
+  const json = (body) => ({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
+
+  await page.route(API + "/auth/me", async (route) => route.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ message: "Guest visual fixture" }) }));
+  await page.route(API + "/auth/refresh", async (route) => route.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ message: "Guest visual fixture" }) }));
+  await page.route(API + "/writing/check", async (route) => route.fulfill(json({
+    id: "visual-guest-writing",
+    score: 82,
+    level: "A2",
+    summary: "Ý của bạn rõ ràng. Hãy sửa một lỗi chia động từ và dùng trạng từ tự nhiên hơn.",
+    grammarScore: 78,
+    vocabularyScore: 82,
+    clarityScore: 88,
+    meaningScore: 90,
+    corrections: [{
+      type: "grammar",
+      level: "A2",
+      wrong: "I very like this movie because it make me feel happy.",
+      correct: "I really like this movie because it makes me feel happy.",
+      explanation: "Dùng “really” với “like” và chia “make” thành “makes” vì chủ ngữ là “it”."
+    }],
+    suggestedVersion: "I really like this movie because it makes me feel happy.",
+    phrases: ["really like", "makes me feel"],
+    learningTips: ["Kiểm tra động từ khi chủ ngữ là he, she hoặc it."],
+    miuNote: "Bạn truyền đạt ý tốt — chỉ cần chú ý chia động từ."
+  })));
+
+  const response = await page.goto(WEB + "/", { waitUntil: "domcontentloaded", timeout: 45_000 });
+  if (!response || response.status() >= 400) throw new Error("Landing guest preview navigation failed");
+  await page.getByRole("link", { name: "Dùng thử miễn phí không cần tài khoản" }).waitFor({ state: "visible", timeout: 30_000 });
+  await page.getByRole("link", { name: "Dùng thử miễn phí không cần tài khoản" }).click();
+  const textarea = page.locator("#guest-writing-preview");
+  await textarea.waitFor({ state: "visible", timeout: 30_000 });
+  await page.screenshot({ path: "artifacts/visual-v31/" + prefix + "-landing-writing-preview.png", fullPage: viewport.width > 390 });
+
+  await page.getByRole("button", { name: "Kiểm tra với AI" }).click();
+  await page.getByText("Phản hồi của Beacon", { exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+  await page.screenshot({ path: "artifacts/visual-v31/" + prefix + "-landing-writing-feedback.png", fullPage: viewport.width > 390 });
+
+  if (viewport.width === 390) {
+    const saveCta = page.getByRole("link", { name: "Lưu kết quả & tiếp tục học" });
+    await saveCta.waitFor({ state: "visible", timeout: 30_000 });
+    await saveCta.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(200);
+    const box = await saveCta.boundingBox();
+    if (!box || box.y < 0 || box.y + box.height > viewport.height) throw new Error("Landing mobile save CTA is not fully visible after scroll");
+    await page.screenshot({ path: "artifacts/visual-v31/mobile-landing-writing-final-cta.png", fullPage: false });
+  }
+
+  await browser.close();
+}
+
+for (const [prefix, viewport] of [["desktop", { width: 1536, height: 1024 }], ["mobile", { width: 390, height: 844 }]]) {
+  await captureLandingGuestPreview(prefix, viewport);
+}
+
+async function captureReadingPractice(prefix, viewport) {
+  const browser = await chromium.launch();
+  const context = await browser.newContext({ viewport, storageState: statePath, reducedMotion: "reduce", colorScheme: "light" });
+  const page = await context.newPage();
+  const json = (body) => ({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
+  const sessionId = "visual-reading-session";
+  let started = false;
+  const answers = new Map();
+
+  const lesson = {
+    article: {
+      id: "visual-reading-article",
+      title: "A Morning Without My Phone",
+      slug: "visual-reading-practice",
+      description: "Một bài đọc ngắn về thói quen buổi sáng và cách giảm thời gian dùng điện thoại.",
+      thumbnail: null,
+      content: "Last Saturday, Mai decided not to check her phone when she woke up. Instead, she opened the window, made a cup of tea, and read a few pages of a book.\n\nAt first, the morning felt unusually quiet. After twenty minutes, however, Mai noticed that she could focus better. She finished breakfast without rushing and wrote down three things she wanted to do that day.",
+      categoryName: "Cuộc sống hằng ngày",
+      categorySlug: "daily-life",
+      difficulty: "EASY",
+      difficultyText: "Dễ · A2",
+      readTimeText: "4 phút",
+      wordCountText: "168 từ",
+      xpReward: 30
+    },
+    session: null,
+    questions: [
+      { id: "rq-1", index: 1, question: "What did Mai do instead of checking her phone?", options: ["She went back to sleep", "She made tea and read a book", "She watched television"], selected: null },
+      { id: "rq-2", index: 2, question: "What did Mai notice after twenty minutes?", options: ["She felt more tired", "She could focus better", "She missed many calls"], selected: null }
+    ],
+    vocabulary: [
+      { id: "rw-1", word: "unusually", partOfSpeech: "adverb", meaning: "một cách khác thường", audioUrl: null },
+      { id: "rw-2", word: "focus", partOfSpeech: "verb", meaning: "tập trung", audioUrl: null }
+    ],
+    tip: { title: "Mẹo đọc nhanh", content: "Đọc câu hỏi trước, sau đó quay lại đoạn văn để tìm từ khóa liên quan." }
+  };
+
+  const result = {
+    summary: {
+      sessionId, articleId: lesson.article.id, articleTitle: lesson.article.title, articleSlug: lesson.article.slug,
+      categoryName: lesson.article.categoryName, categorySlug: lesson.article.categorySlug, difficultyText: lesson.article.difficultyText,
+      readTimeText: lesson.article.readTimeText, wordCountText: lesson.article.wordCountText, xpReward: 30,
+      score: 100, accuracy: 100, correctAnswers: 2, wrongAnswers: 0, totalQuestions: 2, answeredCount: 2,
+      spentTime: 126, spentTimeText: "2 phút 06 giây", completedAt: "2026-10-06T07:00:00.000Z",
+      passedText: "Bạn đã hiểu rất tốt nội dung chính và chi tiết của bài đọc."
+    },
+    comparison: { previousScore: 80, currentScore: 100, changePercent: 20 },
+    skillPerformance: [{ name: "Ý chính", score: 100 }, { name: "Chi tiết", score: 100 }, { name: "Từ vựng theo ngữ cảnh", score: 90 }],
+    questions: [
+      { id: "rq-1", index: 1, question: lesson.questions[0].question, options: lesson.questions[0].options, selected: lesson.questions[0].options[1], correctAnswer: lesson.questions[0].options[1], isCorrect: true, explanation: "Mai made tea and read a few pages of a book." },
+      { id: "rq-2", index: 2, question: lesson.questions[1].question, options: lesson.questions[1].options, selected: lesson.questions[1].options[1], correctAnswer: lesson.questions[1].options[1], isCorrect: true, explanation: "The passage says that Mai noticed she could focus better." }
+    ],
+    vocabulary: [
+      { id: "rw-1", word: "unusually", partOfSpeech: "adverb", meaning: "một cách khác thường", example: "The morning felt unusually quiet.", audioUrl: null },
+      { id: "rw-2", word: "focus", partOfSpeech: "verb", meaning: "tập trung", example: "She could focus better.", audioUrl: null }
+    ],
+    improvementSkills: [{ title: "Giữ nhịp đọc", description: "Tiếp tục đọc các bài A2 ngắn và xác định ý chính trước khi xem chi tiết.", type: "READING" }],
+    suggestions: [{ id: "visual-next", title: "A Better Evening Routine", slug: "visual-next-reading", thumbnail: null, categoryName: "Cuộc sống hằng ngày", categorySlug: "daily-life", difficultyText: "Dễ · A2", readTimeText: "5 phút", xpReward: 30 }]
+  };
+
+  await page.route(API + "/missions-v2/me", async (route) => route.fulfill(json({ missions: [], summary: { dailyCompleted: 0, dailyTotal: 0, weeklyCompleted: 0, weeklyTotal: 0, claimableCount: 0, claimedCount: 0 } })));
+  await page.route(API + "/reading/**", async (route) => {
+    const url = new URL(route.request().url());
+    const method = route.request().method();
+    if (method === "GET" && url.pathname === "/reading/articles/visual-reading-practice") {
+      return route.fulfill(json({ ...lesson, session: started ? { id: sessionId, isCompleted: false, score: 0, accuracy: 0, answeredCount: answers.size, totalQuestions: 2, progressPercent: answers.size * 50 } : null }));
+    }
+    if (method === "POST" && url.pathname === "/reading/articles/visual-reading-article/start") {
+      started = true;
+      return route.fulfill(json({ sessionId, articleId: lesson.article.id, startedAt: "2026-10-06T07:00:00.000Z" }));
+    }
+    if (method === "POST" && url.pathname === "/reading/sessions/" + sessionId + "/answer") {
+      const payload = route.request().postDataJSON();
+      answers.set(payload.questionId, payload.selected);
+      return route.fulfill(json({ saved: true }));
+    }
+    if (method === "POST" && url.pathname === "/reading/sessions/" + sessionId + "/submit") {
+      if (answers.size !== 2) return route.fulfill({ status: 400, contentType: "application/json", body: JSON.stringify({ message: "Visual fixture requires both answers" }) });
+      return route.fulfill(json({ sessionId, score: 100, accuracy: 100, correctCount: 2, totalQuestions: 2, earnedXp: 30, isCompleted: true, alreadyCompleted: false, missionUpdated: false, resultUrl: "/reading/sessions/" + sessionId + "/result" }));
+    }
+    if (method === "GET" && url.pathname === "/reading/sessions/" + sessionId + "/result") return route.fulfill(json(result));
+    return route.continue();
+  });
+
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  const response = await page.goto(WEB + "/reading/articles/visual-reading-practice", { waitUntil: "domcontentloaded", timeout: 45_000 });
+  if (!response || response.status() >= 400) throw new Error("Reading Practice navigation failed");
+  await stabilizePage(page);
+  await page.getByRole("heading", { name: lesson.article.title }).waitFor({ state: "visible", timeout: 30_000 });
+  if (!started) throw new Error("Reading Practice did not start a session");
+  await page.screenshot({ path: "artifacts/visual-v31/" + prefix + "-reading-lesson.png", fullPage: true });
+
+  await page.getByRole("button", { name: lesson.questions[0].options[1], exact: true }).click();
+  await page.getByRole("button", { name: /Câu tiếp theo/ }).click();
+  await page.getByRole("button", { name: lesson.questions[1].options[1], exact: true }).click();
+  if (answers.size !== 2) throw new Error("Reading Practice did not persist both answers");
+  await page.getByRole("button", { name: "Nộp bài", exact: true }).click();
+  await page.waitForURL((url) => url.pathname.replace(/\/$/, "") === "/reading/sessions/" + sessionId + "/result", { timeout: 10_000 });
+  await page.getByText("KẾT QUẢ LUYỆN ĐỌC", { exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+  await page.screenshot({ path: "artifacts/visual-v31/" + prefix + "-reading-result.png", fullPage: true });
+  if (errors.length) throw new Error("Reading Practice page errors: " + errors.join(" | "));
+  await browser.close();
+}
+
+for (const [prefix, viewport] of [["desktop", { width: 1536, height: 1024 }], ["mobile", { width: 390, height: 844 }]]) {
+  await captureReadingPractice(prefix, viewport);
+}
+
+async function captureListeningPractice(prefix, viewport) {
+  const browser = await chromium.launch();
+  const context = await browser.newContext({ viewport, storageState: statePath, reducedMotion: "reduce", colorScheme: "light" });
+  const page = await context.newPage();
+  const json = (body) => ({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
+  const sessionId = "visual-listening-session";
+  const answers = new Map();
+  let finished = false;
+
+  const questions = [
+    { id: "lq-1", order: 1, level: "B1", topic: "Daily Life", audioUrl: null, transcript: "I usually prepare breakfast before checking my messages.", duration: 18, question: "What does the speaker do before checking messages?", options: [{ label: "A", text: "Goes for a run" }, { label: "B", text: "Prepares breakfast" }, { label: "C", text: "Calls a friend" }], answered: false, selectedAnswer: null, isCorrect: null, isFlagged: false },
+    { id: "lq-2", order: 2, level: "B1", topic: "Daily Life", audioUrl: null, transcript: "The bus arrives at half past seven every weekday.", duration: 16, question: "When does the bus arrive?", options: [{ label: "A", text: "At 7:30" }, { label: "B", text: "At 8:00" }, { label: "C", text: "At 6:30" }], answered: false, selectedAnswer: null, isCorrect: null, isFlagged: false }
+  ];
+
+  const practice = () => ({
+    sessionId, level: "B1", topic: "Daily Life", totalQuestions: 2,
+    progress: { percent: answers.size * 50, correct: answers.size, wrong: 0, skipped: 0 },
+    questions: questions.map((q) => {
+      const selected = answers.get(q.id);
+      return selected ? { ...q, answered: true, selectedAnswer: selected, isCorrect: true, correctAnswer: q.id === "lq-1" ? "B" : "A", explanation: "Bạn đã nghe đúng thông tin chính trong đoạn audio." } : q;
+    })
+  });
+
+  const result = {
+    summary: { sessionId, level: "B1", topic: "Daily Life", totalQuestions: 2, correct: 2, wrong: 0, skipped: 0, score: 100, accuracy: 100, xpEarned: 30, coinsEarned: 5, totalTimeSpent: 94, totalTimeText: "1 phút 34 giây", completedAt: "2026-10-06T10:00:00.000Z", rating: null },
+    questions: questions.map((q) => ({ id: q.id, order: q.order, question: q.question, options: q.options, audioUrl: null, transcript: q.transcript, selectedAnswer: q.id === "lq-1" ? "B" : "A", correctAnswer: q.id === "lq-1" ? "B" : "A", isCorrect: true, isSkipped: false, isFlagged: false, explanation: "Bạn đã nghe đúng thông tin chính trong đoạn audio.", listenedCount: 1, timeSpent: 42 })),
+    feedback: { strengths: ["Nắm bắt tốt thông tin chính.", "Phân biệt chi tiết thời gian chính xác."], improvements: ["Tiếp tục luyện nghe hội thoại ở tốc độ tự nhiên."] }
+  };
+
+  await page.route(API + "/missions-v2/me", async (route) => route.fulfill(json({ missions: [], summary: { dailyCompleted: 0, dailyTotal: 0, weeklyCompleted: 0, weeklyTotal: 0, claimableCount: 0, claimedCount: 0 } })));
+  await page.route(API + "/listening/**", async (route) => {
+    const url = new URL(route.request().url());
+    const method = route.request().method();
+    if (method === "GET" && url.pathname === "/listening/home") return route.fulfill(json({ continueSession: { sessionId, level: "B1", topic: "Daily Life", total: 2, correct: answers.size, wrong: 0, skipped: 0, progressPercent: answers.size * 50 } }));
+    if (method === "POST" && url.pathname === "/listening/practice/start") return route.fulfill(json(practice()));
+    if (method === "POST" && url.pathname === "/listening/sessions/" + sessionId + "/answer") {
+      const payload = route.request().postDataJSON();
+      if (!payload.questionId || !payload.selectedAnswer || typeof payload.timeSpent !== "number" || typeof payload.listenedCount !== "number") return route.fulfill({ status: 400, contentType: "application/json", body: JSON.stringify({ message: "Invalid Listening answer contract" }) });
+      answers.set(payload.questionId, payload.selectedAnswer);
+      return route.fulfill(json({ isCorrect: true, correctAnswer: payload.questionId === "lq-1" ? "B" : "A", explanation: "Bạn đã nghe đúng thông tin chính trong đoạn audio.", transcript: questions.find((q) => q.id === payload.questionId)?.transcript, progress: { percent: answers.size * 50, correct: answers.size, wrong: 0, skipped: 0 } }));
+    }
+    if (method === "POST" && url.pathname.endsWith("/flag")) return route.fulfill(json({ saved: true }));
+    if (method === "POST" && url.pathname.endsWith("/skip")) return route.fulfill(json({ progress: { percent: 50, correct: 0, wrong: 0, skipped: 1 } }));
+    if (method === "POST" && url.pathname === "/listening/sessions/" + sessionId + "/finish") {
+      if (answers.size !== 2) return route.fulfill({ status: 400, contentType: "application/json", body: JSON.stringify({ message: "Visual fixture requires both Listening answers" }) });
+      finished = true;
+      return route.fulfill(json({ sessionId, totalQuestions: 2, correct: 2, wrong: 0, skipped: 0, score: 100, xpEarned: 30, coinsEarned: 5, status: "COMPLETED", completedAt: "2026-10-06T10:00:00.000Z", alreadyCompleted: false, missionUpdated: false, resultUrl: "/listening/sessions/" + sessionId + "/result" }));
+    }
+    if (method === "GET" && url.pathname === "/listening/sessions/" + sessionId + "/result") return route.fulfill(json(result));
+    if (method === "POST" && url.pathname.endsWith("/rating")) return route.fulfill(json({ saved: true }));
+    return route.continue();
+  });
+
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  const response = await page.goto(WEB + "/listening/practice/" + sessionId, { waitUntil: "domcontentloaded", timeout: 45_000 });
+  if (!response || response.status() >= 400) throw new Error("Listening Practice navigation failed");
+  await stabilizePage(page);
+  const listeningHeading = page.getByRole("heading", { name: questions[0].question });
+  await listeningHeading.waitFor({ state: "visible", timeout: 30_000 });
+  if (viewport.width === 390) {
+    const diagnostics = await page.evaluate((questionText) => {
+      const heading = Array.from(document.querySelectorAll("h1,h2,h3,h4,h5,h6")).find((node) => node.textContent?.trim() === questionText);
+      const headingStyle = heading ? window.getComputedStyle(heading) : null;
+      const fixedBottom = Array.from(document.querySelectorAll("body *")).map((node) => {
+        const style = window.getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        return { node, style, rect };
+      }).filter(({ style, rect }) => style.position === "fixed" && rect.width > 0 && rect.height > 0 && rect.bottom >= window.innerHeight - 2 && rect.top < window.innerHeight).map(({ node, style, rect }) => ({
+        tag: node.tagName,
+        className: typeof node.className === "string" ? node.className : "",
+        text: (node.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 180),
+        rect: { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right, width: rect.width, height: rect.height },
+        position: style.position,
+        bottom: style.bottom,
+        zIndex: style.zIndex,
+        paddingTop: style.paddingTop,
+        paddingBottom: style.paddingBottom
+      }));
+      return {
+        viewport: { width: window.innerWidth, height: window.innerHeight },
+        heading: heading && headingStyle ? { className: heading.className, fontSize: headingStyle.fontSize, lineHeight: headingStyle.lineHeight, fontWeight: headingStyle.fontWeight, rect: heading.getBoundingClientRect().toJSON() } : null,
+        fixedBottom
+      };
+    }, questions[0].question);
+    console.log("[mobile-listening-runtime-css]", JSON.stringify(diagnostics));
+  }
+  await page.screenshot({ path: "artifacts/visual-v31/" + prefix + "-listening-practice.png", fullPage: true });
+  if (viewport.width === 390) {
+    const submitButton = page.getByRole("button", { name: /Nộp đáp án/ });
+    await submitButton.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(150);
+    const actionEvidence = await page.evaluate(() => {
+      const submit = Array.from(document.querySelectorAll("button")).find((node) => /Nộp đáp án/.test(node.textContent || ""));
+      const nav = Array.from(document.querySelectorAll("nav")).find((node) => window.getComputedStyle(node).position === "fixed" && node.getBoundingClientRect().bottom >= window.innerHeight - 2);
+      const action = submit?.parentElement?.parentElement || null;
+      const rect = (node) => node ? node.getBoundingClientRect().toJSON() : null;
+      const submitRect = rect(submit);
+      const actionRect = rect(action);
+      const navRect = rect(nav);
+      return { viewport: { width: innerWidth, height: innerHeight }, scrollY, submitRect, actionRect, navRect, clearAboveNav: !!submitRect && !!navRect && submitRect.bottom <= navRect.top && actionRect.bottom <= navRect.top };
+    });
+    console.log("[mobile-listening-action-evidence]", JSON.stringify(actionEvidence));
+    if (!actionEvidence.clearAboveNav) throw new Error("Listening mobile actions are not fully clear above fixed bottom nav");
+    await page.screenshot({ path: "artifacts/visual-v31/mobile-listening-practice-actions.png", fullPage: false });
+  }
+
+  await page.getByRole("button", { name: /Prepares breakfast/ }).click();
+  await page.getByRole("button", { name: /Nộp đáp án/ }).click();
+  await page.getByRole("button", { name: /Câu tiếp theo/ }).click();
+  await page.getByRole("button", { name: /At 7:30/ }).click();
+  await page.getByRole("button", { name: /Nộp đáp án/ }).click();
+  if (answers.size !== 2) throw new Error("Listening Practice did not persist both answers");
+  await page.getByRole("button", { name: /Hoàn thành/ }).click();
+  await page.waitForURL((url) => url.pathname.replace(/\/$/, "") === "/listening/sessions/" + sessionId + "/result", { timeout: 10_000 });
+  if (!finished) throw new Error("Listening Practice did not call finish");
+  await page.getByText("KẾT QUẢ LUYỆN NGHE", { exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+  await page.screenshot({ path: "artifacts/visual-v31/" + prefix + "-listening-result.png", fullPage: true });
+  if (errors.length) throw new Error("Listening Practice page errors: " + errors.join(" | "));
+  await browser.close();
+}
+
+for (const [prefix, viewport] of [["desktop", { width: 1536, height: 1024 }], ["mobile", { width: 390, height: 844 }]]) {
+  await captureListeningPractice(prefix, viewport);
+}
+
+async function captureSpeakingPractice(prefix, viewport) {
+  const browser = await chromium.launch();
+  const context = await browser.newContext({ viewport, storageState: statePath, reducedMotion: "reduce", colorScheme: "light" });
+  const page = await context.newPage();
+  const json = (body) => ({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
+  const sessionId = "visual-speaking-session";
+  const practice = {
+    session: { id: sessionId, status: "IN_PROGRESS", durationSeconds: 0 },
+    lesson: {
+      id: "visual-speaking-lesson",
+      title: "Introduce your morning routine",
+      description: "Luyện nói một câu ngắn, rõ ràng về thói quen buổi sáng.",
+      type: "READ_ALOUD",
+      level: "A2",
+      estimatedMinutes: 5,
+      prompt: "Hãy nói về một việc bạn thường làm vào buổi sáng.",
+      expectedText: "I usually make breakfast before I check my messages.",
+      icon: null
+    },
+    topic: { id: "visual-speaking-topic", title: "Daily Life", slug: "daily-life" },
+    latestAnswer: null,
+    steps: [
+      { order: 1, title: "Nghe câu mẫu", description: "Nghe Beacon đọc mẫu để bắt nhịp và trọng âm." },
+      { order: 2, title: "Ghi âm", description: "Nói rõ ràng, tự nhiên và nghe lại bản ghi." },
+      { order: 3, title: "Nhận phản hồi", description: "Gửi bản ghi để AI phân tích và gợi ý cải thiện." }
+    ],
+    focusSkills: [
+      { title: "Phát âm", description: "Âm rõ và dễ hiểu.", icon: "🎧" },
+      { title: "Độ trôi chảy", description: "Giữ nhịp nói tự nhiên.", icon: "💬" }
+    ],
+    tips: [
+      { title: "Không cần nói quá nhanh", description: "Ưu tiên rõ từng cụm từ trước khi tăng tốc.", icon: "✨" },
+      { title: "Nghe lại trước khi gửi", description: "Kiểm tra âm lượng và độ rõ của bản ghi.", icon: "🎙️" }
+    ]
+  };
+
+  await page.route(API + "/speaking/practice/" + sessionId, async (route) => {
+    if (route.request().method() !== "GET") return route.continue();
+    return route.fulfill(json(practice));
+  });
+
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  const response = await page.goto(WEB + "/speaking/practice/" + sessionId, { waitUntil: "domcontentloaded", timeout: 45_000 });
+  if (!response || response.status() >= 400) throw new Error("Speaking Practice navigation failed");
+  if (page.url().includes("/login")) throw new Error("Speaking Practice redirected to login");
+  await stabilizePage(page);
+  await page.getByRole("heading", { name: practice.lesson.prompt }).waitFor({ state: "visible", timeout: 30_000 });
+  await page.getByRole("button", { name: "Nghe câu mẫu" }).waitFor({ state: "visible", timeout: 30_000 });
+  await page.getByRole("button", { name: "Bắt đầu ghi âm" }).waitFor({ state: "visible", timeout: 30_000 });
+
+  if (viewport.width === 390) {
+    const evidence = await page.evaluate(() => {
+      const record = Array.from(document.querySelectorAll("button")).find((node) => /Bắt đầu ghi âm/.test(node.textContent || ""));
+      const nav = Array.from(document.querySelectorAll("nav")).find((node) => window.getComputedStyle(node).position === "fixed" && node.getBoundingClientRect().bottom >= window.innerHeight - 2);
+      const rr = record?.getBoundingClientRect();
+      const nr = nav?.getBoundingClientRect();
+      return {
+        viewport: { width: innerWidth, height: innerHeight },
+        recordRect: rr?.toJSON() || null,
+        navRect: nr?.toJSON() || null,
+        pageScrollWidth: document.documentElement.scrollWidth,
+        noHorizontalOverflow: document.documentElement.scrollWidth <= innerWidth
+      };
+    });
+    console.log("[mobile-speaking-practice-evidence]", JSON.stringify(evidence));
+    if (!evidence.noHorizontalOverflow) throw new Error("Speaking Practice has mobile horizontal overflow");
+  }
+
+  await page.screenshot({ path: "artifacts/visual-v31/" + prefix + "-speaking-practice.png", fullPage: true });
+  if (errors.length) throw new Error("Speaking Practice page errors: " + errors.join(" | "));
+  await browser.close();
+}
+
+for (const [prefix, viewport] of [["desktop", { width: 1536, height: 1024 }], ["mobile", { width: 390, height: 844 }]]) {
+  await captureSpeakingPractice(prefix, viewport);
 }

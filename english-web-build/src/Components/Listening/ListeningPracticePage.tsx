@@ -381,7 +381,7 @@ export default function ListeningPracticePage({
   }
 
   return (
-    <main className="min-h-screen bg-[#fbfbff] text-[#101733]">
+    <main className="min-h-screen bg-[#f7faff] text-[#101733]">
       <audio
         ref={audioRef}
         src={currentQuestion.audioUrl || undefined}
@@ -395,36 +395,36 @@ export default function ListeningPracticePage({
         onEnded={() => setIsPlaying(false)}
       />
 
-      <div className="mx-auto min-h-screen max-w-[1920px]">
-        <section className="min-w-0 px-0 py-2 sm:py-4 lg:px-2">
-          <div className="mx-auto max-w-[1450px]">
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+      <div className="mx-auto min-h-screen max-w-[1536px]">
+        <section className="min-w-0 px-3 py-2 pb-[calc(6.75rem+env(safe-area-inset-bottom))] sm:px-5 sm:py-5 sm:pb-6 lg:px-8">
+          <div className="mx-auto max-w-[1240px]">
+            <div className="mb-2 flex items-center justify-between gap-3 sm:mb-6 sm:gap-4">
               <button
                 onClick={() => router.push("/listening")}
-                className="inline-flex items-center gap-2 font-bold text-violet-600"
+                className="inline-flex items-center gap-2 font-bold text-blue-600"
               >
                 <ChevronLeft size={18} />
-                Listening Home
+                Trang luyện nghe
               </button>
 
               <button
                 onClick={finish}
                 disabled={submitting}
-                className="rounded-xl border bg-white px-5 py-3 font-bold disabled:opacity-50"
+                className="rounded-xl border bg-white px-3 py-2 text-sm font-bold sm:px-5 sm:py-3 disabled:opacity-50"
               >
                 Kết thúc bài
               </button>
             </div>
 
             {error && (
-              <div className="mb-5 rounded-2xl bg-red-50 p-4 font-bold text-red-600">
+              <div className="mb-4 rounded-2xl border border-red-100 bg-red-50 p-3.5 text-sm font-bold text-red-600">
                 {error}
               </div>
             )}
 
-            <div className="grid gap-7 xl:grid-cols-[minmax(0,1fr)_380px]">
-              <section className="rounded-3xl border border-violet-100 bg-white p-7 shadow-sm">
-                <div className="flex flex-wrap gap-3">
+            <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_300px] xl:gap-7">
+              <section className="overflow-hidden rounded-[24px] border border-blue-100 bg-white p-3 shadow-[0_18px_60px_rgba(37,99,235,0.08)] sm:rounded-[28px] sm:p-7 lg:p-8">
+                <div className="hidden flex-wrap gap-2 sm:flex sm:gap-3">
                   <Badge>
                     Câu {currentIndex + 1}/
                     {practice.questions.length}
@@ -433,23 +433,52 @@ export default function ListeningPracticePage({
                   <Badge>{practice.topic}</Badge>
                 </div>
 
-                <div className="mt-7 rounded-3xl bg-violet-50 p-6">
-                  <div className="flex items-center gap-6">
+                <div className="mt-2 flex items-center gap-2.5 sm:mt-3 sm:gap-3 lg:hidden">
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-full rounded-full bg-blue-600 transition-all" style={{ width: `${progress.percent}%` }} />
+                  </div>
+                  <span className="text-xs font-black text-slate-500">{progress.percent}%</span>
+                  <span className="rounded-full bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-500">{listenedCount} lượt nghe</span>
+                </div>
+
+                <div className="mt-2 rounded-[20px] border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-sky-50 p-2.5 sm:mt-6 sm:rounded-[24px] sm:p-6">
+                  <div className="hidden items-center justify-between gap-2 rounded-2xl bg-white/80 px-2.5 py-2 sm:mb-4 sm:flex sm:gap-3 sm:px-4 sm:py-2.5">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className={`relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-xl border bg-white transition-transform sm:h-12 sm:w-12 sm:rounded-2xl ${isPlaying ? "scale-105 border-blue-300" : currentQuestion.answered ? currentQuestion.isCorrect ? "border-emerald-300" : "border-amber-300" : "border-blue-100"}`}>
+                        <img src="/brand/beaconvie-ai-mascot.webp" alt="BeaconVie mascot" className="h-9 w-9 object-contain sm:h-11 sm:w-11" />
+                        {isPlaying && <span className="absolute bottom-1 right-1 h-2.5 w-2.5 animate-pulse rounded-full bg-blue-500 ring-2 ring-white" />}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-black uppercase tracking-[0.1em] text-blue-600 sm:text-xs sm:tracking-[0.12em]">Beacon đang đồng hành</p>
+                        <p className="truncate text-xs font-bold text-slate-600 sm:text-sm">
+                          {isPlaying ? "Tập trung nghe ý chính nhé!" : currentQuestion.answered ? currentQuestion.isCorrect ? "Tuyệt lắm, bạn nghe rất chính xác!" : currentQuestion.isSkipped ? "Không sao, xem lời thoại rồi thử câu tiếp theo." : "Gần đúng rồi, nghe lại và xem lời thoại nhé." : "Bấm Play khi bạn sẵn sàng."}
+                        </p>
+                      </div>
+                    </div>
+                    <Volume2 className={`h-5 w-5 shrink-0 ${isPlaying ? "text-blue-600" : "text-slate-300"}`} />
+                  </div>
+
+                  <div className="flex items-center gap-3 sm:gap-6">
                     <button
                       onClick={playAudio}
-                      className="grid h-20 w-20 shrink-0 place-items-center rounded-full bg-violet-600 text-white shadow-lg"
+                      className="grid h-12 w-12 sm:h-20 sm:w-20 shrink-0 place-items-center rounded-full bg-blue-600 text-white shadow-lg"
                     >
                       {isPlaying ? (
-                        <Pause size={32} />
+                        <Pause className="h-5 w-5 sm:h-8 sm:w-8" />
                       ) : (
-                        <Play size={32} />
+                        <Play className="h-6 w-6 sm:h-8 sm:w-8" />
                       )}
                     </button>
 
                     <div className="min-w-0 flex-1">
-                      <div className="h-3 rounded-full bg-white">
+                      <div className="mb-1.5 flex h-5 items-center gap-1 overflow-hidden sm:mb-3 sm:h-8" aria-hidden="true">
+                        {[10,18,26,14,22,30,16,24,12,28,20,32,16,24,18,30,12,22,16,26,14,20,12,18].map((height, index) => (
+                          <span key={index} className={`w-1 flex-1 rounded-full transition-all ${isPlaying ? "bg-blue-400" : "bg-blue-200"}`} style={{ height: `${height}px`, opacity: index / 24 <= currentTime / Math.max(currentQuestion.duration, 1) ? 1 : 0.45 }} />
+                        ))}
+                      </div>
+                      <div className="h-2.5 overflow-hidden rounded-full bg-white">
                         <div
-                          className="h-3 rounded-full bg-violet-600"
+                          className="h-3 rounded-full bg-blue-600"
                           style={{
                             width: `${Math.min(
                               100,
@@ -463,7 +492,7 @@ export default function ListeningPracticePage({
                           }}
                         />
                       </div>
-                      <div className="mt-3 flex justify-between text-sm font-bold text-slate-500">
+                      <div className="mt-1.5 flex justify-between text-[11px] font-bold text-slate-500 sm:mt-3 sm:text-sm">
                         <span>
                           {formatSeconds(currentTime)}
                         </span>
@@ -477,21 +506,21 @@ export default function ListeningPracticePage({
                   </div>
                 </div>
 
-                <div className="mt-7 flex items-start justify-between gap-4">
+                <div className="mt-2 flex items-start justify-between gap-3 sm:mt-6 sm:gap-4">
                   <div>
-                    <h1 className="text-2xl font-black">
+                    <h1 className="!text-[18px] !leading-[24px] font-black tracking-[-0.02em] sm:!text-[26px] sm:!leading-[1.35]">
                       {currentQuestion.question}
                     </h1>
-                    <p className="mt-2 text-slate-500">
+                    <p className="hidden text-xs text-slate-500 sm:mt-2 sm:block sm:text-base">
                       Nghe audio và chọn đáp án đúng nhất.
                     </p>
                   </div>
 
                   <button
                     onClick={toggleFlag}
-                    className={`rounded-xl border p-3 ${
+                    className={`rounded-xl border p-2.5 sm:p-3 ${
                       currentQuestion.isFlagged
-                        ? "border-violet-400 bg-violet-50 text-violet-600"
+                        ? "border-blue-400 bg-blue-50 text-blue-600"
                         : "text-slate-400"
                     }`}
                   >
@@ -499,7 +528,7 @@ export default function ListeningPracticePage({
                   </button>
                 </div>
 
-                <div className="mt-6 space-y-3">
+                <div className="mt-2 grid gap-1.5 sm:mt-6 sm:gap-3">
                   {currentQuestion.options.map((option) => {
                     const selected =
                       selectedAnswer === option.label;
@@ -522,17 +551,17 @@ export default function ListeningPracticePage({
                         onClick={() =>
                           setSelectedAnswer(option.label)
                         }
-                        className={`flex w-full items-center gap-4 rounded-2xl border px-5 py-4 text-left font-bold disabled:cursor-not-allowed ${
+                        className={`flex w-full items-center gap-2.5 rounded-xl border px-3 py-2 text-left text-[13px] font-bold sm:gap-4 sm:rounded-2xl sm:px-5 sm:py-4 sm:text-base disabled:cursor-not-allowed ${
                           correct
                             ? "border-emerald-400 bg-emerald-50 text-emerald-700"
                             : wrongSelected
                               ? "border-red-400 bg-red-50 text-red-700"
                               : selected
-                                ? "border-violet-500 bg-violet-50 text-violet-700"
+                                ? "border-blue-500 bg-blue-50 text-blue-700"
                                 : "border-slate-200"
                         }`}
                       >
-                        <span className="grid h-9 w-9 place-items-center rounded-full bg-white shadow-sm">
+                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white shadow-sm sm:h-9 sm:w-9">
                           {option.label}
                         </span>
                         {option.text}
@@ -556,7 +585,7 @@ export default function ListeningPracticePage({
                         onClick={() =>
                           setShowTranscript((value) => !value)
                         }
-                        className="font-bold text-violet-600"
+                        className="font-bold text-blue-600"
                       >
                         {showTranscript
                           ? "Ẩn lời thoại"
@@ -571,7 +600,7 @@ export default function ListeningPracticePage({
                     </div>
                   )}
 
-                <div className="mt-8 flex flex-wrap justify-between gap-3">
+                <div className="mt-5 flex flex-col gap-2 border-t border-slate-100 pt-4 sm:mt-8 sm:flex-row sm:flex-wrap sm:justify-between sm:gap-3 sm:pt-6">
                   <button
                     disabled={currentIndex === 0}
                     onClick={() =>
@@ -579,19 +608,19 @@ export default function ListeningPracticePage({
                         Math.max(0, value - 1),
                       )
                     }
-                    className="rounded-xl border px-6 py-3 font-bold disabled:opacity-40"
+                    className="rounded-xl border px-4 py-2.5 text-sm font-bold sm:px-6 sm:py-3 sm:text-base disabled:opacity-40"
                   >
                     Câu trước
                   </button>
 
-                  <div className="flex gap-3">
+                  <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-3">
                     <button
                       disabled={
                         submitting ||
                         currentQuestion.answered
                       }
                       onClick={skipQuestion}
-                      className="inline-flex items-center gap-2 rounded-xl border px-5 py-3 font-bold disabled:opacity-40"
+                      className="inline-flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-bold sm:px-5 sm:py-3 sm:text-base disabled:opacity-40"
                     >
                       <SkipForward size={17} />
                       Bỏ qua
@@ -604,7 +633,7 @@ export default function ListeningPracticePage({
                           !currentQuestion.answered)
                       }
                       onClick={next}
-                      className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-7 py-3 font-black text-white disabled:opacity-40"
+                      className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-black text-white sm:px-7 sm:py-3 sm:text-base disabled:opacity-40"
                     >
                       {currentQuestion.answered
                         ? currentIndex ===
@@ -618,9 +647,9 @@ export default function ListeningPracticePage({
                 </div>
               </section>
 
-              <aside className="space-y-6">
+              <aside className="hidden lg:block lg:space-y-5">
                 {dailyMission && (
-                  <section className="rounded-3xl bg-gradient-to-br from-violet-700 to-indigo-600 p-6 text-white">
+                  <section className="col-span-2 rounded-2xl bg-gradient-to-br from-blue-700 to-sky-600 p-4 text-white sm:rounded-3xl sm:p-6">
                     <p className="text-xs font-black text-white/70">
                       NHIỆM VỤ LISTENING
                     </p>
@@ -645,23 +674,23 @@ export default function ListeningPracticePage({
                   </section>
                 )}
 
-                <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+                <section className="rounded-2xl border border-blue-100 bg-white p-3 shadow-sm sm:rounded-3xl sm:p-6">
                   <h2 className="font-black">
                     Tiến độ bài học
                   </h2>
-                  <div className="mt-5 h-3 rounded-full bg-slate-100">
+                  <div className="mt-2 h-2 rounded-full bg-slate-100 sm:mt-5 sm:h-3">
                     <div
-                      className="h-3 rounded-full bg-violet-600"
+                      className="h-3 rounded-full bg-blue-600"
                       style={{
                         width: `${progress.percent}%`,
                       }}
                     />
                   </div>
 
-                  <div className="mt-5 grid grid-cols-3 gap-2 text-center">
+                  <div className="mt-2 grid grid-cols-3 gap-1 text-center sm:mt-5 sm:gap-2">
                     <ProgressItem
                       value={progress.correct}
-                      label="?úng"
+                      label="Đúng"
                       tone="green"
                     />
                     <ProgressItem
@@ -677,11 +706,11 @@ export default function ListeningPracticePage({
                   </div>
                 </section>
 
-                <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+                <section className="rounded-2xl border border-blue-100 bg-white p-3 shadow-sm sm:rounded-3xl sm:p-6">
                   <h2 className="font-black">
                     Danh sách câu
                   </h2>
-                  <div className="mt-4 grid grid-cols-5 gap-2">
+                  <div className="mt-2 grid grid-cols-5 gap-1 sm:mt-4 sm:gap-2">
                     {practice.questions.map(
                       (question, index) => (
                         <button
@@ -689,9 +718,9 @@ export default function ListeningPracticePage({
                           onClick={() =>
                             setCurrentIndex(index)
                           }
-                          className={`grid h-10 place-items-center rounded-xl font-black ${
+                          className={`grid h-8 place-items-center rounded-lg text-sm font-black sm:h-10 sm:rounded-xl sm:text-base ${
                             index === currentIndex
-                              ? "bg-violet-600 text-white"
+                              ? "bg-blue-600 text-white"
                               : question.isCorrect
                                 ? "bg-emerald-100 text-emerald-700"
                                 : question.isSkipped
@@ -708,9 +737,9 @@ export default function ListeningPracticePage({
                   </div>
                 </section>
 
-                <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+                <section className="col-span-2 rounded-2xl border border-blue-100 bg-white p-3 shadow-sm sm:col-span-1 sm:rounded-3xl sm:p-6">
                   <div className="flex items-center gap-3">
-                    <Headphones className="text-violet-600" />
+                    <Headphones className="text-blue-600" />
                     <div>
                       <p className="font-black">
                         Lượt nghe câu này
@@ -736,7 +765,7 @@ function Badge({
   children: React.ReactNode;
 }) {
   return (
-    <span className="rounded-full bg-violet-50 px-4 py-2 text-xs font-black text-violet-700">
+    <span className="rounded-full bg-blue-50 px-4 py-2 text-xs font-black text-blue-700">
       {children}
     </span>
   );
@@ -760,7 +789,7 @@ function ProgressItem({
 
   return (
     <div>
-      <p className={`text-2xl font-black ${className}`}>
+      <p className={`text-xl font-black sm:text-2xl ${className}`}>
         {value}
       </p>
       <p className="text-xs font-bold text-slate-500">
@@ -778,13 +807,14 @@ function PageState({
   action?: () => void;
 }) {
   return (
-    <div className="grid min-h-screen place-items-center bg-[#fbfbff]">
-      <div className="rounded-2xl bg-white px-8 py-6 text-center shadow-sm">
-        <p className="font-bold">{text}</p>
+    <div className="grid min-h-screen place-items-center bg-[#f7faff]">
+      <div className="max-w-sm rounded-[28px] border border-blue-100 bg-white px-8 py-7 text-center shadow-[0_18px_60px_rgba(37,99,235,0.10)]">
+        <img src="/brand/beaconvie-ai-mascot.webp" alt="" className="mx-auto mb-4 h-20 w-20 object-contain" />
+        <p className="font-bold text-slate-700">{text}</p>
         {action && (
           <button
             onClick={action}
-            className="mt-4 rounded-xl bg-violet-600 px-5 py-2 font-bold text-white"
+            className="mt-4 rounded-xl bg-blue-600 px-5 py-2 font-bold text-white"
           >
             Tải lại
           </button>
