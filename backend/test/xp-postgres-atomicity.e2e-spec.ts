@@ -27,8 +27,10 @@ suite('XP transaction atomicity — disposable local PostgreSQL', () => {
   beforeAll(async () => {
     prisma = new PrismaService();
     await prisma.$connect();
-    // No active season fixture: the real service uses PostgreSQL but will
-    // not emit Redis leaderboard updates in these two DB-focused cases.
+    // These DB-focused cases require no active leaderboard season.
+    // Abort rather than accidentally contacting Redis with a dummy client.
+    const active = await prisma.leaderboardSeason.count({ where: { isActive: true, status: 'ACTIVE' } });
+    if (active) throw new Error('Local XP DB-only suite requires no active leaderboard season; use a disposable empty DB');
     service = new XpService(prisma, {} as any, { emitGroupUpdated: jest.fn() } as any);
   });
 
