@@ -109,7 +109,7 @@ describe('XP post-commit Redis failure and reconciliation contracts', () => {
     expect(f.prisma.$transaction).not.toHaveBeenCalled();
   });
 
-  it('skill reconciliation must aggregate matching XP ledger by period, not replay increments', () => {
+  it('skill reconciliation must aggregate matching XP ledger by period, not replay increments', async () => {
     const f = setup();
     const ledger = [
       { userId, skill: 'READING', finalXp: 20, earnedAt: new Date('2026-10-05T12:00:00Z') },
