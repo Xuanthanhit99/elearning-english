@@ -112,6 +112,7 @@ function disposableDatabase() {
             await prisma.userMissionV2.deleteMany({ where: { userId } });
             await prisma.petReward.deleteMany({ where: { userId } });
             await prisma.lessonProgress.deleteMany({ where: { userId } });
+            await prisma.petProfile.deleteMany({ where: { userId } });
             await prisma.placementTest.deleteMany({ where: { userId } });
             if (courseId) {
               await prisma.lesson.deleteMany({ where: { section: { courseId } } });
@@ -154,7 +155,8 @@ function disposableDatabase() {
       expect(rewards).toHaveLength(1);
       expect(rewards[0]).toMatchObject({ xp: 30, coins: 12, food: 1 });
       const pet = await prisma.petProfile.findUniqueOrThrow({ where: { userId } });
-      expect(pet).toMatchObject({ xp: 30, coins: 12, food: 1, completedLessons: 1 });
+      // PetProfile.food defaults to 2; one lesson reward adds 1.
+      expect(pet).toMatchObject({ xp: 30, coins: 12, food: 3, completedLessons: 1 });
 
       const retry = await learningPath.completeLesson(userId, lessonId);
       expect(retry.alreadyCompleted).toBe(true);
