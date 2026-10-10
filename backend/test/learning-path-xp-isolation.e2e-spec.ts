@@ -40,10 +40,9 @@ function safeLocalDb() {
   it('must award two different users independently for the same lesson', async () => {
     const a = await user(), b = await user();
     const lessonId = `fixture-lesson-${randomUUID()}`;
-    const currentLearningPathKey = `learning:LESSON_COMPLETED:${lessonId}`;
     const award = (userId: string) => xp.awardXpWithSideEffects({
       userId, sourceType: XpSourceType.LESSON, sourceId: lessonId,
-      baseXp: 20, bonusXp: 0, idempotencyKey: currentLearningPathKey,
+      baseXp: 20, bonusXp: 0, idempotencyKey: `learning:LESSON_COMPLETED:${userId}:${lessonId}`,
     }, async () => null);
     const first = await award(a.id);
     const second = await award(b.id);
