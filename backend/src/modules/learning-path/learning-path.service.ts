@@ -464,7 +464,7 @@ export class LearningPathService {
       };
     }
 
-    const idempotencyKey = `learning:LESSON_COMPLETED:${lesson.id}`;
+    const idempotencyKey = `learning:LESSON_COMPLETED:${userId}:${lesson.id}`;
     const completedAt = new Date();
 
     const rewardResult = await this.xpService.awardXpWithSideEffects(
