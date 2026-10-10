@@ -23,3 +23,20 @@ Source: NestJS controllers at `main@13d40d7a649196e88ddbd9f5aeed5c817af14e4d`. T
 
 ## Required exhaustive inventory
 Parse every controller's decorators, method, guard, DTO and ownership checks; compare frontend API clients and native calls; check global prefix/versioning; produce OpenAPI diff and auth matrix; test response contracts locally. No endpoints were invoked in production during this audit.
+
+
+## Route matrix checkpoint — 8 inspected controllers (not full inventory)
+Paths are controller-relative; inspect global prefix and guards for final effective paths. Source: main@13d40d7.
+
+| Controller | Route declarations | Auth observation |
+|---|---|---|
+| reading | GET home,categories,categories/:slug,articles,articles/:slug,sessions/:sessionId/result,history; POST articles/:articleId/start,sessions/:sessionId/answer,sessions/:sessionId/submit | class JWT |
+| listening | GET home,history,practice,sessions/:sessionId/result; POST practice/start,sessions/:sessionId/answer,skip,flag,finish,rating,retry,continue | class JWT |
+| speaking | GET home,topics,topics/:slug,topics/:slug/lessons,categories,categories/:slug,categories/:slug/lessons,history,history/:id,history/:id/practice-type-detail,practice/:sessionId; POST lessons/:lessonId/start,sessions/:sessionId/generate-question,sessions/:sessionId/answers,sessions/:sessionId/finish,history/:id/practice-again | per-method JWT; generate-question throttled 20/min |
+| writing | POST check,lessons/:lessonId/start,topics/:slug/types/:type/start,sessions/:sessionId/save,review,submit,retry,retry-processing,rewrite,history/:sessionId/retry,history/:sessionId/practice-again; GET ai/history,home,progress,history/recent,topics,topics/:slug,topics/:slug/types,sessions/:sessionId,status,result,history,history/:sessionId | check OptionalJWT + throttle 10/min; other listed handlers JWT |
+| pronunciation | POST generate,analyze; GET history | method JWT guards observed; verify handler mapping |
+| conversation | GET scenarios,sessions,sessions/:id; POST sessions,sessions/:id/messages,sessions/:id/finish | class JWT; start 10/min, messages 20/min |
+| orders | POST courses/:courseId; GET my | class JWT |
+| payments | POST orders/:orderId/vnpay; GET vnpay-return | POST JWT, GET public browser return |
+
+**Coverage:** 8 of 74 controllers inspected for route declarations. This is not a complete API inventory; DTO, owner checks and frontend/mobile consumers still require mapping. Do not mark this gate PASS.
