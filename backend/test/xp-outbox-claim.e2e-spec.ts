@@ -61,4 +61,17 @@ const safe = (() => {
     expect(claimed.some((x) => x.id === expired.id)).toBe(true);
     expect(claimed.some((x) => x.id === live.id)).toBe(false);
   });
+  it('rejects stale generation after a newer worker reclaims the lease', async () => {
+    const row = await fixture('PROCESSING', new Date(Date.now() - 120000));
+    const oldGeneration = row.attempts;
+    const reclaimed = (await claim.claim(100)).find((x) => x.id === row.id);
+    expect(reclaimed).toBeDefined();
+    expect(reclaimed!.attempts).toBe(oldGeneration + 1);
+    expect(await claim.complete(row.id, oldGeneration)).toBe(false);
+    expect(await claim.retry(row.id, oldGeneration, 'stale')).toBe(false);
+    expect(await claim.complete(row.id, reclaimed!.attempts)).toBe(true);
+    const stored = await prisma.xpRedisOutbox.findUniqueOrThrow({ where: { id: row.id } });
+    expect(stored.status).toBe('DONE');
+  });
+
 });
