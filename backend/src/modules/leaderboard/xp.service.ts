@@ -398,23 +398,39 @@ export class XpService {
     entry: { groupId: string; periodXp: number } | null,
   ) {
     if (!seasonId || !entry) return;
+    const weeklyKey = weeklyRedisKey(seasonId, entry.groupId);
+    await this.bumpProjectionRevision(tx, weeklyKey, userId);
     await tx.xpRedisOutbox.create({
       data: {
         transactionId, projection: 'WEEKLY',
-        redisKey: weeklyRedisKey(seasonId, entry.groupId),
+        redisKey: weeklyKey,
         userId, seasonId, groupId: entry.groupId,
       },
     });
     if (skill) {
       const periodKey = this.periodKey(new Date());
+      const skillKey = skillRedisKey(skill, periodKey);
+      await this.bumpProjectionRevision(tx, skillKey, userId);
       await tx.xpRedisOutbox.create({
         data: {
           transactionId, projection: 'SKILL',
-          redisKey: skillRedisKey(skill, periodKey),
+          redisKey: skillKey,
           userId, skill, periodKey,
         },
       });
     }
+  }
+
+  private async bumpProjectionRevision(
+    tx: Prisma.TransactionClient,
+    redisKey: string,
+    userId: string,
+  ) {
+    await tx.xpRedisProjectionRevision.upsert({
+      where: { redisKey_userId: { redisKey, userId } },
+      create: { redisKey, userId, revision: 1 },
+      update: { revision: { increment: 1 } },
+    });
   }
 
   private async assertDailyLimit(
