@@ -26,11 +26,12 @@ export class XpRedisProjectionService {
     score: number;
     revision: number;
   }> {
-    const job = await this.prisma.xpRedisOutbox.findUniqueOrThrow({
+    return this.prisma.$transaction(async (tx) => {
+    const job = await tx.xpRedisOutbox.findUniqueOrThrow({
       where: { id: outboxId },
     });
 
-    const revisionRow = await this.prisma.xpRedisProjectionRevision.findUnique({
+    const revisionRow = await tx.xpRedisProjectionRevision.findUnique({
       where: { redisKey_userId: { redisKey: job.redisKey, userId: job.userId } },
       select: { revision: true },
     });
@@ -41,7 +42,7 @@ export class XpRedisProjectionService {
       if (!job.groupId || !job.seasonId) {
         throw new Error('INVALID_WEEKLY_OUTBOX');
       }
-      const entry = await this.prisma.leaderboardEntry.findFirst({
+      const entry = await tx.leaderboardEntry.findFirst({
         where: {
           userId: job.userId,
           groupId: job.groupId,
@@ -59,7 +60,7 @@ export class XpRedisProjectionService {
       // Aggregate only transactions with a committed SKILL projection intent.
       // This matches the legacy behavior of only updating skill Redis when
       // an eligible active-season weekly entry was awarded XP.
-      const intents = await this.prisma.xpRedisOutbox.findMany({
+      const intents = await tx.xpRedisOutbox.findMany({
         where: {
           userId: job.userId,
           projection: 'SKILL',
@@ -68,7 +69,7 @@ export class XpRedisProjectionService {
         },
         select: { transactionId: true },
       });
-      const aggregate = await this.prisma.xpTransaction.aggregate({
+      const aggregate = await tx.xpTransaction.aggregate({
         where: { id: { in: intents.map((intent) => intent.transactionId) } },
         _sum: { finalXp: true },
       });
@@ -81,6 +82,7 @@ export class XpRedisProjectionService {
     }
 
     throw new Error('UNKNOWN_XP_PROJECTION');
+    }, { isolationLevel: 'RepeatableRead' });
   }
 
   /**
