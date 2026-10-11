@@ -10,6 +10,44 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class XpRedisOutboxClaimService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * attempts is a monotonically increasing lease generation for each outbox row.
+   * Callers MUST carry the generation returned by claim into completion/retry.
+   * This fences PostgreSQL state transitions, NOT Redis writes.
+   */
+  async complete(id: string, generation: number): Promise<boolean> {
+    if (!Number.isSafeInteger(generation) || generation < 1) return false;
+    const changed = await this.prisma.$executeRaw`
+      UPDATE "XpRedisOutbox"
+      SET "status" = 'DONE', "lockedUntil" = NULL, "updatedAt" = NOW()
+      WHERE "id" = ${id}
+        AND "status" = 'PROCESSING'
+        AND "attempts" = ${generation}
+        AND "lockedUntil" > NOW()
+    `;
+    return changed === 1;
+  }
+
+  async retry(id: string, generation: number, error: string, delaySeconds = 30): Promise<boolean> {
+    if (!Number.isSafeInteger(generation) || generation < 1) return false;
+    if (!Number.isInteger(delaySeconds) || delaySeconds < 1 || delaySeconds > 3600) {
+      throw new Error('INVALID_OUTBOX_RETRY_DELAY');
+    }
+    const changed = await this.prisma.$executeRaw`
+      UPDATE "XpRedisOutbox"
+      SET "status" = 'PENDING',
+          "lockedUntil" = NULL,
+          "nextAttemptAt" = NOW() + (${delaySeconds} * INTERVAL '1 second'),
+          "lastError" = ${error.slice(0, 1000)},
+          "updatedAt" = NOW()
+      WHERE "id" = ${id}
+        AND "status" = 'PROCESSING'
+        AND "attempts" = ${generation}
+        AND "lockedUntil" > NOW()
+    `;
+    return changed === 1;
+  }
+
   async claim(batchSize = 10, leaseSeconds = 60) {
     if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > 100) {
       throw new Error('INVALID_OUTBOX_BATCH_SIZE');
