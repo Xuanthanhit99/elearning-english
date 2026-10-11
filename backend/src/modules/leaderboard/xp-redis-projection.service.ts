@@ -24,10 +24,18 @@ export class XpRedisProjectionService {
     redisKey: string;
     userId: string;
     score: number;
+    revision: number;
   }> {
     const job = await this.prisma.xpRedisOutbox.findUniqueOrThrow({
       where: { id: outboxId },
     });
+
+    const revisionRow = await this.prisma.xpRedisProjectionRevision.findUnique({
+      where: { redisKey_userId: { redisKey: job.redisKey, userId: job.userId } },
+      select: { revision: true },
+    });
+    if (!revisionRow) throw new Error('MISSING_AUTHORITATIVE_PROJECTION_REVISION');
+    const revision = revisionRow.revision;
 
     if (job.projection === 'WEEKLY') {
       if (!job.groupId || !job.seasonId) {
@@ -41,7 +49,7 @@ export class XpRedisProjectionService {
         },
         select: { periodXp: true },
       });
-      return { redisKey: job.redisKey, userId: job.userId, score: entry?.periodXp ?? 0 };
+      return { redisKey: job.redisKey, userId: job.userId, score: entry?.periodXp ?? 0, revision };
     }
 
     if (job.projection === 'SKILL') {
@@ -68,6 +76,7 @@ export class XpRedisProjectionService {
         redisKey: job.redisKey,
         userId: job.userId,
         score: aggregate._sum.finalXp ?? 0,
+        revision,
       };
     }
 
