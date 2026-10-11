@@ -134,6 +134,7 @@ export class XpService {
               });
             }
 
+            await this.enqueueRedisProjection(tx, transaction.id, input.userId, input.skill, activeSeason?.id, entry);
             return { transaction, profile: updatedProfile, activeSeason, entry };
           },
           { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
@@ -293,6 +294,8 @@ export class XpService {
                 });
               }
 
+              await this.enqueueRedisProjection(tx, transaction.id, input.userId, input.skill, activeSeason?.id, entry);
+
               return {
                 transaction,
                 profile: updatedProfile,
@@ -378,6 +381,40 @@ export class XpService {
       data: { reversedAt: new Date(), reversalReason: reason },
     });
     return result;
+  }
+
+  /**
+   * Durable intent is committed with the XP ledger, never after it.
+   * The recovery worker recomputes absolute Redis projections from PostgreSQL.
+   * Skill projections are only currently emitted for users with a weekly entry,
+   * matching the existing post-commit behavior.
+   */
+  private async enqueueRedisProjection(
+    tx: Prisma.TransactionClient,
+    transactionId: string,
+    userId: string,
+    skill: AwardXpDto['skill'],
+    seasonId: string | undefined,
+    entry: { groupId: string; periodXp: number } | null,
+  ) {
+    if (!seasonId || !entry) return;
+    await tx.xpRedisOutbox.create({
+      data: {
+        transactionId, projection: 'WEEKLY',
+        redisKey: weeklyRedisKey(seasonId, entry.groupId),
+        userId, seasonId, groupId: entry.groupId,
+      },
+    });
+    if (skill) {
+      const periodKey = this.periodKey(new Date());
+      await tx.xpRedisOutbox.create({
+        data: {
+          transactionId, projection: 'SKILL',
+          redisKey: skillRedisKey(skill, periodKey),
+          userId, skill, periodKey,
+        },
+      });
+    }
   }
 
   private async assertDailyLimit(
