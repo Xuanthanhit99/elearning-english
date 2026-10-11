@@ -4947,3 +4947,29 @@ model DocumentProcessingEvent {
   @@index([versionId, createdAt])
   @@index([documentId, createdAt])
 }
+
+
+/// Durable projection intent written atomically with the XP ledger.
+/// Redis is only a cache; workers must recompute absolute scores from PostgreSQL.
+model XpRedisOutbox {
+  id            String   @id @default(uuid())
+  transactionId String
+  projection    String
+  redisKey      String
+  userId        String
+  seasonId      String?
+  groupId       String?
+  skill         LearningSkill?
+  periodKey     String?
+  status        String   @default("PENDING")
+  attempts      Int      @default(0)
+  nextAttemptAt DateTime @default(now())
+  lockedUntil   DateTime?
+  lastError     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([transactionId, projection])
+  @@index([status, nextAttemptAt])
+  @@index([redisKey, userId])
+}
