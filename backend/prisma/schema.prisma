@@ -4973,3 +4973,15 @@ model XpRedisOutbox {
   @@index([status, nextAttemptAt])
   @@index([redisKey, userId])
 }
+
+
+/// Authoritative monotonic revision for a Redis sorted-set member.
+/// Updated within the same serializable transaction as XP and its outbox.
+model XpRedisProjectionRevision {
+  redisKey  String
+  userId    String
+  revision  Int      @default(1)
+  updatedAt DateTime @updatedAt
+
+  @@id([redisKey, userId])
+}
