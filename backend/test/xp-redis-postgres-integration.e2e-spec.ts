@@ -73,6 +73,7 @@ function safeLocalEnvironment() {
             }
           }
           if (userId) await prisma.xpRedisOutbox.deleteMany({ where: { userId } });
+          if (userId) await prisma.xpRedisProjectionRevision.deleteMany({ where: { userId } });
           if (seasonId) await prisma.leaderboardSeason.delete({ where: { id: seasonId } });
           if (userId) await prisma.user.delete({ where: { id: userId } });
         }
@@ -106,11 +107,17 @@ function safeLocalEnvironment() {
       expect(row.periodXp).toBe(20);
       expect(await prisma.xpRedisOutbox.count({ where: { userId, projection: 'WEEKLY' } })).toBe(1);
       expect(await redis.zscore(redisKey, userId)).toBe('20');
+      expect((await prisma.xpRedisProjectionRevision.findUniqueOrThrow({
+        where: { redisKey_userId: { redisKey, userId } },
+      })).revision).toBe(1);
       expect(await prisma.xpTransaction.count({
         where: { idempotencyKey: `local-redis:${tag}:normal` },
       })).toBe(1);
       expect((await award('normal')).duplicated).toBe(true);
       expect((await entry()).periodXp).toBe(20);
+      expect((await prisma.xpRedisProjectionRevision.findUniqueOrThrow({
+        where: { redisKey_userId: { redisKey, userId } },
+      })).revision).toBe(1);
       expect(await redis.zscore(redisKey, userId)).toBe('20');
     });
 
@@ -121,6 +128,9 @@ function safeLocalEnvironment() {
       await expect(award('failed-zadd', adapter)).rejects.toThrow('QA_INJECTED_ZADD_FAILURE');
       const row = await entry();
       expect(row.periodXp).toBe(40);
+      expect((await prisma.xpRedisProjectionRevision.findUniqueOrThrow({
+        where: { redisKey_userId: { redisKey, userId } },
+      })).revision).toBe(2);
       expect(await prisma.xpRedisOutbox.count({ where: { userId, projection: 'WEEKLY' } })).toBe(2);
       expect(await redis.zscore(redisKey, userId)).toBe('20');
       expect((await award('failed-zadd')).duplicated).toBe(true);
@@ -143,6 +153,9 @@ function safeLocalEnvironment() {
       expect(await prisma.xpTransaction.count({ where: { idempotencyKey: key } })).toBe(0);
       expect(await prisma.xpRedisOutbox.count({ where: { userId } })).toBe(2);
       expect((await entry()).periodXp).toBe(before.periodXp);
+      expect((await prisma.xpRedisProjectionRevision.findUniqueOrThrow({
+        where: { redisKey_userId: { redisKey, userId } },
+      })).revision).toBe(2);
     });
 
     it('manual absolute-score reconciliation repairs real Redis without adding XP', async () => {
