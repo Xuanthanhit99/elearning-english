@@ -72,6 +72,7 @@ function safeLocalEnvironment() {
               await redis.del(weeklyRedisKey(seasonId, group.id));
             }
           }
+          if (userId) await prisma.xpRedisOutbox.deleteMany({ where: { userId } });
           if (seasonId) await prisma.leaderboardSeason.delete({ where: { id: seasonId } });
           if (userId) await prisma.user.delete({ where: { id: userId } });
         }
@@ -103,6 +104,7 @@ function safeLocalEnvironment() {
       const row = await entry();
       redisKey = weeklyRedisKey(seasonId, row.groupId);
       expect(row.periodXp).toBe(20);
+      expect(await prisma.xpRedisOutbox.count({ where: { userId, projection: 'WEEKLY' } })).toBe(1);
       expect(await redis.zscore(redisKey, userId)).toBe('20');
       expect(await prisma.xpTransaction.count({
         where: { idempotencyKey: `local-redis:${tag}:normal` },
@@ -119,6 +121,7 @@ function safeLocalEnvironment() {
       await expect(award('failed-zadd', adapter)).rejects.toThrow('QA_INJECTED_ZADD_FAILURE');
       const row = await entry();
       expect(row.periodXp).toBe(40);
+      expect(await prisma.xpRedisOutbox.count({ where: { userId, projection: 'WEEKLY' } })).toBe(2);
       expect(await redis.zscore(redisKey, userId)).toBe('20');
       expect((await award('failed-zadd')).duplicated).toBe(true);
       expect((await entry()).periodXp).toBe(40);
@@ -126,6 +129,20 @@ function safeLocalEnvironment() {
       expect(await prisma.xpTransaction.count({
         where: { idempotencyKey: `local-redis:${tag}:failed-zadd` },
       })).toBe(1);
+    });
+
+    it('rolls back ledger, leaderboard and outbox when a transactional side effect fails', async () => {
+      const key = `local-redis:${tag}:rollback`;
+      const before = await entry();
+      const service = new XpService(prisma, redis, { emitGroupUpdated: jest.fn() } as any);
+      await expect(service.awardXpWithSideEffects({
+        userId, sourceType: XpSourceType.LESSON, sourceId: 'qa-rollback',
+        baseXp: 20, idempotencyKey: key,
+      }, async () => { throw new Error('QA_TX_ROLLBACK'); }))
+        .rejects.toThrow('QA_TX_ROLLBACK');
+      expect(await prisma.xpTransaction.count({ where: { idempotencyKey: key } })).toBe(0);
+      expect(await prisma.xpRedisOutbox.count({ where: { userId } })).toBe(2);
+      expect((await entry()).periodXp).toBe(before.periodXp);
     });
 
     it('manual absolute-score reconciliation repairs real Redis without adding XP', async () => {
