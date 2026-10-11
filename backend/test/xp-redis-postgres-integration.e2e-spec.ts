@@ -158,6 +158,49 @@ function safeLocalEnvironment() {
       })).revision).toBe(2);
     });
 
+    it('keeps score and revision from one repeatable-read snapshot during concurrent XP award', async () => {
+      const row = await entry();
+      const key = weeklyRedisKey(seasonId, row.groupId);
+      const beforeRevision = await prisma.xpRedisProjectionRevision.findUniqueOrThrow({
+        where: { redisKey_userId: { redisKey: key, userId } },
+      });
+      let releaseWriter!: () => void;
+      let snapshotReady!: () => void;
+      const writerGate = new Promise<void>((resolve) => { releaseWriter = resolve; });
+      const snapshotGate = new Promise<void>((resolve) => { snapshotReady = resolve; });
+
+      const reader = prisma.$transaction(async (tx) => {
+        const revision = await tx.xpRedisProjectionRevision.findUniqueOrThrow({
+          where: { redisKey_userId: { redisKey: key, userId } },
+        });
+        snapshotReady();
+        await writerGate;
+        const currentEntry = await tx.leaderboardEntry.findUniqueOrThrow({
+          where: { id: row.id },
+        });
+        return { revision: revision.revision, score: currentEntry.periodXp };
+      }, { isolationLevel: 'RepeatableRead', timeout: 15000 });
+
+      try {
+        await snapshotGate;
+        const updated = await award('concurrent-snapshot');
+        expect(updated.duplicated).toBe(false);
+      } finally {
+        releaseWriter();
+      }
+      const snapshot = await reader;
+      expect(snapshot).toEqual({
+        revision: beforeRevision.revision,
+        score: row.periodXp,
+      });
+      const after = await entry();
+      const latestRevision = await prisma.xpRedisProjectionRevision.findUniqueOrThrow({
+        where: { redisKey_userId: { redisKey: key, userId } },
+      });
+      expect(after.periodXp).toBe(row.periodXp + 20);
+      expect(latestRevision.revision).toBe(beforeRevision.revision + 1);
+    });
+
     it('manual absolute-score reconciliation repairs real Redis without adding XP', async () => {
       const row = await entry();
       const before = await prisma.xpTransaction.count({ where: { userId } });
