@@ -29,7 +29,7 @@ function safeLocalEnvironment() {
     let projection: XpRedisProjectionService;
     let writer: XpRedisCoordinatedWriteService;
     const tag = randomUUID();
-    const userId = `qa-projection-${tag}`;
+    let userId = '';
     const redisKey = `qa:xp:projection:${tag}`;
     const outboxIds: string[] = [];
     let seasonId = '';
@@ -54,7 +54,8 @@ function safeLocalEnvironment() {
           password: 'not-a-real-password-hash',
         },
       });
-      const profile = await db.userXpProfile.create({ data: { userId: user.id } });
+      userId = user.id;
+      const profile = await db.userXpProfile.create({ data: { userId } });
       profileId = profile.id;
 
       const season = await db.leaderboardSeason.create({
