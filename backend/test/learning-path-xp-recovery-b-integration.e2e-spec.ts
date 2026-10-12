@@ -135,41 +135,40 @@ function disposableDatabase() {
 
     afterAll(async () => {
       releasePublish?.();
-      if (inFlight) {
-        // Never delete fixture data while the real service may still be writing.
-        await inFlight.catch(() => undefined);
-      }
-      if (prisma) {
-        try {
-          if (seasonId) {
-              const groups = await prisma.leaderboardGroup.findMany({ where: { seasonId }, select: { id: true } });
-              for (const group of groups) touchedKeys.add(weeklyRedisKey(seasonId, group.id));
-            }
-          }
-          if (redis) for (const key of touchedKeys) await redis.del(key);
-          if (userId) {
-            await prisma.xpRedisOutbox.deleteMany({ where: { userId } });
-            await prisma.xpRedisProjectionRevision.deleteMany({ where: { userId } });
-          }
-          if (seasonId) await prisma.leaderboardSeason.delete({ where: { id: seasonId } });
-          if (userId) {
-            await prisma.userMissionV2.deleteMany({ where: { userId } });
-            await prisma.petReward.deleteMany({ where: { userId } });
-            await prisma.lessonProgress.deleteMany({ where: { userId } });
-            await prisma.petProfile.deleteMany({ where: { userId } });
-            await prisma.placementTest.deleteMany({ where: { userId } });
-            if (courseId) {
-              await prisma.lesson.deleteMany({ where: { section: { courseId } } });
-              await prisma.section.deleteMany({ where: { courseId } });
-              await prisma.course.delete({ where: { id: courseId } });
-            }
-            await prisma.user.delete({ where: { id: userId } });
-          }
-          if (templateId) await prisma.missionTemplateV2.delete({ where: { id: templateId } });
-        } finally {
-          if (redis) redis.disconnect();
-          await prisma.$disconnect();
+      if (inFlight) await inFlight.catch(() => undefined);
+      try {
+        if (!prisma) return;
+        if (seasonId) {
+          const groups = await prisma.leaderboardGroup.findMany({
+            where: { seasonId }, select: { id: true },
+          });
+          for (const group of groups) touchedKeys.add(weeklyRedisKey(seasonId, group.id));
         }
+        if (redis) {
+          for (const key of touchedKeys) await redis.del(key);
+        }
+        if (userId) {
+          await prisma.xpRedisOutbox.deleteMany({ where: { userId } });
+          await prisma.xpRedisProjectionRevision.deleteMany({ where: { userId } });
+        }
+        if (seasonId) await prisma.leaderboardSeason.delete({ where: { id: seasonId } });
+        if (userId) {
+          await prisma.userMissionV2.deleteMany({ where: { userId } });
+          await prisma.petReward.deleteMany({ where: { userId } });
+          await prisma.lessonProgress.deleteMany({ where: { userId } });
+          await prisma.petProfile.deleteMany({ where: { userId } });
+          await prisma.placementTest.deleteMany({ where: { userId } });
+          if (courseId) {
+            await prisma.lesson.deleteMany({ where: { section: { courseId } } });
+            await prisma.section.deleteMany({ where: { courseId } });
+            await prisma.course.delete({ where: { id: courseId } });
+          }
+          await prisma.user.delete({ where: { id: userId } });
+        }
+        if (templateId) await prisma.missionTemplateV2.delete({ where: { id: templateId } });
+      } finally {
+        if (redis) redis.disconnect();
+        if (prisma) await prisma.$disconnect();
       }
     });
 
