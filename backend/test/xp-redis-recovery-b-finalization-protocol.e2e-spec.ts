@@ -77,10 +77,9 @@ function signal() {
   }, 15000);
 
   it('does not mark PG READY when Redis publication succeeded but PG transaction rolls back', async () => {
-    // QA-only temporary table is connection-local; no shared schema/data altered.
-    // Prisma's transaction pool connection is pinned during the callback.
+    // Fixture row uses a temporary table inside one pinned transaction.
     await expect(a.$transaction(async (tx) => {
-      await tx.$executeRawUnsafe('CREATE TEMP TABLE IF NOT EXISTS xp_protocol_state (id text PRIMARY KEY, state text NOT NULL) ON COMMIT PRESERVE ROWS');
+      await tx.$executeRawUnsafe('CREATE TEMP TABLE xp_protocol_state (id text PRIMARY KEY, state text NOT NULL) ON COMMIT DROP');
       await tx.$executeRaw`INSERT INTO xp_protocol_state (id, state) VALUES (${id}, 'REBUILDING') ON CONFLICT (id) DO UPDATE SET state = 'REBUILDING'`;
       await redis.set(key, 'published-fixture');
       await tx.$executeRaw`UPDATE xp_protocol_state SET state = 'READY' WHERE id = ${id}`;
@@ -88,12 +87,7 @@ function signal() {
     }, { timeout: 10000 })).rejects.toThrow('SIMULATED_FINALIZATION_FAILURE');
 
     expect(await redis.get(key)).toBe('published-fixture');
-    // This test proves rollback of a PG transaction, not persistence of a
-    // real recovery scope row; the actual schema/worker does not exist yet.
-    const row = await a.$queryRaw<Array<{ state: string }>>`
-      SELECT state FROM pg_catalog.pg_tables WHERE false
-    `.catch(() => [] as Array<{ state: string }>);
-    expect(row).toEqual([]);
+    // CREATE TEMP TABLE is transactional; after rollback the table is absent.\n    const tables = await a.$queryRaw<Array<{ present: string | null }>>\`\n      SELECT to_regclass('pg_temp.xp_protocol_state')::text AS present\n    \`;\n    expect(tables[0].present).toBeNull();
     // Safe retry must be modeled explicitly; never infer READY from Redis alone.
     expect(await redis.get(`${key}:epoch`)).toBeNull();
   }, 15000);
