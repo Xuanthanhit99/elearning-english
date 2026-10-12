@@ -1,12 +1,11 @@
 /** Real LearningPathService + PostgreSQL + Redis QA. NOT Recovery B cutover E2E. Run alone. */
 /**
  * Real LearningPathService.completeLesson integration, disposable PostgreSQL.
- * No HTTP/JWT and no active leaderboard season: those are separate gates.
+ * No HTTP/JWT. Creates one isolated active QA season; no global outbox claim.
  */
 import { randomUUID } from 'crypto';
 import Redis from 'ioredis';
 import { weeklyRedisKey } from '../src/modules/leaderboard/leaderboard.constants';
-import { XpRedisOutboxClaimService } from '../src/modules/leaderboard/xp-redis-outbox-claim.service';
 import {
   CourseStatus, MissionV2Action, MissionV2Scope, MissionV2Status,
   MissionV2Type, PlacementResultStatus, XpSourceType,
@@ -35,6 +34,8 @@ function disposableDatabase() {
     const touchedKeys = new Set<string>();
     let releasePublish: (() => void) | undefined;
     let enterPublish: (() => void) | undefined;
+    let publicationReached: Promise<void>;
+    let inFlight: Promise<unknown> | undefined;
     let learningPath: LearningPathService;
     let userId: string;
     let lessonId: string;
@@ -52,7 +53,7 @@ function disposableDatabase() {
       await redis.connect();
       const gate = new Promise<void>((resolve) => { releasePublish = resolve; });
       const entered = new Promise<void>((resolve) => { enterPublish = resolve; });
-      (globalThis as any).__lpQaPublicationEntered = entered;
+      publicationReached = entered;
       const adapter = Object.create(redis) as Redis;
       adapter.zadd = jest.fn(async (...args: string[]) => {
         enterPublish?.();
@@ -134,17 +135,24 @@ function disposableDatabase() {
 
     afterAll(async () => {
       releasePublish?.();
+      if (inFlight) {
+        // Never delete fixture data while the real service may still be writing.
+        await inFlight.catch(() => undefined);
+      }
       if (prisma) {
         try {
-          if (userId) {
-            if (seasonId) {
+          if (seasonId) {
               const groups = await prisma.leaderboardGroup.findMany({ where: { seasonId }, select: { id: true } });
               for (const group of groups) touchedKeys.add(weeklyRedisKey(seasonId, group.id));
             }
-            if (redis) for (const key of touchedKeys) await redis.del(key);
+          }
+          if (redis) for (const key of touchedKeys) await redis.del(key);
+          if (userId) {
             await prisma.xpRedisOutbox.deleteMany({ where: { userId } });
             await prisma.xpRedisProjectionRevision.deleteMany({ where: { userId } });
-            if (seasonId) await prisma.leaderboardSeason.delete({ where: { id: seasonId } });
+          }
+          if (seasonId) await prisma.leaderboardSeason.delete({ where: { id: seasonId } });
+          if (userId) {
             await prisma.userMissionV2.deleteMany({ where: { userId } });
             await prisma.petReward.deleteMany({ where: { userId } });
             await prisma.lessonProgress.deleteMany({ where: { userId } });
@@ -168,10 +176,11 @@ function disposableDatabase() {
     it('commits Learning Path rewards and outbox before Redis publication; claim is not publication', async () => {
       const key = `learning:LESSON_COMPLETED:${userId}:${lessonId}`;
       const pending = learningPath.completeLesson(userId, lessonId);
+      inFlight = pending;
       try {
         // Race this barrier against a bounded timer: never hang forever if publication is not reached.
         await Promise.race([
-          (globalThis as any).__lpQaPublicationEntered as Promise<void>,
+          publicationReached,
           new Promise<never>((_, reject) => setTimeout(() => reject(new Error('QA_PUBLICATION_BARRIER_TIMEOUT')), 12000)),
         ]);
         expect(await prisma.xpTransaction.count({ where: { idempotencyKey: key } })).toBe(1);
@@ -186,20 +195,13 @@ function disposableDatabase() {
         const outbox = await prisma.xpRedisOutbox.findMany({ where: { userId, redisKey, projection: 'WEEKLY' } });
         expect(outbox).toHaveLength(1);
         expect(outbox[0].status).toBe('PENDING');
-        // Claim is global; refuse to claim if ANY other eligible row exists.
-        const otherEligible = await prisma.$queryRaw<Array<{ id: string }>>`
-          SELECT "id" FROM "XpRedisOutbox"
-          WHERE "id" <> ${outbox[0].id}
-            AND (("status" = 'PENDING' AND "nextAttemptAt" <= NOW())
-              OR ("status" = 'PROCESSING' AND "lockedUntil" < NOW()))
-          LIMIT 1
-        `;
-        if (otherEligible.length) throw new Error('STOP: non-fixture claimable outbox exists');
-        const claimed = await new XpRedisOutboxClaimService(prisma).claim(1);
-        expect(claimed.map((item) => item.id)).toEqual([outbox[0].id]);
+        // Do not invoke the global claim() API here: it cannot scope to this fixture.
+        // A separate isolated claim test is required before claiming Recovery B coverage.
         expect(await redis!.zscore(redisKey, userId)).toBeNull();
       } finally {
         releasePublish?.();
+        await pending.catch(() => undefined); // drain the real service before cleanup, even on assertion failure
+        inFlight = undefined;
       }
       await pending;
       const entry = await prisma.leaderboardEntry.findFirstOrThrow({ where: { userId, group: { seasonId } } });
