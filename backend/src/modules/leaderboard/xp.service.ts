@@ -363,21 +363,28 @@ export class XpService {
     if (source.reversedAt)
       throw new ConflictException('Transaction already reversed');
 
-    const result = await this.awardXp({
-      userId: source.userId,
-      sourceType: XpSourceType.ADMIN_ADJUSTMENT,
-      sourceId: source.id,
-      baseXp: -source.finalXp,
-      idempotencyKey: `reverse:${source.id}`,
-      reason,
-      metadata: { reversedTransactionId: source.id },
-    });
-
-    await this.prisma.xpTransaction.update({
-      where: { id: source.id },
-      data: { reversedAt: new Date(), reversalReason: reason },
-    });
-    return result;
+    // The compensating ledger row and reversal marker must commit together.
+    // Conditional update fences concurrent reversals in the same transaction.
+    return this.awardXpWithSideEffects(
+      {
+        userId: source.userId,
+        sourceType: XpSourceType.ADMIN_ADJUSTMENT,
+        sourceId: source.id,
+        baseXp: -source.finalXp,
+        idempotencyKey: `reverse:${source.id}`,
+        reason,
+        metadata: { reversedTransactionId: source.id },
+      },
+      async (tx) => {
+        const marked = await tx.xpTransaction.updateMany({
+          where: { id: source.id, reversedAt: null },
+          data: { reversedAt: new Date(), reversalReason: reason },
+        });
+        if (marked.count !== 1) {
+          throw new ConflictException('Transaction already reversed');
+        }
+      },
+    );
   }
 
   private async assertDailyLimit(
