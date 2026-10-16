@@ -121,6 +121,35 @@ describe('D1 reward claim and XP reset — PostgreSQL integration', () => {
     await verify(f, f.xp, 1);
   });
 
+  it.each(['legacy', 'modern'] as const)('%s claim retries a single P2034 without double credit', async (kind) => {
+    const f = await fixture();
+    let attempts = 0;
+    const proxy = new Proxy(prisma, {
+      get(target, key) {
+        if (key === '$transaction') {
+          return (callback: (tx: any) => Promise<unknown>, options: unknown) => {
+            attempts++;
+            if (attempts === 1) {
+              const conflict = Object.assign(new Error('D1 forced serialization conflict'), { code: 'P2034' });
+              throw conflict;
+            }
+            return prisma.$transaction(callback, options as any);
+          };
+        }
+        return (target as any)[key];
+      },
+    });
+    if (kind === 'legacy') {
+      await new LeaderboardService(proxy as any, {} as any).claimReward(f.user.id, f.assignment.id);
+    } else {
+      const service = new LeaderboardRewardService(proxy as any, { createFromPayload: jest.fn() } as any);
+      const result = await service.claim(f.user.id, f.assignment.id);
+      expect(result.alreadyClaimed).toBe(false);
+    }
+    expect(attempts).toBe(2);
+    await verify(f, f.xp, 1);
+  });
+
   it('RESET_XP compensates exactly once and keeps ledger history', async () => {
     const f = await fixture();
     await modern.claim(f.user.id, f.assignment.id);
