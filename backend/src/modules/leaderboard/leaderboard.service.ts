@@ -22,6 +22,7 @@ import {
 } from './leaderboard.constants';
 import { LeaderboardQueryDto } from './dto/leaderboard-query.dto';
 import { creditRewardXp } from './rewards/reward-xp-transaction';
+import { withSerializableRetry } from './xp-transaction-retry.util';
 
 @Injectable()
 export class LeaderboardService {
@@ -233,7 +234,7 @@ export class LeaderboardService {
       throw new NotFoundException('Reward is not available');
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    return withSerializableRetry(() => this.prisma.$transaction(async (tx) => {
       const lock = await tx.userLeaderboardReward.updateMany({
         where: { id: rewardAssignmentId, userId, status: LeaderboardRewardStatus.AVAILABLE,
           OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
@@ -247,7 +248,7 @@ export class LeaderboardService {
         reason: assignment.reward.title, rewardId: assignment.rewardId,
         seasonId: assignment.seasonId });
       return tx.userLeaderboardReward.findUniqueOrThrow({ where: { id: rewardAssignmentId } });
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }));
   }
 
   async updatePrivacy(
