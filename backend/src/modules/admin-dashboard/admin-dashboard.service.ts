@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import {
   BadRequestException,
   Injectable,
@@ -12,6 +13,7 @@ import {
   Prisma,
   UserRole,
   UserStatus,
+  XpSourceType,
 } from '@prisma/client';
 import { AuditLogService } from 'src/modules/audit-log/audit-log.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -438,14 +440,29 @@ export class AdminDashboardService {
       }
 
       if (dto.action === 'RESET_XP') {
-        updatedUser = await tx.user.update({
-          where: { id },
-          data: { xp: 0, level: 1 },
-          select: { id: true, role: true, status: true, xp: true },
+        const profile = await tx.userXpProfile.upsert({
+          where: { userId: id }, create: { userId: id, totalXp: 0 }, update: {},
         });
-        await tx.userXpProfile.updateMany({
-          where: { userId: id },
-          data: { totalXp: 0, currentLevel: 1 },
+        // Lock the XP profile row before reading its balance.
+        const locked = await tx.userXpProfile.update({
+          where: { id: profile.id }, data: { totalXp: { increment: 0 } },
+        });
+        if (locked.totalXp > 0) {
+          await tx.xpTransaction.create({ data: {
+            userId: id, xpProfileId: locked.id,
+            sourceType: XpSourceType.ADMIN_ADJUSTMENT, sourceId: id,
+            baseXp: -locked.totalXp, finalXp: -locked.totalXp,
+            reason: dto.reason ?? 'Admin XP reset',
+            idempotencyKey: `admin-reset-xp:${id}:${randomUUID()}`,
+            metadata: { source: 'ADMIN_RESET_XP', actorId: actor.id },
+          } });
+        }
+        await tx.userXpProfile.update({
+          where: { id: locked.id }, data: { totalXp: 0, currentLevel: 1 },
+        });
+        updatedUser = await tx.user.update({
+          where: { id }, data: { xp: 0, level: 1 },
+          select: { id: true, role: true, status: true, xp: true },
         });
         changedFields.push('xp', 'level', 'xpProfile');
       }
@@ -474,7 +491,7 @@ export class AdminDashboardService {
         await tx.userPlacement.deleteMany({ where: { userId: id } });
         changedFields.push('placement');
       }
-    });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 
     if (dto.action === 'BAN') {
       // Immediate revocation: kills every refresh token right away (so a
