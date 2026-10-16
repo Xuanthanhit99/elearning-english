@@ -8,6 +8,7 @@ import { LeaderboardRewardStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { creditRewardXp } from './reward-xp-transaction';
+import { withSerializableRetry } from '../xp-transaction-retry.util';
 
 type RewardPayload = {
   xp: number;
@@ -60,7 +61,7 @@ export class LeaderboardRewardService {
     const payload = this.normalize(
       existing.payload ?? existing.reward.rewardValue,
     );
-    const claimed = await this.prisma.$transaction(
+    const claimed = await withSerializableRetry(() => this.prisma.$transaction(
       async (tx) => {
         const lock = await tx.userLeaderboardReward.updateMany({
           where: {
@@ -113,7 +114,7 @@ export class LeaderboardRewardService {
         });
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
-    );
+    ));
 
     if (!claimed) {
       const latest = await this.prisma.userLeaderboardReward.findUnique({
