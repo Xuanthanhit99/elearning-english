@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { PrismaClient, LeaderboardRewardStatus } from '@prisma/client';
+import { Prisma, PrismaClient, LeaderboardRewardStatus } from '@prisma/client';
 import { LeaderboardService } from '../leaderboard.service';
 import { LeaderboardRewardService } from './leaderboard-reward.service';
 import { AdminDashboardService } from '../../admin-dashboard/admin-dashboard.service';
@@ -130,7 +130,7 @@ describe('D1 reward claim and XP reset — PostgreSQL integration', () => {
           return (callback: (tx: any) => Promise<unknown>, options: unknown) => {
             attempts++;
             if (attempts === 1) {
-              const conflict = Object.assign(new Error('D1 forced serialization conflict'), { code: 'P2034' });
+              const conflict = new Prisma.PrismaClientKnownRequestError('D1 forced serialization conflict', { code: 'P2034', clientVersion: Prisma.prismaVersion.client });
               throw conflict;
             }
             return prisma.$transaction(callback, options as any);
