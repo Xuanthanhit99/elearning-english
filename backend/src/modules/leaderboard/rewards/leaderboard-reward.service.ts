@@ -4,9 +4,11 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { LeaderboardRewardStatus, Prisma, XpSourceType } from '@prisma/client';
+import { LeaderboardRewardStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { NotificationsService } from '../../notifications/notifications.service';
+import { creditRewardXp } from './reward-xp-transaction';
+import { withSerializableRetry } from '../xp-transaction-retry.util';
 
 type RewardPayload = {
   xp: number;
@@ -59,7 +61,7 @@ export class LeaderboardRewardService {
     const payload = this.normalize(
       existing.payload ?? existing.reward.rewardValue,
     );
-    const claimed = await this.prisma.$transaction(
+    const claimed = await withSerializableRetry(() => this.prisma.$transaction(
       async (tx) => {
         const lock = await tx.userLeaderboardReward.updateMany({
           where: {
@@ -75,44 +77,9 @@ export class LeaderboardRewardService {
         });
         if (lock.count !== 1) return null;
 
-        const profile = await tx.userXpProfile.findUniqueOrThrow({
-          where: { userId },
-        });
-        const nextLevel = this.levelFromXp(profile.totalXp + payload.xp);
-
-        if (payload.xp > 0) {
-          await tx.userXpProfile.update({
-            where: { id: profile.id },
-            data: {
-              totalXp: { increment: payload.xp },
-              currentLevel: nextLevel,
-              lastXpEarnedAt: new Date(),
-            },
-          });
-          await tx.user.update({
-            where: { id: userId },
-            data: { xp: { increment: payload.xp }, level: nextLevel },
-          });
-          await tx.xpTransaction.upsert({
-            where: { idempotencyKey: `leaderboard-reward:${id}` },
-            update: {},
-            create: {
-              userId,
-              xpProfileId: profile.id,
-              sourceType: XpSourceType.ADMIN_ADJUSTMENT,
-              sourceId: id,
-              baseXp: payload.xp,
-              finalXp: payload.xp,
-              reason: existing.reward.title,
-              idempotencyKey: `leaderboard-reward:${id}`,
-              metadata: {
-                source: 'LEADERBOARD_REWARD',
-                rewardId: existing.rewardId,
-                seasonId: existing.seasonId,
-              },
-            },
-          });
-        }
+        await creditRewardXp(tx, { userId, assignmentId: id, xp: payload.xp,
+          reason: existing.reward.title, rewardId: existing.rewardId,
+          seasonId: existing.seasonId });
 
         if (
           payload.coins ||
@@ -147,7 +114,7 @@ export class LeaderboardRewardService {
         });
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
-    );
+    ));
 
     if (!claimed) {
       const latest = await this.prisma.userLeaderboardReward.findUnique({

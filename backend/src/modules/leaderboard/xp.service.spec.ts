@@ -187,15 +187,27 @@ describe('XpService', () => {
       prisma.xpTransaction.findUnique
         .mockResolvedValueOnce({ id: 'source-txn', userId: 'user-1', finalXp: 30, reversedAt: null })
         .mockResolvedValueOnce(null); // awardXp's own idempotency pre-check for the reversal key
-      prisma.$transaction.mockResolvedValueOnce(successfulTransactionResult);
+      const updateMany = jest.fn().mockResolvedValue({ count: 1 });
+      const award = jest.spyOn(service, 'awardXpWithSideEffects').mockImplementation(
+        async (input: any, sideEffects: any) => {
+          expect(input).toMatchObject({
+            userId: 'user-1',
+            baseXp: -30,
+            idempotencyKey: 'reverse:source-txn',
+          });
+          await sideEffects({ xpTransaction: { updateMany } } as any);
+          return { duplicated: false, transaction: successfulTransactionResult.transaction, sideEffectResult: undefined } as any;
+        },
+      );
 
       await service.reverseTransaction('source-txn', 'admin correction');
 
-      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
-      expect(prisma.xpTransaction.update).toHaveBeenCalledWith({
-        where: { id: 'source-txn' },
+      expect(award).toHaveBeenCalledTimes(1);
+      expect(updateMany).toHaveBeenCalledWith({
+        where: { id: 'source-txn', reversedAt: null },
         data: { reversedAt: expect.any(Date), reversalReason: 'admin correction' },
       });
+      expect(prisma.xpTransaction.update).not.toHaveBeenCalled();
     });
 
     it('rejects reversing an already-reversed transaction', async () => {

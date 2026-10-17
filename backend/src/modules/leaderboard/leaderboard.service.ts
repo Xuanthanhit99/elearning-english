@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  Prisma,
   LeaderboardPeriodType,
   LeaderboardRewardStatus,
   LeaderboardScopeType,
@@ -20,6 +21,8 @@ import {
   weeklyRedisKey,
 } from './leaderboard.constants';
 import { LeaderboardQueryDto } from './dto/leaderboard-query.dto';
+import { creditRewardXp } from './rewards/reward-xp-transaction';
+import { withSerializableRetry } from './xp-transaction-retry.util';
 
 @Injectable()
 export class LeaderboardService {
@@ -231,29 +234,21 @@ export class LeaderboardService {
       throw new NotFoundException('Reward is not available');
     }
 
-    return this.prisma.$transaction(async (tx) => {
-      const updated = await tx.userLeaderboardReward.update({
-        where: { id: assignment.id },
-        data: {
-          status: LeaderboardRewardStatus.CLAIMED,
-          claimedAt: new Date(),
-        },
+    return withSerializableRetry(() => this.prisma.$transaction(async (tx) => {
+      const lock = await tx.userLeaderboardReward.updateMany({
+        where: { id: rewardAssignmentId, userId, status: LeaderboardRewardStatus.AVAILABLE,
+          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
+        data: { status: LeaderboardRewardStatus.CLAIMED, claimedAt: new Date() },
       });
-
-      const value = assignment.reward.rewardValue as Record<string, number>;
-      if (value.xp) {
-        const profile = await tx.userXpProfile.upsert({
-          where: { userId },
-          create: { userId, totalXp: value.xp },
-          update: { totalXp: { increment: value.xp } },
-        });
-        await tx.user.update({
-          where: { id: userId },
-          data: { xp: profile.totalXp },
-        });
-      }
-      return updated;
-    });
+      if (lock.count !== 1) throw new NotFoundException('Reward is not available');
+      const value = assignment.payload ?? assignment.reward.rewardValue;
+      const xp = value && typeof value === 'object' && !Array.isArray(value)
+        ? Number((value as Record<string, unknown>).xp ?? 0) : 0;
+      await creditRewardXp(tx, { userId, assignmentId: rewardAssignmentId, xp,
+        reason: assignment.reward.title, rewardId: assignment.rewardId,
+        seasonId: assignment.seasonId });
+      return tx.userLeaderboardReward.findUniqueOrThrow({ where: { id: rewardAssignmentId } });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }));
   }
 
   async updatePrivacy(
