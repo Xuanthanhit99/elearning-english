@@ -82,7 +82,7 @@ jobs:
         run: npm run build
 
       - name: Run backend tests (excluding isolated QA XP suites)
-        run: npm test -- --runInBand --forceExit --testPathIgnorePatterns='/(reward-xp|xp-reversal)\\.integration\\.spec\\.ts
+        run: npm test -- --runInBand --forceExit --testPathIgnorePatterns='reward-xp[.]integration[.]spec[.]ts|xp-reversal[.]integration[.]spec[.]ts'
 
       - name: Audit critical backend dependencies
         run: npm audit --audit-level=critical
