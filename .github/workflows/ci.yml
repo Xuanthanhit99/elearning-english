@@ -81,8 +81,135 @@ jobs:
       - name: Build backend
         run: npm run build
 
-      - name: Run backend tests
-        run: npm test -- --runInBand --forceExit
+      - name: Run backend tests (excluding isolated QA XP suites)
+        run: npm test -- --runInBand --forceExit --testPathIgnorePatterns='/(reward-xp|xp-reversal)\\.integration\\.spec\\.ts
+
+      - name: Audit critical backend dependencies
+        run: npm audit --audit-level=critical
+
+      - name: Audit high backend dependencies
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  xp-postgres-qa:
+    name: XP PostgreSQL QA
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: beaconvie_qa
+          POSTGRES_PASSWORD: ci-only-not-production
+          POSTGRES_DB: beaconvie_english_qa
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -U beaconvie_qa -d beaconvie_english_qa"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://beaconvie_qa:ci-only-not-production@127.0.0.1:5434/beaconvie_english_qa?schema=public
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Apply QA database migrations
+        run: npx prisma migrate deploy
+
+      - name: Run isolated XP PostgreSQL integration
+        run: npx jest --runTestsByPath src/modules/leaderboard/rewards/reward-xp.integration.spec.ts src/modules/leaderboard/xp-reversal.integration.spec.ts --runInBand --no-coverage --testTimeout=60000
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: english-web-build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: english-web-build/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck frontend
+        run: npm run typecheck
+
+      - name: Check translations
+        run: npm run i18n:check
+
+      - name: Build frontend
+        env:
+          NEXT_PUBLIC_API_URL: https://api.beaconvie.com
+          NEXT_PUBLIC_SOCKET_URL: https://api.beaconvie.com
+          NEXT_PUBLIC_SITE_URL: https://beaconvie.com
+        run: npm run build
+
+      - name: Run frontend smoke tests
+        run: npm test
+
+      - name: Audit critical frontend dependencies
+        run: npm audit --audit-level=critical
+
+      - name: Audit high frontend dependencies
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  release-scripts:
+    name: Release Scripts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Parse release scripts
+        run: |
+          node --check scripts/smoke/release-smoke.mjs
+          node --check scripts/load/baseline-load.mjs
+
+  secret-scan:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
       - name: Audit critical backend dependencies
         run: npm audit --audit-level=critical
