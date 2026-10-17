@@ -150,6 +150,43 @@ describe('D1 reward claim and XP reset — PostgreSQL integration', () => {
     await verify(f, f.xp, 1);
   });
 
+  it('notification failure after commit does not roll back reward XP', async () => {
+    const f = await fixture();
+    const notification = jest.fn().mockRejectedValue(new Error('D1 simulated notification outage'));
+    const service = new LeaderboardRewardService(prisma as any, { createFromPayload: notification } as any);
+    const result = await service.claim(f.user.id, f.assignment.id);
+    expect(result.alreadyClaimed).toBe(false);
+    expect(notification).toHaveBeenCalledTimes(1);
+    await verify(f, f.xp, 1);
+    const again = await service.claim(f.user.id, f.assignment.id);
+    expect(again.alreadyClaimed).toBe(true);
+    expect(notification).toHaveBeenCalledTimes(1);
+    await verify(f, f.xp, 1);
+  });
+
+  it('concurrent claim and RESET_XP preserve ledger and balances', async () => {
+    const f = await fixture();
+    const actor = { id: f.user.id };
+    const results = await Promise.allSettled([
+      modern.claim(f.user.id, f.assignment.id),
+      admin.applyUserAction(f.user.id, { action: 'RESET_XP', reason: 'D1 concurrent QA' } as any, actor),
+    ]);
+    // A serialization conflict may exhaust retries; successful claims must never double-credit.
+    const [user, profile, ledger, assignment] = await Promise.all([
+      prisma.user.findUniqueOrThrow({ where: { id: f.user.id } }),
+      prisma.userXpProfile.findUniqueOrThrow({ where: { userId: f.user.id } }),
+      prisma.xpTransaction.findMany({ where: { userId: f.user.id } }),
+      prisma.userLeaderboardReward.findUniqueOrThrow({ where: { id: f.assignment.id } }),
+    ]);
+    const ledgerTotal = ledger.reduce((sum, row) => sum + row.finalXp, 0);
+    expect(user.xp).toBe(profile.totalXp);
+    expect(user.xp).toBe(ledgerTotal);
+    expect(ledger.filter((row) => row.idempotencyKey === `leaderboard-reward:${f.assignment.id}`)).toHaveLength(
+      assignment.status === LeaderboardRewardStatus.CLAIMED ? 1 : 0,
+    );
+    expect(results.some((result) => result.status === 'fulfilled')).toBe(true);
+  });
+
   it('RESET_XP compensates exactly once and keeps ledger history', async () => {
     const f = await fixture();
     await modern.claim(f.user.id, f.assignment.id);
